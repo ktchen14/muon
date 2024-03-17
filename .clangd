@@ -1,0 +1,31 @@
+CompileFlags:
+  Add: [-xc]
+  CompilationDatabase: build
+
+Diagnostics:
+  Includes:
+    IgnoreHeader:
+    - _abort.h
+    - _inttypes.h
+    - sys/errno.h
+  Suppress:
+  - logical-op-parentheses
+  - unused-function
+  - unused-label
+  - unused-variable
+  MissingIncludes: Strict
+
+Documentation:
+  CommentFormat: Doxygen
+
+---
+
+If:
+  PathMatch: ruby/.*
+
+Diagnostics:
+  Includes:
+    IgnoreHeader:
+    - ruby/internal/.*.h
+
+# vim: set ft=yaml:

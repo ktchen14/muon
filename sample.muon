@@ -1,0 +1,49 @@
+# define id = lambda x = x.foo
+
+define test_number = (lambda x = x)
+
+# define main = lambda () = [[(foo: (bar: 5)).foo.bar, 7], [9]]
+
+# define id = lambda x = x
+# define y = (bar: id)
+# define x = y.bar (foo: 1)
+
+# define x = handle_list [1, 2, id (foo: 3)]
+
+# datatype MyBoolean = MyTrue | MyFalse
+
+# instance MyBoolean <: Integer = switch (case MyTrue = 1, case MyFalse = 0)
+
+# define mytest = handle_list [MyTrue]
+
+# datatype Foo = Foo1 | Foo2
+
+# define foo = lambda x = Foo1
+
+# define x = 1
+# define y = x
+# define z = [x, y, 3, 4, 5]
+define h = (foo: 1).foo
+define j = test_number h
+define k = [1 :: $, 2 :: $, true :: $ :: $, [3, 4]]
+# define result = handle_list [1, 2, 3]
+
+# define idi = lambda x = x :: Integer -> Integer
+
+# define id = lambda x = (a: x)
+# define id2 = lambda y = (b: y, c: id y)
+
+# define sw = switch (case Foo1 = 1, case Foo1 = id 3, case Foo2 = id true)
+# define rs = sw Foo1
+
+# define z = [1] ∷ [Integer]
+
+# define a = [1]
+
+# define sw2 = lambda q = (
+#   switch (case Foo1 = (lambda y = y), case Foo1 = (lambda z = z)) Foo1) q
+
+# define z = sw2 1
+# define y = sw2 true
+
+# define az = [1, 2, 3, 4, 5]

@@ -1,0 +1,12 @@
+Checks:
+- "-*"
+- "bugprone-*"
+- "-bugprone-assignment-in-if-condition"
+- "-bugprone-easily-swappable-parameters"
+- "-bugprone-macro-parentheses"
+- "-bugprone-multi-level-implicit-pointer-conversion"
+- "misc-no-recursion"
+# - "readability-*"
+# - "-readability-braces-around-statements"
+# - "-readability-function-cognitive-complexity"
+# - "-readability-identifier-length"

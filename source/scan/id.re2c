@@ -1,0 +1,2 @@
+XID_Start = [A-Za-z];
+XID_Continue = [A-Za-z0-9_];

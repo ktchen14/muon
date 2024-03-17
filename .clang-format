@@ -1,0 +1,32 @@
+BasedOnStyle: LLVM
+Language: C
+
+AlignOperands: DontAlign
+AllowShortBlocksOnASingleLine: Empty
+AllowShortFunctionsOnASingleLine: Empty
+BinPackArguments: false
+BinPackParameters: OnePerLine
+BracedInitializerIndentWidth: 2
+BreakBeforeBinaryOperators: NonAssignment
+Cpp11BracedListStyle: true
+IndentCaseLabels: true
+OneLineFormatOffRegex: '^MUON_HINT_SUFFIX$|^//-'
+SkipMacroDefinitionBody: true
+SpaceAfterCStyleCast: true
+SpaceBeforeCpp11BracedList: true
+
+AlignAfterOpenBracket: DontAlign
+BreakAfterOpenBracketBracedList: true
+BreakAfterOpenBracketFunction: true
+BreakAfterOpenBracketIf: true
+BreakBeforeCloseBracketBracedList: true
+
+PenaltyBreakAssignment: 80
+PenaltyReturnTypeOnItsOwnLine: 1000
+
+Macros:
+- MUON_HINT(x)=[[muon::hint(x)]]
+- ON_ABSTRACT_OBJECT(x)=(x)
+- "IS_CONCRETE_NODE(x)=({ x = NULL; }):"
+- "IS_CONCRETE_TYPE(x)=({ x = NULL; }):"
+- "IS_COERCION(x)=({ x = NULL; }):"
