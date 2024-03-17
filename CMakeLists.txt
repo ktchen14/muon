@@ -6,3 +6,5 @@ project("Muon"
   HOMEPAGE_URL "https://github.com/ktchen14/muon"
   LANGUAGES C
 )
+
+add_subdirectory(source)
