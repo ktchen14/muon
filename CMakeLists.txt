@@ -8,3 +8,4 @@ project("Muon"
 )
 
 add_subdirectory(source)
+add_subdirectory(test)

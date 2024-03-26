@@ -1,3 +1,5 @@
+int scan(const char *s);
+
 int main(int argc, char *argv[]) {
-  return 0;
+  scan("1234");
 }
