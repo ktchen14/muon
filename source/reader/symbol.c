@@ -5,7 +5,7 @@
 #include <stdio.h>
 
 void symbol_debug(FILE *stream, const symbol_t *symbol) {
-  printf("%s:%u:%u [%zu + %zu]: ",
+  printf("%s:%zu:%zu [%zu + %zu]: ",
       symbol->yylloc.name != NULL ? symbol->yylloc.name : "(none)",
       symbol->yylloc.line,
       symbol->yylloc.column,
@@ -43,6 +43,9 @@ void symbol_debug(FILE *stream, const symbol_t *symbol) {
       break;
     case TYPE:
       printf("\"type\"");
+      break;
+    case BOOLEAN:
+      printf("BOOLEAN %s", symbol->yylval.boolean ? "true" : "false");
       break;
     case INTEGER:
       printf("INTEGER %lli", symbol->yylval.integer);

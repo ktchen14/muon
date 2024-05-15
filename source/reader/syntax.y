@@ -20,6 +20,7 @@
 %token TYPE "type"
 
 %token <integer> INTEGER
+%token <boolean> BOOLEAN
 %token <string> STRING
 
 %{

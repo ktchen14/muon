@@ -17,8 +17,8 @@ typedef struct {
 } cursor_t;
 
 typedef struct {
-  cursor_t cursor;
-  cursor_t symbol;
+  cursor_t cursor;  ///< location of the active character
+  cursor_t symbol;  ///< location of the active symbol
   cursor_t marker;
   enum YYCONDTYPE condition;
 } scan_t;
@@ -41,7 +41,7 @@ void scan_debug(const YYCTYPE *string, const char *name) {
     if ((kind = scan_next(string, &scan, &yylval)) == YYEOF)
       break;
 
-    symbol_t symbol = (symbol_t) {
+    symbol_t symbol = {
       .kind = kind,
       .yylval = yylval,
       .yylloc = {

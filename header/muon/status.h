@@ -13,14 +13,14 @@ typedef struct {
   /// Byte offset into the source file or stream
   size_t offset;
 
-  /// Length of the syntax object
+  /// Length (in bytes)
   size_t length;
 
   /// Line number in the source file or stream
-  unsigned int line;
+  size_t line;
 
   /// Column number in the source file or stream
-  unsigned int column;
+  size_t column;
 } mu_source_t;
 
 #endif /* MU_STATUS_H */

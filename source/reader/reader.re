@@ -1,17 +1,22 @@
-stop = [\x00];
-
 <> => normal {
   cursor->line = cursor->column = 1;
   symbol->line = symbol->column = 1;
   goto yyc_normal;
 }
 
+stop = [\x00];
+
 <normal> "constant" { return CONSTANT; }
 <normal> "instance" { return INSTANCE; }
 <normal> "type" { return TYPE; }
 
+// Whitespace
 <normal> [ \t] { return ' '; }
 
+// Newline
+<normal> [\r\n]+ [ \t\r\n]* { return '\n'; }
+
+// Integer
 <normal> "0" {
   return yylval->integer = 0, INTEGER;
 }
@@ -25,7 +30,17 @@ stop = [\x00];
   return yylval->integer = i, INTEGER;
 }
 
-<normal> [\n] { return '\n'; }
+// Boolean
+
+<normal> "true" {
+  return yylval->boolean = 1, BOOLEAN;
+}
+
+<normal> "false" {
+  return yylval->boolean = 0, BOOLEAN;
+}
+
+// String
 
 <normal> "\"" :=> string
 
