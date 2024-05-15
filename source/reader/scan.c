@@ -24,32 +24,40 @@ typedef struct {
 } scan_t;
 
 /// Scan and return the next symbol in the @a buffer
-static yytoken_kind_t scan_next_internal(
+static yytoken_kind_t scan_next(
     const YYCTYPE *restrict buffer, scan_t *scan, YYSTYPE *yylval)
   __attribute__((nonnull));
 
-/// Scan and return the next symbol in the @a buffer
-static yytoken_kind_t scan_next(
-    const YYCTYPE *restrict buffer, scan_t *scan, symbol_t *symbol)
-  __attribute__((nonnull));
-
+/// Advance the scan @a cursor
 static void cursor_next(
     const YYCTYPE *restrict buffer, cursor_t *cursor)
   __attribute__((nonnull));
 
-void scan_debug(const YYCTYPE *string) {
+void scan_debug(const YYCTYPE *string, const char *name) {
   scan_t scan = {0};
 
   for (yytoken_kind_t kind;;) {
-    symbol_t symbol;
-
-    if ((kind = scan_next(string, &scan, &symbol)) == YYEOF)
+    YYSTYPE yylval;
+    if ((kind = scan_next(string, &scan, &yylval)) == YYEOF)
       break;
-    symbol_debug(stdout, &symbol);
+
+    symbol_t symbol = (symbol_t) {
+      .kind = kind,
+      .yylval = yylval,
+      .yylloc = {
+        .name = name,
+        .offset = scan.symbol.offset,
+        .length = scan.cursor.offset - scan.symbol.offset,
+        .line = scan.symbol.line,
+        .column = scan.symbol.column,
+      },
+    };
+
+    symbol_debug(stderr, &symbol);
   }
 }
 
-static yytoken_kind_t scan_next_internal(
+static yytoken_kind_t scan_next(
     const YYCTYPE *restrict buffer, scan_t *scan, YYSTYPE *yylval) {
   cursor_t *cursor = &scan->cursor;
   cursor_t *symbol = &scan->symbol;
@@ -87,34 +95,11 @@ static yytoken_kind_t scan_next_internal(
   return YYEOF;
 }
 
-static yytoken_kind_t scan_next(
-    const YYCTYPE *restrict buffer, scan_t *scan, symbol_t *symbol) {
-  YYSTYPE yylval;
-  yytoken_kind_t kind = scan_next_internal(buffer, scan, &yylval);
-
-  *symbol = (symbol_t) {
-    .kind = kind,
-    .yylval = yylval,
-    .yylloc = {
-      .offset = scan->symbol.offset,
-      .length = scan->cursor.offset - scan->symbol.offset,
-      .line = scan->symbol.line,
-      .column = scan->symbol.column,
-    },
-  };
-
-  return kind;
-}
-
 static void cursor_next(
     const YYCTYPE *restrict buffer, cursor_t *cursor) {
-  /* assert(buffer[cursor->offset] != '\0'); */
-
-  if (buffer[cursor->offset] == '\n') {
+  if (buffer[cursor->offset++] == '\n') {
     cursor->line++;
     cursor->column = 1;
   } else
     cursor->column++;
-
-  cursor->offset++;
 }

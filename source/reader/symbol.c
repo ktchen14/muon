@@ -5,7 +5,8 @@
 #include <stdio.h>
 
 void symbol_debug(FILE *stream, const symbol_t *symbol) {
-  printf("%s:%u:%u [%zu + %zu]: ", "main.c",
+  printf("%s:%u:%u [%zu + %zu]: ",
+      symbol->yylloc.name != NULL ? symbol->yylloc.name : "(none)",
       symbol->yylloc.line,
       symbol->yylloc.column,
       symbol->yylloc.offset,
