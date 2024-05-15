@@ -8,7 +8,6 @@ add_custom_command(
     "${CMAKE_CURRENT_SOURCE_DIR}/scan.c"
     --output "${CMAKE_CURRENT_BINARY_DIR}/scan.c"
     --depfile "${CMAKE_CURRENT_BINARY_DIR}/scan.d"
-    --api custom
     --case-ranges
     --conditions
     --utf8

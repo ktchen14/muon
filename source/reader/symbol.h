@@ -13,11 +13,7 @@ typedef struct {
   YYLTYPE yylloc;
 } symbol_t;
 
-void symbol_debug(
-    FILE *stream,
-    yytoken_kind_t kind,
-    const YYSTYPE *yylval,
-    const YYLTYPE *yylloc)
-  __attribute__((nonnull(1)));
+void symbol_debug(FILE *stream, const symbol_t *symbol)
+  __attribute__((nonnull));
 
 #endif /* MU_READER_SYMBOL_I */

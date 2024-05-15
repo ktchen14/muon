@@ -7,12 +7,13 @@
  * @brief Source location of a Muon syntax object
  */
 typedef struct {
+  /// Name of the source file or stream
   const char *name;
 
   /// Byte offset into the source file or stream
   size_t offset;
 
-  /// Length
+  /// Length of the syntax object
   size_t length;
 
   /// Line number in the source file or stream

@@ -4,13 +4,15 @@
 
 #include <stdio.h>
 
-void symbol_debug(
-    FILE *stream,
-    yytoken_kind_t kind,
-    const YYSTYPE *yylval,
-    const YYLTYPE *yylloc) {
-  if (kind > YYEOF && kind < YYerror) {
-    int c = kind;
+void symbol_debug(FILE *stream, const symbol_t *symbol) {
+  printf("%s:%u:%u [%zu + %zu]: ", "main.c",
+      symbol->yylloc.line,
+      symbol->yylloc.column,
+      symbol->yylloc.offset,
+      symbol->yylloc.length);
+
+  if (symbol->kind > YYEOF && symbol->kind < YYerror) {
+    int c = symbol->kind;
     switch (c) {
       case '\n':
         printf("LITERAL '\\n'");
@@ -25,7 +27,7 @@ void symbol_debug(
         printf("LITERAL '%c'", c);
         break;
     }
-  } else switch (kind) {
+  } else switch (symbol->kind) {
     case YYEOF:
       printf("EOF\n");
       break;
@@ -42,15 +44,15 @@ void symbol_debug(
       printf("\"type\"");
       break;
     case INTEGER:
-      printf("INTEGER %lli", yylval->integer);
+      printf("INTEGER %lli", symbol->yylval.integer);
       break;
     case STRING:
       printf("STRING");
       break;
     default:
-      printf("Unknown %d", kind);
+      printf("Unknown %d", symbol->kind);
       break;
   }
 
-  printf(" <offset=%zu length=%zu line=%u:%u>\n", yylloc->offset, yylloc->length, yylloc->line, yylloc->column);
+  printf("\n");
 }

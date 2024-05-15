@@ -23,12 +23,14 @@ typedef struct {
   enum YYCONDTYPE condition;
 } scan_t;
 
+/// Scan and return the next symbol in the @a buffer
 static yytoken_kind_t scan_next_internal(
     const YYCTYPE *restrict buffer, scan_t *scan, YYSTYPE *yylval)
   __attribute__((nonnull));
 
+/// Scan and return the next symbol in the @a buffer
 static yytoken_kind_t scan_next(
-    const YYCTYPE *restrict buffer, scan_t *scan, YYSTYPE *yylval, YYLTYPE *yylloc)
+    const YYCTYPE *restrict buffer, scan_t *scan, symbol_t *symbol)
   __attribute__((nonnull));
 
 static void cursor_next(
@@ -37,13 +39,13 @@ static void cursor_next(
 
 void scan_debug(const YYCTYPE *string) {
   scan_t scan = {0};
-  YYSTYPE yylval;
-  YYLTYPE yylloc;
 
   for (yytoken_kind_t kind;;) {
-    if ((kind = scan_next(string, &scan, &yylval, &yylloc)) == YYEOF)
+    symbol_t symbol;
+
+    if ((kind = scan_next(string, &scan, &symbol)) == YYEOF)
       break;
-    symbol_debug(stdout, kind, &yylval, &yylloc);
+    symbol_debug(stdout, &symbol);
   }
 }
 
@@ -65,6 +67,7 @@ static yytoken_kind_t scan_next_internal(
 #define YYSETCONDITION(next) (*condition = next)
 
     /*!re2c
+      re2c:api = custom;
       re2c:indent:string = "  ";
       re2c:yyfill:enable = 0;
 
@@ -85,15 +88,22 @@ static yytoken_kind_t scan_next_internal(
 }
 
 static yytoken_kind_t scan_next(
-    const YYCTYPE *restrict buffer, scan_t *scan, YYSTYPE *yylval, YYLTYPE *yylloc) {
-  yytoken_kind_t result = scan_next_internal(buffer, scan, yylval);
+    const YYCTYPE *restrict buffer, scan_t *scan, symbol_t *symbol) {
+  YYSTYPE yylval;
+  yytoken_kind_t kind = scan_next_internal(buffer, scan, &yylval);
 
-  yylloc->offset = scan->symbol.offset;
-  yylloc->length = scan->cursor.offset - scan->symbol.offset;
-  yylloc->line = scan->symbol.line;
-  yylloc->column = scan->symbol.column;
+  *symbol = (symbol_t) {
+    .kind = kind,
+    .yylval = yylval,
+    .yylloc = {
+      .offset = scan->symbol.offset,
+      .length = scan->cursor.offset - scan->symbol.offset,
+      .line = scan->symbol.line,
+      .column = scan->symbol.column,
+    },
+  };
 
-  return result;
+  return kind;
 }
 
 static void cursor_next(
