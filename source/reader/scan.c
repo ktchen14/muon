@@ -79,7 +79,7 @@ static yytoken_kind_t scan_next(
       re2c:indent:string = "  ";
       re2c:yyfill:enable = 0;
 
-      !include "reader.re";
+      !include "syntax.re";
     */
 
 #undef YYPEEK
