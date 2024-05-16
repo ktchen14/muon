@@ -12,7 +12,11 @@
 %union {
   long long integer;
   _Bool boolean;
-  const char *string;
+
+  struct {
+    const char *c;
+    size_t length;
+  } string;
 }
 
 %token CONSTANT "constant"

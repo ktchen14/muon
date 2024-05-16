@@ -6,17 +6,28 @@
 
 stop = [\x00];
 
+<normal> [ \t]              { return ' '; }
+<normal> [\n\r]+ [ \t\n\r]* { return '\n'; }
+<normal> stop               { break; }
+
+// ================================ Keyword ====================================
+
 <normal> "constant" { return CONSTANT; }
 <normal> "instance" { return INSTANCE; }
-<normal> "type" { return TYPE; }
+<normal> "type"     { return TYPE; }
 
-// Whitespace
-<normal> [ \t] { return ' '; }
+// ================================ Boolean ====================================
 
-// Newline
-<normal> [\r\n]+ [ \t\r\n]* { return '\n'; }
+<normal> "true" {
+  return yylval->boolean = 1, BOOLEAN;
+}
 
-// Integer
+<normal> "false" {
+  return yylval->boolean = 0, BOOLEAN;
+}
+
+// ================================ Integer ====================================
+
 <normal> "0" {
   return yylval->integer = 0, INTEGER;
 }
@@ -30,32 +41,38 @@ stop = [\x00];
   return yylval->integer = i, INTEGER;
 }
 
-// Boolean
+// ================================= String ====================================
 
-<normal> "true" {
-  return yylval->boolean = 1, BOOLEAN;
+<normal> "\"" => string { return '"'; }
+<string> "\"" => normal { return '"'; }
+
+<string> "\\\"" {
+  return yylval->string.c = "\"", yylval->string.length = 1, STRING;
 }
 
-<normal> "false" {
-  return yylval->boolean = 0, BOOLEAN;
+<string> "\\t" {
+  return yylval->string.c = "\t", yylval->string.length = 1, STRING;
 }
 
-// String
+<string> "\\n" {
+  return yylval->string.c = "\n", yylval->string.length = 1, STRING;
+}
 
-<normal> "\"" :=> string
+<string> "\\r" {
+  return yylval->string.c = "\r", yylval->string.length = 1, STRING;
+}
 
-<normal> stop { break; }
+<string> ([^] \ ("\\" | "\"" | stop))+ {
+  yylval->string.c = (char *) &buffer[symbol->offset];
+  yylval->string.length = cursor->offset - symbol->offset;
+  return STRING;
+}
+
+<string> stop { return YYerror; }
+
+<string> * { return YYerror; }
+
+// ================================ Unknown ====================================
 
 <normal> [^] { return YYerror; }
 <normal> * { return YYerror; }
-
-<string> "\\\"" {
-  printf("\\\"");
-}
-
-<string> * {
-}
-
-<string> "\"" :=> normal
-
-<string> stop { return YYerror; }
