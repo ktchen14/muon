@@ -16,7 +16,7 @@
   struct {
     const char *c;
     size_t length;
-  } string;
+  } text;
 }
 
 %token CONSTANT "constant"
@@ -25,7 +25,8 @@
 
 %token <integer> INTEGER
 %token <boolean> BOOLEAN
-%token <string> STRING
+%token <text>    STRING
+%token <text>    NAME
 
 %{
 #include <assert.h>

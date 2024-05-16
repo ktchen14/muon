@@ -16,16 +16,13 @@ void symbol_debug(FILE *stream, const symbol_t *symbol) {
     int c = symbol->kind;
     switch (c) {
       case '\n':
-        printf("LITERAL '\\n'");
+        printf("\\n");
         break;
-      case '\t':
-        printf("LITERAL '\\t'");
-        break;
-      case '\r':
-        printf("LITERAL '\\r'");
+      case ' ':
+        printf("_");
         break;
       default:
-        printf("LITERAL '%c'", c);
+        printf("%c", c);
         break;
     }
   } else switch (symbol->kind) {
@@ -44,6 +41,10 @@ void symbol_debug(FILE *stream, const symbol_t *symbol) {
     case TYPE:
       printf("\"type\"");
       break;
+    case NAME:
+      fputs("NAME ", stdout);
+      fwrite(symbol->yylval.text.c, symbol->yylval.text.length, 1, stdout);
+      break;
     case BOOLEAN:
       printf("BOOLEAN %s", symbol->yylval.boolean ? "true" : "false");
       break;
@@ -51,7 +52,18 @@ void symbol_debug(FILE *stream, const symbol_t *symbol) {
       printf("INTEGER %lli", symbol->yylval.integer);
       break;
     case STRING:
-      printf("STRING");
+      printf("STRING \"");
+      for (size_t i = 0; i < symbol->yylval.text.length; i++) {
+        char c = symbol->yylval.text.c[i];
+        switch (c) {
+          case '"': printf("\\\""); break;
+          case '\t': printf("\\t"); break;
+          case '\n': printf("\\n"); break;
+          case '\r': printf("\\r"); break;
+          default: printf("%c", c); break;
+        }
+      }
+      printf("\"");
       break;
     default:
       printf("Unknown %d", symbol->kind);

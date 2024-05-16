@@ -3,17 +3,10 @@
 #include "reader.h"
 
 const unsigned char source[] =
-  "1 2\n32 45"
-  "1 2\n32 45"
-  "1 2\n32 45"
-  "1 2\n32 45"
-  "1 2\n32 45"
-  "1 2\n32 45"
-  "1 2\n32 45"
-  "1 2\n32 45"
-  "1 2\n32 45"
-  "1 2\n32 45"
-  "\ntrue";
+  "true false\n"
+  "0 1234\n"
+  "\"abcd\\\"\\t\\n\\r\""
+  "kaiting\n";
 
 int main(int argc, char *argv[]) {
   scan_debug(source, NULL);
