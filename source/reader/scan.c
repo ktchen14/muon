@@ -24,12 +24,6 @@ typedef struct {
   enum YYCONDTYPE condition;
 } scan_t;
 
-typedef struct {
-  yytoken_kind_t kind;
-  YYSTYPE yylval;
-  YYLTYPE yylloc;
-} symbol_t;
-
 /// Scan and return the next symbol in the @a buffer
 static yytoken_kind_t scan_next(
     const YYCTYPE *restrict buffer, scan_t *scan, YYSTYPE *yylval)
@@ -40,30 +34,27 @@ static void cursor_next(
     const YYCTYPE *restrict buffer, cursor_t *cursor)
   __attribute__((nonnull));
 
-static void symbol_debug(FILE *stream, const symbol_t *symbol)
+static void symbol_debug(
+    FILE *stream, yytoken_kind_t kind, YYSTYPE *yylval, YYLTYPE *yylloc)
   __attribute__((nonnull));
 
 void scan_debug(const YYCTYPE *string, const char *name) {
   scan_t scan = {0};
 
-  for (yytoken_kind_t kind;;) {
-    YYSTYPE yylval;
-    if ((kind = scan_next(string, &scan, &yylval)) == YYEOF)
-      break;
+  yytoken_kind_t kind;
+  YYSTYPE yylval;
+  YYLTYPE yylloc;
 
-    symbol_t symbol = {
-      .kind = kind,
-      .yylval = yylval,
-      .yylloc = {
-        .name = name,
-        .offset = scan.symbol.offset,
-        .length = scan.cursor.offset - scan.symbol.offset,
-        .line = scan.symbol.line,
-        .column = scan.symbol.column,
-      },
+  while ((kind = scan_next(string, &scan, &yylval)) != YYEOF) {
+    yylloc = (YYLTYPE) {
+      .name = name,
+      .offset = scan.symbol.offset,
+      .length = scan.cursor.offset - scan.symbol.offset,
+      .line = scan.symbol.line,
+      .column = scan.symbol.column,
     };
 
-    symbol_debug(stderr, &symbol);
+    symbol_debug(stderr, kind, &yylval, &yylloc);
   }
 }
 
@@ -116,16 +107,17 @@ static void cursor_next(
     cursor->column++;
 }
 
-static void symbol_debug(FILE *stream, const symbol_t *symbol) {
+static void symbol_debug(
+    FILE *stream, yytoken_kind_t kind, YYSTYPE *yylval, YYLTYPE *yylloc) {
   printf("%s:%zu:%zu [%zu + %zu]: ",
-      symbol->yylloc.name != NULL ? symbol->yylloc.name : "(none)",
-      symbol->yylloc.line,
-      symbol->yylloc.column,
-      symbol->yylloc.offset,
-      symbol->yylloc.length);
+      yylloc->name != NULL ? yylloc->name : "(none)",
+      yylloc->line,
+      yylloc->column,
+      yylloc->offset,
+      yylloc->length);
 
-  if (symbol->kind > YYEOF && symbol->kind < YYerror) {
-    int c = symbol->kind;
+  if (kind > YYEOF && kind < YYerror) {
+    int c = kind;
     switch (c) {
       case '\n':
         printf("\\n");
@@ -137,7 +129,7 @@ static void symbol_debug(FILE *stream, const symbol_t *symbol) {
         printf("%c", c);
         break;
     }
-  } else switch (symbol->kind) {
+  } else switch (kind) {
     case YYEOF:
       printf("EOF\n");
       break;
@@ -155,18 +147,18 @@ static void symbol_debug(FILE *stream, const symbol_t *symbol) {
       break;
     case NAME:
       fputs("NAME ", stdout);
-      fwrite(symbol->yylval.text.c, symbol->yylval.text.length, 1, stdout);
+      fwrite(yylval->text.c, yylval->text.length, 1, stdout);
       break;
     case BOOLEAN:
-      printf("BOOLEAN %s", symbol->yylval.boolean ? "true" : "false");
+      printf("BOOLEAN %s", yylval->boolean ? "true" : "false");
       break;
     case INTEGER:
-      printf("INTEGER %lli", symbol->yylval.integer);
+      printf("INTEGER %lli", yylval->integer);
       break;
     case STRING:
       printf("STRING \"");
-      for (size_t i = 0; i < symbol->yylval.text.length; i++) {
-        char c = symbol->yylval.text.c[i];
+      for (size_t i = 0; i < yylval->text.length; i++) {
+        char c = yylval->text.c[i];
         switch (c) {
           case '"': printf("\\\""); break;
           case '\t': printf("\\t"); break;
@@ -178,7 +170,7 @@ static void symbol_debug(FILE *stream, const symbol_t *symbol) {
       printf("\"");
       break;
     default:
-      printf("Unknown %d", symbol->kind);
+      printf("Unknown %d", kind);
       break;
   }
 
