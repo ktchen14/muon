@@ -47,23 +47,23 @@ stop = [\x00];
 <string> "\"" => normal { return '"'; }
 
 <string> "\\\"" {
-  return yylval->text.c = "\"", yylval->text.length = 1, STRING;
+  return yylval->text.c = UTF8("\""), yylval->text.length = 1, STRING;
 }
 
 <string> "\\t" {
-  return yylval->text.c = "\t", yylval->text.length = 1, STRING;
+  return yylval->text.c = UTF8("\t"), yylval->text.length = 1, STRING;
 }
 
 <string> "\\n" {
-  return yylval->text.c = "\n", yylval->text.length = 1, STRING;
+  return yylval->text.c = UTF8("\n"), yylval->text.length = 1, STRING;
 }
 
 <string> "\\r" {
-  return yylval->text.c = "\r", yylval->text.length = 1, STRING;
+  return yylval->text.c = UTF8("\r"), yylval->text.length = 1, STRING;
 }
 
 <string> ([^] \ ("\\" | "\"" | stop))+ {
-  yylval->text.c = (char *) &buffer[symbol->offset];
+  yylval->text.c = &buffer[symbol->offset];
   yylval->text.length = cursor->offset - symbol->offset;
   return STRING;
 }
@@ -77,7 +77,7 @@ stop = [\x00];
 !include "unicode.re";
 
 <normal> XID_Start XID_Continue* {
-  yylval->text.c = (char *) &buffer[symbol->offset];
+  yylval->text.c = &buffer[symbol->offset];
   yylval->text.length = cursor->offset - symbol->offset;
   return NAME;
 }

@@ -2,6 +2,7 @@
 
 %code requires {
 #include <muon/status.h>
+#include <muon/name.h>
 }
 
 %define api.location.type { mu_source_t }
@@ -14,7 +15,7 @@
   _Bool boolean;
 
   struct {
-    const char *c;
+    const char8_t *c;
     size_t length;
   } text;
 }
@@ -27,6 +28,8 @@
 %token <boolean> BOOLEAN
 %token <text>    STRING
 %token <text>    NAME
+
+%type <text> name
 
 %{
 #include <assert.h>
@@ -55,6 +58,12 @@ void yyerror(YYLTYPE *yylloc, char const *s) {
 
 %%
 
-script: INTEGER
+script: expr
+
+expr: name
+
+name: NAME {
+  $$ = mu_name(engine, $1.c, $1.length);
+}
 
 %%

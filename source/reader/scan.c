@@ -3,6 +3,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "../common.h"
+
 #include "syntax.h"
 #include "symbol.h"
 
@@ -10,7 +12,7 @@
 
 /*!conditions:re2c*/
 
-#define YYCTYPE unsigned char
+#define YYCTYPE char8_t
 
 typedef struct {
   size_t offset, line, column;
@@ -73,6 +75,8 @@ static yytoken_kind_t scan_next(
 #define YYRESTORE()          (*cursor = *marker)
 #define YYGETCONDITION()     (*condition)
 #define YYSETCONDITION(next) (*condition = next)
+
+#define UTF8(...) ((char8_t *) __VA_ARGS__)
 
     /*!re2c
       re2c:api = custom;

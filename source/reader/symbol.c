@@ -1,3 +1,5 @@
+#include "../common.h"
+
 #include "symbol.h"
 
 #include "syntax.h"
