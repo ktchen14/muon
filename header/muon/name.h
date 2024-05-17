@@ -12,7 +12,7 @@ typedef struct {
   /// The length of the name (not counting the null terminator)
   size_t length;
 
-  mu_char8_t text[/* length */];
+  mu_char8_t text[/* length + 1 */];
 } mu_name_t;
 
 /**
