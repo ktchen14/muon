@@ -16,16 +16,6 @@ stop = [\x00];
 <normal> "instance" { return INSTANCE; }
 <normal> "type"     { return TYPE; }
 
-// ================================== Name =====================================
-
-!include "unicode.re";
-
-<normal> XID_Start XID_Continue* {
-  yylval->text.c = (char *) &buffer[symbol->offset];
-  yylval->text.length = cursor->offset - symbol->offset;
-  return NAME;
-}
-
 // ================================ Boolean ====================================
 
 <normal> "true" {
@@ -81,6 +71,16 @@ stop = [\x00];
 <string> stop { return YYerror; }
 
 <string> * { return YYerror; }
+
+// ================================== Name =====================================
+
+!include "unicode.re";
+
+<normal> XID_Start XID_Continue* {
+  yylval->text.c = (char *) &buffer[symbol->offset];
+  yylval->text.length = cursor->offset - symbol->offset;
+  return NAME;
+}
 
 // ================================ Unknown ====================================
 
