@@ -19,7 +19,6 @@ add_custom_command(
 
 add_library(
   reader OBJECT
-  symbol.c
   "${CMAKE_CURRENT_BINARY_DIR}/scan.c"
   "${BISON_SYNTAX_OUTPUT_SOURCE}")
 target_include_directories(reader PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../../header")
