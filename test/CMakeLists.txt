@@ -6,3 +6,5 @@ add_executable(
 
 target_include_directories(
   scan_main PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../source")
+target_include_directories(
+  scan_main PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../header")

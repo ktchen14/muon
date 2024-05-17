@@ -1,6 +1,7 @@
 %require "3.8.0"
 
 %code requires {
+#include <muon/common.h>
 #include <muon/status.h>
 #include <muon/name.h>
 }
@@ -15,7 +16,7 @@
   _Bool boolean;
 
   struct {
-    const char8_t *c;
+    const mu_char8_t *c;
     size_t length;
   } text;
 }
@@ -63,7 +64,6 @@ script: expr
 expr: name
 
 name: NAME {
-  $$ = mu_name(engine, $1.c, $1.length);
 }
 
 %%
