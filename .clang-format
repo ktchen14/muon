@@ -1,0 +1,17 @@
+BasedOnStyle: LLVM
+Language: Cpp
+
+AlignAfterOpenBracket: AlwaysBreak
+AlignConsecutiveMacros:
+  Enabled: true
+AlignEscapedNewlines: DontAlign
+AllowShortCaseLabelsOnASingleLine: true
+BinPackArguments: false
+BinPackParameters: false
+BracedInitializerIndentWidth: 2
+IndentCaseLabels: true
+SpaceAfterCStyleCast: true
+SpaceBeforeCpp11BracedList: true
+SpacesBeforeTrailingComments: 2
+
+PenaltyReturnTypeOnItsOwnLine: 200
