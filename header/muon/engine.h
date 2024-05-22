@@ -3,8 +3,10 @@
 
 #include "common.h"
 
-typedef struct {
+typedef struct mu_engine_t mu_engine_t;
+
+struct mu_engine_t {
   int x;
-} mu_engine_t;
+};
 
 #endif /* MU_ENGINE_H */

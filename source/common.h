@@ -8,7 +8,7 @@
 typedef mu_char8_t char8_t;
 
 #define common(...) __builtin_expect((__VA_ARGS__), 1)
-#define rare(...) __builtin_expect((__VA_ARGS__), 0)
+#define rare(...)   __builtin_expect((__VA_ARGS__), 0)
 
 /**
  * @brief Return the allocation size that will accommodate a struct with a

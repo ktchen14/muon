@@ -11,8 +11,8 @@ struct memo_t {
   mu_memo_t _;
 };
 
-typedef struct {
+struct mu_status_t {
   memo_t *tail;
-} mu_status_t;
+};
 
 #endif /* MU_STATUS_I */

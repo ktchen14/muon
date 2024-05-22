@@ -2,7 +2,7 @@
 #define MU_NAME_H
 
 #include "common.h"
-#include "engine.h"
+#include "stator.h"
 
 #include <stddef.h>
 
@@ -25,7 +25,6 @@ const mu_name_t *mu_name(
     mu_engine_t *engine, const mu_char8_t *restrict text, size_t length)
   __attribute__((nonnull));
 
-void mu_name_debug(const mu_name_t *name)
-  __attribute__((nonnull));
+void mu_name_debug(const mu_name_t *name) __attribute__((nonnull));
 
 #endif /* MU_NAME_H */

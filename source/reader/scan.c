@@ -1,13 +1,12 @@
-#include <assert.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-
-#include "../common.h"
-
 #include "syntax.h"
 
+#include "../common.h"
 #include "../status.h"
+
+#include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 /*!conditions:re2c*/
 
@@ -30,8 +29,7 @@ static yytoken_kind_t scan_next(
   __attribute__((nonnull));
 
 /// Advance the scan @a cursor
-static void cursor_next(
-    const YYCTYPE *restrict buffer, cursor_t *cursor)
+static void cursor_next(const YYCTYPE *restrict buffer, cursor_t *cursor)
   __attribute__((nonnull));
 
 static void symbol_debug(
@@ -98,8 +96,7 @@ static yytoken_kind_t scan_next(
   return YYEOF;
 }
 
-static void cursor_next(
-    const YYCTYPE *restrict buffer, cursor_t *cursor) {
+static void cursor_next(const YYCTYPE *restrict buffer, cursor_t *cursor) {
   if (buffer[cursor->offset++] == '\n') {
     cursor->line++;
     cursor->column = 1;
