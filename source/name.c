@@ -35,7 +35,7 @@ _Thread_local char conversion[MB_LEN_MAX];
 _Thread_local mbstate_t cs = {0};
 
 void mu_name_debug(const mu_name_t *name) {
-  fprintf(stderr, "%s", name->text);
+  /* fprintf(stderr, "%s", name->text); */
 
   for (size_t i = 0; i < name->length; i++) {
     char8_t c = name->text[i];

@@ -1,5 +1,7 @@
 add_subdirectory(reader)
 
+# check_function_exists("c8rtomb" FUNCTION_C8RTOMB)
+
 add_executable(
   muon main.c name.c $<TARGET_OBJECTS:reader>
 )

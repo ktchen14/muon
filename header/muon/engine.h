@@ -3,10 +3,12 @@
 
 #include "common.h"
 
+#include <stddef.h>
+
 typedef struct mu_engine_t mu_engine_t;
 
 struct mu_engine_t {
-  int x;
+  size_t stator_id;
 };
 
 #endif /* MU_ENGINE_H */

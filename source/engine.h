@@ -5,4 +5,7 @@
 
 #include "common.h"
 
+typedef struct {
+} engine_t;
+
 #endif /* MU_ENGINE_I */
