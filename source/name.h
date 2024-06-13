@@ -5,4 +5,17 @@
 
 #include "common.h"
 
+typedef struct {
+  const mu_name_t *anterior;
+} name_cursor_t;
+
+typedef struct {
+  name_cursor_t cursor;
+  mu_name_t name;
+} name_header_t;
+
+static inline name_cursor_t *name_cursor(const mu_name_t *name) {
+  return (name_cursor_t *) ((char *) name - offsetof(name_header_t, name));
+}
+
 #endif /* MU_NAME_I */

@@ -1,5 +1,7 @@
 #include "name.h"
 
+#include "engine.h"
+
 #include <assert.h>
 #include <errno.h>
 #include <limits.h>
@@ -17,18 +19,25 @@ const mu_name_t *mu_name(
   if (rare(__builtin_add_overflow(length, 1, &text_size)))
     return errno = ENOMEM, NULL;
 
+  /* size_t size; */
+  /* if (rare((size = struct_size(mu_name_t, text, text_size)) == 0)) */
+  /*   return errno = ENOMEM, NULL; */
+
   size_t size;
-  if (rare((size = struct_size(mu_name_t, text, text_size)) == 0))
+  if (rare((size = struct_size(name_header_t, name.text, text_size)) == 0))
     return errno = ENOMEM, NULL;
 
-  mu_name_t *name;
-  if ((name = malloc(size)) == NULL)
+  name_header_t *header;
+  if ((header = malloc(size)) == NULL)
     return NULL;
+  header->cursor = (name_cursor_t) {0};
 
-  *name = (mu_name_t) {.engine = engine, .length = length};
+  mu_name_t *name = &header->name;
+  *name = (mu_name_t) { .length = length };
   memcpy(name->text, text, length);
   name->text[length] = '\0';
-  return name;
+
+  return (mu_name_t *) engine_register(engine, &name->as_stator);
 }
 
 _Thread_local char conversion[MB_LEN_MAX];

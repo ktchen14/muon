@@ -6,14 +6,18 @@
 
 #include <stddef.h>
 
-typedef struct {
-  const mu_engine_t *engine;
+typedef struct mu_name_t mu_name_t;
+
+struct mu_name_t {
+  mu_stator_t as_stator;
+
+  const mu_name_t *prefix;
 
   /// The length of the name (not counting the null terminator)
   size_t length;
 
   mu_char8_t text[/* length + 1 */];
-} mu_name_t;
+};
 
 /**
  * @brief Define a name in the @a engine
