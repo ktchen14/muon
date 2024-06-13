@@ -28,6 +28,7 @@ typedef enum {
 /// An abstract stator
 typedef struct {
   mu_stator_kind_t kind;
+
   const mu_engine_t *engine;
   size_t id;
 } mu_stator_t;
@@ -37,10 +38,5 @@ typedef struct {
 /*   MU_RECORD_TYPE = MU_RECORD_TYPE_NODE, */
 /*   MU_VECTOR_TYPE = MU_VECTOR_TYPE_NODE, */
 /* } mu_type_kind_t; */
-
-/* /// An enumeration of each kind of stmt */
-/* typedef enum { */
-/*   MU_CONSTANT_STMT = MU_CONSTANT_STMT_NODE, */
-/* } mu_stmt_kind_t; */
 
 #endif /* MU_STATOR_H */
