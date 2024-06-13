@@ -6,17 +6,18 @@
 
 #include <stddef.h>
 
+/// A symbol in Muon
 typedef struct mu_name_t mu_name_t;
-
 struct mu_name_t {
   mu_stator_t as_stator;
 
+  /// If the name has a prefix, e.g. a.b
   const mu_name_t *prefix;
 
   /// The length of the name (not counting the null terminator)
   size_t length;
 
-  mu_char8_t text[/* length + 1 */];
+  mu_char8_t text[/* length + sizeof('\0') */];
 };
 
 /**
@@ -26,7 +27,7 @@ struct mu_name_t {
  * encoding.
  */
 const mu_name_t *mu_name(
-    mu_engine_t *engine, const mu_char8_t *restrict text, size_t length)
+    mu_engine_t *engine, size_t length, const mu_char8_t text[restrict length])
   __attribute__((nonnull));
 
 void mu_name_debug(const mu_name_t *name) __attribute__((nonnull));

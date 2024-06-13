@@ -6,7 +6,6 @@
 #include <errno.h>
 #include <limits.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <uchar.h>
 #include <wchar.h>
@@ -14,23 +13,17 @@
 size_t c8rtomb(char *restrict s, char8_t c8, mbstate_t *restrict ps);
 
 const mu_name_t *mu_name(
-    mu_engine_t *engine, const char8_t *restrict text, size_t length) {
-  size_t text_size;
-  if (rare(__builtin_add_overflow(length, 1, &text_size)))
+    mu_engine_t *engine, size_t length, const mu_char8_t text[restrict length]) {
+  size_t size = offsetof(name_header_t, name.text) + 1;
+  if (rare(__builtin_add_overflow(size, length, &size)))
     return errno = ENOMEM, NULL;
-
-  /* size_t size; */
-  /* if (rare((size = struct_size(mu_name_t, text, text_size)) == 0)) */
-  /*   return errno = ENOMEM, NULL; */
-
-  size_t size;
-  if (rare((size = struct_size(name_header_t, name.text, text_size)) == 0))
-    return errno = ENOMEM, NULL;
+  if (size < sizeof(name_header_t))
+    size = sizeof(name_header_t);
 
   name_header_t *header;
-  if ((header = malloc(size)) == NULL)
+  if ((header = engine_allocate(engine, size)) == NULL)
     return NULL;
-  header->cursor = (name_cursor_t) {0};
+  *header = (name_header_t) {0};
 
   mu_name_t *name = &header->name;
   *name = (mu_name_t) { .length = length };

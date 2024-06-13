@@ -5,10 +5,12 @@
 
 #include "common.h"
 
+/// Used to traverse a name prefix chain
 typedef struct {
   const mu_name_t *anterior;
 } name_cursor_t;
 
+/// Used to allocate a name and find the cursor
 typedef struct {
   name_cursor_t cursor;
   mu_name_t name;
