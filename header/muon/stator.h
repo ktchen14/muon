@@ -53,12 +53,6 @@ typedef enum {
   MU_VECTOR_TYPE = MU_VECTOR_TYPE_NODE,
 } mu_type_kind_t;
 
-/// An enumeration of each kind of expr
-typedef enum {
-  MU_OBJECT_EXPR = MU_OBJECT_EXPR_NODE,
-  MU_VECTOR_EXPR = MU_VECTOR_EXPR_NODE,
-} mu_expr_kind_t;
-
 /// An enumeration of each kind of stmt
 typedef enum {
   MU_CONSTANT_STMT = MU_CONSTANT_STMT_NODE,
@@ -79,17 +73,6 @@ struct mu_node_t {
   node_cursor_t cursor;
   mu_source_t source;
 };
-
-typedef struct {
-  union {
-    mu_expr_kind_t kind;
-    mu_node_t as_node;
-  };
-} mu_expr_t;
-
-typedef struct {
-  mu_expr_t as_expr;
-} mu_constant_expr_t;
 
 #define engine(stator) _Generic((stator), \
   const mu_stator_t *: (stator)->engine, \
