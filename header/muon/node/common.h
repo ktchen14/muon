@@ -4,17 +4,27 @@
 #include "../stator.h"
 #include "../status.h"
 
-/**
- * @brief An abstract node
- */
+#include <stddef.h>
+
+/// An enumeration of each kind of node
+typedef enum {
+  // Type
+  MU_RECORD_TYPE_NODE = MU_RECORD_TYPE_STATOR,
+  MU_VECTOR_TYPE_NODE = MU_VECTOR_TYPE_STATOR,
+
+  // Expr
+  MU_INTEGER_EXPR_NODE = MU_INTEGER_EXPR_STATOR,
+  MU_VECTOR_EXPR_NODE = MU_VECTOR_EXPR_STATOR,
+
+  // Stmt
+  MU_CONSTANT_STMT_NODE = MU_CONSTANT_STMT_STATOR,
+} mu_node_kind_t;
+
+/// An abstract node
 typedef struct {
   union {
-    mu_stator_t as_abstract_stator;
-
-    struct {
-      const mu_engine_t *engine;
-      mu_node_kind_t kind;
-    };
+    mu_node_kind_t kind;
+    mu_stator_t as_stator;
   };
 
   mu_source_t source;

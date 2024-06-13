@@ -30,7 +30,7 @@ const mu_name_t *mu_name(
   memcpy(name->text, text, length);
   name->text[length] = '\0';
 
-  return (mu_name_t *) engine_register(engine, &name->as_stator);
+  return engine_assign_concrete(engine, name);
 }
 
 _Thread_local char conversion[MB_LEN_MAX];

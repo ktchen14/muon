@@ -16,8 +16,11 @@ typedef struct {
   mu_name_t name;
 } name_header_t;
 
+__attribute__((const, nonnull, returns_nonnull))
 static inline name_cursor_t *name_cursor(const mu_name_t *name) {
-  return (name_cursor_t *) ((char *) name - offsetof(name_header_t, name));
+  name_header_t *header = (name_header_t *) (
+      (char *) name - offsetof(name_header_t, name));
+  return &header->cursor;
 }
 
 #endif /* MU_NAME_I */
