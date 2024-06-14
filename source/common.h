@@ -19,10 +19,9 @@ typedef mu_char8_t char8_t;
   typeof((a)) _a = (a); typeof((b)) _b = (b); _a > b ? _a : _b; })
 
 /**
- * @brief Return the allocation size that will accommodate a struct with a
- *   flexible array member of a specified length
+ * @brief Return size to allocate to hold a struct with a flexible array member
  *
- * This will return zero if the calculated size will overflow a @c size_t.
+ * This will return zero if the result will overflow a @c size_t.
  *
  * @param nought size of the struct with the flexible array member omitted
  * @param offset offset of the flexible array member into the struct
@@ -42,8 +41,7 @@ static inline size_t struct_size(
 }
 
 /**
- * @brief Return the allocation size that will accommodate a struct with a
- *   flexible array member of a specified length
+ * @brief Return size to allocate to hold a struct with a flexible array member
  *
  * This is like struct_size(), except that the allocation is specified through
  * the type name of the struct and the member name of the flexible array member
@@ -65,13 +63,24 @@ static inline size_t struct_size(
     sizeof((struct) {0}.member[0]), /* NOLINT(bugprone-sizeof-expression) */ \
     (length))
 
+/**
+ * @brief Return the size of a struct with a flexible array member
+ *
+ * This is like struct_size(), except that it can't overflow.
+ *
+ * @param nought size of the struct with the flexible array member omitted
+ * @param offset offset of the flexible array member into the struct
+ * @param size size of an element of the flexible array member
+ * @param length length of the struct's flexible array member
+ * @return the size of the struct
+ */
 __attribute__((const))
-static inline size_t safe_size(
+static inline size_t extant_size(
     size_t nought, size_t offset, size_t size, size_t length) {
   return maximum(offset + size * length, nought);
 }
 
-#define safe_size(struct, member, length) safe_size( \
+#define extant_size(struct, member, length) extant_size( \
     sizeof(struct), \
     offsetof(struct, member), \
     sizeof((struct) {0}.member[0]), /* NOLINT(bugprone-sizeof-expression) */ \
