@@ -5,7 +5,9 @@
 
 #include "common.h"
 
-__attribute__((const, nonnull))
+#include <stddef.h>
+
+__attribute__((nonnull, pure))
 static inline size_t record_expr_size(const mu_record_expr_t *expr) {
   return extant_size(mu_record_expr_t, argv, expr->argc);
 }

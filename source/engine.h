@@ -13,6 +13,7 @@ __attribute__((nonnull))
 static inline mu_stator_t *engine_assign(
     mu_engine_t *engine, mu_stator_t *stator) {
   stator->engine = engine;
+  stator->id = engine->stator_id++;
   return stator;
 }
 

@@ -5,6 +5,8 @@
 
 #include "common.h"
 
+#include <stddef.h>
+
 __attribute__((const, nonnull))
 static inline size_t member_expr_size(const mu_member_expr_t *expr) {
   return sizeof(mu_member_expr_t);
