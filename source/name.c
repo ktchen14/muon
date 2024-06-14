@@ -21,7 +21,7 @@ const mu_name_t *mu_name(
     size = sizeof(name_header_t);
 
   name_header_t *header;
-  if ((header = engine_allocate(engine, size)) == NULL)
+  if ((header = stator_allocate(engine, size)) == NULL)
     return NULL;
   *header = (name_header_t) {0};
 
