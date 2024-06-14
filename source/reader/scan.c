@@ -10,18 +10,9 @@
 
 /*!conditions:re2c*/
 
+#include "scan.h"
+
 #define YYCTYPE char8_t
-
-typedef struct {
-  size_t offset, line, column;
-} cursor_t;
-
-typedef struct {
-  cursor_t cursor;  ///< location of the active character
-  cursor_t symbol;  ///< location of the active symbol
-  cursor_t marker;
-  enum YYCONDTYPE condition;
-} scan_t;
 
 /// Scan and return the next symbol in the @a buffer
 static yytoken_kind_t scan_next(

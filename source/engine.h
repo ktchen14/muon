@@ -1,7 +1,7 @@
 #ifndef MU_ENGINE_I
 #define MU_ENGINE_I
 
-#include <muon/engine.h>
+#include <muon/engine.h>  // IWYU pragma: export
 
 #include "common.h"
 #include "stator.h"

@@ -2,9 +2,10 @@
 
 #include "../common.h"
 #include "../engine.h"
+#include "../name.h"
 
 #include <assert.h>
-#include <string.h>
+#include <stddef.h>
 
 const mu_access_expr_t *mu_access_expr(
     mu_engine_t *engine, const mu_name_t *name) {
@@ -16,7 +17,7 @@ const mu_access_expr_t *mu_access_expr(
   if ((result = node_allocate(engine, size)) == NULL)
     return NULL;
   *result = (mu_access_expr_t) {
-    .as_expr.kind = MU_MEMBER_EXPR, .name = name,
+    .as_expr.kind = MU_ACCESS_EXPR, .name = name,
   };
   return engine_assign_concrete(engine, result);
 }

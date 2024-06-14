@@ -2,8 +2,10 @@
 
 #include "../common.h"
 #include "../engine.h"
+#include "../name.h"
 
 #include <assert.h>
+#include <stddef.h>
 
 const mu_member_expr_t *mu_member_expr(
     mu_engine_t *engine, const mu_name_t *name, const mu_expr_t *matter) {
