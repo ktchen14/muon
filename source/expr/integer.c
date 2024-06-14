@@ -9,6 +9,8 @@ const mu_integer_expr_t *mu_integer_expr(mu_engine_t *engine, uint64_t data) {
   mu_integer_expr_t *result;
   if (rare((result = node_allocate(engine, size)) == NULL))
     return NULL;
-  *result = (mu_integer_expr_t) { .data = data };
+  *result = (mu_integer_expr_t) {
+    .as_expr.kind = MU_INTEGER_EXPR, .data = data
+  };
   return engine_assign_concrete(engine, result);
 }

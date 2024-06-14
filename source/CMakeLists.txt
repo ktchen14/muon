@@ -5,7 +5,10 @@ add_subdirectory(reader)
 add_executable(muon
   main.c
   name.c
+  expr/access.c
   expr/integer.c
+  expr/member.c
+  expr/record.c
   expr/vector.c
   stmt/constant.c
   $<TARGET_OBJECTS:reader>

@@ -19,6 +19,8 @@ typedef enum {
 
   // Expr
   MU_INTEGER_EXPR_STATOR,
+  MU_MEMBER_EXPR_STATOR,
+  MU_RECORD_EXPR_STATOR,
   MU_VECTOR_EXPR_STATOR,
 
   // Stmt

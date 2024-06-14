@@ -6,6 +6,8 @@
 /// An enumeration of each kind of expr
 typedef enum {
   MU_INTEGER_EXPR = MU_INTEGER_EXPR_NODE,
+  MU_MEMBER_EXPR = MU_MEMBER_EXPR_NODE,
+  MU_RECORD_EXPR = MU_RECORD_EXPR_NODE,
   MU_VECTOR_EXPR = MU_VECTOR_EXPR_NODE,
 } mu_expr_kind_t;
 
