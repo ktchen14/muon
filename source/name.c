@@ -1,5 +1,6 @@
 #include "name.h"
 
+#include "common.h"
 #include "engine.h"
 
 #include <assert.h>
@@ -13,7 +14,7 @@
 size_t c8rtomb(char *restrict s, char8_t c8, mbstate_t *restrict ps);
 
 const mu_name_t *mu_name(
-    mu_engine_t *engine, size_t length, const mu_char8_t text[restrict length]) {
+    mu_engine_t *engine, size_t length, const char8_t text[restrict length]) {
   size_t size = offsetof(name_header_t, name.text) + 1;
   if (rare(__builtin_add_overflow(size, length, &size)))
     return errno = ENOMEM, NULL;
