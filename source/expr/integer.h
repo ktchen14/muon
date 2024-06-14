@@ -5,4 +5,11 @@
 
 #include "common.h"
 
+#include <stddef.h>
+
+__attribute__((const, nonnull))
+static inline size_t integer_expr_size(const mu_integer_expr_t *expr) {
+  return sizeof(mu_integer_expr_t);
+}
+
 #endif /* MU_EXPR_INTEGER_I */

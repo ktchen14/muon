@@ -10,6 +10,14 @@ typedef mu_char8_t char8_t;
 #define common(...) __builtin_expect((__VA_ARGS__), 1)
 #define rare(...)   __builtin_expect((__VA_ARGS__), 0)
 
+/// Return the minimum of @a a and @a b
+#define minimum(a, b) ({ \
+  typeof((a)) _a = (a); typeof((b)) _b = (b); _a < b ? _a : _b; })
+
+/// Return the maximum of @a a and @a b
+#define maximum(a, b) ({ \
+  typeof((a)) _a = (a); typeof((b)) _b = (b); _a > b ? _a : _b; })
+
 /**
  * @brief Return the allocation size that will accommodate a struct with a
  *   flexible array member of a specified length
@@ -30,7 +38,7 @@ static inline size_t struct_size(
     return 0;
   if (rare(__builtin_add_overflow(result, offset, &result)))
     return 0;
-  return result > nought ? result : nought;
+  return maximum(result, nought);
 }
 
 /**
@@ -52,7 +60,21 @@ static inline size_t struct_size(
  * @return the size of the struct, or zero if it will overflow a @c size_t
  */
 #define struct_size(struct, member, length) struct_size( \
-    sizeof(struct), offsetof(struct, member), sizeof((struct) {0}.member[0]), \
+    sizeof(struct), \
+    offsetof(struct, member), \
+    sizeof((struct) {0}.member[0]), /* NOLINT(bugprone-sizeof-expression) */ \
+    (length))
+
+__attribute__((const))
+static inline size_t safe_size(
+    size_t nought, size_t offset, size_t size, size_t length) {
+  return maximum(offset + size * length, nought);
+}
+
+#define safe_size(struct, member, length) safe_size( \
+    sizeof(struct), \
+    offsetof(struct, member), \
+    sizeof((struct) {0}.member[0]), /* NOLINT(bugprone-sizeof-expression) */ \
     (length))
 
 #endif /* MU_COMMON_I */
