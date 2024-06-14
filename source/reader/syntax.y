@@ -4,6 +4,7 @@
 #include <muon/common.h>
 #include <muon/status.h>
 #include <muon/name.h>
+#include <muon/expr.h>
 }
 
 %define api.location.type { mu_source_t }
@@ -19,6 +20,8 @@
     const mu_char8_t *c;
     size_t length;
   } text;
+
+  const mu_integer_expr_t *integer_expr;
 }
 
 %token CONSTANT "constant"
@@ -31,6 +34,7 @@
 %token <text>    NAME
 
 %type <text> name
+%type <integer_expr> integer_expr
 
 %{
 #include <assert.h>
@@ -59,11 +63,24 @@ void yyerror(YYLTYPE *yylloc, char const *s) {
 
 %%
 
-script: expr
+script: constant_stmt {
+}
+
+constant_stmt: "constant" _ name _ '=' _ expr {
+}
+
+// ================================== Expr =====================================
 
 expr: name
 
-name: NAME {
+integer_expr: INTEGER {
+  $$ = mu_integer_expr(engine, $1.integer);
 }
+
+name: NAME {
+  $$ = mu_name(engine, $1.length, $1.c);
+}
+
+_: ' '
 
 %%
