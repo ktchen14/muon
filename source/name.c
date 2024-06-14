@@ -2,10 +2,12 @@
 
 #include "common.h"
 #include "engine.h"
+#include "stator.h"
 
 #include <assert.h>
 #include <errno.h>
 #include <limits.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 #include <uchar.h>

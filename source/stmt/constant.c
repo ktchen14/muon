@@ -2,6 +2,7 @@
 
 #include "../common.h"
 #include "../engine.h"
+#include "../name.h"
 
 #include <string.h>
 

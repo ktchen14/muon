@@ -1,7 +1,7 @@
 #ifndef MUON_H
 #define MUON_H
 
-#include "muon/common.h"
+#include "muon/common.h"  // IWYU pragma: export
 #include "muon/engine.h"  // IWYU pragma: export
 #include "muon/expr.h"    // IWYU pragma: export
 #include "muon/name.h"    // IWYU pragma: export

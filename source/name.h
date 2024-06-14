@@ -5,6 +5,8 @@
 
 #include "common.h"
 
+#include <stddef.h>
+
 /// Used to traverse a name prefix chain
 typedef struct {
   const mu_name_t *anterior;
