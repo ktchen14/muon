@@ -11,6 +11,7 @@
 %define api.pure full
 %define api.push-pull push
 %locations
+%parse-param { mu_engine_t *engine }
 
 %union {
   long long integer;
@@ -21,6 +22,7 @@
     size_t length;
   } text;
 
+  const mu_name_t *name;
   const mu_integer_expr_t *integer_expr;
 }
 
@@ -33,8 +35,9 @@
 %token <text>    STRING
 %token <text>    NAME
 
-%type <text> name
+%type <name> name
 %type <integer_expr> integer_expr
+%start script
 
 %{
 #include <assert.h>
@@ -56,7 +59,7 @@
     (result) = YYRHSLOC((argv), 0); \
 } while (0)
 
-void yyerror(YYLTYPE *yylloc, char const *s) {
+void yyerror(YYLTYPE *yylloc, mu_engine_t *engine, char const *s) {
   fprintf(stderr, "%s\n", s);
 }
 %}
@@ -71,10 +74,10 @@ constant_stmt: "constant" _ name _ '=' _ expr {
 
 // ================================== Expr =====================================
 
-expr: name
+expr: integer_expr
 
 integer_expr: INTEGER {
-  $$ = mu_integer_expr(engine, $1.integer);
+  $$ = mu_integer_expr(engine, $1, &@$);
 }
 
 name: NAME {

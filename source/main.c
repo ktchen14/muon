@@ -11,7 +11,7 @@ int main(int argc, char *argv[]) {
   if ((name = mu_name(&engine, 4, (char8_t *) "asdf")) == NULL)
     return EXIT_FAILURE;
 
-  const mu_integer_expr_t *integer_expr = mu_integer_expr(&engine, 1);
+  const mu_integer_expr_t *integer_expr = mu_integer_expr(&engine, 1, NULL);
   if (integer_expr == NULL)
     return EXIT_FAILURE;
 
