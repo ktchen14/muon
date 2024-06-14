@@ -12,6 +12,6 @@ typedef struct {
 
 const mu_access_expr_t *mu_access_expr(
     mu_engine_t *engine, const mu_name_t *name)
-  __attribute__((nonnull));
+  __attribute__((malloc, nonnull));
 
 #endif /* MU_EXPR_ACCESS_H */

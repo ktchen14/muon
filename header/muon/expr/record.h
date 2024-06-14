@@ -15,6 +15,6 @@ typedef struct {
 
 const mu_record_expr_t *mu_record_expr(
     mu_engine_t *engine, size_t argc, const mu_expr_t *argv[argc])
-  __attribute__((nonnull(1)));
+  __attribute__((malloc, nonnull(1)));
 
 #endif /* MU_EXPR_RECORD_H */

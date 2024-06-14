@@ -12,6 +12,6 @@ typedef struct {
 } mu_integer_expr_t;
 
 const mu_integer_expr_t *mu_integer_expr(mu_engine_t *engine, uint64_t data)
-  __attribute__((nonnull));
+  __attribute__((malloc, nonnull));
 
 #endif /* MU_EXPR_INTEGER_H */
