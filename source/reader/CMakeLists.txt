@@ -1,10 +1,11 @@
-find_package(BISON REQUIRED)
+find_package(BISON 3.8.0 REQUIRED)
+find_package(RE2C 3.0.0 REQUIRED)
 
 BISON_TARGET(SYNTAX syntax.y syntax.c DEFINES_FILE syntax.h)
 
 add_custom_command(
   OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/scan.c"
-  COMMAND re2c ARGS
+  COMMAND "${RE2C_EXECUTABLE}" ARGS
     "${CMAKE_CURRENT_SOURCE_DIR}/scan.c"
     --output "${CMAKE_CURRENT_BINARY_DIR}/scan.c"
     --depfile "${CMAKE_CURRENT_BINARY_DIR}/scan.d"
