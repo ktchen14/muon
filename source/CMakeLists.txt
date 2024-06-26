@@ -2,8 +2,7 @@ add_subdirectory(reader)
 
 # check_function_exists("c8rtomb" FUNCTION_C8RTOMB)
 
-add_executable(muon
-  main.c
+add_library(muon
   name.c
   expr/access.c
   expr/integer.c
@@ -18,6 +17,8 @@ add_executable(muon
   stmt/constant.c
   $<TARGET_OBJECTS:reader>
 )
+
+add_executable(muon-main main.c)
 
 target_include_directories(
   muon PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../header")
