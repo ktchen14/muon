@@ -7,6 +7,7 @@
 #include "../common.h"
 #include "../expr.h"
 #include "../name.h"
+#include "../script.h"
 #include "../sign.h"
 #include "../stmt.h"
 }
@@ -28,6 +29,8 @@
     const mu_char8_t *c;
     size_t length;
   } text;
+
+  mu_script_t *script;
 
   const mu_name_t *name;
 
@@ -53,6 +56,8 @@
 %token <boolean> BOOLEAN_LITERAL
 %token <text>    STRING
 %token <text>    NAME
+
+%type <script> script
 
 %type <name> name
 
@@ -93,10 +98,12 @@
 static void yyerror(YYLTYPE *yylloc, mu_engine_t *engine, char const *s);
 %}
 
+// ================================= Script =============================== {{{1
+
 %%
 
-script: {
-} | script stmt {
+script: stmt {
+  $$ = mu_script(1, &$stmt);
 }
 
 // ================================== Expr ================================ {{{1
@@ -157,4 +164,4 @@ static void yyerror(YYLTYPE *yylloc, mu_engine_t *engine, char const *s) {
   fprintf(stderr, "%s\n", s);
 }
 
-// vim: set foldlevel=0 foldmethod=marker:
+// vim: set foldlevel=1 foldmethod=marker:
