@@ -152,7 +152,7 @@ stmt:
   constant_stmt { $$ = &$constant_stmt->as_stmt; }
 
 constant_stmt: "constant" _ name _ sign _ '=' _ expr '\n' {
-  $$ = mu_constant_stmt(syntax->engine, $name, $expr);
+  $$ = mu_constant_stmt(syntax->engine, $name, $expr, $sign);
 }
 
 // ============================= Miscellaneous ============================ {{{1

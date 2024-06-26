@@ -20,8 +20,10 @@ target_sources(muon PRIVATE
   expr/vector.c
   expr/zero.c
 
+  sign.c
   sign/integer.c
   sign/member.c
+  sign/name.c
   sign/record.c
   sign/vector.c
 

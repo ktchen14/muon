@@ -19,4 +19,7 @@ const mu_member_sign_t *mu_member_sign(
     const mu_source_t *source)
   __attribute__((malloc, nonnull(1, 2, 3)));
 
+void mu_member_sign_debug(const mu_member_sign_t *sign)
+  __attribute__((nonnull));
+
 #endif /* MU_SIGN_MEMBER_H */

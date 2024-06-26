@@ -1,6 +1,7 @@
 #ifndef MU_EXPR_H
 #define MU_EXPR_H
 
+#include "expr/common.h"   // IWYU pragma: export
 #include "expr/access.h"   // IWYU pragma: export
 #include "expr/integer.h"  // IWYU pragma: export
 #include "expr/member.h"   // IWYU pragma: export

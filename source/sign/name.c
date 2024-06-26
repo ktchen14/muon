@@ -1,12 +1,12 @@
 #include "name.h"
 
-#include "../common.h"
 #include "../engine.h"
 #include "../name.h"
 #include "../status.h"
 
 #include <assert.h>
 #include <stddef.h>
+#include <stdio.h>
 
 const mu_name_sign_t *mu_name_sign(
     mu_engine_t *engine, const mu_name_t *name, const mu_source_t *source) {
@@ -25,4 +25,11 @@ const mu_name_sign_t *mu_name_sign(
     result->as_node.source = *source;
 
   return engine_assign_concrete(engine, result);
+}
+
+void mu_name_sign_debug(const mu_name_sign_t *sign) {
+  fprintf(stderr, "%*s", debug_indent, "");
+  fprintf(stderr, "Name Sign #%zu: ", sign->as_stator.id);
+  mu_name_debug(sign->name);
+  putc('\n', stderr);
 }

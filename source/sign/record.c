@@ -1,12 +1,13 @@
 #include "record.h"
 
-#include "../common.h"
 #include "../engine.h"
+#include "../sign.h"
 #include "../status.h"
 
 #include <assert.h>
 #include <errno.h>
 #include <stddef.h>
+#include <stdio.h>
 #include <string.h>
 
 const mu_record_sign_t *mu_record_sign(
@@ -33,4 +34,14 @@ const mu_record_sign_t *mu_record_sign(
     result->as_node.source = *source;
 
   return engine_assign_concrete(engine, result);
+}
+
+void mu_record_sign_debug(const mu_record_sign_t *sign) {
+  fprintf(stderr, "%*s", debug_indent, "");
+  fprintf(stderr, "Record Sign #%zu:\n", sign->as_stator.id);
+
+  WITH_DEBUG_INDENT() {
+    for (size_t i = 0; i < sign->argc; i++)
+      mu_sign_debug(sign->argv[i]);
+  }
 }

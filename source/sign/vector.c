@@ -1,11 +1,12 @@
 #include "vector.h"
 
-#include "../common.h"
 #include "../engine.h"
+#include "../sign.h"
 #include "../status.h"
 
 #include <assert.h>
 #include <stddef.h>
+#include <stdio.h>
 #include <string.h>
 
 const mu_vector_sign_t *mu_vector_sign(
@@ -25,4 +26,11 @@ const mu_vector_sign_t *mu_vector_sign(
     result->as_node.source = *source;
 
   return engine_assign_concrete(engine, result);
+}
+
+void mu_vector_sign_debug(const mu_vector_sign_t *sign) {
+  fprintf(stderr, "%*s", debug_indent, "");
+  fprintf(stderr, "Vector Sign #%zu:\n", sign->as_stator.id);
+
+  WITH_DEBUG_INDENT() { mu_sign_debug(sign->matter); }
 }

@@ -3,6 +3,7 @@
 #include "../engine.h"
 #include "../expr.h"
 #include "../name.h"
+#include "../sign.h"
 
 #include <assert.h>
 #include <stddef.h>
@@ -10,9 +11,13 @@
 #include <string.h>
 
 const mu_constant_stmt_t *mu_constant_stmt(
-    mu_engine_t *engine, const mu_name_t *name, const mu_expr_t *expr) {
+    mu_engine_t *engine,
+    const mu_name_t *name,
+    const mu_expr_t *expr,
+    const mu_sign_t *sign) {
   assert(name->as_stator.engine == engine);
   assert(expr->as_stator.engine == engine);
+  assert(sign == NULL || sign->as_stator.engine == engine);
 
   size_t size = sizeof(mu_constant_stmt_t);
 
@@ -20,7 +25,10 @@ const mu_constant_stmt_t *mu_constant_stmt(
   if ((result = node_allocate(engine, size)) == NULL)
     return NULL;
   *result = (mu_constant_stmt_t) {
-    .as_stmt.kind = MU_CONSTANT_STMT, .name = name, .expr = expr,
+    .as_stmt.kind = MU_CONSTANT_STMT,
+    .name = name,
+    .expr = expr,
+    .sign = sign,
   };
 
   return engine_assign_concrete(engine, result);
@@ -32,5 +40,9 @@ void mu_constant_stmt_debug(const mu_constant_stmt_t *stmt) {
   mu_name_debug(stmt->name);
   putc('\n', stderr);
 
-  WITH_DEBUG_INDENT() { mu_expr_debug(stmt->expr); }
+  WITH_DEBUG_INDENT() {
+    mu_expr_debug(stmt->expr);
+    if (stmt->sign != NULL)
+      mu_sign_debug(stmt->sign);
+  }
 }

@@ -1,12 +1,13 @@
 #include "member.h"
 
-#include "../common.h"
 #include "../engine.h"
 #include "../name.h"
+#include "../sign.h"
 #include "../status.h"
 
 #include <assert.h>
 #include <stddef.h>
+#include <stdio.h>
 
 const mu_member_sign_t *mu_member_sign(
     mu_engine_t *engine,
@@ -29,4 +30,13 @@ const mu_member_sign_t *mu_member_sign(
     result->as_node.source = *source;
 
   return engine_assign_concrete(engine, result);
+}
+
+void mu_member_sign_debug(const mu_member_sign_t *sign) {
+  fprintf(stderr, "%*s", debug_indent, "");
+  fprintf(stderr, "Member Sign #%zu: ", sign->as_stator.id);
+  mu_name_debug(sign->name);
+  putc('\n', stderr);
+
+  WITH_DEBUG_INDENT() { mu_sign_debug(sign->matter); }
 }

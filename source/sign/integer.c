@@ -1,10 +1,10 @@
 #include "integer.h"
 
-#include "../common.h"
 #include "../engine.h"
 #include "../status.h"
 
 #include <stddef.h>
+#include <stdio.h>
 
 const mu_integer_sign_t *mu_integer_sign(
     mu_engine_t *engine, const mu_source_t *source) {
@@ -21,4 +21,9 @@ const mu_integer_sign_t *mu_integer_sign(
     result->as_node.source = *source;
 
   return engine_assign_concrete(engine, result);
+}
+
+void mu_integer_sign_debug(const mu_integer_sign_t *sign) {
+  fprintf(stderr, "%*s", debug_indent, "");
+  fprintf(stderr, "Integer Sign #%zu\n", sign->as_stator.id);
 }

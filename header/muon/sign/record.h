@@ -21,4 +21,7 @@ const mu_record_sign_t *mu_record_sign(
     const mu_source_t *source)
   __attribute__((malloc, nonnull(1)));
 
+void mu_record_sign_debug(const mu_record_sign_t *sign)
+  __attribute__((nonnull));
+
 #endif /* MU_SIGN_RECORD_H */
