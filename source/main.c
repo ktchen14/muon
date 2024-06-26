@@ -5,7 +5,7 @@
 
 #include <stdlib.h>
 
-const char muon[] = "constant x Integer = 1\n";
+const char muon[] = "constant x [Integer] = 1\n";
 
 int main(int argc, char *argv[]) {
   mu_engine_t engine = {0};

@@ -11,6 +11,8 @@ stop = [\x00];
 <normal> stop               { break; }
 
 <normal> "="                { return '='; }
+<normal> "["                { return '['; }
+<normal> "]"                { return ']'; }
 
 // ================================ Keyword ====================================
 
