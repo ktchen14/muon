@@ -15,22 +15,22 @@ stop = [\x00];
 <normal> "constant" { return CONSTANT; }
 <normal> "instance" { return INSTANCE; }
 <normal> "type"     { return TYPE; }
-<normal> "Integer"  { return INTEGER_KW; }
+<normal> "Integer"  { return INTEGER; }
 
 // ================================ Boolean ====================================
 
 <normal> "true" {
-  return yylval->boolean = 1, BOOLEAN;
+  return yylval->boolean = 1, BOOLEAN_LITERAL;
 }
 
 <normal> "false" {
-  return yylval->boolean = 0, BOOLEAN;
+  return yylval->boolean = 0, BOOLEAN_LITERAL;
 }
 
 // ================================ Integer ====================================
 
 <normal> "0" {
-  return yylval->integer = 0, INTEGER;
+  return yylval->integer = 0, INTEGER_LITERAL;
 }
 
 <normal> [1-9][0-9]* {
@@ -39,7 +39,7 @@ stop = [\x00];
   text[19] = '\0';
   long long i = strtoll(text, NULL, 10);
 
-  return yylval->integer = i, INTEGER;
+  return yylval->integer = i, INTEGER_LITERAL;
 }
 
 // ================================= String ====================================

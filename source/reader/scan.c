@@ -146,11 +146,11 @@ static void symbol_debug(
       fputs("NAME ", stdout);
       fwrite(yylval->text.c, yylval->text.length, 1, stdout);
       break;
-    case BOOLEAN:
-      printf("BOOLEAN %s", yylval->boolean ? "true" : "false");
+    case BOOLEAN_LITERAL:
+      printf("BOOLEAN LITERAL %s", yylval->boolean ? "true" : "false");
       break;
-    case INTEGER:
-      printf("INTEGER %lli", yylval->integer);
+    case INTEGER_LITERAL:
+      printf("INTEGER LITERAL %lli", yylval->integer);
       break;
     case STRING:
       printf("STRING \"");

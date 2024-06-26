@@ -1,5 +1,7 @@
 %require "3.8.0"
 
+// ================================ Prologue ============================== {{{1
+
 %code requires {
 #include <muon/status.h>
 #include "../common.h"
@@ -14,6 +16,9 @@
 %define api.push-pull push
 %locations
 %parse-param { mu_engine_t *engine }
+%start script
+
+// ============================== Declaration ============================= {{{1
 
 %union {
   long long integer;
@@ -24,46 +29,46 @@
     size_t length;
   } text;
 
-  const mu_expr_t *expr;
   const mu_name_t *name;
-  const mu_sign_t *sign;
-  const mu_stmt_t *stmt;
 
+  const mu_expr_t *expr;
   const mu_access_expr_t *access_expr;
   const mu_integer_expr_t *integer_expr;
   const mu_vector_expr_t *vector_expr;
 
+  const mu_sign_t *sign;
   const mu_integer_sign_t *integer_sign;
   const mu_vector_sign_t *vector_sign;
 
+  const mu_stmt_t *stmt;
   const mu_constant_stmt_t *constant_stmt;
 }
 
 %token CONSTANT "constant"
 %token INSTANCE "instance"
 %token TYPE "type"
-%token INTEGER_KW "Integer"
+%token INTEGER "Integer"
 
-%token <integer> INTEGER
-%token <boolean> BOOLEAN
+%token <integer> INTEGER_LITERAL
+%token <boolean> BOOLEAN_LITERAL
 %token <text>    STRING
 %token <text>    NAME
 
-%type <expr> expr
 %type <name> name
-%type <sign> sign
-%type <stmt> stmt
 
+%type <expr> expr
 %type <access_expr> access_expr
 %type <integer_expr> integer_expr
 %type <vector_expr> vector_expr
 
+%type <sign> sign
 %type <integer_sign> integer_sign
 %type <vector_sign> vector_sign
 
+%type <stmt> stmt
 %type <constant_stmt> constant_stmt
 
-%start script
+// ========================= YYLLOC_DEFAULT/yyerror ======================= {{{1
 
 %{
 #include <assert.h>
@@ -105,7 +110,7 @@ access_expr: expr '.' name {
   $$ = mu_access_expr(engine, $name, $expr, &@$);
 }
 
-integer_expr: INTEGER {
+integer_expr: INTEGER_LITERAL {
   $$ = mu_integer_expr(engine, $1, &@$);
 }
 
