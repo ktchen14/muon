@@ -15,6 +15,7 @@ target_sources(muon PRIVATE
   expr/access.c
   expr/integer.c
   expr/member.c
+  expr/name.c
   expr/record.c
   expr/vector.c
   expr/zero.c

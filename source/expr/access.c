@@ -14,6 +14,7 @@ const mu_access_expr_t *mu_access_expr(
     const mu_expr_t *matter,
     const mu_source_t *source) {
   assert(name->as_stator.engine == engine);
+  assert(matter->as_stator.engine == engine);
 
   size_t size = sizeof(mu_access_expr_t);
 
@@ -21,7 +22,7 @@ const mu_access_expr_t *mu_access_expr(
   if ((result = node_allocate(engine, size)) == NULL)
     return NULL;
   *result = (mu_access_expr_t) {
-    .as_expr.kind = MU_ACCESS_EXPR, .name = name,
+    .as_expr.kind = MU_ACCESS_EXPR, .name = name, .matter = matter,
   };
 
   if (source != NULL)

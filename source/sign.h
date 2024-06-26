@@ -5,6 +5,7 @@
 
 #include "sign/integer.h"  // IWYU pragma: export
 #include "sign/member.h"   // IWYU pragma: export
+#include "sign/name.h"     // IWYU pragma: export
 #include "sign/record.h"   // IWYU pragma: export
 #include "sign/vector.h"   // IWYU pragma: export
 

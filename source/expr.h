@@ -6,6 +6,7 @@
 #include "expr/access.h"   // IWYU pragma: export
 #include "expr/integer.h"  // IWYU pragma: export
 #include "expr/member.h"   // IWYU pragma: export
+#include "expr/name.h"     // IWYU pragma: export
 #include "expr/record.h"   // IWYU pragma: export
 #include "expr/vector.h"   // IWYU pragma: export
 #include "expr/zero.h"     // IWYU pragma: export

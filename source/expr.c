@@ -11,6 +11,9 @@ void mu_expr_debug(const mu_expr_t *expr) {
     case MU_MEMBER_EXPR:
       return mu_member_expr_debug((const mu_member_expr_t *) expr);
 
+    case MU_NAME_EXPR:
+      return mu_name_expr_debug((const mu_name_expr_t *) expr);
+
     case MU_RECORD_EXPR:
       return mu_record_expr_debug((const mu_record_expr_t *) expr);
 
