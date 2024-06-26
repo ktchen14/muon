@@ -12,6 +12,6 @@ typedef struct {
 
 const mu_vector_sign_t *mu_vector_sign(
     mu_engine_t *engine, const mu_sign_t *matter, const mu_source_t *source)
-  __attribute__((malloc, nonnull));
+  __attribute__((malloc, nonnull(1, 2)));
 
 #endif /* MU_SIGN_VECTOR_H */

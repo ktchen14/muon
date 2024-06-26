@@ -17,6 +17,6 @@ const mu_member_sign_t *mu_member_sign(
     const mu_name_t *name,
     const mu_sign_t *matter,
     const mu_source_t *source)
-  __attribute__((malloc, nonnull));
+  __attribute__((malloc, nonnull(1, 2, 3)));
 
 #endif /* MU_SIGN_MEMBER_H */

@@ -10,6 +10,11 @@ add_executable(muon
   expr/member.c
   expr/record.c
   expr/vector.c
+  expr/zero.c
+  sign/integer.c
+  sign/member.c
+  sign/record.c
+  sign/vector.c
   stmt/constant.c
   $<TARGET_OBJECTS:reader>
 )
