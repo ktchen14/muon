@@ -15,6 +15,7 @@ stop = [\x00];
 <normal> "constant" { return CONSTANT; }
 <normal> "instance" { return INSTANCE; }
 <normal> "type"     { return TYPE; }
+<normal> "Integer"  { return INTEGER_KW; }
 
 // ================================ Boolean ====================================
 
