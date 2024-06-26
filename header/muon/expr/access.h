@@ -8,10 +8,14 @@ typedef struct {
   MU_EXPR_HEADER;
 
   const mu_name_t *name;
+  const mu_expr_t *matter;
 } mu_access_expr_t;
 
 const mu_access_expr_t *mu_access_expr(
-    mu_engine_t *engine, const mu_name_t *name)
-  __attribute__((malloc, nonnull));
+    mu_engine_t *engine,
+    const mu_name_t *name,
+    const mu_expr_t *matter,
+    const mu_source_t *source)
+  __attribute__((malloc, nonnull(1, 2, 3)));
 
 #endif /* MU_EXPR_ACCESS_H */

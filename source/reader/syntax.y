@@ -23,6 +23,9 @@
   } text;
 
   const mu_name_t *name;
+  const mu_expr_t *expr;
+
+  const mu_access_expr_t *access_expr;
   const mu_integer_expr_t *integer_expr;
 }
 
@@ -36,7 +39,11 @@
 %token <text>    NAME
 
 %type <name> name
+%type <expr> expr
+
+%type <access_expr> access_expr
 %type <integer_expr> integer_expr
+
 %start script
 
 %{
@@ -66,19 +73,30 @@ void yyerror(YYLTYPE *yylloc, mu_engine_t *engine, char const *s) {
 
 %%
 
-script: constant_stmt {
+script: {
+} | script stmt {
 }
 
-constant_stmt: "constant" _ name _ '=' _ expr {
+stmt: constant_stmt
+
+constant_stmt: "constant" _ name _ '=' _ expr '\n' {
 }
 
 // ================================== Expr =====================================
 
-expr: integer_expr
+expr: '(' expr ')' { $$ = $2; } |
+  access_expr  { $$ = &$access_expr->as_expr; } |
+  integer_expr { $$ = &$integer_expr->as_expr; }
+
+access_expr: expr '.' name {
+  $$ = mu_access_expr(engine, $name, $expr, &@$);
+}
 
 integer_expr: INTEGER {
   $$ = mu_integer_expr(engine, $1, &@$);
 }
+
+// ================================== Name =====================================
 
 name: NAME {
   $$ = mu_name(engine, $1.length, $1.c);

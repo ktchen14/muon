@@ -9,7 +9,7 @@ project("Muon" VERSION "${PROJECT_VERSION}"
   LANGUAGES C
 )
 
-add_compile_options(-Wall -Wextra -Wno-unused-parameter)
+add_compile_options(-Werror -Wall -Wextra -Wno-unused-parameter)
 
 add_subdirectory(source)
 
