@@ -19,12 +19,15 @@ const mu_constant_stmt_t *mu_constant_stmt(
   mu_constant_stmt_t *result;
   if ((result = node_allocate(engine, size)) == NULL)
     return NULL;
-  *result = (mu_constant_stmt_t) {.name = name, .expr = expr};
+  *result = (mu_constant_stmt_t) {
+    .as_stmt.kind = MU_CONSTANT_STMT, .name = name, .expr = expr,
+  };
 
   return engine_assign_concrete(engine, result);
 }
 
 void mu_constant_stmt_debug(const mu_constant_stmt_t *stmt) {
+  fprintf(stderr, "%*s", debug_indent, "");
   fprintf(stderr, "Constant Stmt #%zu: ", stmt->as_stator.id);
   mu_name_debug(stmt->name);
   putc('\n', stderr);

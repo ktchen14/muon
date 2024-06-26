@@ -30,6 +30,7 @@ const mu_record_expr_t *mu_record_expr(
 }
 
 void mu_record_expr_debug(const mu_record_expr_t *expr) {
+  fprintf(stderr, "%*s", debug_indent, "");
   fprintf(stderr, "Record Expr #%zu:\n", expr->as_stator.id);
 
   WITH_DEBUG_INDENT() {

@@ -25,6 +25,7 @@ const mu_member_expr_t *mu_member_expr(
 }
 
 void mu_member_expr_debug(const mu_member_expr_t *expr) {
+  fprintf(stderr, "%*s", debug_indent, "");
   fprintf(stderr, "Member Expr #%zu: ", expr->as_stator.id);
   mu_name_debug(expr->name);
   putc('\n', stderr);

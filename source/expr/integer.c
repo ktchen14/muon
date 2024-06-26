@@ -27,6 +27,7 @@ const mu_integer_expr_t *mu_integer_expr(
 }
 
 void mu_integer_expr_debug(const mu_integer_expr_t *expr) {
+  fprintf(stderr, "%*s", debug_indent, "");
   fprintf(stderr, "Integer Expr #%zu: %" PRIu64 "\n",
     expr->as_stator.id, expr->data);
 }

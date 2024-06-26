@@ -10,6 +10,8 @@ stop = [\x00];
 <normal> [\n\r]+ [ \t\n\r]* { return '\n'; }
 <normal> stop               { break; }
 
+<normal> "="                { return '='; }
+
 // ================================ Keyword ====================================
 
 <normal> "constant" { return CONSTANT; }

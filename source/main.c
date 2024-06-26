@@ -1,21 +1,18 @@
-#include "muon/engine.h"
-#include "name.h"
-#include "expr.h"
+#include <muon.h>
+#include "reader.h"
+#include "script.h"
+#include "status.h"
 
 #include <stdlib.h>
 
-const char muon[] = "constant x = 1\n";
+const char muon[] = "constant x Integer = 1\n";
 
 int main(int argc, char *argv[]) {
   mu_engine_t engine = {0};
+  mu_status_t status = {0};
 
-  const mu_name_t *name;
-  if ((name = mu_name(&engine, 4, (char8_t *) "asdf")) == NULL)
-    return EXIT_FAILURE;
-
-  const mu_integer_expr_t *integer_expr = mu_integer_expr(&engine, 1, NULL);
-  if (integer_expr == NULL)
-    return EXIT_FAILURE;
+  mu_script_t *script = mu_read_script(&engine, &status, muon);
+  mu_script_debug(script);
 
   return EXIT_SUCCESS;
 }

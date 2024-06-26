@@ -30,6 +30,7 @@ const mu_vector_expr_t *mu_vector_expr(
 }
 
 void mu_vector_expr_debug(const mu_vector_expr_t *expr) {
+  fprintf(stderr, "%*s", debug_indent, "");
   fprintf(stderr, "Vector Expr #%zu:\n", expr->as_stator.id);
 
   WITH_DEBUG_INDENT() {

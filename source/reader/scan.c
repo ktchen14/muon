@@ -1,9 +1,11 @@
 #include "syntax.h"
 
 #include "../common.h"
+#include "../script.h"
 #include "../status.h"
 
 #include <assert.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -173,3 +175,61 @@ static void symbol_debug(
 
   printf("\n");
 }
+
+
+
+
+
+mu_script_t *mu_read_script(
+    mu_engine_t *engine, mu_status_t *status, const char8_t *string) {
+  syntax_t syntax = { .engine = engine };
+  scan_t scan = {0};
+
+  // Initialize the Bison parser
+  yypstate *pstate;
+  if ((pstate = yypstate_new()) == 0) {
+    errno = ENOMEM;
+    goto except_yypstate_new;
+  }
+
+  int e;
+  do {
+    YYSTYPE yylval;
+    yytoken_kind_t kind = scan_next(string, &scan, &yylval);
+
+    YYLTYPE yylloc = (YYLTYPE) {
+      /* .name = name, */
+      .offset = scan.symbol.offset,
+      .length = scan.cursor.offset - scan.symbol.offset,
+      .line = scan.symbol.line,
+      .column = scan.symbol.column,
+    };
+
+    symbol_debug(stderr, kind, &yylval, &yylloc);
+
+    e = yypush_parse(pstate, kind, &yylval, &yylloc, &syntax);
+  } while (e == YYPUSH_MORE);
+
+  // The value returned by yyparse is 0 if parsing was successful (return is due
+  // to end-of-input). The value is 1 if parsing failed because of invalid
+  // input, i.e., input that contains a syntax error or that causes YYABORT to
+  // be invoked. The value is 2 if parsing failed due to memory exhaustion.
+  switch (e) {
+    case 0:  break;
+    case 2:  errno = ENOMEM; goto except_yypush_parse;
+    default: errno = EINVAL; goto except_yypush_parse;
+  }
+
+  yypstate_delete(pstate);
+  return syntax.script;
+
+except_yypush_parse:
+  fprintf(stderr, "Error %i\n", e);
+  assert(syntax.script == NULL);
+
+  yypstate_delete(pstate);
+
+except_yypstate_new:
+  return NULL;
+}
+

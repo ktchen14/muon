@@ -95,6 +95,6 @@ static inline size_t extant_size(
 extern _Thread_local int debug_indent;
 
 #define WITH_DEBUG_INDENT() \
-  for (int _i = (debug_indent += 2); debug_indent > _i; debug_indent -= 2)
+  for (int _i = (debug_indent += 2); debug_indent == _i; debug_indent -= 2)
 
 #endif /* MU_COMMON_I */

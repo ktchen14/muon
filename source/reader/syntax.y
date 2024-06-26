@@ -10,13 +10,18 @@
 #include "../script.h"
 #include "../sign.h"
 #include "../stmt.h"
+
+typedef struct {
+  mu_engine_t *engine;
+  mu_script_t *script;
+} syntax_t;
 }
 
 %define api.location.type { mu_source_t }
 %define api.pure full
 %define api.push-pull push
 %locations
-%parse-param { mu_engine_t *engine }
+%parse-param { syntax_t *syntax }
 %start script
 
 // ============================== Declaration ============================= {{{1
@@ -29,8 +34,6 @@
     const mu_char8_t *c;
     size_t length;
   } text;
-
-  mu_script_t *script;
 
   const mu_name_t *name;
 
@@ -56,8 +59,6 @@
 %token <boolean> BOOLEAN_LITERAL
 %token <text>    STRING
 %token <text>    NAME
-
-%type <script> script
 
 %type <name> name
 
@@ -95,7 +96,7 @@
     (result) = YYRHSLOC((argv), 0); \
 } while (0)
 
-static void yyerror(YYLTYPE *yylloc, mu_engine_t *engine, char const *s);
+static void yyerror(YYLTYPE *yylloc, syntax_t *syntax, char const *s);
 %}
 
 // ================================= Script =============================== {{{1
@@ -103,7 +104,7 @@ static void yyerror(YYLTYPE *yylloc, mu_engine_t *engine, char const *s);
 %%
 
 script: stmt {
-  $$ = mu_script(1, &$stmt);
+  syntax->script = mu_script(1, &$stmt);
 }
 
 // ================================== Expr ================================ {{{1
@@ -114,21 +115,21 @@ expr: '(' expr ')' { $$ = $2; } |
   vector_expr  { $$ = &$vector_expr->as_expr; }
 
 access_expr: expr '.' name {
-  $$ = mu_access_expr(engine, $name, $expr, &@$);
+  $$ = mu_access_expr(syntax->engine, $name, $expr, &@$);
 }
 
 integer_expr: INTEGER_LITERAL {
-  $$ = mu_integer_expr(engine, $1, &@$);
+  $$ = mu_integer_expr(syntax->engine, $1, &@$);
 }
 
 vector_expr: '[' expr[argv] ']' {
-  $$ = mu_vector_expr(engine, 1, &$argv);
+  $$ = mu_vector_expr(syntax->engine, 1, &$argv);
 }
 
 // ================================== Name ================================ {{{1
 
 name: NAME {
-  $$ = mu_name(engine, $1.length, $1.c);
+  $$ = mu_name(syntax->engine, $1.length, $1.c);
 }
 
 // ================================== Sign ================================ {{{1
@@ -138,11 +139,11 @@ sign: '(' sign ')' { $$ = $2; } |
   vector_sign  { $$ = &$vector_sign->as_sign; }
 
 integer_sign: "Integer" {
-  $$ = mu_integer_sign(engine, &@$);
+  $$ = mu_integer_sign(syntax->engine, &@$);
 }
 
 vector_sign: '[' sign ']' {
-  $$ = mu_vector_sign(engine, $sign, &@$);
+  $$ = mu_vector_sign(syntax->engine, $sign, &@$);
 }
 
 // ================================== Stmt ================================ {{{1
@@ -151,7 +152,7 @@ stmt:
   constant_stmt { $$ = &$constant_stmt->as_stmt; }
 
 constant_stmt: "constant" _ name _ sign _ '=' _ expr '\n' {
-  $$ = mu_constant_stmt(engine, $name, $expr);
+  $$ = mu_constant_stmt(syntax->engine, $name, $expr);
 }
 
 // ============================= Miscellaneous ============================ {{{1
@@ -160,7 +161,7 @@ _: ' '
 
 %%
 
-static void yyerror(YYLTYPE *yylloc, mu_engine_t *engine, char const *s) {
+static void yyerror(YYLTYPE *yylloc, syntax_t *syntax, char const *s) {
   fprintf(stderr, "%s\n", s);
 }
 
