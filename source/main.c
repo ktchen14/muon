@@ -5,7 +5,12 @@
 
 #include <stdlib.h>
 
-const char muon[] = "constant x [Integer] = 1\n";
+const char muon[] =
+  "constant x [Integer] = 1\n"
+  "constant y Integer = 2\n"
+  "constant z = 3\n"
+  "constant a 4\n"
+  ;
 
 int main(int argc, char *argv[]) {
   mu_engine_t engine = {0};

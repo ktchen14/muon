@@ -14,6 +14,8 @@
 typedef struct {
   mu_engine_t *engine;
   mu_script_t *script;
+  const mu_stmt_t *stmt[256];
+  size_t stmt_i;
 } syntax_t;
 }
 
@@ -103,8 +105,13 @@ static void yyerror(YYLTYPE *yylloc, syntax_t *syntax, char const *s);
 
 %%
 
-script: stmt {
-  syntax->script = mu_script(1, &$stmt);
+script: script_argv {
+  syntax->script = mu_script(syntax->stmt_i, syntax->stmt);
+}
+
+script_argv: {
+} | script_argv stmt {
+  syntax->stmt[syntax->stmt_i++] = $stmt;
 }
 
 // ================================== Expr ================================ {{{1
@@ -153,6 +160,9 @@ stmt:
 
 constant_stmt: "constant" _ name _ sign _ '=' _ expr '\n' {
   $$ = mu_constant_stmt(syntax->engine, $name, $expr, $sign);
+
+} | "constant" _ name _ '=' _ expr '\n' {
+  $$ = mu_constant_stmt(syntax->engine, $name, $expr, NULL);
 }
 
 // ============================= Miscellaneous ============================ {{{1
