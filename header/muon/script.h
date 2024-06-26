@@ -13,4 +13,6 @@ typedef struct {
 mu_script_t *mu_script(size_t argc, const mu_stmt_t *argv[argc])
   __attribute__((malloc));
 
+void mu_script_debug(const mu_script_t *script) __attribute__((nonnull));
+
 #endif /* MU_SCRIPT_H */
