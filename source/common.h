@@ -88,4 +88,11 @@ static inline size_t extant_size(
     sizeof((struct) {0}.member[0]), /* NOLINT(bugprone-sizeof-expression) */ \
     (length))
 
+extern _Thread_local unsigned int debug_indent;
+
+#define WITH_DEBUG_INDENT() \
+  for (unsigned int _debug_indent = (debug_indent += 2); \
+    debug_indent == _debug_indent; \
+    debug_indent -= 2)
+
 #endif /* MU_COMMON_I */

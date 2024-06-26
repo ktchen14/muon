@@ -1,11 +1,12 @@
 #include "vector.h"
 
-#include "../common.h"
 #include "../engine.h"
+#include "../expr.h"
 
 #include <assert.h>
 #include <errno.h>
 #include <stddef.h>
+#include <stdio.h>
 #include <string.h>
 
 const mu_vector_expr_t *mu_vector_expr(
@@ -26,4 +27,13 @@ const mu_vector_expr_t *mu_vector_expr(
   memcpy(&result->argv, argv, sizeof(const mu_expr_t *[argc]));
 
   return engine_assign_concrete(engine, result);
+}
+
+void vector_expr_debug(const mu_vector_expr_t *expr) {
+  fprintf(stderr, "Vector Expr #%zu:\n", expr->as_stator.id);
+
+  WITH_DEBUG_INDENT() {
+    for (size_t i = 0; i < expr->argc; i++)
+      mu_expr_debug(expr->argv[i]);
+  }
 }

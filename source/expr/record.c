@@ -1,11 +1,12 @@
 #include "record.h"
 
-#include "../common.h"
 #include "../engine.h"
+#include "../expr.h"
 
 #include <assert.h>
 #include <errno.h>
 #include <stddef.h>
+#include <stdio.h>
 #include <string.h>
 
 const mu_record_expr_t *mu_record_expr(
@@ -26,4 +27,13 @@ const mu_record_expr_t *mu_record_expr(
   memcpy(&result->argv, argv, sizeof(const mu_expr_t *[argc]));
 
   return engine_assign_concrete(engine, result);
+}
+
+void record_expr_debug(const mu_record_expr_t *expr) {
+  fprintf(stderr, "Record Expr #%zu:\n", expr->as_stator.id);
+
+  WITH_DEBUG_INDENT() {
+    for (size_t i = 0; i < expr->argc; i++)
+      mu_expr_debug(expr->argv[i]);
+  }
 }

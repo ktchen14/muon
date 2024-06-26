@@ -6,5 +6,8 @@
 #include "expr/member.h"   // IWYU pragma: export
 #include "expr/record.h"   // IWYU pragma: export
 #include "expr/vector.h"   // IWYU pragma: export
+#include "expr/zero.h"     // IWYU pragma: export
+
+void mu_expr_debug(const mu_expr_t *expr) __attribute__((nonnull));
 
 #endif /* MU_EXPR_H */

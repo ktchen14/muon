@@ -5,11 +5,13 @@ add_subdirectory(reader)
 add_library(muon)
 
 target_sources(muon PRIVATE
+  common.c
   main.c
   name.c
   script.c
   # status.c
 
+  expr.c
   expr/access.c
   expr/integer.c
   expr/member.c

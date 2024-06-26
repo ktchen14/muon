@@ -18,4 +18,6 @@ const mu_access_expr_t *mu_access_expr(
     const mu_source_t *source)
   __attribute__((malloc, nonnull(1, 2, 3)));
 
+void access_expr_debug(const mu_access_expr_t *expr) __attribute__((nonnull));
+
 #endif /* MU_EXPR_ACCESS_H */
