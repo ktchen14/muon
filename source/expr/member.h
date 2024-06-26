@@ -12,7 +12,4 @@ static inline size_t member_expr_size(const mu_member_expr_t *expr) {
   return sizeof(mu_member_expr_t);
 }
 
-void member_expr_debug(const mu_member_expr_t *expr)
-  __attribute__((nonnull));
-
 #endif /* MU_EXPR_MEMBER_I */

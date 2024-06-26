@@ -29,7 +29,7 @@ const mu_vector_expr_t *mu_vector_expr(
   return engine_assign_concrete(engine, result);
 }
 
-void vector_expr_debug(const mu_vector_expr_t *expr) {
+void mu_vector_expr_debug(const mu_vector_expr_t *expr) {
   fprintf(stderr, "Vector Expr #%zu:\n", expr->as_stator.id);
 
   WITH_DEBUG_INDENT() {

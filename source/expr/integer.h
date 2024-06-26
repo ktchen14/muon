@@ -12,7 +12,4 @@ static inline size_t integer_expr_size(const mu_integer_expr_t *expr) {
   return sizeof(mu_integer_expr_t);
 }
 
-void integer_expr_debug(const mu_integer_expr_t *expr)
-  __attribute__((nonnull));
-
 #endif /* MU_EXPR_INTEGER_I */

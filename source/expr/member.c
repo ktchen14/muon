@@ -24,7 +24,7 @@ const mu_member_expr_t *mu_member_expr(
   return engine_assign_concrete(engine, result);
 }
 
-void member_expr_debug(const mu_member_expr_t *expr) {
+void mu_member_expr_debug(const mu_member_expr_t *expr) {
   fprintf(stderr, "Member Expr #%zu: ", expr->as_stator.id);
   mu_name_debug(expr->name);
   putc('\n', stderr);

@@ -29,7 +29,7 @@ const mu_record_expr_t *mu_record_expr(
   return engine_assign_concrete(engine, result);
 }
 
-void record_expr_debug(const mu_record_expr_t *expr) {
+void mu_record_expr_debug(const mu_record_expr_t *expr) {
   fprintf(stderr, "Record Expr #%zu:\n", expr->as_stator.id);
 
   WITH_DEBUG_INDENT() {

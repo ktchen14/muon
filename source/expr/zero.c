@@ -17,6 +17,6 @@ const mu_zero_expr_t *mu_zero_expr(mu_engine_t *engine) {
   return engine_assign_concrete(engine, result);
 }
 
-void zero_expr_debug(const mu_zero_expr_t *expr) {
+void mu_zero_expr_debug(const mu_zero_expr_t *expr) {
   fprintf(stderr, "Zero Expr #%zu:\n", expr->as_stator.id);
 }

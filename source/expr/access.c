@@ -30,7 +30,7 @@ const mu_access_expr_t *mu_access_expr(
   return engine_assign_concrete(engine, result);
 }
 
-void access_expr_debug(const mu_access_expr_t *expr) {
+void mu_access_expr_debug(const mu_access_expr_t *expr) {
   fprintf(stderr, "Access Expr #%zu: ", expr->as_stator.id);
   mu_name_debug(expr->name);
   putc('\n', stderr);

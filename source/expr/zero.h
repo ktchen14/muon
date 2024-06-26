@@ -12,7 +12,4 @@ static inline size_t zero_expr_size(const mu_zero_expr_t *expr) {
   return sizeof(mu_zero_expr_t);
 }
 
-void zero_expr_debug(const mu_zero_expr_t *expr)
-  __attribute__((nonnull));
-
 #endif /* MU_EXPR_ZERO_I */
