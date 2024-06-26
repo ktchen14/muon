@@ -1,7 +1,7 @@
 #ifndef MU_NODE_COMMON_H
 #define MU_NODE_COMMON_H
 
-#include "../stator.h"
+#include "../stator.h"  // IWYU pragma: export
 #include "../status.h"
 
 #include <stddef.h>
@@ -19,6 +19,11 @@ typedef enum {
   MU_RECORD_EXPR_NODE = MU_RECORD_EXPR_STATOR,
   MU_VECTOR_EXPR_NODE = MU_VECTOR_EXPR_STATOR,
   MU_ZERO_EXPR_NODE = MU_ZERO_EXPR_STATOR,
+
+  // Sign
+  MU_INTEGER_SIGN_NODE = MU_INTEGER_SIGN_STATOR,
+  MU_RECORD_SIGN_NODE = MU_RECORD_SIGN_STATOR,
+  MU_VECTOR_SIGN_NODE = MU_VECTOR_SIGN_STATOR,
 
   // Stmt
   MU_CONSTANT_STMT_NODE = MU_CONSTANT_STMT_STATOR,

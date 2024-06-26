@@ -25,6 +25,11 @@ typedef enum {
   MU_VECTOR_EXPR_STATOR,
   MU_ZERO_EXPR_STATOR,
 
+  // Sign
+  MU_INTEGER_SIGN_STATOR,
+  MU_RECORD_SIGN_STATOR,
+  MU_VECTOR_SIGN_STATOR,
+
   // Stmt
   MU_CONSTANT_STMT_STATOR,
 } mu_stator_kind_t;
@@ -37,10 +42,7 @@ typedef struct {
   size_t id;
 } mu_stator_t;
 
-/* /// An enumeration of each kind of type */
-/* typedef enum { */
-/*   MU_RECORD_TYPE = MU_RECORD_TYPE_NODE, */
-/*   MU_VECTOR_TYPE = MU_VECTOR_TYPE_NODE, */
-/* } mu_type_kind_t; */
+/// The header that each concrete stator must have
+#define MU_STATOR_HEADER mu_stator_t as_stator
 
 #endif /* MU_STATOR_H */

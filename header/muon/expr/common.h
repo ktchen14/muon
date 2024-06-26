@@ -1,7 +1,7 @@
 #ifndef MU_EXPR_COMMON_H
 #define MU_EXPR_COMMON_H
 
-#include "../node/common.h"
+#include "../node/common.h"  // IWYU pragma: export
 
 /// An enumeration of each kind of expr
 typedef enum {

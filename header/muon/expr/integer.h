@@ -2,7 +2,6 @@
 #define MU_EXPR_INTEGER_H
 
 #include "common.h"
-
 #include "../status.h"
 
 #include <stdint.h>

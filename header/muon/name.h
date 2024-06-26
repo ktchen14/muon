@@ -9,7 +9,7 @@
 /// A symbol in Muon
 typedef struct mu_name_t mu_name_t;
 struct mu_name_t {
-  mu_stator_t as_stator;
+  MU_STATOR_HEADER;
 
   /// If the name has a prefix, e.g. a.b
   const mu_name_t *prefix;
@@ -27,7 +27,9 @@ struct mu_name_t {
  * encoding.
  */
 const mu_name_t *mu_name(
-    mu_engine_t *engine, size_t length, const mu_char8_t text[restrict length])
+    mu_engine_t *engine,
+    size_t length,
+    const mu_char8_t text[restrict static length])
   __attribute__((nonnull));
 
 void mu_name_debug(const mu_name_t *name) __attribute__((nonnull));

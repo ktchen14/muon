@@ -14,7 +14,7 @@ typedef struct {
 } mu_vector_expr_t;
 
 const mu_vector_expr_t *mu_vector_expr(
-    mu_engine_t *engine, size_t argc, const mu_expr_t *argv[argc])
+    mu_engine_t *engine, size_t argc, const mu_expr_t *argv[static argc])
   __attribute__((malloc, nonnull(1)));
 
 #endif /* MU_EXPR_VECTOR_H */
