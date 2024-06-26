@@ -24,6 +24,7 @@ target_sources(muon PRIVATE
   sign/record.c
   sign/vector.c
 
+  stmt.c
   stmt/constant.c
 
   $<TARGET_OBJECTS:reader>

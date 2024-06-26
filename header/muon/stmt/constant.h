@@ -18,4 +18,7 @@ const mu_constant_stmt_t *mu_constant_stmt(
     mu_engine_t *engine, const mu_name_t *name, const mu_expr_t *expr)
   __attribute__((malloc, nonnull));
 
+void mu_constant_stmt_debug(const mu_constant_stmt_t *stmt)
+  __attribute__((nonnull));
+
 #endif /* MU_STMT_VECTOR_H */
