@@ -7,7 +7,10 @@
 
 typedef mu_char8_t char8_t;
 
+/// Mark that @c ... will, in the common case, evaluate to 1
 #define common(...) __builtin_expect((__VA_ARGS__), 1)
+
+/// Mark that @c ... will, in the common case, evaluate to 0
 #define rare(...)   __builtin_expect((__VA_ARGS__), 0)
 
 /// Return the minimum of @a a and @a b (as defined by the @c < operator)
@@ -88,11 +91,10 @@ static inline size_t extant_size(
     sizeof((struct) {0}.member[0]), /* NOLINT(bugprone-sizeof-expression) */ \
     (length))
 
-extern _Thread_local unsigned int debug_indent;
+/// The amount of indentation to insert before each line of debug output
+extern _Thread_local int debug_indent;
 
 #define WITH_DEBUG_INDENT() \
-  for (unsigned int _debug_indent = (debug_indent += 2); \
-    debug_indent == _debug_indent; \
-    debug_indent -= 2)
+  for (int _i = (debug_indent += 2); debug_indent > _i; debug_indent -= 2)
 
 #endif /* MU_COMMON_I */

@@ -29,6 +29,5 @@ void member_expr_debug(const mu_member_expr_t *expr) {
   mu_name_debug(expr->name);
   putc('\n', stderr);
 
-  WITH_DEBUG_INDENT()
-    mu_expr_debug(expr->matter);
+  WITH_DEBUG_INDENT() { mu_expr_debug(expr->matter); }
 }
