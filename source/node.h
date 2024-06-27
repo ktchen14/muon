@@ -47,4 +47,32 @@ static inline const mu_node_t *node_at(const mu_node_t *node, size_t i) {
   return NULL;  // TODO: unreachable
 }
 
+/// Return the cursor in the @a node
+__attribute__((const, nonnull, returns_nonnull))
+static inline node_cursor_t *node_cursor(const mu_node_t *node) {
+  node_header_t *header = (node_header_t *) (
+      (char *) node - offsetof(node_header_t, data));
+  return &header->cursor;
+}
+
+#include <assert.h>
+
+/// Continue into the node
+static inline const mu_node_t *node_continue(
+    const mu_node_t *node, const mu_node_t *next) {
+  node_cursor_t *cursor = node_cursor(next);
+  assert(cursor->anterior == NULL && cursor->i == 0);
+  cursor->anterior = node;
+  return next;
+}
+
+/// Return from the node
+__attribute__((nonnull))
+static inline const mu_node_t *node_return(const mu_node_t *node) {
+  node_cursor_t *cursor = node_cursor(node);
+  const mu_node_t *anterior = cursor->anterior;
+  *cursor = (node_cursor_t) {0};
+  return anterior;
+}
+
 #endif /* MU_NODE_I */

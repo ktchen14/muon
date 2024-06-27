@@ -19,14 +19,6 @@ typedef struct {
   _Alignas(max_align_t) char data[];
 } node_header_t;
 
-/// Return the cursor in the @a node
-__attribute__((const, nonnull, returns_nonnull))
-static inline node_cursor_t *node_cursor(const mu_node_t *node) {
-  node_header_t *header = (node_header_t *) (
-      (char *) node - offsetof(node_header_t, data));
-  return &header->cursor;
-}
-
 __attribute__((malloc, nonnull))
 static inline void *node_allocate(mu_engine_t *engine, size_t size) {
   if (rare((size = struct_size(node_header_t, data, size)) == 0))

@@ -34,16 +34,11 @@ const mu_stmt_t *const *resolve_names(mu_engine_t *engine, const mu_script_t *sc
 
   for (size_t i = 0; i < script->argc; i++) {
     const mu_node_t *node = &script->argv[i]->as_node;
-    node_cursor_t *cursor = node_cursor(node);
 
-    for (;;) {
+    do {
       const mu_node_t *next;
-      while ((next = node_at(node, cursor->i++)) != NULL) {
-        cursor = node_cursor(next);
-        assert(cursor->i == 0);
-        cursor->anterior = node;
-        node = next;
-      }
+      while ((next = node_at(node, node_cursor(node)->i++)) != NULL)
+        node = node_continue(node, next);
 
       fprintf(stderr, "Returning from %zu\n", node->as_stator.id);
 
@@ -57,15 +52,7 @@ const mu_stmt_t *const *resolve_names(mu_engine_t *engine, const mu_script_t *sc
 
         result[expr->as_stator.id] = target;
       }
-
-      node = cursor->anterior;
-      cursor->i = 0;
-      cursor->anterior = NULL;
-
-      if (node == NULL)
-        break;
-      cursor = node_cursor(node);
-    }
+    } while ((node = node_return(node)) != NULL);
   }
 
   return result;
