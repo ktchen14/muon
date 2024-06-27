@@ -42,6 +42,7 @@ typedef struct {
   const mu_expr_t *expr;
   const mu_access_expr_t *access_expr;
   const mu_integer_expr_t *integer_expr;
+  const mu_name_expr_t *name_expr;
   const mu_vector_expr_t *vector_expr;
 
   const mu_sign_t *sign;
@@ -68,6 +69,7 @@ typedef struct {
 %type <expr> expr
 %type <access_expr> access_expr
 %type <integer_expr> integer_expr
+%type <name_expr> name_expr
 %type <vector_expr> vector_expr
 
 %type <sign> sign
@@ -121,6 +123,7 @@ script_argv: {
 expr: '(' expr ')' { $$ = $2; } |
   access_expr  { $$ = &$access_expr->as_expr; } |
   integer_expr { $$ = &$integer_expr->as_expr; } |
+  name_expr    { $$ = &$name_expr->as_expr; } |
   vector_expr  { $$ = &$vector_expr->as_expr; }
 
 access_expr: expr '.' name {
@@ -129,6 +132,10 @@ access_expr: expr '.' name {
 
 integer_expr: INTEGER_LITERAL {
   $$ = mu_integer_expr(syntax->engine, $1, &@$);
+}
+
+name_expr: name {
+  $$ = mu_name_expr(syntax->engine, $1, &@$);
 }
 
 vector_expr: '[' expr[argv] ']' {
