@@ -10,16 +10,18 @@ stop = [\x00];
 <normal> [\n\r]+ [ \t\n\r]* { return '\n'; }
 <normal> stop               { break; }
 
-<normal> "="                { return '='; }
-<normal> "["                { return '['; }
-<normal> "]"                { return ']'; }
-
 // ================================ Keyword ====================================
 
 <normal> "constant" { return CONSTANT; }
 <normal> "instance" { return INSTANCE; }
 <normal> "type"     { return TYPE; }
 <normal> "Integer"  { return INTEGER; }
+
+// ================================ Operator ====================================
+
+<normal> "="                { return '='; }
+<normal> "["                { return '['; }
+<normal> "]"                { return ']'; }
 
 // ================================ Boolean ====================================
 
@@ -79,7 +81,10 @@ stop = [\x00];
 
 // ================================== Name =====================================
 
-!include "unicode.re";
+/* !include "unicode.re"; */
+
+XID_Start = [A-Za-z];
+XID_Continue = [A-Za-z0-9_];
 
 <normal> XID_Start XID_Continue* {
   yylval->text.c = &buffer[symbol->offset];

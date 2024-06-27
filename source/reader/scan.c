@@ -187,7 +187,7 @@ mu_script_t *mu_read_script(
 
   // Initialize the Bison parser
   yypstate *pstate;
-  if ((pstate = yypstate_new()) == 0) {
+  if ((pstate = yypstate_new()) == NULL) {
     errno = ENOMEM;
     goto except_yypstate_new;
   }
@@ -205,15 +205,11 @@ mu_script_t *mu_read_script(
       .column = scan.symbol.column,
     };
 
-    symbol_debug(stderr, kind, &yylval, &yylloc);
+    /* symbol_debug(stderr, kind, &yylval, &yylloc); */
 
     e = yypush_parse(pstate, kind, &yylval, &yylloc, &syntax);
   } while (e == YYPUSH_MORE);
 
-  // The value returned by yyparse is 0 if parsing was successful (return is due
-  // to end-of-input). The value is 1 if parsing failed because of invalid
-  // input, i.e., input that contains a syntax error or that causes YYABORT to
-  // be invoked. The value is 2 if parsing failed due to memory exhaustion.
   switch (e) {
     case 0:  break;
     case 2:  errno = ENOMEM; goto except_yypush_parse;
