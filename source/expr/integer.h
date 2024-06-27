@@ -14,10 +14,11 @@ static inline size_t integer_expr_size(const mu_integer_expr_t *expr) {
 }
 
 __attribute__((nonnull))
-static inline const mu_sign_t *integer_expr_deduce(
+static inline const mu_sign_t *integer_expr_induce(
     mu_engine_t *engine,
     const mu_integer_expr_t *expr,
-    const mu_sign_t *equation[]) {
+    criteria_t **criteriap,
+    const mu_sign_t *const equation[]) {
   return &mu_integer_sign(engine, &expr->as_node.source)->as_sign;
 }
 

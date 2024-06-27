@@ -17,7 +17,8 @@ __attribute__((nonnull))
 static inline const mu_sign_t *zero_expr_deduce(
     mu_engine_t *engine,
     const mu_zero_expr_t *expr,
-    const mu_sign_t *equation[]) {
+    criteria_t **criteriap,
+    const mu_sign_t *const equation[]) {
   return &mu_variable_sign(engine, &expr->as_node.source)->as_sign;
 }
 
