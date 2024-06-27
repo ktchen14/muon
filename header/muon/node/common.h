@@ -8,10 +8,6 @@
 
 /// An enumeration of each kind of node
 typedef enum {
-  // Type
-  MU_RECORD_TYPE_NODE = MU_RECORD_TYPE_STATOR,
-  MU_VECTOR_TYPE_NODE = MU_VECTOR_TYPE_STATOR,
-
   // Expr
   MU_ACCESS_EXPR_NODE = MU_ACCESS_EXPR_STATOR,
   MU_INTEGER_EXPR_NODE = MU_INTEGER_EXPR_STATOR,

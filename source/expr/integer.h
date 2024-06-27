@@ -22,4 +22,10 @@ static inline const mu_sign_t *integer_expr_induce(
   return &mu_integer_sign(engine, &expr->as_node.source)->as_sign;
 }
 
+__attribute__((const, nonnull))
+static inline const mu_node_t *integer_expr_at(
+    const mu_integer_expr_t *expr, size_t i) {
+  return NULL;
+}
+
 #endif /* MU_EXPR_INTEGER_I */

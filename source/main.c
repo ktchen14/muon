@@ -1,4 +1,5 @@
 #include <muon.h>
+#include "analyzer.h"
 #include "reader.h"
 #include "script.h"
 #include "status.h"
@@ -38,6 +39,13 @@ int main(int argc, char *argv[argc]) {
   }
 
   mu_script_debug(script);
+
+  const mu_stmt_t *const *resolution = resolve_names(
+      &engine, script);
+  for (size_t i = 0; i < engine.stator_id; i++) {
+    if (resolution[i] != NULL)
+      fprintf(stderr, "Stator #%zu = Stator #%zu\n", i, resolution[i]->as_stator.id);
+  }
 
   const mu_sign_t *const *induce;
   if ((induce = mu_script_induce(script)) == NULL) {

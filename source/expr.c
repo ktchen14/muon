@@ -31,6 +31,8 @@ const mu_sign_t *expr_induce(
     case MU_ZERO_EXPR:
       abort();
   }
+
+  return NULL;  // TODO: unreachable
 }
 
 void mu_expr_debug(const mu_expr_t *expr) {

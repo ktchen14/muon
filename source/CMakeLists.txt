@@ -5,6 +5,7 @@ add_subdirectory(reader)
 add_library(muon)
 
 target_sources(muon PRIVATE
+  analyzer.c
   common.c
   main.c
   name.c

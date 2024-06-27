@@ -13,10 +13,6 @@ typedef struct mu_engine_t mu_engine_t;
 typedef enum {
   MU_NAME_STATOR,
 
-  // Type
-  MU_RECORD_TYPE_STATOR,
-  MU_VECTOR_TYPE_STATOR,
-
   // Expr
   MU_ACCESS_EXPR_STATOR,
   MU_INTEGER_EXPR_STATOR,

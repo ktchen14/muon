@@ -9,11 +9,21 @@
 #include <limits.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <uchar.h>
 #include <wchar.h>
 
 size_t c8rtomb(char *restrict s, char8_t c8, mbstate_t *restrict ps);
+
+__attribute__((nonnull))
+static inline const mu_name_t *engine_assign_name(
+    mu_engine_t *engine, mu_name_t *name) {
+  name->as_stator.engine = engine;
+  name->as_stator.id = engine->stator_id++;
+  engine->name[engine->name_i++] = name;
+  return name;
+}
 
 const mu_name_t *mu_name(
     mu_engine_t *engine,
@@ -36,7 +46,19 @@ const mu_name_t *mu_name(
   memcpy(name->text, text, length);
   name->text[length] = '\0';
 
-  return engine_assign_concrete(engine, name);
+  for (size_t i = 0; i < engine->name_i; i++) {
+    const mu_name_t *already = engine->name[i];
+    if (name->length != already->length)
+      continue;
+    if (memcmp(name->text, already->text, name->length))
+      continue;
+
+    free(name_cursor(name));
+    return already;
+  }
+
+  return engine_assign_name(engine, name);
+  /* return engine_assign_concrete(engine, name); */
 }
 
 _Thread_local char conversion[MB_LEN_MAX];

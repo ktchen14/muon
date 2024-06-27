@@ -10,7 +10,7 @@
 #include <stddef.h>
 
 typedef struct {
-  const mu_node_t *node;
+  const mu_node_t *anterior;
   size_t i;
 } node_cursor_t;
 
@@ -19,6 +19,7 @@ typedef struct {
   _Alignas(max_align_t) char data[];
 } node_header_t;
 
+/// Return the cursor in the @a node
 __attribute__((const, nonnull, returns_nonnull))
 static inline node_cursor_t *node_cursor(const mu_node_t *node) {
   node_header_t *header = (node_header_t *) (

@@ -13,6 +13,12 @@ static inline size_t zero_expr_size(const mu_zero_expr_t *expr) {
   return sizeof(mu_zero_expr_t);
 }
 
+__attribute__((const, nonnull))
+static inline const mu_node_t *zero_expr_at(
+    const mu_zero_expr_t *expr, size_t i) {
+  return NULL;
+}
+
 __attribute__((nonnull))
 static inline const mu_sign_t *zero_expr_deduce(
     mu_engine_t *engine,
