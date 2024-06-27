@@ -10,7 +10,7 @@
 
 char buffer[4096];
 
-int main(int argc, char *argv[static argc]) {
+int main(int argc, char *argv[argc]) {
   const char *muon_name = argc > 0 ? argv[0] : "muon";
   if (argc < 2) {
     fprintf(stderr, "Usage: %s source\n", muon_name);

@@ -19,6 +19,7 @@ stop = [\x00];
 
 // ================================ Operator ====================================
 
+<normal> ","                { return ','; }
 <normal> "="                { return '='; }
 <normal> "["                { return '['; }
 <normal> "]"                { return ']'; }

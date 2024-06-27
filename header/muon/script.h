@@ -10,7 +10,7 @@ typedef struct {
   const mu_stmt_t *argv[/* argc */];
 } mu_script_t;
 
-mu_script_t *mu_script(size_t argc, const mu_stmt_t *argv[static argc])
+mu_script_t *mu_script(size_t argc, const mu_stmt_t *argv[argc])
   __attribute__((malloc));
 
 #include "sign.h"

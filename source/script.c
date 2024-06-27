@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-mu_script_t *mu_script(size_t argc, const mu_stmt_t *argv[static argc]) {
+mu_script_t *mu_script(size_t argc, const mu_stmt_t *argv[argc]) {
   size_t size;
   if (rare((size = struct_size(mu_script_t, argv, argc)) == 0))
     return errno = ENOMEM, NULL;

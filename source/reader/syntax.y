@@ -16,6 +16,8 @@ typedef struct {
   mu_script_t *script;
   const mu_stmt_t *stmt[256];
   size_t stmt_i;
+  const mu_expr_t *expr[800];
+  size_t expr_i;
 } syntax_t;
 }
 
@@ -36,6 +38,8 @@ typedef struct {
     const mu_char8_t *c;
     size_t length;
   } text;
+
+  size_t i;
 
   const mu_name_t *name;
 
@@ -63,6 +67,8 @@ typedef struct {
 %token <boolean> BOOLEAN_LITERAL
 %token <text>    STRING
 %token <text>    NAME
+
+%type <i> vector_argv
 
 %type <name> name
 
@@ -114,6 +120,8 @@ script: script_argv {
 }
 
 script_argv: {
+  syntax->stmt_i = 0;
+
 } | script_argv stmt {
   syntax->stmt[syntax->stmt_i++] = $stmt;
 }
@@ -138,8 +146,22 @@ name_expr: name {
   $$ = mu_name_expr(syntax->engine, $1, &@$);
 }
 
-vector_expr: '[' expr[argv] ']' {
-  $$ = mu_vector_expr(syntax->engine, 1, &$argv);
+vector_expr: '[' vector_argv ']' {
+  size_t i = $vector_argv;
+  syntax->expr_i -= i;
+  $$ = mu_vector_expr(syntax->engine, i, syntax->expr);
+
+} | '[' ']' {
+  $$ = mu_vector_expr(syntax->engine, 0, NULL);
+}
+
+vector_argv: expr {
+  syntax->expr[syntax->expr_i++] = $expr;
+  $$ = 1;
+
+} | vector_argv ',' _ expr {
+  syntax->expr[syntax->expr_i++] = $expr;
+  $$ = $1 + 1;
 }
 
 // ================================== Name ================================ {{{1
