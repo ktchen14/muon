@@ -46,6 +46,7 @@ typedef struct {
 
   const mu_sign_t *sign;
   const mu_integer_sign_t *integer_sign;
+  const mu_name_sign_t *name_sign;
   const mu_vector_sign_t *vector_sign;
 
   const mu_stmt_t *stmt;
@@ -71,6 +72,7 @@ typedef struct {
 
 %type <sign> sign
 %type <integer_sign> integer_sign
+%type <name_sign> name_sign
 %type <vector_sign> vector_sign
 
 %type <stmt> stmt
@@ -143,10 +145,15 @@ name: NAME {
 
 sign: '(' sign ')' { $$ = $2; } |
   integer_sign { $$ = &$integer_sign->as_sign; } |
+  name_sign    { $$ = &$name_sign->as_sign; } |
   vector_sign  { $$ = &$vector_sign->as_sign; }
 
 integer_sign: "Integer" {
   $$ = mu_integer_sign(syntax->engine, &@$);
+}
+
+name_sign: name {
+  $$ = mu_name_sign(syntax->engine, $name, &@$);
 }
 
 vector_sign: '[' sign ']' {
