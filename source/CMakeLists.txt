@@ -25,6 +25,7 @@ target_sources(muon PRIVATE
   sign/member.c
   sign/name.c
   sign/record.c
+  sign/variable.c
   sign/vector.c
 
   stmt.c
