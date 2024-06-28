@@ -4,8 +4,6 @@
 #include "../stator.h"  // IWYU pragma: export
 #include "../status.h"
 
-#include <stddef.h>
-
 /**
  * @brief An enumeration of each kind of node
  *

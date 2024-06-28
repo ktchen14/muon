@@ -31,6 +31,11 @@ typedef struct mu_engine_t mu_engine_t;
   emit(constant, CONSTANT, Constant, ##__VA_ARGS__) \
   emit(type, TYPE, Type, ##__VA_ARGS__)
 
+/// Expands to emit(lower, upper, title, ...) for each kind of type
+#define MU_EACH_TYPE_KIND(emit, ...) \
+  emit(integer, INTEGER, Integer, ##__VA_ARGS__) \
+  emit(vector, VECTOR, Vector, ##__VA_ARGS__)
+
 /**
  * @brief An enumeration of each kind of stator
  */
@@ -41,6 +46,8 @@ typedef enum {
   MU_EACH_EXPR_KIND(MU_EMIT, EXPR)
   MU_EACH_SIGN_KIND(MU_EMIT, SIGN)
   MU_EACH_STMT_KIND(MU_EMIT, STMT)
+
+  MU_EACH_TYPE_KIND(MU_EMIT, TYPE)
 #undef MU_EMIT
 } mu_stator_kind_t;
 

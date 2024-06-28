@@ -33,6 +33,10 @@ target_sources(muon PRIVATE
   stmt/constant.c
   stmt/type.c
 
+  type.c
+  type/integer.c
+  type/vector.c
+
   $<TARGET_OBJECTS:reader>
 )
 

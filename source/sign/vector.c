@@ -7,7 +7,6 @@
 #include <assert.h>
 #include <stddef.h>
 #include <stdio.h>
-#include <string.h>
 
 const mu_vector_sign_t *mu_vector_sign(
     mu_engine_t *engine, const mu_sign_t *matter, const mu_source_t *source) {
