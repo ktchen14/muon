@@ -40,8 +40,6 @@ const mu_stmt_t *const *resolve_names(mu_engine_t *engine, const mu_script_t *sc
       while ((next = node_at(node, node_cursor(node)->i++)) != NULL)
         node = node_continue(node, next);
 
-      fprintf(stderr, "Returning from %zu\n", node->as_stator.id);
-
       mu_node_kind_t kind = node->kind;
       if (kind == MU_NAME_EXPR_NODE) {
         const mu_name_expr_t *expr = (const mu_name_expr_t *) node;

@@ -38,17 +38,17 @@ const mu_sign_t *vector_expr_induce(
     const mu_sign_t *const equation[]) {
   const mu_source_t *source = &expr->as_node.source;
 
-  // The type of a vector expr like [a, b, c, d] is [x]. Make the variable k:
+  // The type of a vector expr must be [x]. Make the type variable x:
   const mu_variable_sign_t *x;
   if ((x = mu_variable_sign(engine, source)) == NULL)
     return NULL;
 
-  // Make the type [k]
+  // Make the type [x]
   const mu_vector_sign_t *vector_sign;
   if ((vector_sign = mu_vector_sign(engine, &x->as_sign, source)) == NULL)
     return NULL;
 
-  // Now we add the constraint that k must be equivalent to the type of each
+  // Now we add the constraint that x must be equivalent to the type of each
   // element. First, reallocate the criteria.
   criteria_t *criteria;
   if (rare((criteria = criteria_extend(*criteriap, expr->argc)) == NULL))
