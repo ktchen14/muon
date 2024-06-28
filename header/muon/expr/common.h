@@ -3,15 +3,18 @@
 
 #include "../node/common.h"  // IWYU pragma: export
 
-/// An enumeration of each kind of expr
+/**
+ * @brief An enumeration of each kind of expr
+ *
+ * MU_ACCESS_EXPR = MU_ACCESS_EXPR_NODE,
+ * MU_INTEGER_EXPR = MU_INTEGER_EXPR_NODE,
+ * ...
+ * MU_ZERO_EXPR = MU_ZERO_EXPR_NODE,
+ */
 typedef enum {
-  MU_ACCESS_EXPR = MU_ACCESS_EXPR_NODE,
-  MU_INTEGER_EXPR = MU_INTEGER_EXPR_NODE,
-  MU_MEMBER_EXPR = MU_MEMBER_EXPR_NODE,
-  MU_NAME_EXPR = MU_NAME_EXPR_NODE,
-  MU_RECORD_EXPR = MU_RECORD_EXPR_NODE,
-  MU_VECTOR_EXPR = MU_VECTOR_EXPR_NODE,
-  MU_ZERO_EXPR = MU_ZERO_EXPR_NODE,
+#define MU_EMIT(l, upper, t) MU_##upper##_EXPR = MU_##upper##_EXPR_NODE,
+  MU_EACH_EXPR_KIND(MU_EMIT)
+#undef MU_EMIT
 } mu_expr_kind_t;
 
 /// An abstract expr

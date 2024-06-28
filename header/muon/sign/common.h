@@ -3,14 +3,17 @@
 
 #include "../node/common.h"  // IWYU pragma: export
 
-/// An enumeration of each kind of sign
+/**
+ * @brief An enumeration of each kind of sign
+ *
+ * MU_INTEGER_SIGN = MU_INTEGER_SIGN_NODE,
+ * ...
+ * MU_VECTOR_SIGN = MU_VECTOR_SIGN_NODE,
+ */
 typedef enum {
-  MU_INTEGER_SIGN = MU_INTEGER_SIGN_NODE,
-  MU_MEMBER_SIGN = MU_MEMBER_SIGN_NODE,
-  MU_NAME_SIGN = MU_NAME_SIGN_NODE,
-  MU_RECORD_SIGN = MU_RECORD_SIGN_NODE,
-  MU_VARIABLE_SIGN = MU_VARIABLE_SIGN_NODE,
-  MU_VECTOR_SIGN = MU_VECTOR_SIGN_NODE,
+#define MU_EMIT(l, upper, t) MU_##upper##_SIGN = MU_##upper##_SIGN_NODE,
+  MU_EACH_SIGN_KIND(MU_EMIT)
+#undef MU_EMIT
 } mu_sign_kind_t;
 
 /// An abstract sign

@@ -7,32 +7,41 @@
 
 typedef struct mu_engine_t mu_engine_t;
 
+/// Expand to emit(lower, upper, title, ...) for each kind of expr
+#define MU_EACH_EXPR_KIND(emit, ...) \
+  emit(access, ACCESS, Access, ##__VA_ARGS__) \
+  emit(integer, INTEGER, Integer, ##__VA_ARGS__) \
+  emit(member, MEMBER, Member, ##__VA_ARGS__) \
+  emit(name, NAME, Name, ##__VA_ARGS__) \
+  emit(record, RECORD, Record, ##__VA_ARGS__) \
+  emit(vector, VECTOR, Vector, ##__VA_ARGS__) \
+  emit(zero, ZERO, Zero, ##__VA_ARGS__)
+
+/// Expand to emit(lower, upper, title, ...) for each kind of sign
+#define MU_EACH_SIGN_KIND(emit, ...) \
+  emit(integer, INTEGER, Integer, ##__VA_ARGS__) \
+  emit(member, MEMBER, Member, ##__VA_ARGS__) \
+  emit(name, NAME, Name, ##__VA_ARGS__) \
+  emit(record, RECORD, Record, ##__VA_ARGS__) \
+  emit(variable, VARIABLE, Variable, ##__VA_ARGS__) \
+  emit(vector, VECTOR, Vector, ##__VA_ARGS__)
+
+/// Expand to emit(lower, upper, title, ...) for each kind of stmt
+#define MU_EACH_STMT_KIND(emit, ...) \
+  emit(constant, CONSTANT, Constant, ##__VA_ARGS__) \
+  emit(type, TYPE, Type, ##__VA_ARGS__)
+
 /**
  * @brief An enumeration of each kind of stator
  */
 typedef enum {
   MU_NAME_STATOR,
 
-  // Expr
-  MU_ACCESS_EXPR_STATOR,
-  MU_INTEGER_EXPR_STATOR,
-  MU_MEMBER_EXPR_STATOR,
-  MU_NAME_EXPR_STATOR,
-  MU_RECORD_EXPR_STATOR,
-  MU_VECTOR_EXPR_STATOR,
-  MU_ZERO_EXPR_STATOR,
-
-  // Sign
-  MU_INTEGER_SIGN_STATOR,
-  MU_MEMBER_SIGN_STATOR,
-  MU_NAME_SIGN_STATOR,
-  MU_RECORD_SIGN_STATOR,
-  MU_VARIABLE_SIGN_STATOR,
-  MU_VECTOR_SIGN_STATOR,
-
-  // Stmt
-  MU_CONSTANT_STMT_STATOR,
-  MU_TYPE_STMT_STATOR,
+#define MU_EMIT(l, upper, t, kind) MU_##upper##_##kind##_STATOR,
+  MU_EACH_EXPR_KIND(MU_EMIT, EXPR)
+  MU_EACH_SIGN_KIND(MU_EMIT, SIGN)
+  MU_EACH_STMT_KIND(MU_EMIT, STMT)
+#undef MU_EMIT
 } mu_stator_kind_t;
 
 /// An abstract stator

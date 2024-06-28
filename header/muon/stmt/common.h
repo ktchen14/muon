@@ -3,10 +3,17 @@
 
 #include "../node/common.h"
 
-/// An enumeration of each kind of stmt
+/**
+ * @brief An enumeration of each kind of stmt
+ *
+ * MU_CONSTANT_STMT = MU_CONSTANT_STMT_NODE,
+ * ...
+ * MU_TYPE_STMT = MU_TYPE_STMT_NODE,
+ */
 typedef enum {
-  MU_CONSTANT_STMT = MU_CONSTANT_STMT_NODE,
-  MU_TYPE_STMT = MU_TYPE_STMT_NODE,
+#define MU_EMIT(l, upper, t) MU_##upper##_STMT = MU_##upper##_STMT_NODE,
+  MU_EACH_STMT_KIND(MU_EMIT)
+#undef MU_EMIT
 } mu_stmt_kind_t;
 
 /// An abstract stmt
