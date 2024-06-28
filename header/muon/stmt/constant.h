@@ -1,5 +1,5 @@
-#ifndef MU_STMT_VECTOR_H
-#define MU_STMT_VECTOR_H
+#ifndef MU_STMT_CONSTANT_H
+#define MU_STMT_CONSTANT_H
 
 #include "common.h"
 #include "../expr.h"
@@ -26,4 +26,4 @@ const mu_constant_stmt_t *mu_constant_stmt(
 void mu_constant_stmt_debug(const mu_constant_stmt_t *stmt)
   __attribute__((nonnull));
 
-#endif /* MU_STMT_VECTOR_H */
+#endif /* MU_STMT_CONSTANT_H */

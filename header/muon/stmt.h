@@ -4,6 +4,7 @@
 #include "stmt/common.h"    // IWYU pragma: export
 
 #include "stmt/constant.h"  // IWYU pragma: export
+#include "stmt/type.h"      // IWYU pragma: export
 
 void mu_stmt_debug(const mu_stmt_t *stmt) __attribute__((nonnull));
 

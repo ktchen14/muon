@@ -42,6 +42,9 @@ static inline const mu_node_t *node_at(const mu_node_t *node, size_t i) {
 
     case MU_CONSTANT_STMT_NODE:
       return constant_stmt_at((const mu_constant_stmt_t *) node, i);
+
+    case MU_TYPE_STMT_NODE:
+      return type_stmt_at((const mu_type_stmt_t *) node, i);
   }
 
   return NULL;  // TODO: unreachable

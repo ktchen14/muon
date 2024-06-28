@@ -4,5 +4,6 @@
 #include <muon/stmt.h>      // IWYU pragma: export
 
 #include "stmt/constant.h"  // IWYU pragma: export
+#include "stmt/type.h"      // IWYU pragma: export
 
 #endif /* MU_STMT_I */

@@ -32,6 +32,7 @@ typedef enum {
 
   // Stmt
   MU_CONSTANT_STMT_STATOR,
+  MU_TYPE_STMT_STATOR,
 } mu_stator_kind_t;
 
 /// An abstract stator

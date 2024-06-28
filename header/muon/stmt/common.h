@@ -6,6 +6,7 @@
 /// An enumeration of each kind of stmt
 typedef enum {
   MU_CONSTANT_STMT = MU_CONSTANT_STMT_NODE,
+  MU_TYPE_STMT = MU_TYPE_STMT_NODE,
 } mu_stmt_kind_t;
 
 /// An abstract stmt

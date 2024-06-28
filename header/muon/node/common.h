@@ -27,6 +27,7 @@ typedef enum {
 
   // Stmt
   MU_CONSTANT_STMT_NODE = MU_CONSTANT_STMT_STATOR,
+  MU_TYPE_STMT_NODE = MU_TYPE_STMT_STATOR,
 } mu_node_kind_t;
 
 /// An abstract node
