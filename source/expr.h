@@ -11,4 +11,12 @@
 #include "expr/vector.h"   // IWYU pragma: export
 #include "expr/zero.h"     // IWYU pragma: export
 
+/**
+ * @brief Emit a @c case in an abstract call on an expr function
+ */
+#define MU_ABSTRACT_EXPR_CALL(lower, upper, t, prefix, name, ...) \
+  case MU_##upper##_EXPR: \
+    prefix##_##lower##_expr_##name((const mu_##lower##_expr_t *) expr, ##__VA_ARGS__); \
+    break;
+
 #endif /* MU_EXPR_I */

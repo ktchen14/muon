@@ -7,7 +7,7 @@
 
 typedef struct mu_engine_t mu_engine_t;
 
-/// Expand to emit(lower, upper, title, ...) for each kind of expr
+/// Expands to emit(lower, upper, title, ...) for each kind of expr
 #define MU_EACH_EXPR_KIND(emit, ...) \
   emit(access, ACCESS, Access, ##__VA_ARGS__) \
   emit(integer, INTEGER, Integer, ##__VA_ARGS__) \
@@ -17,7 +17,7 @@ typedef struct mu_engine_t mu_engine_t;
   emit(vector, VECTOR, Vector, ##__VA_ARGS__) \
   emit(zero, ZERO, Zero, ##__VA_ARGS__)
 
-/// Expand to emit(lower, upper, title, ...) for each kind of sign
+/// Expands to emit(lower, upper, title, ...) for each kind of sign
 #define MU_EACH_SIGN_KIND(emit, ...) \
   emit(integer, INTEGER, Integer, ##__VA_ARGS__) \
   emit(member, MEMBER, Member, ##__VA_ARGS__) \
@@ -26,7 +26,7 @@ typedef struct mu_engine_t mu_engine_t;
   emit(variable, VARIABLE, Variable, ##__VA_ARGS__) \
   emit(vector, VECTOR, Vector, ##__VA_ARGS__)
 
-/// Expand to emit(lower, upper, title, ...) for each kind of stmt
+/// Expands to emit(lower, upper, title, ...) for each kind of stmt
 #define MU_EACH_STMT_KIND(emit, ...) \
   emit(constant, CONSTANT, Constant, ##__VA_ARGS__) \
   emit(type, TYPE, Type, ##__VA_ARGS__)
