@@ -4,7 +4,7 @@
 #include <muon/expr/vector.h>  // IWYU pragma: export
 
 #include "common.h"
-#include "../sign.h"
+#include "../menu.h"
 
 #include <stddef.h>
 
@@ -21,11 +21,10 @@ static inline const mu_node_t *vector_expr_at(
   return i < expr->argc ? &expr->argv[i]->as_node : NULL;
 }
 
-const mu_sign_t *vector_expr_induce(
-    mu_engine_t *engine,
+criteria_t *vector_expr_induce(
     const mu_vector_expr_t *expr,
-    criteria_t **criteriap,
-    const mu_sign_t *const equation[])
+    criteria_t *criteria,
+    const induce_menu_t *menu)
   __attribute__((nonnull));
 
 #endif /* MU_EXPR_VECTOR_I */

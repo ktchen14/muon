@@ -4,6 +4,7 @@
 #include <muon/type.h>      // IWYU pragma: export
 
 #include "type/integer.h"   // IWYU pragma: export
+#include "type/variable.h"  // IWYU pragma: export
 #include "type/vector.h"    // IWYU pragma: export
 
 /**

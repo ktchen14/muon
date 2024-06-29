@@ -35,6 +35,7 @@ target_sources(muon PRIVATE
 
   type.c
   type/integer.c
+  type/variable.c
   type/vector.c
 
   $<TARGET_OBJECTS:reader>

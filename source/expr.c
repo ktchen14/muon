@@ -1,38 +1,21 @@
 #include "expr.h"
 
-#include <stdlib.h>
+#include <assert.h>
 
-const mu_sign_t *expr_induce(
-    mu_engine_t *engine,
+const criteria_t *expr_induce(
     const mu_expr_t *expr,
-    criteria_t **criteriap,
-    const mu_sign_t *const equation[]) {
+    criteria_t *criteria,
+    const induce_menu_t *menu) {
   switch (expr->kind) {
-    case MU_ACCESS_EXPR:
-      abort();
-
-    case MU_INTEGER_EXPR:
-      return integer_expr_induce(
-          engine, (const mu_integer_expr_t *) expr, criteriap, equation);
-
-    case MU_MEMBER_EXPR:
-      abort();
-
-    case MU_NAME_EXPR:
-      abort();
-
-    case MU_RECORD_EXPR:
-      abort();
-
-    case MU_VECTOR_EXPR:
-      return vector_expr_induce(
-          engine, (const mu_vector_expr_t *) expr, criteriap, equation);
-
-    case MU_ZERO_EXPR:
-      abort();
+#define MU_EMIT(lower, upper, _) \
+    case MU_##upper##_EXPR: \
+      return lower##_expr_induce((const mu_##lower##_expr_t *) expr, criteria, menu);
+    MU_EACH_EXPR_KIND(MU_EMIT)
+#undef MU_EMIT
   }
 
-  return NULL;  // TODO: unreachable
+  assert(0);
+  __builtin_unreachable();
 }
 
 void mu_expr_debug(const mu_expr_t *expr) {

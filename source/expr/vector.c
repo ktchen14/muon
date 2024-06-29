@@ -2,7 +2,8 @@
 
 #include "../engine.h"
 #include "../expr.h"
-#include "../sign.h"
+#include "../menu.h"
+#include "../type.h"
 
 #include <assert.h>
 #include <errno.h>
@@ -31,39 +32,36 @@ const mu_vector_expr_t *mu_vector_expr(
   return engine_assign_concrete(engine, result);
 }
 
-const mu_sign_t *vector_expr_induce(
-    mu_engine_t *engine,
+criteria_t *vector_expr_induce(
     const mu_vector_expr_t *expr,
-    criteria_t **criteriap,
-    const mu_sign_t *const equation[]) {
-  const mu_source_t *source = &expr->as_node.source;
+    criteria_t *criteria,
+    const induce_menu_t *menu) {
+  assert(expr->as_stator.engine == menu->engine);
 
-  // The type of a vector expr must be [x]. Make the type variable x:
-  const mu_variable_sign_t *x;
-  if ((x = mu_variable_sign(engine, source)) == NULL)
+  // The type of a vector expr is [a]
+  const mu_variable_type_t *a;
+  if ((a = mu_variable_type(menu->engine)) == NULL)
     return NULL;
 
-  // Make the type [x]
-  const mu_vector_sign_t *vector_sign;
-  if ((vector_sign = mu_vector_sign(engine, &x->as_sign, source)) == NULL)
+  const mu_vector_type_t *type;
+  if ((type = mu_vector_type(menu->engine, &a->as_type)) == NULL)
     return NULL;
 
   // Now we add the constraint that x must be equivalent to the type of each
   // element. First, reallocate the criteria.
-  criteria_t *criteria;
-  if (rare((criteria = criteria_extend(*criteriap, expr->argc)) == NULL))
+  criteria_t *result;
+  if (rare((result = criteria_extend(criteria, expr->argc)) == NULL))
     return NULL;
 
   // Then populate it
   for (size_t i = expr->argc; i-- > 0;) {
     const mu_expr_t *argument = expr->argv[i];
-    criteria->data[criteria->length - i] = (constraint_t) {
-      .a = &x->as_sign, .b = equation[argument->as_stator.id],
+    result->data[result->length - i] = (constraint_t) {
+      .a.type = &a->as_type, .b.node = &argument->as_node,
     };
   }
 
-  *criteriap = criteria;
-  return &vector_sign->as_sign;
+  return result;
 }
 
 void mu_vector_expr_debug(const mu_vector_expr_t *expr) {

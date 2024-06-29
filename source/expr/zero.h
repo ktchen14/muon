@@ -4,7 +4,8 @@
 #include <muon/expr/zero.h>  // IWYU pragma: export
 
 #include "common.h"
-#include "../sign.h"
+#include "../menu.h"
+#include "../type.h"
 
 #include <stddef.h>
 
@@ -20,12 +21,11 @@ static inline const mu_node_t *zero_expr_at(
 }
 
 __attribute__((nonnull))
-static inline const mu_sign_t *zero_expr_deduce(
-    mu_engine_t *engine,
+static inline const criteria_t *zero_expr_induce(
     const mu_zero_expr_t *expr,
-    criteria_t **criteriap,
-    const mu_sign_t *const equation[]) {
-  return &mu_variable_sign(engine, &expr->as_node.source)->as_sign;
+    criteria_t *criteria,
+    const induce_menu_t *menu) {
+  return criteria;
 }
 
 #endif /* MU_EXPR_ZERO_I */
