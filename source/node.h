@@ -50,6 +50,24 @@ static inline const mu_node_t *node_at(const mu_node_t *node, size_t i) {
   return NULL;  // TODO: unreachable
 }
 
+static inline const criteria_t *expr_induce(
+    const mu_node_t *node,
+    criteria_t *criteria,
+    const induce_menu_t *menu) {
+  switch (node->kind) {
+#define MU_EMIT(lower, upper, _) \
+    case MU_##upper##_EXPR: \
+      return lower##_expr_induce((const mu_##lower##_expr_t *) node, criteria, menu);
+    MU_EACH_EXPR_KIND(MU_EMIT)
+#undef MU_EMIT
+
+    default: abort();
+  }
+
+  assert(0);
+  __builtin_unreachable();
+}
+
 /// Return the cursor in the @a node
 __attribute__((const, nonnull, returns_nonnull))
 static inline node_cursor_t *node_cursor(const mu_node_t *node) {

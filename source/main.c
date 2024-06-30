@@ -47,21 +47,15 @@ int main(int argc, char *argv[argc]) {
       fprintf(stderr, "Stator #%zu = Stator #%zu\n", i, resolution[i]->as_stator.id);
   }
 
-  const mu_sign_t *const *induce;
-  if ((induce = mu_script_induce(script)) == NULL) {
-    fprintf(stderr, "%s: mu_script_induce(): %s\n", muon_name, strerror(errno));
-    return EXIT_FAILURE;
-  }
-
-  const mu_stmt_t *stmt;
-  for (size_t i = 0; i < script->argc; i++) {
-    stmt = script->argv[i];
-    const mu_sign_t *sign = induce[stmt->as_stator.id];
-    if (sign != NULL) {
-      fprintf(stderr, "Stator #%zu: ", stmt->as_stator.id);
-      mu_sign_debug(sign);
-    }
-  }
+  /* const mu_stmt_t *stmt; */
+  /* for (size_t i = 0; i < script->argc; i++) { */
+  /*   stmt = script->argv[i]; */
+  /*   const mu_sign_t *sign = induce[stmt->as_stator.id]; */
+  /*   if (sign != NULL) { */
+  /*     fprintf(stderr, "Stator #%zu: ", stmt->as_stator.id); */
+  /*     mu_sign_debug(sign); */
+  /*   } */
+  /* } */
 
   return EXIT_SUCCESS;
 
