@@ -10,9 +10,9 @@
 /**
  * @brief Emit a @c case in an abstract call on an type function
  */
-#define MU_ABSTRACT_TYPE_CALL(lower, upper, t, prefix, name, ...) \
+#define MU_ABSTRACT_TYPE_CALL(lower, upper, t, variable, prefix, name, ...) \
   case MU_##upper##_TYPE: \
-    prefix##_##lower##_type_##name((const mu_##lower##_type_t *) type, ##__VA_ARGS__); \
+    prefix##_##lower##_type_##name((const mu_##lower##_type_t *) variable, ##__VA_ARGS__); \
     break;
 
 #endif /* MU_TYPE_I */
