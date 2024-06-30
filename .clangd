@@ -3,3 +3,6 @@ Diagnostics:
     IgnoreHeader: common\.h
   MissingIncludes: Strict
   UnusedIncludes: Strict
+
+  Suppress:
+  - unused-variable
