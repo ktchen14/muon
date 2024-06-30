@@ -1,8 +1,10 @@
 #include <muon.h>
 #include "analyzer.h"
 #include "script.h"
+#include "stator.h"
 #include "status.h"
 
+#include <assert.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -68,7 +70,6 @@ int main(int argc, char *argv[argc]) {
       fprintf(stderr, "Stator #%zu = Stator #%zu\n", i, resolution[i]->as_stator.id);
   }
 
-
   induce_menu_t induce_menu = {
     .engine = &engine,
     .node_to_stmt = resolution,
@@ -76,13 +77,93 @@ int main(int argc, char *argv[argc]) {
   criteria_t *criteria = induce(script, &induce_menu);
   assert(criteria != NULL);
 
+  typedef union {
+    const mu_stator_t *stator;
+    const mu_node_t *node;
+    const mu_type_t *type;
+  } node_or_type_t;
+  node_or_type_t *node_to_node_or_type = malloc(
+      sizeof(node_or_type_t[engine.stator_id])
+  );
+  for (size_t i = 0; i < engine.stator_id; i++)
+    node_to_node_or_type[i] = (node_or_type_t) {0};
+
+  const mu_type_t **type_to_type = malloc(sizeof(const mu_type_t *[engine.stator_id]));
+  for (size_t i = 0; i < engine.stator_id; i++)
+    type_to_type[i] = NULL;
+
+  for (size_t i = 0; i < criteria->length; i++) {
+    constraint_t *constraint = &criteria->data[i];
+
+    const mu_stator_t *a, *b;
+    memcpy(&a, &constraint->a, sizeof(const mu_stator_t *));
+    memcpy(&b, &constraint->b, sizeof(const mu_stator_t *));
+
+    while (stator_isnode(a)) {
+      const mu_stator_t *stator = node_to_node_or_type[a->id].stator;
+      if (stator == NULL)
+        break;
+      a = stator;
+    }
+
+    while (stator_istype(a)) {
+      const mu_type_t *type = type_to_type[a->id];
+      if (type == NULL)
+        break;
+      a = &type->as_stator;
+    }
+
+    while (stator_isnode(b)) {
+      const mu_stator_t *stator = node_to_node_or_type[b->id].stator;
+      if (stator == NULL)
+        break;
+      b = stator;
+    }
+
+    while (stator_istype(b)) {
+      const mu_type_t *type = type_to_type[b->id];
+      if (type == NULL)
+        break;
+      b = &type->as_stator;
+    }
+
+    if (stator_isnode(a) && stator_isnode(b)) {
+      node_to_node_or_type[a->id].node = (const mu_node_t *) b;
+
+    } else if (stator_isnode(a) && stator_istype(b)) {
+      node_to_node_or_type[a->id].type = (const mu_type_t *) b;
+
+    } else if (stator_istype(a) && stator_isnode(b)) {
+      node_to_node_or_type[b->id].type = (const mu_type_t *) a;
+
+    } else if (stator_istype(a) && stator_istype(b)) {
+      const mu_type_t *type_a = (const mu_type_t *) a;
+      const mu_type_t *type_b = (const mu_type_t *) b;
+
+      if (type_a->kind == MU_VARIABLE_TYPE && type_b->kind == MU_VARIABLE_TYPE) {
+        type_to_type[type_a->as_stator.id] = type_b;
+
+      } else if (type_a->kind == MU_VARIABLE_TYPE && type_b->kind != MU_VARIABLE_TYPE) {
+        type_to_type[type_a->as_stator.id] = type_b;
+
+      } else if (type_a->kind != MU_VARIABLE_TYPE && type_b->kind == MU_VARIABLE_TYPE) {
+        type_to_type[type_b->as_stator.id] = type_a;
+
+      } else if (type_a->kind != MU_VARIABLE_TYPE && type_b->kind != MU_VARIABLE_TYPE) {
+        fprintf(stderr, "Both type: %zu %zu\n", a->id, b->id);
+        mu_type_debug(type_a);
+        mu_type_debug(type_b);
+
+      } else abort();
+    } else abort();
+  }
+
   for (size_t i = 0; i < criteria->length; i++) {
     constraint_t *constraint = &criteria->data[i];
     fprintf(stderr, "Constraint: %zu = %zu\n",
         constraint->a.node->as_stator.id,
         constraint->b.node->as_stator.id);
   }
-
 
   return EXIT_SUCCESS;
 
