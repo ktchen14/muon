@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "reader.h"
+#include "script.h"
 
 const unsigned char source[] =
   "true false\n"

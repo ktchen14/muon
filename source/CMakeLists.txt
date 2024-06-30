@@ -1,4 +1,4 @@
-add_subdirectory(reader)
+add_subdirectory(script)
 
 # check_function_exists("c8rtomb" FUNCTION_C8RTOMB)
 

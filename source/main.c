@@ -1,6 +1,5 @@
 #include <muon.h>
 #include "analyzer.h"
-#include "reader.h"
 #include "script.h"
 #include "status.h"
 
@@ -9,7 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-char buffer[4096];
+unsigned char buffer[4096];
 
 int main(int argc, char *argv[argc]) {
   const char *muon_name = argc > 0 ? argv[0] : "muon";
