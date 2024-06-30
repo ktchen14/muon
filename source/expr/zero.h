@@ -21,7 +21,7 @@ static inline const mu_node_t *zero_expr_at(
 }
 
 __attribute__((nonnull))
-static inline const criteria_t *zero_expr_induce(
+static inline criteria_t *zero_expr_induce(
     const mu_zero_expr_t *expr,
     criteria_t *criteria,
     const induce_menu_t *menu) {

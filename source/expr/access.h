@@ -22,7 +22,7 @@ static inline const mu_node_t *access_expr_at(
 }
 
 __attribute__((nonnull))
-static inline const criteria_t *access_expr_induce(
+static inline criteria_t *access_expr_induce(
     const mu_access_expr_t *expr,
     criteria_t *criteria,
     const induce_menu_t *menu) {

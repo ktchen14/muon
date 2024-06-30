@@ -3,8 +3,9 @@
 
 #include "node/common.h"
 
-#include "expr.h"
-#include "stmt.h"
+#include "expr.h"  // IWYU pragma: export
+#include "sign.h"  // IWYU pragma: export
+#include "stmt.h"  // IWYU pragma: export
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -50,7 +51,7 @@ static inline const mu_node_t *node_at(const mu_node_t *node, size_t i) {
   return NULL;  // TODO: unreachable
 }
 
-static inline const criteria_t *expr_induce(
+static inline criteria_t *node_induce(
     const mu_node_t *node,
     criteria_t *criteria,
     const induce_menu_t *menu) {
@@ -61,7 +62,13 @@ static inline const criteria_t *expr_induce(
     MU_EACH_EXPR_KIND(MU_EMIT)
 #undef MU_EMIT
 
-    default: abort();
+#define MU_EMIT(lower, upper, _) case MU_##upper##_SIGN: return criteria;
+    MU_EACH_SIGN_KIND(MU_EMIT)
+#undef MU_EMIT
+
+#define MU_EMIT(lower, upper, _) case MU_##upper##_STMT: return criteria;
+    MU_EACH_STMT_KIND(MU_EMIT)
+#undef MU_EMIT
   }
 
   assert(0);

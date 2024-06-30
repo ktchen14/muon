@@ -56,7 +56,7 @@ criteria_t *vector_expr_induce(
   // Then populate it
   for (size_t i = expr->argc; i-- > 0;) {
     const mu_expr_t *argument = expr->argv[i];
-    result->data[result->length - i] = (constraint_t) {
+    result->data[result->length - i - 1] = (constraint_t) {
       .a.type = &a->as_type, .b.node = &argument->as_node,
     };
   }

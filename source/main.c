@@ -10,6 +10,28 @@
 
 unsigned char buffer[4096];
 
+#include "menu.h"
+#include "node.h"
+
+criteria_t *induce(const mu_script_t *script, const induce_menu_t *menu) {
+  criteria_t *criteria = malloc(sizeof(criteria_t));
+  criteria->length = 0;
+
+  for (size_t i = 0; i < script->argc; i++) {
+    const mu_node_t *node = &script->argv[i]->as_node;
+
+    do {
+      const mu_node_t *next;
+      while ((next = node_at(node, node_cursor(node)->i++)) != NULL)
+        node = node_continue(node, next);
+
+      criteria = node_induce(node, criteria, menu);
+    } while ((node = node_return(node)) != NULL);
+  }
+
+  return criteria;
+}
+
 int main(int argc, char *argv[argc]) {
   const char *muon_name = argc > 0 ? argv[0] : "muon";
   if (argc < 2) {
@@ -46,15 +68,21 @@ int main(int argc, char *argv[argc]) {
       fprintf(stderr, "Stator #%zu = Stator #%zu\n", i, resolution[i]->as_stator.id);
   }
 
-  /* const mu_stmt_t *stmt; */
-  /* for (size_t i = 0; i < script->argc; i++) { */
-  /*   stmt = script->argv[i]; */
-  /*   const mu_sign_t *sign = induce[stmt->as_stator.id]; */
-  /*   if (sign != NULL) { */
-  /*     fprintf(stderr, "Stator #%zu: ", stmt->as_stator.id); */
-  /*     mu_sign_debug(sign); */
-  /*   } */
-  /* } */
+
+  induce_menu_t induce_menu = {
+    .engine = &engine,
+    .node_to_stmt = resolution,
+  };
+  criteria_t *criteria = induce(script, &induce_menu);
+  assert(criteria != NULL);
+
+  for (size_t i = 0; i < criteria->length; i++) {
+    constraint_t *constraint = &criteria->data[i];
+    fprintf(stderr, "Constraint: %zu = %zu\n",
+        constraint->a.node->as_stator.id,
+        constraint->b.node->as_stator.id);
+  }
+
 
   return EXIT_SUCCESS;
 
