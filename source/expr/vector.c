@@ -50,16 +50,20 @@ criteria_t *vector_expr_induce(
   // Now we add the constraint that x must be equivalent to the type of each
   // element. First, reallocate the criteria.
   criteria_t *result;
-  if (rare((result = criteria_extend(criteria, expr->argc)) == NULL))
+  if (rare((result = criteria_extend(criteria, expr->argc + 1)) == NULL))
     return NULL;
 
   // Then populate it
   for (size_t i = expr->argc; i-- > 0;) {
     const mu_expr_t *argument = expr->argv[i];
-    result->data[result->length - i - 1] = (constraint_t) {
+    result->data[result->length - i - 2] = (constraint_t) {
       .a.type = &a->as_type, .b.node = &argument->as_node,
     };
   }
+
+  result->data[result->length - 1] = (constraint_t) {
+    .a.node = &expr->as_node, .b.type = &type->as_type,
+  };
 
   return result;
 }

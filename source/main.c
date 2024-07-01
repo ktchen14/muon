@@ -158,6 +158,39 @@ int main(int argc, char *argv[argc]) {
     } else abort();
   }
 
+  for (size_t i = 0; i < script->argc; i++) {
+    const mu_node_t *node = &script->argv[i]->as_node;
+
+    do {
+      const mu_node_t *next;
+      while ((next = node_at(node, node_cursor(node)->i++)) != NULL)
+        node = node_continue(node, next);
+
+      fprintf(stderr, "Resolving node %zu\n", node->as_stator.id);
+
+      const mu_stator_t *stator = &node->as_stator;
+      while (stator_isnode(stator)) {
+        const mu_stator_t *next = node_to_node_or_type[stator->id].stator;
+        if (next == NULL)
+          break;
+        stator = next;
+      }
+
+      while (stator_istype(stator)) {
+        const mu_type_t *next = type_to_type[stator->id];
+        if (next == NULL)
+          break;
+        stator = &next->as_stator;
+      }
+
+      if (stator_istype(stator)) {
+        const mu_type_t *type = (const mu_type_t *) stator;
+        fprintf(stderr, "Node %zu: ", node->as_stator.id);
+        mu_type_debug(type);
+      }
+    } while ((node = node_return(node)) != NULL);
+  }
+
   for (size_t i = 0; i < criteria->length; i++) {
     constraint_t *constraint = &criteria->data[i];
     fprintf(stderr, "Constraint: %zu = %zu\n",
