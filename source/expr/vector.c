@@ -35,7 +35,7 @@ const mu_vector_expr_t *mu_vector_expr(
 criteria_t *vector_expr_induce(
     const mu_vector_expr_t *expr,
     criteria_t *criteria,
-    const induce_menu_t *menu) {
+    const induce_t *menu) {
   assert(expr->as_stator.engine == menu->engine);
 
   // The type of a vector expr is [a]

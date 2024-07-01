@@ -25,7 +25,7 @@ __attribute__((nonnull))
 static inline criteria_t *name_expr_induce(
     const mu_name_expr_t *expr,
     criteria_t *criteria,
-    const induce_menu_t *menu) {
+    const induce_t *menu) {
   assert(expr->as_stator.engine == menu->engine);
   assert(menu->node_to_stmt != NULL);
 

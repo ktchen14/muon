@@ -54,7 +54,7 @@ static inline const mu_node_t *node_at(const mu_node_t *node, size_t i) {
 static inline criteria_t *node_induce(
     const mu_node_t *node,
     criteria_t *criteria,
-    const induce_menu_t *menu) {
+    const induce_t *menu) {
   switch (node->kind) {
 #define MU_EMIT(lower, upper, _) \
     case MU_##upper##_EXPR: \

@@ -25,7 +25,7 @@ __attribute__((nonnull))
 static inline criteria_t *integer_expr_induce(
     const mu_integer_expr_t *expr,
     criteria_t *criteria,
-    const induce_menu_t *menu) {
+    const induce_t *menu) {
   assert(expr->as_stator.engine == menu->engine);
 
   const mu_integer_type_t *type = mu_integer_type(menu->engine);

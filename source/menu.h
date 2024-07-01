@@ -9,15 +9,9 @@
 
 typedef struct {
   mu_engine_t *engine;
-  const mu_type_t **node_to_type;
-  const mu_stmt_t **node_to_stmt;
-} menu_t;
-
-typedef struct {
-  mu_engine_t *engine;
   const mu_type_t *const *node_to_type;
   const mu_stmt_t *const *node_to_stmt;
-} induce_menu_t;
+} induce_t;
 
 typedef struct {
   union {

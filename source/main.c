@@ -15,7 +15,7 @@ unsigned char buffer[4096];
 #include "menu.h"
 #include "node.h"
 
-criteria_t *induce(const mu_script_t *script, const induce_menu_t *menu) {
+criteria_t *induce(const mu_script_t *script, const induce_t *menu) {
   criteria_t *criteria = malloc(sizeof(criteria_t));
   criteria->length = 0;
 
@@ -70,7 +70,7 @@ int main(int argc, char *argv[argc]) {
       fprintf(stderr, "Stator #%zu = Stator #%zu\n", i, resolution[i]->as_stator.id);
   }
 
-  induce_menu_t induce_menu = {
+  induce_t induce_menu = {
     .engine = &engine,
     .node_to_stmt = resolution,
   };

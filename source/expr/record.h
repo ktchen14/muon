@@ -25,7 +25,7 @@ __attribute__((nonnull))
 static inline criteria_t *record_expr_induce(
     const mu_record_expr_t *expr,
     criteria_t *criteria,
-    const induce_menu_t *menu) {
+    const induce_t *menu) {
   assert(0);
 }
 
