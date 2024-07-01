@@ -24,7 +24,7 @@ static inline const mu_node_t *vector_expr_at(
 criteria_t *vector_expr_induce(
     const mu_vector_expr_t *expr,
     criteria_t *criteria,
-    const induce_t *menu)
+    const induce_t *induce)
   __attribute__((nonnull));
 
 #endif /* MU_EXPR_VECTOR_I */

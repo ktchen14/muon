@@ -25,10 +25,10 @@ __attribute__((nonnull))
 static inline criteria_t *integer_expr_induce(
     const mu_integer_expr_t *expr,
     criteria_t *criteria,
-    const induce_t *menu) {
-  assert(expr->as_stator.engine == menu->engine);
+    const induce_t *induce) {
+  assert(expr->as_stator.engine == induce->engine);
 
-  const mu_integer_type_t *type = mu_integer_type(menu->engine);
+  const mu_integer_type_t *type = mu_integer_type(induce->engine);
   constraint_t constraint = {
     .a.node = &expr->as_node, .b.type = &type->as_type,
   };

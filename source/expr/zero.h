@@ -24,7 +24,7 @@ __attribute__((nonnull))
 static inline criteria_t *zero_expr_induce(
     const mu_zero_expr_t *expr,
     criteria_t *criteria,
-    const induce_t *menu) {
+    const induce_t *induce) {
   return criteria;
 }
 

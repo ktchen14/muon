@@ -35,16 +35,16 @@ const mu_vector_expr_t *mu_vector_expr(
 criteria_t *vector_expr_induce(
     const mu_vector_expr_t *expr,
     criteria_t *criteria,
-    const induce_t *menu) {
-  assert(expr->as_stator.engine == menu->engine);
+    const induce_t *induce) {
+  assert(expr->as_stator.engine == induce->engine);
 
   // The type of a vector expr is [a]
   const mu_variable_type_t *a;
-  if ((a = mu_variable_type(menu->engine)) == NULL)
+  if ((a = mu_variable_type(induce->engine)) == NULL)
     return NULL;
 
   const mu_vector_type_t *type;
-  if ((type = mu_vector_type(menu->engine, &a->as_type)) == NULL)
+  if ((type = mu_vector_type(induce->engine, &a->as_type)) == NULL)
     return NULL;
 
   // Now we add the constraint that x must be equivalent to the type of each

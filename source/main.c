@@ -15,7 +15,7 @@ unsigned char buffer[4096];
 #include "menu.h"
 #include "node.h"
 
-criteria_t *induce(const mu_script_t *script, const induce_t *menu) {
+criteria_t *induce(const mu_script_t *script, const induce_t *induce) {
   criteria_t *criteria = malloc(sizeof(criteria_t));
   criteria->length = 0;
 
@@ -27,7 +27,7 @@ criteria_t *induce(const mu_script_t *script, const induce_t *menu) {
       while ((next = node_at(node, node_cursor(node)->i++)) != NULL)
         node = node_continue(node, next);
 
-      criteria = node_induce(node, criteria, menu);
+      criteria = node_induce(node, criteria, induce);
     } while ((node = node_return(node)) != NULL);
   }
 
