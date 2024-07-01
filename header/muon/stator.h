@@ -5,8 +5,6 @@
 
 #include <stddef.h>
 
-typedef struct mu_engine_t mu_engine_t;
-
 /// Expands to emit(lower, upper, title, ...) for each kind of expr
 #define MU_EACH_EXPR_KIND(emit, ...) \
   emit(access, ACCESS, Access, ##__VA_ARGS__) \
@@ -51,6 +49,8 @@ typedef enum {
   MU_EACH_TYPE_KIND(MU_EMIT, TYPE)
 #undef MU_EMIT
 } mu_stator_kind_t;
+
+typedef struct mu_engine_t mu_engine_t;
 
 /// An abstract stator
 typedef struct {
