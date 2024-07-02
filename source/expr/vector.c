@@ -2,7 +2,7 @@
 
 #include "../engine.h"
 #include "../expr.h"
-#include "../menu.h"
+#include "../inductor.h"
 #include "../type.h"
 
 #include <assert.h>
@@ -32,40 +32,30 @@ const mu_vector_expr_t *mu_vector_expr(
   return engine_assign_concrete(engine, result);
 }
 
-criteria_t *vector_expr_induce(
-    const mu_vector_expr_t *expr,
-    criteria_t *criteria,
-    const induce_t *induce) {
-  assert(expr->as_stator.engine == induce->engine);
+inductor_t *vector_expr_induce(
+    const mu_vector_expr_t *expr, inductor_t *inductor) {
+  assert(expr->as_stator.engine == inductor->engine);
 
   // The type of a vector expr is [a]
   const mu_variable_type_t *a;
-  if ((a = mu_variable_type(induce->engine)) == NULL)
+  if ((a = mu_variable_type(inductor->engine)) == NULL)
     return NULL;
 
   const mu_vector_type_t *type;
-  if ((type = mu_vector_type(induce->engine, &a->as_type)) == NULL)
+  if ((type = mu_vector_type(inductor->engine, &a->as_type)) == NULL)
     return NULL;
 
-  // Now we add the constraint that x must be equivalent to the type of each
-  // element. First, reallocate the criteria.
-  criteria_t *result;
-  if (rare((result = criteria_extend(criteria, expr->argc + 1)) == NULL))
+  if ((inductor = inductor_extend_type(inductor, &type->as_type)) == NULL)
     return NULL;
 
-  // Then populate it
-  for (size_t i = expr->argc; i-- > 0;) {
+  for (size_t i = 0; i < expr->argc; i++) {
     const mu_expr_t *argument = expr->argv[i];
-    result->data[result->length - i - 2] = (constraint_t) {
-      .a.type = &a->as_type, .b.node = &argument->as_node,
-    };
+    inductor = inductor_equate_node_type(inductor, &argument->as_node, &a->as_type);
+    if (inductor == NULL)
+      return NULL;
   }
 
-  result->data[result->length - 1] = (constraint_t) {
-    .a.node = &expr->as_node, .b.type = &type->as_type,
-  };
-
-  return result;
+  return inductor_equate_node_type(inductor, &expr->as_node, &type->as_type);
 }
 
 void mu_vector_expr_debug(const mu_vector_expr_t *expr) {

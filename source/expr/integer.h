@@ -4,7 +4,7 @@
 #include <muon/expr/integer.h>  // IWYU pragma: export
 
 #include "common.h"
-#include "../menu.h"
+#include "../inductor.h"
 #include "../type.h"
 
 #include <assert.h>
@@ -22,17 +22,12 @@ static inline const mu_node_t *integer_expr_at(
 }
 
 __attribute__((nonnull))
-static inline criteria_t *integer_expr_induce(
-    const mu_integer_expr_t *expr,
-    criteria_t *criteria,
-    const induce_t *induce) {
-  assert(expr->as_stator.engine == induce->engine);
+static inline inductor_t *integer_expr_induce(
+    const mu_integer_expr_t *expr, inductor_t *inductor) {
+  assert(expr->as_stator.engine == inductor->engine);
 
-  const mu_integer_type_t *type = mu_integer_type(induce->engine);
-  constraint_t constraint = {
-    .a.node = &expr->as_node, .b.type = &type->as_type,
-  };
-  return criteria_append(criteria, constraint);
+  const mu_integer_type_t *type = mu_integer_type(inductor->engine);
+  return inductor_equate_node_type(inductor, &expr->as_node, &type->as_type);
 }
 
 #endif /* MU_EXPR_INTEGER_I */

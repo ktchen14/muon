@@ -4,8 +4,7 @@
 #include <muon/expr/member.h>  // IWYU pragma: export
 
 #include "common.h"
-#include "../menu.h"
-#include "../type.h"
+#include "../inductor.h"
 
 #include <assert.h>
 #include <stddef.h>
@@ -22,10 +21,8 @@ static inline const mu_node_t *member_expr_at(
 }
 
 __attribute__((nonnull))
-static inline criteria_t *member_expr_induce(
-    const mu_member_expr_t *expr,
-    criteria_t *criteria,
-    const induce_t *induce) {
+static inline inductor_t *member_expr_induce(
+    const mu_member_expr_t *expr, inductor_t *inductor) {
   assert(0);
 }
 
