@@ -19,6 +19,5 @@ const mu_integer_type_t *mu_integer_type(mu_engine_t *engine) {
 }
 
 void mu_integer_type_debug(const mu_integer_type_t *type) {
-  fprintf(stderr, "%*s", debug_indent, "");
-  fprintf(stderr, "Integer Type #%zu\n", type->as_stator.id);
+  fputs("Integer", stderr);
 }

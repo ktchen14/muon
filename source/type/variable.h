@@ -18,7 +18,8 @@ static inline const mu_variable_type_t *variable_type_reduce(
     const mu_variable_type_t *type,
     mu_engine_t *engine,
     const mu_type_t *const equation[]) {
-  assert(0);
+  assert(engine == type->as_stator.engine);
+  return type;
 }
 
 __attribute__((const, nonnull))

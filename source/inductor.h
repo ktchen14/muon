@@ -5,6 +5,7 @@
 #include "stmt.h"
 #include "type.h"
 
+#include <assert.h>
 #include <stddef.h>
 
 typedef struct {
@@ -22,7 +23,6 @@ typedef struct {
   size_t length;
   inductor_member_t data[];
 } inductor_t;
-
 
 /**
  * @brief Create an inductor on the @a engine
@@ -52,6 +52,9 @@ static inline inductor_member_t *inductor_root(
 
   return member;
 }
+
+const mu_type_t *inductor_type(
+    inductor_t **inductor, const mu_node_t *node);
 
 inductor_t *inductor_unify(
     inductor_t *inductor, const mu_type_t *a, const mu_type_t *b);

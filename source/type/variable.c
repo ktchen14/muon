@@ -18,6 +18,5 @@ const mu_variable_type_t *mu_variable_type(mu_engine_t *engine) {
 }
 
 void mu_variable_type_debug(const mu_variable_type_t *type) {
-  fprintf(stderr, "%*s", debug_indent, "");
-  fprintf(stderr, "Variable Type #%zu\n", type->as_stator.id);
+  fprintf(stderr, "Variable #%zu", type->as_stator.id);
 }

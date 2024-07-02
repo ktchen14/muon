@@ -7,15 +7,6 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-/* const mu_type_t *type_equate( */
-/*     inductor_t *inductor, const mu_type_t *a, const mu_type_t *b) */
-/*   __attribute__((nonnull)); */
-
-inductor_t *type_equate(
-    const mu_type_t *a,
-    const mu_type_t *b,
-    inductor_t *inductor);
-
 inductor_t *inductor_create(mu_engine_t *engine) {
   size_t length = engine->stator_id;
 
@@ -51,6 +42,50 @@ inductor_t *inductor_reallocate(
   inductor->length = length;
 
   return inductor;
+}
+
+const mu_type_t *inductor_type(
+    inductor_t **inductor, const mu_node_t *node) {
+  size_t length = (*inductor)->engine->stator_id;
+  const mu_type_t **equation;
+  equation = malloc(sizeof(const mu_type_t *[length]));
+  assert(equation != NULL);
+  for (size_t i = 0; i < length; i++)
+    equation[i] = NULL;
+
+  inductor_member_t member = {
+    .kind = INDUCTOR_NODE_MEMBER,
+    .id = node->as_stator.id,
+    .stator = &node->as_stator };
+
+  inductor_member_t *root_member = inductor_root(*inductor, &member);
+
+  // TODO: create a type variable
+  if (root_member->kind == INDUCTOR_NODE_MEMBER)
+    return NULL;
+
+  const mu_type_t *root = (const mu_type_t *) root_member->stator;
+  const mu_type_t *type = root;
+
+  do {
+    const mu_type_t *next;
+    while ((next = type_at(type, type_cursor(type)->i++)) != NULL) {
+      member = (inductor_member_t) {
+        .kind = INDUCTOR_TYPE_MEMBER,
+        .id = next->as_stator.id,
+        .stator = &next->as_stator };
+      root_member = inductor_root(*inductor, &member);
+      assert(root_member->kind == INDUCTOR_TYPE_MEMBER);
+
+      next = (const mu_type_t *) root_member->stator;
+      type = type_continue(type, next);
+    }
+
+    const mu_type_t *result = type_reduce(type, (*inductor)->engine, equation);
+    equation[type->as_stator.id] = result;
+  } while ((type = type_return(type)) != NULL);
+
+  return root;
 }
 
 inductor_t *inductor_unify(

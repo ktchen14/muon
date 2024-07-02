@@ -25,8 +25,7 @@ const mu_vector_type_t *mu_vector_type(
 }
 
 void mu_vector_type_debug(const mu_vector_type_t *type) {
-  fprintf(stderr, "%*s", debug_indent, "");
-  fprintf(stderr, "Vector Type #%zu:\n", type->as_stator.id);
-
-  WITH_DEBUG_INDENT() { mu_type_debug(type->matter); }
+  putc('[', stderr);
+  mu_type_debug(type->matter);
+  putc(']', stderr);
 }

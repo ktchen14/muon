@@ -7,6 +7,8 @@
 #include "sign.h"  // IWYU pragma: export
 #include "stmt.h"  // IWYU pragma: export
 
+#include "inductor.h"
+
 #include <stddef.h>
 #include <stdlib.h>
 
@@ -51,27 +53,24 @@ static inline const mu_node_t *node_at(const mu_node_t *node, size_t i) {
   return NULL;  // TODO: unreachable
 }
 
-static inline criteria_t *node_induce(
-    const mu_node_t *node,
-    criteria_t *criteria,
-    const induce_t *menu) {
+static inline inductor_t *node_induce(
+    const mu_node_t *node, inductor_t *inductor) {
   switch (node->kind) {
 #define MU_EMIT(lower, upper, _) \
     case MU_##upper##_EXPR: \
-      return lower##_expr_induce((const mu_##lower##_expr_t *) node, criteria, menu);
+      return lower##_expr_induce((const mu_##lower##_expr_t *) node, inductor);
     MU_EACH_EXPR_KIND(MU_EMIT)
 #undef MU_EMIT
 
-#define MU_EMIT(lower, upper, _) case MU_##upper##_SIGN: return criteria;
+#define MU_EMIT(lower, upper, _) case MU_##upper##_SIGN: return inductor;
     MU_EACH_SIGN_KIND(MU_EMIT)
 #undef MU_EMIT
 
-#define MU_EMIT(lower, upper, _) case MU_##upper##_STMT: return criteria;
+#define MU_EMIT(lower, upper, _) case MU_##upper##_STMT: return inductor;
     MU_EACH_STMT_KIND(MU_EMIT)
 #undef MU_EMIT
   }
 
-  assert(0);
   __builtin_unreachable();
 }
 
