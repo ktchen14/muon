@@ -7,6 +7,7 @@ add_library(muon)
 target_sources(muon PRIVATE
   analyzer.c
   common.c
+  inductor.c
   main.c
   name.c
   script.c

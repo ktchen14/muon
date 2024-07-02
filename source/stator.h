@@ -13,7 +13,7 @@ static inline void *stator_allocate(mu_engine_t *engine, size_t size) {
 
 static inline _Bool stator_isnode(const mu_stator_t *stator) {
   switch (stator->kind) {
-#define MU_EMIT(l, upper, t) case MU_##upper##_STATOR: return 1;
+#define MU_EMIT(lower, upper, t) case MU_##upper##_STATOR: return 1;
     MU_EACH_NODE_KIND(MU_EMIT)
 #undef MU_EMIT
 
@@ -23,7 +23,7 @@ static inline _Bool stator_isnode(const mu_stator_t *stator) {
 
 static inline _Bool stator_istype(const mu_stator_t *stator) {
   switch (stator->kind) {
-#define MU_EMIT(l, upper, t) case MU_##upper##_TYPE_STATOR: return 1;
+#define MU_EMIT(lower, upper, t) case MU_##upper##_TYPE_STATOR: return 1;
     MU_EACH_TYPE_KIND(MU_EMIT)
 #undef MU_EMIT
 

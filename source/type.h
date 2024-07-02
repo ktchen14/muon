@@ -7,4 +7,58 @@
 #include "type/variable.h"  // IWYU pragma: export
 #include "type/vector.h"    // IWYU pragma: export
 
+#include <assert.h>
+#include <stddef.h>
+
+/// Return the cursor in the @a type
+__attribute__((const, nonnull, returns_nonnull))
+static inline type_cursor_t *type_cursor(const mu_type_t *type) {
+  type_header_t *header = (type_header_t *) (
+      (char *) type - offsetof(type_header_t, data));
+  return &header->cursor;
+}
+
+/// Continue into the type
+static inline const mu_type_t *type_continue(
+    const mu_type_t *type, const mu_type_t *next) {
+  type_cursor_t *cursor = type_cursor(next);
+  assert(cursor->anterior == NULL && cursor->i == 0);
+  cursor->anterior = type;
+  return next;
+}
+
+/// Return from the type
+__attribute__((nonnull))
+static inline const mu_type_t *type_return(const mu_type_t *type) {
+  type_cursor_t *cursor = type_cursor(type);
+  const mu_type_t *anterior = cursor->anterior;
+  *cursor = (type_cursor_t) {0};
+  return anterior;
+}
+
+__attribute__((nonnull, pure))
+static inline const mu_type_t *type_at(const mu_type_t *type, size_t i) {
+#define MU_EMIT(lower, upper, _) \
+    case MU_##upper##_TYPE: \
+      return lower##_type_at((const mu_##lower##_type_t *) type, i);
+  switch (type->kind) { MU_EACH_TYPE_KIND(MU_EMIT) }
+#undef MU_EMIT
+
+  __builtin_unreachable();
+}
+
+__attribute__((nonnull, pure))
+static inline const mu_type_t *type_reduce(
+    const mu_type_t *type,
+    mu_engine_t *engine,
+    const mu_type_t *const equation[]) {
+#define MU_EMIT(lower, upper, _) \
+    case MU_##upper##_TYPE: \
+      return &lower##_type_reduce((const mu_##lower##_type_t *) type, engine, equation)->as_type;
+  switch (type->kind) { MU_EACH_TYPE_KIND(MU_EMIT) }
+#undef MU_EMIT
+
+  __builtin_unreachable();
+}
+
 #endif /* MU_TYPE_I */
