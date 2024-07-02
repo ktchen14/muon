@@ -1,8 +1,13 @@
+CompileFlags:
+  Add: [-xc]
+
 Diagnostics:
   Includes:
     IgnoreHeader: common\.h
   MissingIncludes: Strict
   UnusedIncludes: Strict
-
   Suppress:
+  - unused-function
   - unused-variable
+
+# vim: set ft=yaml:
