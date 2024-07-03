@@ -28,7 +28,7 @@ const mu_access_expr_t *mu_access_expr(
   if (source != NULL)
     result->as_node.source = *source;
 
-  return node_assign(engine, result);
+  return assign_node(engine, result);
 }
 
 void mu_access_expr_debug(const mu_access_expr_t *expr) {

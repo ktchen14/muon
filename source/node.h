@@ -89,16 +89,6 @@ static inline void *node_allocate(mu_engine_t *engine, size_t size) {
   return header->data;
 }
 
-__attribute__((nonnull, returns_nonnull))
-static inline mu_node_t *node_assign(mu_engine_t *engine, mu_node_t *node) {
-  node->as_stator.engine = engine;
-  node->as_stator.id = engine->node_number++;
-  return node;
-}
-
-#define node_assign(engine, node) \
-  ((typeof((node))) (node_assign)((engine), &(node)->as_node))
-
 static inline inductor_t *node_induce(
     const mu_node_t *node, inductor_t *inductor) {
   switch (node->kind) {

@@ -24,7 +24,7 @@ const mu_vector_sign_t *mu_vector_sign(
   if (source != NULL)
     result->as_node.source = *source;
 
-  return node_assign(engine, result);
+  return assign_node(engine, result);
 }
 
 void mu_vector_sign_debug(const mu_vector_sign_t *sign) {

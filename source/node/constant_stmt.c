@@ -31,7 +31,7 @@ const mu_constant_stmt_t *mu_constant_stmt(
     .sign = sign,
   };
 
-  return node_assign(engine, result);
+  return assign_node(engine, result);
 }
 
 inductor_t *constant_stmt_induce(

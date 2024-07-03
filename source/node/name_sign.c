@@ -25,7 +25,7 @@ const mu_name_sign_t *mu_name_sign(
   if (source != NULL)
     result->as_node.source = *source;
 
-  return node_assign(engine, result);
+  return assign_node(engine, result);
 }
 
 void mu_name_sign_debug(const mu_name_sign_t *sign) {

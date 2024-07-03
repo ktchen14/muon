@@ -22,7 +22,7 @@ const mu_type_stmt_t *mu_type_stmt(
     .as_stmt.kind = MU_TYPE_STMT, .name = name, .sign = sign,
   };
 
-  return node_assign(engine, result);
+  return assign_node(engine, result);
 }
 
 void mu_type_stmt_debug(const mu_type_stmt_t *stmt) {

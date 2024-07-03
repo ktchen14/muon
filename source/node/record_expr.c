@@ -28,7 +28,7 @@ const mu_record_expr_t *mu_record_expr(
   };
   memcpy(&result->argv, argv, sizeof(const mu_expr_t *[argc]));
 
-  return node_assign(engine, result);
+  return assign_node(engine, result);
 }
 
 void mu_record_expr_debug(const mu_record_expr_t *expr) {
