@@ -4,7 +4,7 @@
 #include <muon/type/common.h>  // IWYU pragma: export
 
 #include "../common.h"
-#include "../stator.h"
+#include "../engine.h"
 
 #include <errno.h>
 #include <stddef.h>
@@ -25,7 +25,7 @@ static inline void *type_allocate(mu_engine_t *engine, size_t size) {
     return errno = ENOMEM, NULL;
 
   type_header_t *header;
-  if (rare((header = stator_allocate(engine, size)) == NULL))
+  if (rare((header = engine_allocate(engine, size)) == NULL))
     return NULL;
   *header = (type_header_t) {0};
 

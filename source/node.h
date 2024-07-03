@@ -21,6 +21,7 @@
 #include "node/constant_stmt.h"  // IWYU pragma: export
 #include "node/type_stmt.h"      // IWYU pragma: export
 
+#include "engine.h"
 #include "inductor.h"
 #include "stator.h"
 
@@ -82,7 +83,7 @@ static inline void *node_allocate(mu_engine_t *engine, size_t size) {
     return errno = ENOMEM, NULL;
 
   node_header_t *header;
-  if (rare((header = stator_allocate(engine, size)) == NULL))
+  if (rare((header = engine_allocate(engine, size)) == NULL))
     return NULL;
   *header = (node_header_t) {0};
 

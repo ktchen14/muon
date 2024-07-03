@@ -16,15 +16,6 @@
 
 size_t c8rtomb(char *restrict s, char8_t c8, mbstate_t *restrict ps);
 
-__attribute__((nonnull))
-static inline mu_name_t *name_assign(
-    mu_engine_t *engine, mu_name_t *name) {
-  name->as_stator.engine = engine;
-  name->as_stator.id = engine->name_number++;
-  engine->name[engine->name_i++] = name;
-  return name;
-}
-
 const mu_name_t *mu_name(
     mu_engine_t *engine,
     size_t length,
@@ -37,7 +28,7 @@ const mu_name_t *mu_name(
 
   // Allocate and zero the header
   name_header_t *header;
-  if ((header = stator_allocate(engine, size)) == NULL)
+  if ((header = engine_allocate(engine, size)) == NULL)
     return NULL;
   *header = (name_header_t) {0};
 
@@ -57,7 +48,7 @@ const mu_name_t *mu_name(
     return already;
   }
 
-  return name_assign(engine, name);
+  return assign_name(engine, name);
 }
 
 _Thread_local char conversion[MB_LEN_MAX];
