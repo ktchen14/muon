@@ -1,53 +1,52 @@
 #ifndef MU_NODE_I
 #define MU_NODE_I
 
-#include "node/common.h"
+#include <muon/node.h>           // IWYU pragma: export
 
-#include "expr.h"  // IWYU pragma: export
-#include "sign.h"  // IWYU pragma: export
-#include "stmt.h"  // IWYU pragma: export
+#include "node/access_expr.h"    // IWYU pragma: export
+#include "node/integer_expr.h"   // IWYU pragma: export
+#include "node/member_expr.h"    // IWYU pragma: export
+#include "node/name_expr.h"      // IWYU pragma: export
+#include "node/record_expr.h"    // IWYU pragma: export
+#include "node/vector_expr.h"    // IWYU pragma: export
+#include "node/zero_expr.h"      // IWYU pragma: export
+
+#include "node/integer_sign.h"   // IWYU pragma: export
+#include "node/member_sign.h"    // IWYU pragma: export
+#include "node/name_sign.h"      // IWYU pragma: export
+#include "node/record_sign.h"    // IWYU pragma: export
+#include "node/variable_sign.h"  // IWYU pragma: export
+#include "node/vector_sign.h"    // IWYU pragma: export
+
+#include "node/constant_stmt.h"  // IWYU pragma: export
+#include "node/type_stmt.h"      // IWYU pragma: export
 
 #include "inductor.h"
 
+#include <assert.h>
 #include <stddef.h>
-#include <stdlib.h>
 
 static inline const mu_node_t *node_at(const mu_node_t *node, size_t i) {
   switch (node->kind) {
-#define MU_EMIT(lower, upper, _) \
-    case MU_##upper##_EXPR_NODE: \
-      return lower##_expr_at((const mu_##lower##_expr_t *) node, i);
-    MU_EACH_EXPR_KIND(MU_EMIT)
-#undef MU_EMIT
-
-    case MU_INTEGER_SIGN_NODE:
-    case MU_MEMBER_SIGN_NODE:
-    case MU_NAME_SIGN_NODE:
-    case MU_RECORD_SIGN_NODE:
-    case MU_VARIABLE_SIGN_NODE:
-    case MU_VECTOR_SIGN_NODE:
-      abort();
-
-#define MU_EMIT(lower, upper, _) \
-    case MU_##upper##_STMT_NODE: \
-      return lower##_stmt_at((const mu_##lower##_stmt_t *) node, i);
-    MU_EACH_STMT_KIND(MU_EMIT)
+#define MU_EMIT(lower, upper, t) \
+    case MU_##upper##_NODE: \
+      return lower##_at((const mu_##lower##_t *) node, i);
+    MU_EACH_NODE_KIND(MU_EMIT)
 #undef MU_EMIT
   }
-
-  return NULL;  // TODO: unreachable
+  assert(0);
 }
 
 static inline inductor_t *node_induce(
     const mu_node_t *node, inductor_t *inductor) {
   switch (node->kind) {
-#define MU_EMIT(lower, upper, _) \
+#define MU_EMIT(lower, upper, t) \
     case MU_##upper##_EXPR_NODE: \
       return lower##_expr_induce((const mu_##lower##_expr_t *) node, inductor);
     MU_EACH_EXPR_KIND(MU_EMIT)
 #undef MU_EMIT
 
-#define MU_EMIT(lower, upper, _) case MU_##upper##_SIGN: return inductor;
+#define MU_EMIT(lower, upper, t) case MU_##upper##_SIGN: return inductor;
     MU_EACH_SIGN_KIND(MU_EMIT)
 #undef MU_EMIT
 
@@ -68,8 +67,6 @@ static inline node_cursor_t *node_cursor(const mu_node_t *node) {
       (char *) node - offsetof(node_header_t, data));
   return &header->cursor;
 }
-
-#include <assert.h>
 
 /// Continue into the node
 static inline const mu_node_t *node_continue(

@@ -1,7 +1,7 @@
 #include "script.h"
 
 #include "common.h"
-#include "stmt.h"
+#include "node.h"
 
 #include <errno.h>
 #include <stddef.h>

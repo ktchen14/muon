@@ -2,8 +2,10 @@
 #define MU_INDUCTOR_I
 
 #include "engine.h"
-#include "stmt.h"
 #include "type.h"
+
+// TODO
+#include <muon/node.h>
 
 #include <assert.h>
 #include <stddef.h>

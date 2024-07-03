@@ -1,6 +1,6 @@
 add_executable(scan_main
   scan_main.c
-  ../source/expr/integer.c
+  ../source/node/integer_expr.c
   ../source/name.c
   $<TARGET_OBJECTS:reader>
 )

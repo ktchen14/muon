@@ -13,26 +13,22 @@ target_sources(muon PRIVATE
   script.c
   # status.c
 
-  expr.c
-  expr/access.c
-  expr/integer.c
-  expr/member.c
-  expr/name.c
-  expr/record.c
-  expr/vector.c
-  expr/zero.c
-
-  sign.c
-  sign/integer.c
-  sign/member.c
-  sign/name.c
-  sign/record.c
-  sign/variable.c
-  sign/vector.c
-
-  stmt.c
-  stmt/constant.c
-  stmt/type.c
+  node.c
+  node/access_expr.c
+  node/constant_stmt.c
+  node/integer_expr.c
+  node/integer_sign.c
+  node/member_expr.c
+  node/member_sign.c
+  node/name_expr.c
+  node/name_sign.c
+  node/record_expr.c
+  node/record_sign.c
+  node/type_stmt.c
+  node/variable_sign.c
+  node/vector_expr.c
+  node/vector_sign.c
+  node/zero_expr.c
 
   type.c
   type/integer.c

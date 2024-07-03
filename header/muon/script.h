@@ -1,7 +1,7 @@
 #ifndef MU_SCRIPT_H
 #define MU_SCRIPT_H
 
-#include "stmt.h"
+#include "node.h"
 
 #include <stddef.h>
 

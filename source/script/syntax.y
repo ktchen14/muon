@@ -5,11 +5,9 @@
 %code requires {
 #include <muon/status.h>
 #include "../common.h"
-#include "../expr.h"
 #include "../name.h"
+#include "../node.h"
 #include "../script.h"
-#include "../sign.h"
-#include "../stmt.h"
 
 typedef struct {
   mu_engine_t *engine;
