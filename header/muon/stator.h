@@ -64,7 +64,6 @@ typedef struct mu_engine_t mu_engine_t;
 /// An abstract stator
 typedef struct {
   mu_stator_kind_t kind;
-
   const mu_engine_t *engine;
   size_t id;
 } mu_stator_t;

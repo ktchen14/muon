@@ -22,7 +22,7 @@ const mu_vector_type_t *mu_vector_type(
     .as_type.kind = MU_VECTOR_TYPE, .matter = matter,
   };
 
-  return engine_assign_concrete(engine, result);
+  return assign_type(engine, result);
 }
 
 const mu_vector_type_t *vector_type_reduce(

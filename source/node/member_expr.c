@@ -21,7 +21,7 @@ const mu_member_expr_t *mu_member_expr(
   *result = (mu_member_expr_t) {
     .as_expr.kind = MU_MEMBER_EXPR, .name = name, .matter = matter
   };
-  return engine_assign_concrete(engine, result);
+  return node_assign(engine, result);
 }
 
 void mu_member_expr_debug(const mu_member_expr_t *expr) {

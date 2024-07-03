@@ -15,7 +15,7 @@ const mu_zero_expr_t *mu_zero_expr(mu_engine_t *engine) {
   *result = (mu_zero_expr_t) {
     .as_expr.kind = MU_ZERO_EXPR,
   };
-  return engine_assign_concrete(engine, result);
+  return node_assign(engine, result);
 }
 
 void mu_zero_expr_debug(const mu_zero_expr_t *expr) {

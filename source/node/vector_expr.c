@@ -29,7 +29,7 @@ const mu_vector_expr_t *mu_vector_expr(
   };
   memcpy(&result->argv, argv, sizeof(const mu_expr_t *[argc]));
 
-  return engine_assign_concrete(engine, result);
+  return node_assign(engine, result);
 }
 
 inductor_t *vector_expr_induce(

@@ -33,7 +33,7 @@ const mu_record_sign_t *mu_record_sign(
   if (source != NULL)
     result->as_node.source = *source;
 
-  return engine_assign_concrete(engine, result);
+  return node_assign(engine, result);
 }
 
 void mu_record_sign_debug(const mu_record_sign_t *sign) {

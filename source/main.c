@@ -63,7 +63,7 @@ int main(int argc, char *argv[argc]) {
 
   const mu_stmt_t *const *resolution = resolve_names(
       &engine, script);
-  for (size_t i = 0; i < engine.stator_id; i++) {
+  for (size_t i = 0; i < engine.node_number; i++) {
     if (resolution[i] != NULL)
       fprintf(stderr, "Stator #%zu = Stator #%zu\n", i, resolution[i]->as_stator.id);
   }

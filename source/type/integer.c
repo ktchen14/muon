@@ -15,7 +15,7 @@ const mu_integer_type_t *mu_integer_type(mu_engine_t *engine) {
     .as_type.kind = MU_INTEGER_TYPE,
   };
 
-  return engine_assign_concrete(engine, result);
+  return assign_type(engine, result);
 }
 
 void mu_integer_type_debug(const mu_integer_type_t *type) {

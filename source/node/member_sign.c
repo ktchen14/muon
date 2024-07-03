@@ -29,7 +29,7 @@ const mu_member_sign_t *mu_member_sign(
   if (source != NULL)
     result->as_node.source = *source;
 
-  return engine_assign_concrete(engine, result);
+  return node_assign(engine, result);
 }
 
 void mu_member_sign_debug(const mu_member_sign_t *sign) {

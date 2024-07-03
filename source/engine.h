@@ -4,17 +4,18 @@
 #include <muon/engine.h>  // IWYU pragma: export
 
 #include "common.h"
-#include "stator.h"
+#include "type.h"
 
-__attribute__((nonnull))
-static inline mu_stator_t *engine_assign(
-    mu_engine_t *engine, mu_stator_t *stator) {
-  stator->engine = engine;
-  stator->id = engine->stator_id++;
-  return stator;
+/// Assign the abstract @a type to the @a engine
+__attribute__((nonnull, returns_nonnull))
+static inline mu_type_t *assign_type(mu_engine_t *engine, mu_type_t *type) {
+  type->as_stator.engine = engine;
+  type->as_stator.id = engine->type_number++;
+  return type;
 }
 
-#define engine_assign_concrete(engine, stator) \
-  ((typeof((stator))) engine_assign((engine), &(stator)->as_stator))
+/// Assign the concrete @a type to the @a engine
+#define assign_type(engine, type) \
+  ((typeof((type))) (assign_type)((engine), &(type)->as_type))
 
 #endif /* MU_ENGINE_I */

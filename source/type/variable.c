@@ -14,7 +14,7 @@ const mu_variable_type_t *mu_variable_type(mu_engine_t *engine) {
     return NULL;
   *result = (mu_variable_type_t) { .as_type.kind = MU_VARIABLE_TYPE };
 
-  return engine_assign_concrete(engine, result);
+  return assign_type(engine, result);
 }
 
 void mu_variable_type_debug(const mu_variable_type_t *type) {

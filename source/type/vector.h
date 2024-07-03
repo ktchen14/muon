@@ -5,7 +5,6 @@
 
 #include "common.h"
 
-#include <assert.h>
 #include <stddef.h>
 
 __attribute__((const, nonnull))

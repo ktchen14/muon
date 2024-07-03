@@ -25,9 +25,9 @@ const mu_stmt_t *script_get(const mu_script_t *script, const mu_name_t *name) {
 }
 
 const mu_stmt_t *const *resolve_names(mu_engine_t *engine, const mu_script_t *script) {
-  size_t size = sizeof(const mu_stmt_t *[engine->stator_id]);
+  size_t size = sizeof(const mu_stmt_t *[engine->node_number]);
   const mu_stmt_t **result = malloc(size);
-  for (size_t i = 0; i < engine->stator_id; i++)
+  for (size_t i = 0; i < engine->node_number; i++)
     result[i] = 0;
 
   for (size_t i = 0; i < script->argc; i++) {
