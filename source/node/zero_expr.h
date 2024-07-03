@@ -1,5 +1,5 @@
-#ifndef MU_EXPR_ZERO_I
-#define MU_EXPR_ZERO_I
+#ifndef MU_NODE_ZERO_EXPR_I
+#define MU_NODE_ZERO_EXPR_I
 
 #include <muon/node/zero_expr.h>  // IWYU pragma: export
 
@@ -21,4 +21,4 @@ static inline inductor_t *zero_expr_induce(
   return inductor;
 }
 
-#endif /* MU_EXPR_ZERO_I */
+#endif /* MU_NODE_ZERO_EXPR_I */

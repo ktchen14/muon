@@ -1,5 +1,5 @@
-#ifndef MU_STMT_TYPE_I
-#define MU_STMT_TYPE_I
+#ifndef MU_NODE_TYPE_STMT_I
+#define MU_NODE_TYPE_STMT_I
 
 #include <muon/node/type_stmt.h>  // IWYU pragma: export
 
@@ -18,4 +18,4 @@ static const mu_sign_t *type_stmt_induce(const mu_type_stmt_t *stmt) {
   return stmt->sign;
 }
 
-#endif /* MU_STMT_TYPE_I */
+#endif /* MU_NODE_TYPE_STMT_I */

@@ -1,5 +1,5 @@
-#ifndef MU_EXPR_VECTOR_I
-#define MU_EXPR_VECTOR_I
+#ifndef MU_NODE_VECTOR_EXPR_I
+#define MU_NODE_VECTOR_EXPR_I
 
 #include <muon/node/vector_expr.h>  // IWYU pragma: export
 
@@ -19,4 +19,4 @@ __attribute__((nonnull))
 inductor_t *vector_expr_induce(
     const mu_vector_expr_t *expr, inductor_t *inductor);
 
-#endif /* MU_EXPR_VECTOR_I */
+#endif /* MU_NODE_VECTOR_EXPR_I */

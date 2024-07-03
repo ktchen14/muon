@@ -1,5 +1,5 @@
-#ifndef MU_STMT_CONSTANT_I
-#define MU_STMT_CONSTANT_I
+#ifndef MU_NODE_CONSTANT_STMT_I
+#define MU_NODE_CONSTANT_STMT_I
 
 #include <muon/node/constant_stmt.h>  // IWYU pragma: export
 
@@ -19,4 +19,4 @@ inductor_t *constant_stmt_induce(
     const mu_constant_stmt_t *stmt, inductor_t *inductor)
   __attribute__((nonnull));
 
-#endif /* MU_STMT_CONSTANT_I */
+#endif /* MU_NODE_CONSTANT_STMT_I */

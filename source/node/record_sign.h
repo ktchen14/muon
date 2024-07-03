@@ -1,5 +1,5 @@
-#ifndef MU_SIGN_RECORD_I
-#define MU_SIGN_RECORD_I
+#ifndef MU_NODE_RECORD_SIGN_I
+#define MU_NODE_RECORD_SIGN_I
 
 #include <muon/node/record_sign.h>  // IWYU pragma: export
 
@@ -13,4 +13,4 @@ static inline const mu_node_t *record_sign_at(
   return i < sign->argc ? &sign->argv[i]->as_node : NULL;
 }
 
-#endif /* MU_SIGN_RECORD_I */
+#endif /* MU_NODE_RECORD_SIGN_I */

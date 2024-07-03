@@ -1,5 +1,5 @@
-#ifndef MU_EXPR_NAME_I
-#define MU_EXPR_NAME_I
+#ifndef MU_NODE_NAME_EXPR_I
+#define MU_NODE_NAME_EXPR_I
 
 #include <muon/node/name_expr.h>  // IWYU pragma: export
 
@@ -25,4 +25,4 @@ static inline inductor_t *name_expr_induce(
   return inductor_equate_node_node(inductor, &expr->as_node, &target->as_node);
 }
 
-#endif /* MU_EXPR_NAME_I */
+#endif /* MU_NODE_NAME_EXPR_I */

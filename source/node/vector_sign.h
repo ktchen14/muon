@@ -1,5 +1,5 @@
-#ifndef MU_SIGN_VECTOR_I
-#define MU_SIGN_VECTOR_I
+#ifndef MU_NODE_VECTOR_SIGN_I
+#define MU_NODE_VECTOR_SIGN_I
 
 #include <muon/node/vector_sign.h>  // IWYU pragma: export
 
@@ -14,4 +14,4 @@ static inline const mu_node_t *vector_sign_at(
   return i == 0 ? &sign->matter->as_node : NULL;
 }
 
-#endif /* MU_SIGN_VECTOR_I */
+#endif /* MU_NODE_VECTOR_SIGN_I */

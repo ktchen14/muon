@@ -1,5 +1,5 @@
-#ifndef MU_EXPR_RECORD_I
-#define MU_EXPR_RECORD_I
+#ifndef MU_NODE_RECORD_EXPR_I
+#define MU_NODE_RECORD_EXPR_I
 
 #include <muon/node/record_expr.h>  // IWYU pragma: export
 
@@ -21,4 +21,4 @@ static inline inductor_t *record_expr_induce(
   assert(0);
 }
 
-#endif /* MU_EXPR_RECORD_I */
+#endif /* MU_NODE_RECORD_EXPR_I */

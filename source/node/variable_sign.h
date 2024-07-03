@@ -1,5 +1,5 @@
-#ifndef MU_SIGN_VARIABLE_I
-#define MU_SIGN_VARIABLE_I
+#ifndef MU_NODE_VARIABLE_SIGN_I
+#define MU_NODE_VARIABLE_SIGN_I
 
 #include <muon/node/variable_sign.h>  // IWYU pragma: export
 
@@ -13,4 +13,4 @@ static inline const mu_node_t *variable_sign_at(
   return NULL;
 }
 
-#endif /* MU_SIGN_VARIABLE_I */
+#endif /* MU_NODE_VARIABLE_SIGN_I */

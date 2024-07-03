@@ -1,5 +1,5 @@
-#ifndef MU_SIGN_MEMBER_I
-#define MU_SIGN_MEMBER_I
+#ifndef MU_NODE_MEMBER_SIGN_I
+#define MU_NODE_MEMBER_SIGN_I
 
 #include <muon/node/member_sign.h>  // IWYU pragma: export
 
@@ -13,4 +13,4 @@ static inline const mu_node_t *member_sign_at(
   return i == 0 ? &sign->matter->as_node : NULL;
 }
 
-#endif /* MU_SIGN_MEMBER_I */
+#endif /* MU_NODE_MEMBER_SIGN_I */

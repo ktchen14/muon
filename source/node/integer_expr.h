@@ -1,5 +1,5 @@
-#ifndef MU_EXPR_INTEGER_I
-#define MU_EXPR_INTEGER_I
+#ifndef MU_NODE_INTEGER_EXPR_I
+#define MU_NODE_INTEGER_EXPR_I
 
 #include <muon/node/integer_expr.h>  // IWYU pragma: export
 
@@ -25,4 +25,4 @@ static inline inductor_t *integer_expr_induce(
   return inductor_equate_node_type(inductor, &expr->as_node, type);
 }
 
-#endif /* MU_EXPR_INTEGER_I */
+#endif /* MU_NODE_INTEGER_EXPR_I */
