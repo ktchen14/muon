@@ -13,10 +13,14 @@
 typedef struct {
   /// Whether the target stator is a node or type
   enum {
-    INDUCTOR_NONE, INDUCTOR_NODE_MEMBER, INDUCTOR_TYPE_MEMBER,
+    INDUCTOR_NONE, INDUCTOR_NODE, INDUCTOR_TYPE,
   } kind;
   size_t id;
-  const mu_stator_t *stator;
+  union {
+    const mu_stator_t *stator;
+    const mu_node_t *node;
+    const mu_type_t *type;
+  };
 } inductor_member_t;
 
 typedef struct inductor_t inductor_t;
@@ -25,6 +29,10 @@ struct inductor_t {
   mu_engine_t *engine;
   const mu_stmt_t *const *node_to_stmt;
   size_t length;
+
+  size_t node_length;
+  size_t type_length;
+
   inductor_member_t data[];
 };
 
@@ -60,66 +68,13 @@ static inline inductor_member_t *inductor_root(
 const mu_type_t *inductor_type(
     inductor_t **inductor, const mu_node_t *node);
 
-inductor_t *inductor_unify(
+inductor_t *inductor_equate_node_node(
+    inductor_t *inductor, const mu_node_t *a, const mu_node_t *b);
+
+inductor_t *inductor_equate_node_type(
+    inductor_t *inductor, const mu_node_t *a, const mu_type_t *b);
+
+inductor_t *inductor_equate_type_type(
     inductor_t *inductor, const mu_type_t *a, const mu_type_t *b);
-
-static inline inductor_t *inductor_equate(
-    inductor_t *inductor, inductor_member_t *a, inductor_member_t *b) {
-  a = inductor_root(inductor, a);
-  b = inductor_root(inductor, b);
-
-  if (a == b)
-    return inductor;
-
-  if (a->kind == INDUCTOR_NODE_MEMBER && b->kind == INDUCTOR_NODE_MEMBER) {
-    inductor->data[a->id] = *b;
-  } else if (a->kind == INDUCTOR_NODE_MEMBER && b->kind == INDUCTOR_TYPE_MEMBER) {
-    inductor->data[a->id] = *b;
-  } else if (a->kind == INDUCTOR_TYPE_MEMBER && b->kind == INDUCTOR_NODE_MEMBER) {
-    inductor->data[b->id] = *a;
-  } else
-    return inductor_unify(inductor, (const mu_type_t *) a->stator, (const mu_type_t *) b->stator);
-
-  return inductor;
-}
-
-static inline inductor_t *inductor_equate_node_node(
-    inductor_t *inductor, const mu_node_t *a, const mu_node_t *b) {
-  inductor_member_t i = {
-    .kind = INDUCTOR_NODE_MEMBER,
-    .id = a->as_stator.id,
-    .stator = &a->as_stator };
-  inductor_member_t j = {
-    .kind = INDUCTOR_NODE_MEMBER,
-    .id = b->as_stator.id,
-    .stator = &b->as_stator };
-  return inductor_equate(inductor, &i, &j);
-}
-
-static inline inductor_t *inductor_equate_node_type(
-    inductor_t *inductor, const mu_node_t *a, const mu_type_t *b) {
-  inductor_member_t i = {
-    .kind = INDUCTOR_NODE_MEMBER,
-    .id = a->as_stator.id,
-    .stator = &a->as_stator };
-  inductor_member_t j = {
-    .kind = INDUCTOR_TYPE_MEMBER,
-    .id = b->as_stator.id,
-    .stator = &b->as_stator };
-  return inductor_equate(inductor, &i, &j);
-}
-
-static inline inductor_t *inductor_equate_type_type(
-    inductor_t *inductor, const mu_type_t *a, const mu_type_t *b) {
-  inductor_member_t i = {
-    .kind = INDUCTOR_TYPE_MEMBER,
-    .id = a->as_stator.id,
-    .stator = &a->as_stator };
-  inductor_member_t j = {
-    .kind = INDUCTOR_TYPE_MEMBER,
-    .id = b->as_stator.id,
-    .stator = &b->as_stator };
-  return inductor_equate(inductor, &i, &j);
-}
 
 #endif /* MU_INDUCTOR_I */
