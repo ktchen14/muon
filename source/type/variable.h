@@ -17,7 +17,7 @@ __attribute__((nonnull, pure))
 static inline const mu_variable_type_t *variable_type_reduce(
     const mu_variable_type_t *type,
     mu_engine_t *engine,
-    const mu_type_t *const equation[]) {
+    const inductor_t *inductor_t) {
   assert(engine == type->as_stator.engine);
   return type;
 }

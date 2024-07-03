@@ -2,6 +2,7 @@
 
 #include "../engine.h"
 #include "../expr.h"
+#include "../inductor.h"
 #include "../name.h"
 #include "../sign.h"
 
@@ -32,6 +33,11 @@ const mu_constant_stmt_t *mu_constant_stmt(
   };
 
   return engine_assign_concrete(engine, result);
+}
+
+inductor_t *constant_stmt_induce(
+    const mu_constant_stmt_t *stmt, inductor_t *inductor) {
+  return inductor_equate_node_node(inductor, &stmt->as_node, &stmt->expr->as_node);
 }
 
 void mu_constant_stmt_debug(const mu_constant_stmt_t *stmt) {

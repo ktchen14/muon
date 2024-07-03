@@ -24,10 +24,11 @@ static inline const mu_node_t *integer_expr_at(
 __attribute__((nonnull))
 static inline inductor_t *integer_expr_induce(
     const mu_integer_expr_t *expr, inductor_t *inductor) {
-  assert(expr->as_stator.engine == inductor->engine);
-
-  const mu_integer_type_t *type = mu_integer_type(inductor->engine);
-  return inductor_equate_node_type(inductor, &expr->as_node, &type->as_type);
+  const mu_integer_type_t *integer_type = mu_integer_type(inductor->engine);
+  const mu_type_t *type = &integer_type->as_type;
+  if ((inductor = inductor_extend_type(inductor, type)) == NULL)
+    return NULL;
+  return inductor_equate_node_type(inductor, &expr->as_node, type);
 }
 
 #endif /* MU_EXPR_INTEGER_I */

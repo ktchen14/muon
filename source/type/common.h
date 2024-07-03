@@ -32,4 +32,6 @@ static inline void *type_allocate(mu_engine_t *engine, size_t size) {
   return header->data;
 }
 
+typedef struct inductor_t inductor_t;
+
 #endif /* MU_TYPE_COMMON_I */

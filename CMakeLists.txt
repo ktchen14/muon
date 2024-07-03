@@ -8,7 +8,7 @@ project("Muon" VERSION "${PROJECT_VERSION}"
   HOMEPAGE_URL "https://github.com/ktchen14/muon"
   LANGUAGES C
 )
-set(CMAKE_C_FLAGS "-g")
+set(CMAKE_C_FLAGS "-g -fsanitize=address")
 
 add_compile_options(-Werror -Wall -Wextra -Wno-unused-parameter)
 

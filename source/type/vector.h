@@ -13,18 +13,11 @@ static inline size_t vector_type_size(const mu_vector_type_t *type) {
   return sizeof(mu_vector_type_t);
 }
 
-__attribute__((nonnull, pure))
-static inline const mu_vector_type_t *vector_type_reduce(
+__attribute__((nonnull))
+const mu_vector_type_t *vector_type_reduce(
     const mu_vector_type_t *type,
     mu_engine_t *engine,
-    const mu_type_t *const equation[]) {
-  assert(engine == type->as_stator.engine);
-
-  const mu_type_t *matter = equation[type->as_stator.id];
-  assert(engine == matter->as_stator.engine);
-
-  return mu_vector_type(engine, matter);
-}
+    inductor_t *inductor);
 
 __attribute__((nonnull, pure))
 static inline const mu_type_t *vector_type_at(

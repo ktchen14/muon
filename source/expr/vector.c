@@ -34,8 +34,6 @@ const mu_vector_expr_t *mu_vector_expr(
 
 inductor_t *vector_expr_induce(
     const mu_vector_expr_t *expr, inductor_t *inductor) {
-  assert(expr->as_stator.engine == inductor->engine);
-
   // The type of a vector expr is [a]
   const mu_variable_type_t *a;
   if ((a = mu_variable_type(inductor->engine)) == NULL)

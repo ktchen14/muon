@@ -14,26 +14,11 @@
 
 static inline const mu_node_t *node_at(const mu_node_t *node, size_t i) {
   switch (node->kind) {
-    case MU_ACCESS_EXPR_NODE: 
-      return access_expr_at((const mu_access_expr_t *) node, i);
-
-    case MU_INTEGER_EXPR_NODE:
-      return integer_expr_at((const mu_integer_expr_t *) node, i);
-
-    case MU_MEMBER_EXPR_NODE:
-      return member_expr_at((const mu_member_expr_t *) node, i);
-
-    case MU_NAME_EXPR_NODE:
-      return name_expr_at((const mu_name_expr_t *) node, i);
-
-    case MU_RECORD_EXPR_NODE:
-      return record_expr_at((const mu_record_expr_t *) node, i);
-
-    case MU_VECTOR_EXPR_NODE:
-      return vector_expr_at((const mu_vector_expr_t *) node, i);
-
-    case MU_ZERO_EXPR_NODE:
-      return zero_expr_at((const mu_zero_expr_t *) node, i);
+#define MU_EMIT(lower, upper, _) \
+    case MU_##upper##_EXPR_NODE: \
+      return lower##_expr_at((const mu_##lower##_expr_t *) node, i);
+    MU_EACH_EXPR_KIND(MU_EMIT)
+#undef MU_EMIT
 
     case MU_INTEGER_SIGN_NODE:
     case MU_MEMBER_SIGN_NODE:
@@ -43,11 +28,11 @@ static inline const mu_node_t *node_at(const mu_node_t *node, size_t i) {
     case MU_VECTOR_SIGN_NODE:
       abort();
 
-    case MU_CONSTANT_STMT_NODE:
-      return constant_stmt_at((const mu_constant_stmt_t *) node, i);
-
-    case MU_TYPE_STMT_NODE:
-      return type_stmt_at((const mu_type_stmt_t *) node, i);
+#define MU_EMIT(lower, upper, _) \
+    case MU_##upper##_STMT_NODE: \
+      return lower##_stmt_at((const mu_##lower##_stmt_t *) node, i);
+    MU_EACH_STMT_KIND(MU_EMIT)
+#undef MU_EMIT
   }
 
   return NULL;  // TODO: unreachable
@@ -57,7 +42,7 @@ static inline inductor_t *node_induce(
     const mu_node_t *node, inductor_t *inductor) {
   switch (node->kind) {
 #define MU_EMIT(lower, upper, _) \
-    case MU_##upper##_EXPR: \
+    case MU_##upper##_EXPR_NODE: \
       return lower##_expr_induce((const mu_##lower##_expr_t *) node, inductor);
     MU_EACH_EXPR_KIND(MU_EMIT)
 #undef MU_EMIT
@@ -66,9 +51,11 @@ static inline inductor_t *node_induce(
     MU_EACH_SIGN_KIND(MU_EMIT)
 #undef MU_EMIT
 
-#define MU_EMIT(lower, upper, _) case MU_##upper##_STMT: return inductor;
-    MU_EACH_STMT_KIND(MU_EMIT)
-#undef MU_EMIT
+    case MU_CONSTANT_STMT_NODE:
+      return constant_stmt_induce((const mu_constant_stmt_t *) node, inductor);
+
+    case MU_TYPE_STMT_NODE:
+      return inductor;
   }
 
   __builtin_unreachable();

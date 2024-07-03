@@ -18,9 +18,10 @@ static inline const mu_node_t *constant_stmt_at(
   return i == 0 ? &stmt->expr->as_node : NULL;
 }
 
-__attribute__((used))
-static const mu_sign_t *constant_stmt_induce(const mu_constant_stmt_t *stmt) {
-  return stmt->sign;
-}
+typedef struct inductor_t inductor_t;
+
+inductor_t *constant_stmt_induce(
+    const mu_constant_stmt_t *stmt, inductor_t *inductor)
+  __attribute__((nonnull));
 
 #endif /* MU_STMT_CONSTANT_I */

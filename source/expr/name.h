@@ -23,8 +23,6 @@ static inline const mu_node_t *name_expr_at(
 __attribute__((nonnull))
 static inline inductor_t *name_expr_induce(
     const mu_name_expr_t *expr, inductor_t *inductor) {
-  assert(expr->as_stator.engine == inductor->engine);
-
   const mu_stmt_t *target;
   if ((target = inductor->node_to_stmt[expr->as_stator.id]) == NULL)
     return inductor;

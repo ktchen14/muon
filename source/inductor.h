@@ -17,12 +17,14 @@ typedef struct {
   const mu_stator_t *stator;
 } inductor_member_t;
 
-typedef struct {
+typedef struct inductor_t inductor_t;
+
+struct inductor_t {
   mu_engine_t *engine;
   const mu_stmt_t *const *node_to_stmt;
   size_t length;
   inductor_member_t data[];
-} inductor_t;
+};
 
 /**
  * @brief Create an inductor on the @a engine

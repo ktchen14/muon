@@ -5,6 +5,7 @@
 
 #include <assert.h>
 #include <stddef.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 inductor_t *inductor_create(mu_engine_t *engine) {
@@ -28,6 +29,7 @@ inductor_t *inductor_create(mu_engine_t *engine) {
 inductor_t *inductor_reallocate(
     inductor_t *inductor, const mu_type_t *type) {
   size_t length = type->as_stator.id + 1;
+  length = 1000;
 
   size_t size;
   if (rare((size = struct_size(inductor_t, data, length)) == 0))
@@ -81,11 +83,24 @@ const mu_type_t *inductor_type(
       type = type_continue(type, next);
     }
 
-    const mu_type_t *result = type_reduce(type, (*inductor)->engine, equation);
+    const mu_type_t *result = type_reduce(type, (*inductor)->engine, *inductor);
+    if (result != type) {
+      (*inductor)->data[type->as_stator.id] = (inductor_member_t) {
+        .kind = INDUCTOR_TYPE_MEMBER,
+        .id = result->as_stator.id,
+        .stator = &result->as_stator };
+    }
     equation[type->as_stator.id] = result;
   } while ((type = type_return(type)) != NULL);
 
-  return root;
+  member = (inductor_member_t) {
+    .kind = INDUCTOR_NODE_MEMBER,
+    .id = node->as_stator.id,
+    .stator = &node->as_stator };
+
+  root_member = inductor_root(*inductor, &member);
+  assert(root_member->kind == INDUCTOR_TYPE_MEMBER);
+  return (const mu_type_t *) root_member->stator;
 }
 
 inductor_t *inductor_unify(
@@ -93,13 +108,6 @@ inductor_t *inductor_unify(
   // If a and b are already unified then we're done
   if (a == b)
     return inductor;
-
-  // Swap a and b if b is a variable type
-  if (b->kind == MU_VARIABLE_TYPE) {
-    const mu_type_t *t = a;
-    a = b;
-    b = t;
-  }
 
   // If a is a variable type, then just equate it to b
   if (a->kind == MU_VARIABLE_TYPE) {

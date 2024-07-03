@@ -1,6 +1,7 @@
 #include "vector.h"
 
 #include "../engine.h"
+#include "../inductor.h"
 #include "../type.h"
 
 #include <assert.h>
@@ -22,6 +23,26 @@ const mu_vector_type_t *mu_vector_type(
   };
 
   return engine_assign_concrete(engine, result);
+}
+
+const mu_vector_type_t *vector_type_reduce(
+    const mu_vector_type_t *type,
+    mu_engine_t *engine,
+    inductor_t *inductor) {
+  const mu_type_t *matter = type->matter;
+  inductor_member_t *matter_root = inductor_root(
+    inductor, &(inductor_member_t) {
+      .kind = INDUCTOR_TYPE_MEMBER,
+      .id = matter->as_stator.id,
+      .stator = &matter->as_stator,
+    });
+  assert(matter_root->kind == INDUCTOR_TYPE_MEMBER);
+
+  const mu_type_t *matter_result = (const mu_type_t *) matter_root->stator;
+  if (matter == matter_result)
+    return type;
+
+  return mu_vector_type(engine, matter_result);
 }
 
 void mu_vector_type_debug(const mu_vector_type_t *type) {
