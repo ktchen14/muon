@@ -8,11 +8,6 @@
 #include <stddef.h>
 
 __attribute__((nonnull, pure))
-static inline size_t record_sign_size(const mu_record_sign_t *sign) {
-  return extant_size(mu_record_sign_t, argv, sign->argc);
-}
-
-__attribute__((nonnull, pure))
 static inline const mu_node_t *record_sign_at(
     const mu_record_sign_t *sign, size_t i) {
   return i < sign->argc ? &sign->argv[i]->as_node : NULL;

@@ -7,11 +7,6 @@
 
 #include <stddef.h>
 
-__attribute__((const, nonnull))
-static inline size_t member_sign_size(const mu_member_sign_t *sign) {
-  return sizeof(mu_member_sign_t);
-}
-
 __attribute__((nonnull, pure))
 static inline const mu_node_t *member_sign_at(
     const mu_member_sign_t *sign, size_t i) {

@@ -7,11 +7,6 @@
 
 #include <stddef.h>
 
-__attribute__((const, nonnull))
-static inline size_t constant_stmt_size(const mu_constant_stmt_t *stmt) {
-  return sizeof(mu_constant_stmt_t);
-}
-
 __attribute__((nonnull, pure))
 static inline const mu_node_t *constant_stmt_at(
     const mu_constant_stmt_t *stmt, size_t i) {

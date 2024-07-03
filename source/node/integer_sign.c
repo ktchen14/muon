@@ -1,6 +1,7 @@
 #include "integer_sign.h"
 
 #include "../engine.h"
+#include "../node.h"
 #include "../status.h"
 
 #include <stddef.h>

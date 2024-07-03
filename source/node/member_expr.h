@@ -9,11 +9,6 @@
 #include <assert.h>
 #include <stddef.h>
 
-__attribute__((const, nonnull))
-static inline size_t member_expr_size(const mu_member_expr_t *expr) {
-  return sizeof(mu_member_expr_t);
-}
-
 __attribute__((nonnull, pure))
 static inline const mu_node_t *member_expr_at(
     const mu_member_expr_t *expr, size_t i) {

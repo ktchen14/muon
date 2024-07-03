@@ -2,6 +2,7 @@
 
 #include "../engine.h"
 #include "../name.h"
+#include "../node.h"
 
 #include <assert.h>
 #include <stddef.h>

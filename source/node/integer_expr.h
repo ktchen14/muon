@@ -10,11 +10,6 @@
 #include <stddef.h>
 
 __attribute__((const, nonnull))
-static inline size_t integer_expr_size(const mu_integer_expr_t *expr) {
-  return sizeof(mu_integer_expr_t);
-}
-
-__attribute__((const, nonnull))
 static inline const mu_node_t *integer_expr_at(
     const mu_integer_expr_t *expr, size_t i) {
   return NULL;

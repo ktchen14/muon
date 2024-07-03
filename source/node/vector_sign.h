@@ -7,11 +7,6 @@
 
 #include <stddef.h>
 
-__attribute__((const, nonnull))
-static inline size_t vector_sign_size(const mu_vector_sign_t *sign) {
-  return sizeof(mu_vector_sign_t);
-}
-
 /// Return the <em>i</em>th node in the vector @a sign
 __attribute__((nonnull, pure))
 static inline const mu_node_t *vector_sign_at(

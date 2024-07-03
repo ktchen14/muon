@@ -1,6 +1,7 @@
 #include "zero_expr.h"
 
 #include "../engine.h"
+#include "../node.h"
 
 #include <stddef.h>
 #include <stdio.h>

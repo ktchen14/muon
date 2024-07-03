@@ -8,11 +8,6 @@
 #include <stddef.h>
 
 __attribute__((const, nonnull))
-static inline size_t variable_sign_size(const mu_variable_sign_t *sign) {
-  return sizeof(mu_variable_sign_t);
-}
-
-__attribute__((const, nonnull))
 static inline const mu_node_t *variable_sign_at(
     const mu_variable_sign_t *sign, size_t i) {
   return NULL;
