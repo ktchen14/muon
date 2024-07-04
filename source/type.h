@@ -7,8 +7,21 @@
 #include "type/variable.h"  // IWYU pragma: export
 #include "type/vector.h"    // IWYU pragma: export
 
+#include "engine.h"
+
 #include <assert.h>
+#include <errno.h>
 #include <stddef.h>
+
+typedef struct {
+  const mu_type_t *anterior;
+  size_t i;
+} type_cursor_t;
+
+typedef struct {
+  type_cursor_t cursor;
+  _Alignas(max_align_t) char data[];
+} type_header_t;
 
 /// Return the cursor in the @a type
 __attribute__((const, nonnull, returns_nonnull))
@@ -45,6 +58,19 @@ static inline const mu_type_t *type_at(const mu_type_t *type, size_t i) {
 #undef MU_EMIT
 
   __builtin_unreachable();
+}
+
+__attribute__((malloc, nonnull))
+static inline void *type_allocate(mu_engine_t *engine, size_t size) {
+  if (rare((size = struct_size(type_header_t, data, size)) == 0))
+    return errno = ENOMEM, NULL;
+
+  type_header_t *header;
+  if (rare((header = engine_allocate(engine, size)) == NULL))
+    return NULL;
+  *header = (type_header_t) {0};
+
+  return header->data;
 }
 
 __attribute__((nonnull, pure))
