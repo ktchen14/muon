@@ -59,12 +59,10 @@ static inline const mu_type_t *type_at(const mu_type_t *type, size_t i) {
 
 __attribute__((nonnull, pure))
 static inline const mu_type_t *type_reduce(
-    const mu_type_t *type,
-    mu_engine_t *engine,
-    inductor_t *inductor) {
+    const mu_type_t *type, inductor_t *inductor) {
 #define MU_EMIT(lower, upper, _) \
     case MU_##upper##_TYPE: \
-      return &lower##_type_reduce((const mu_##lower##_type_t *) type, engine, inductor)->as_type;
+      return &lower##_type_reduce((const mu_##lower##_type_t *) type, inductor)->as_type;
   switch (type->kind) { MU_EACH_TYPE_KIND(MU_EMIT) }
 #undef MU_EMIT
 

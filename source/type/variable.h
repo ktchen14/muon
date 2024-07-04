@@ -15,10 +15,7 @@ static inline size_t variable_type_size(const mu_variable_type_t *type) {
 
 __attribute__((nonnull, pure))
 static inline const mu_variable_type_t *variable_type_reduce(
-    const mu_variable_type_t *type,
-    mu_engine_t *engine,
-    const inductor_t *inductor_t) {
-  assert(engine == type->as_stator.engine);
+    const mu_variable_type_t *type, const inductor_t *inductor_t) {
   return type;
 }
 

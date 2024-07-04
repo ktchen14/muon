@@ -68,6 +68,20 @@ static inline inductor_member_t *inductor_root(
   return member;
 }
 
+__attribute__((nonnull))
+static inline const mu_type_t *inductor_type_root(
+    inductor_t *inductor, const mu_type_t *type) {
+  inductor_member_t member = {
+    INDUCTOR_TYPE, .id = type->as_stator.id, .type = type,
+  };
+
+  const inductor_member_t *result;
+  result = inductor_root(inductor, &member);
+  assert(result->kind == INDUCTOR_TYPE);
+
+  return result->type;
+}
+
 const mu_type_t *inductor_type(
     inductor_t **inductor, const mu_node_t *node);
 

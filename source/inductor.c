@@ -90,7 +90,7 @@ const mu_type_t *inductor_type(
       type = type_continue(type, next);
     }
 
-    const mu_type_t *result = type_reduce(type, (*inductor)->engine, *inductor);
+    const mu_type_t *result = type_reduce(type, *inductor);
     if (result != type) {
       (*inductor)->data[type->as_stator.id] = (member_t) {
         .kind = INDUCTOR_TYPE,

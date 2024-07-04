@@ -15,10 +15,7 @@ static inline size_t integer_type_size(const mu_integer_type_t *type) {
 
 __attribute__((const, nonnull))
 static inline const mu_integer_type_t *integer_type_reduce(
-    const mu_integer_type_t *type,
-    mu_engine_t *engine,
-    const inductor_t *inductor) {
-  assert(engine == type->as_stator.engine);
+    const mu_integer_type_t *type, const inductor_t *inductor) {
   return type;
 }
 
