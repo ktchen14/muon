@@ -14,7 +14,6 @@ struct mu_engine_t {
   size_t type_number;
 
   const mu_name_t *name[256];
-  size_t name_i;
 };
 
 #endif /* MU_ENGINE_H */

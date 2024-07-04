@@ -37,7 +37,7 @@ const mu_name_t *mu_name(
   memcpy(name->text, text, length);
   name->text[length] = '\0';
 
-  for (size_t i = 0; i < engine->name_i; i++) {
+  for (size_t i = 0; i < engine->name_number; i++) {
     const mu_name_t *already = engine->name[i];
     if (name->length != already->length)
       continue;

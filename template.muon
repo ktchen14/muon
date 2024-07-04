@@ -2,4 +2,4 @@ constant x = 1
 constant y Integer = x
 constant z = [x, y, 3]
 constant a = [x, y]
-constant b = [a, z]
+constant b = [a, a]

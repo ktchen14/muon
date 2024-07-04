@@ -32,11 +32,11 @@ const mu_vector_type_t *vector_type_reduce(
   const mu_type_t *matter = type->matter;
   inductor_member_t *matter_root = inductor_root(
     inductor, &(inductor_member_t) {
-      .kind = INDUCTOR_TYPE_MEMBER,
+      .kind = INDUCTOR_TYPE,
       .id = matter->as_stator.id,
       .stator = &matter->as_stator,
     });
-  assert(matter_root->kind == INDUCTOR_TYPE_MEMBER);
+  assert(matter_root->kind == INDUCTOR_TYPE);
 
   const mu_type_t *matter_result = (const mu_type_t *) matter_root->stator;
   if (matter == matter_result)
