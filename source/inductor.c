@@ -67,7 +67,7 @@ const mu_type_t *inductor_type(
     .id = node->as_stator.id,
     .stator = &node->as_stator };
 
-  member_t *root_member = inductor_root(*inductor, &member);
+  const member_t *root_member = inductor_root(*inductor, &member);
 
   // TODO: create a type variable
   if (root_member->kind == INDUCTOR_NODE)
@@ -198,7 +198,7 @@ static inductor_t *inductor_unify(
 }
 
 static inductor_t *inductor_equate(
-    inductor_t *inductor, member_t *a, member_t *b) {
+    inductor_t *inductor, const member_t *a, const member_t *b) {
   a = inductor_root(inductor, a);
   b = inductor_root(inductor, b);
 

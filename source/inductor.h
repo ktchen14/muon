@@ -8,7 +8,6 @@
 
 #include <assert.h>
 #include <stddef.h>
-#include <stdio.h>
 
 typedef struct {
   /// Whether the target stator is a node or type
@@ -56,10 +55,10 @@ static inline inductor_t *inductor_extend_type(
 const inductor_member_t *inductor_get(
     const inductor_t *inductor, const inductor_member_t *member);
 
-static inline inductor_member_t *inductor_root(
-    inductor_t *inductor, inductor_member_t *member) {
+static inline const inductor_member_t *inductor_root(
+    inductor_t *inductor, const inductor_member_t *member) {
   for (;;) {
-    inductor_member_t *next = (inductor_member_t *) inductor_get(inductor, member);
+    const inductor_member_t *next = inductor_get(inductor, member);
     if (next->kind == INDUCTOR_NONE)
       return member;
     member = next;
