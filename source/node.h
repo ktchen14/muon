@@ -21,12 +21,10 @@
 #include "node/constant_stmt.h"  // IWYU pragma: export
 #include "node/type_stmt.h"      // IWYU pragma: export
 
-#include "engine.h"
 #include "inductor.h"
 #include "stator.h"
 
 #include <assert.h>
-#include <errno.h>
 #include <stddef.h>
 
 typedef struct {
@@ -75,19 +73,6 @@ static inline const mu_node_t *node_at(const mu_node_t *node, size_t i) {
 #undef MU_EMIT
   }
   assert(0);
-}
-
-__attribute__((malloc, nonnull))
-static inline void *node_allocate(mu_engine_t *engine, size_t size) {
-  if (rare((size = struct_size(node_header_t, data, size)) == 0))
-    return errno = ENOMEM, NULL;
-
-  node_header_t *header;
-  if (rare((header = engine_allocate(engine, size)) == NULL))
-    return NULL;
-  *header = (node_header_t) {0};
-
-  return header->data;
 }
 
 static inline inductor_t *node_induce(

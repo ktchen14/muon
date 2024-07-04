@@ -1,7 +1,6 @@
 #include "integer.h"
 
 #include "../engine.h"
-#include "../type.h"
 
 #include <stddef.h>
 #include <stdio.h>

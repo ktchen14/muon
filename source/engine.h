@@ -3,18 +3,46 @@
 
 #include <muon/engine.h>  // IWYU pragma: export
 
-#include <muon/name.h>
-#include <muon/node.h>
-#include <muon/type.h>
+#include "name.h"
+#include "node.h"
+#include "type.h"
 
 #include "common.h"
 
+#include <stddef.h>
+#include <errno.h>
 #include <stdlib.h>
 
 /// Allocate a stator of the @a size in the @a engine
 __attribute__((malloc, nonnull))
 static inline void *engine_allocate(mu_engine_t *engine, size_t size) {
   return malloc(size);
+}
+
+__attribute__((malloc, nonnull))
+static inline void *node_allocate(mu_engine_t *engine, size_t size) {
+  if (rare((size = struct_size(node_header_t, data, size)) == 0))
+    return errno = ENOMEM, NULL;
+
+  node_header_t *header;
+  if (rare((header = engine_allocate(engine, size)) == NULL))
+    return NULL;
+  *header = (node_header_t) {0};
+
+  return header->data;
+}
+
+__attribute__((malloc, nonnull))
+static inline void *type_allocate(mu_engine_t *engine, size_t size) {
+  if (rare((size = struct_size(type_header_t, data, size)) == 0))
+    return errno = ENOMEM, NULL;
+
+  type_header_t *header;
+  if (rare((header = engine_allocate(engine, size)) == NULL))
+    return NULL;
+  *header = (type_header_t) {0};
+
+  return header->data;
 }
 
 /// Assign the @a name to the @a engine

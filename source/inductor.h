@@ -1,7 +1,6 @@
 #ifndef MU_INDUCTOR_I
 #define MU_INDUCTOR_I
 
-#include "engine.h"
 #include "type.h"
 
 // TODO
