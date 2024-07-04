@@ -233,15 +233,6 @@ const member_t *inductor_get(
   return &inductor->data[inductor->node_length + member->id];
 }
 
-static inline const member_t *inductor_roota(
-    const inductor_t *inductor, const member_t *member) {
-  const member_t *next;
-  while ((next = inductor_get(inductor, member))->stator != NULL) {
-    member = next;
-  }
-  return member;
-}
-
 inductor_t *inductor_equate_node_node(
     inductor_t *inductor, const mu_node_t *a, const mu_node_t *b) {
   member_t i = { INDUCTOR_NODE, .id = a->as_stator.id, .node = a };
