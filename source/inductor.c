@@ -220,7 +220,7 @@ static inductor_t *inductor_equate(
 static const member_t member_none = {0};
 
 __attribute__((nonnull, pure, returns_nonnull))
-static const member_t *inductor_get(
+const member_t *inductor_get(
     const inductor_t *inductor, const member_t *member) {
   if (member->kind == INDUCTOR_NODE) {
     assert(member->id < inductor->node_length);
