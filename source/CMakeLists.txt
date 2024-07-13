@@ -1,19 +1,14 @@
 add_subdirectory(script)
 
-# check_function_exists("c8rtomb" FUNCTION_C8RTOMB)
-
-add_library(muon)
-
 target_sources(muon PRIVATE
   analyzer.c
   common.c
   inductor.c
   main.c
   name.c
-  script.c
-  # status.c
-
   node.c
+  script.c
+  type.c
 
   node/access_expr.c
   node/integer_expr.c
@@ -33,7 +28,6 @@ target_sources(muon PRIVATE
   node/constant_stmt.c
   node/type_stmt.c
 
-  type.c
   type/integer.c
   type/variable.c
   type/vector.c
@@ -41,10 +35,4 @@ target_sources(muon PRIVATE
   $<TARGET_OBJECTS:reader>
 )
 
-target_include_directories(
-  muon PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../header")
-set_property(TARGET muon PROPERTY VERSION "${Muon_VERSION}")
-
-add_executable(muon-main main.c)
-target_link_libraries(muon-main PRIVATE muon)
-set_property(TARGET muon-main PROPERTY VERSION "${Muon_VERSION}")
+target_sources(main PRIVATE main.c)

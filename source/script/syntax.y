@@ -3,7 +3,7 @@
 // ================================ Prologue ============================== {{{1
 
 %code requires {
-#include <muon/status.h>
+#include <muon.h>
 #include "../common.h"
 #include "../name.h"
 #include "../node.h"

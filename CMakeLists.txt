@@ -3,15 +3,27 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/tool")
 
 file(READ VERSION PROJECT_VERSION)
 string(STRIP "${PROJECT_VERSION}" PROJECT_VERSION)
-project("Muon" VERSION "${PROJECT_VERSION}"
+project(Muon VERSION "${PROJECT_VERSION}"
   DESCRIPTION "An extensible dataflow language"
   HOMEPAGE_URL "https://github.com/ktchen14/muon"
   LANGUAGES C
 )
+
 set(CMAKE_C_FLAGS "-g -fsanitize=address")
 
-add_compile_options(-Werror -Wall -Wextra -Wno-unused-parameter)
+add_library(muon)
+target_compile_features(muon PUBLIC c_std_11)
+target_compile_options(muon PRIVATE -Werror -Wall -Wextra -Wno-unused-parameter)
+target_include_directories(muon PUBLIC
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/header>"
+  "$<INSTALL_INTERFACE:include>")
+set_property(TARGET muon PROPERTY VERSION "${Muon_VERSION}")
 
+add_executable(main)
+target_compile_options(main PRIVATE -Werror -Wall -Wextra -Wno-unused-parameter)
+target_link_libraries(main PRIVATE muon)
+
+add_compile_options(-Werror -Wall -Wextra -Wno-unused-parameter)
 add_subdirectory(source)
 
 if(PROJECT_IS_TOP_LEVEL)
