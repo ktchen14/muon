@@ -3,7 +3,10 @@
 
 #include <muon/stator.h>           // IWYU pragma: export
 
+#include "stator/common.h"         // IWYU pragma: export
 #include "stator/name.h"           // IWYU pragma: export
+#include "stator/node.h"           // IWYU pragma: export
+#include "stator/type.h"           // IWYU pragma: export
 
 #include "stator/access_expr.h"    // IWYU pragma: export
 #include "stator/integer_expr.h"   // IWYU pragma: export
@@ -37,12 +40,12 @@ typedef struct {
 
 typedef struct {
   node_cursor_t cursor;
-  union {
+  _Alignas(union {
     mu_node_t node;
 #define MU_EMIT(lower, u, t) mu_##lower##_t lower;
     MU_EACH_NODE_KIND(MU_EMIT)
 #undef MU_EMIT
-  } data;
+  }) char data[];
 } node_header_t;
 
 typedef struct {
@@ -52,12 +55,12 @@ typedef struct {
 
 typedef struct {
   type_cursor_t cursor;
-  union {
+  _Alignas(union {
     mu_type_t type;
 #define MU_EMIT(lower, u, t) mu_##lower##_type_t lower;
     MU_EACH_TYPE_KIND(MU_EMIT)
 #undef MU_EMIT
-  } data;
+  }) char data[];
 } type_header_t;
 
 /// Return the cursor attached to the @a node
