@@ -36,26 +36,6 @@ inductor_t *inductor_initialize(inductor_t *inductor, mu_engine_t *engine) {
   return inductor;
 }
 
-inductor_t *inductor_reallocate(
-    inductor_t *inductor, const mu_type_t *type) {
-  size_t length = type->as_stator.id + 1;
-  length = 1000;
-
-  size_t size;
-  if (rare((size = struct_size(inductor_t, data, length)) == 0))
-    return NULL;
-
-  if ((inductor = realloc(inductor, size)) == NULL)
-    return NULL;
-
-  for (size_t i = inductor->length; i < length; i++)
-    inductor->data[i] = (member_t) {0};
-
-  inductor->length = length;
-
-  return inductor;
-}
-
 const mu_type_t *inductor_type(
     inductor_t **inductor, const mu_node_t *node) {
   size_t length = (*inductor)->engine->node_number + (*inductor)->engine->type_number;
@@ -121,18 +101,16 @@ static inductor_t *inductor_unify(
 
   // If a is a variable type, then just equate it to b
   if (a->kind == MU_VARIABLE_TYPE) {
-    inductor->data[a->as_stator.id] = (member_t) {
-      .kind = INDUCTOR_TYPE,
-      .id = b->as_stator.id,
-      .stator = &b->as_stator };
+    member_t i = { INDUCTOR_TYPE, .id = a->as_stator.id, .type = a };
+    member_t j = { INDUCTOR_TYPE, .id = b->as_stator.id, .type = b };
+    inductor_set(inductor, &i, &j);
     return inductor;
   }
 
   if (b->kind == MU_VARIABLE_TYPE) {
-    inductor->data[b->as_stator.id] = (member_t) {
-      .kind = INDUCTOR_TYPE,
-      .id = a->as_stator.id,
-      .stator = &a->as_stator };
+    member_t i = { INDUCTOR_TYPE, .id = a->as_stator.id, .type = a };
+    member_t j = { INDUCTOR_TYPE, .id = b->as_stator.id, .type = b };
+    inductor_set(inductor, &j, &i);
     return inductor;
   }
 
@@ -160,18 +138,16 @@ static inductor_t *inductor_unify(
           break;
 
         if (next_a->kind == MU_VARIABLE_TYPE) {
-          inductor->data[next_a->as_stator.id] = (member_t) {
-            .kind = INDUCTOR_TYPE,
-            .id = next_b->as_stator.id,
-            .stator = &next_b->as_stator };
+          member_t i = { INDUCTOR_TYPE, .id = next_a->as_stator.id, .type = next_a };
+          member_t j = { INDUCTOR_TYPE, .id = next_b->as_stator.id, .type = next_b };
+          inductor_set(inductor, &i, &j);
           break;
         }
 
         if (next_b->kind == MU_VARIABLE_TYPE) {
-          inductor->data[next_b->as_stator.id] = (member_t) {
-            .kind = INDUCTOR_TYPE,
-            .id = next_a->as_stator.id,
-            .stator = &next_a->as_stator };
+          member_t i = { INDUCTOR_TYPE, .id = next_a->as_stator.id, .type = next_a };
+          member_t j = { INDUCTOR_TYPE, .id = next_b->as_stator.id, .type = next_b };
+          inductor_set(inductor, &j, &i);
           break;
         }
 
@@ -191,10 +167,9 @@ static inductor_t *inductor_unify(
     }
 
     // Now that we've unified each type within type_a and type_b, unify them
-    inductor->data[type_a->as_stator.id] = (member_t) {
-      .kind = INDUCTOR_TYPE,
-      .id = type_b->as_stator.id,
-      .stator = &type_b->as_stator };
+    member_t i = { INDUCTOR_TYPE, .id = type_a->as_stator.id, .type = type_a };
+    member_t j = { INDUCTOR_TYPE, .id = type_b->as_stator.id, .type = type_b };
+    inductor_set(inductor, &j, &i);
   } while ((type_a = type_return(type_a)) != NULL && (type_b = type_return(type_b)) != NULL);
 
   return inductor;
