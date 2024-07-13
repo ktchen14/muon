@@ -4,7 +4,6 @@
 #include "type.h"
 
 #include <assert.h>
-#include <errno.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -66,17 +65,20 @@ const member_t *inductor_set(
 
   if (source->id >= inductor->type_length) {
     size_t origin = inductor->node_length + inductor->type_length;
-    size_t length = inductor->node_length + source->id + 1;
+    size_t length = inductor->node_length + source->id + 200;
 
-    member_t *data;
-    if ((data = realloc(inductor->data, sizeof(member_t[length]))) == NULL)
+    member_t *data = inductor->data;
+    fprintf(stderr, "Realloc %p to %zu ... ", data, length);
+    if ((data = realloc(data, sizeof(member_t[length]))) == NULL)
       return NULL;
+    fprintf(stderr, "%p\n", data);
     for (size_t i = origin; i < length; data[i++] = (member_t) {0});
 
-    inductor->type_length = source->id + 1;
+    inductor->type_length = source->id + 200;
     inductor->data = data;
   }
 
+  fprintf(stderr, "Accessing %p\n", &inductor->data[inductor->node_length + source->id]);
   inductor->data[inductor->node_length + source->id] = *target;
   return target;
 }
