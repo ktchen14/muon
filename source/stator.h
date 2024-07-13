@@ -60,7 +60,7 @@ typedef struct {
   } data;
 } type_header_t;
 
-/// Return the cursor in the @a node
+/// Return the cursor attached to the @a node
 __attribute__((const, nonnull, returns_nonnull))
 static inline node_cursor_t *node_cursor(const mu_node_t *node) {
   node_header_t *header = (node_header_t *) (
@@ -120,7 +120,7 @@ static inline inductor_t *node_induce(
   __builtin_unreachable();
 }
 
-/// Return the cursor in the @a type
+/// Return the cursor attached to the @a type
 __attribute__((const, nonnull, returns_nonnull))
 static inline type_cursor_t *type_cursor(const mu_type_t *type) {
   type_header_t *header = (type_header_t *) (
