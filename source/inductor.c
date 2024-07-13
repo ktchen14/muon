@@ -264,16 +264,16 @@ static inductor_t *inductor_equate(
   if (a == b)
     return inductor;
 
-  if (a->kind == INDUCTOR_NODE && b->kind == INDUCTOR_NODE) {
-    inductor_set(inductor, a, b);
-  } else if (a->kind == INDUCTOR_NODE && b->kind == INDUCTOR_TYPE) {
-    inductor_set(inductor, a, b);
-  } else if (a->kind == INDUCTOR_TYPE && b->kind == INDUCTOR_NODE) {
-    inductor_set(inductor, b, a);
-  } else
-    return inductor_unify(inductor, a->type, b->type);
+  if (a->kind == INDUCTOR_NODE && b->kind == INDUCTOR_NODE)
+    return inductor_set(inductor, a, b), inductor;
 
-  return inductor;
+  if (a->kind == INDUCTOR_NODE && b->kind == INDUCTOR_TYPE)
+    return inductor_set(inductor, a, b), inductor;
+
+  if (a->kind == INDUCTOR_TYPE && b->kind == INDUCTOR_NODE)
+    return inductor_set(inductor, b, a), inductor;
+
+  return inductor_unify(inductor, a->type, b->type);
 }
 
 const mu_type_t *inductor_type_root(
