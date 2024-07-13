@@ -2,7 +2,6 @@
 
 #include "../engine.h"
 #include "../stator.h"
-#include "../status.h"
 
 #include <assert.h>
 #include <errno.h>
@@ -14,7 +13,7 @@ const mu_record_sign_t *mu_record_sign(
     mu_engine_t *engine,
     size_t argc,
     const mu_sign_t *argv[argc],
-    const mu_source_t *source) {
+    const mu_node_source_t *source) {
   for (size_t i = 0; i < argc; i++)
     assert(argv[i]->as_stator.engine == engine);
 

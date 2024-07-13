@@ -2,14 +2,13 @@
 
 #include "../engine.h"
 #include "../stator.h"
-#include "../status.h"
 
 #include <assert.h>
 #include <stddef.h>
 #include <stdio.h>
 
 const mu_vector_sign_t *mu_vector_sign(
-    mu_engine_t *engine, const mu_sign_t *matter, const mu_source_t *source) {
+    mu_engine_t *engine, const mu_sign_t *matter, const mu_node_source_t *source) {
   assert(matter->as_stator.engine == engine);
 
   size_t size = sizeof(mu_vector_sign_t);

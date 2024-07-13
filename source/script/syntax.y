@@ -18,7 +18,7 @@ typedef struct {
 } syntax_t;
 }
 
-%define api.location.type { mu_source_t }
+%define api.location.type { mu_node_source_t }
 %define api.pure full
 %define api.push-pull push
 %locations

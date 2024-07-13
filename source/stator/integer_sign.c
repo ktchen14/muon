@@ -7,7 +7,7 @@
 #include <stdio.h>
 
 const mu_integer_sign_t *mu_integer_sign(
-    mu_engine_t *engine, const mu_source_t *source) {
+    mu_engine_t *engine, const mu_node_source_t *source) {
   size_t size = sizeof(mu_integer_sign_t);
 
   mu_integer_sign_t *result;

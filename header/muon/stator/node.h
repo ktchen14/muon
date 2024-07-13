@@ -3,8 +3,6 @@
 
 #include "common.h"  // IWYU pragma: export
 
-#include "name.h"
-
 /// Expands to emit(lower, upper, title, ...) for each kind of node
 #define MU_EACH_NODE_KIND(emit, ...) \
   MU_EACH_EXPR_KIND(MU_EMIT_NODE, _expr, _EXPR, Expr, emit, ##__VA_ARGS__) \
@@ -89,7 +87,8 @@ typedef enum {
 /// Source location of a node
 typedef struct {
   /// Name of the source file or stream
-  const mu_name_t *name;
+  // TODO: make this a const mu_name_t *
+  const char *name;
 
   /// Byte offset into the source file or stream (zero-indexed)
   size_t offset;
@@ -98,10 +97,10 @@ typedef struct {
   size_t length;
 
   /// Line number in the source file or stream (one-indexed)
-  size_t line;
+  unsigned int line;
 
   /// Column number in the source file or stream (one-indexed)
-  size_t column;
+  unsigned int column;
 } mu_node_source_t;
 
 /// An abstract node

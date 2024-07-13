@@ -8,7 +8,7 @@
 
 const mu_variable_sign_t *mu_variable_sign(
     mu_engine_t *engine,
-    const mu_source_t *source) {
+    const mu_node_source_t *source) {
   size_t size = sizeof(mu_variable_sign_t);
 
   mu_variable_sign_t *result;

@@ -2,7 +2,6 @@
 
 #include "../engine.h"
 #include "../stator.h"
-#include "../status.h"
 
 #include <assert.h>
 #include <stddef.h>
@@ -12,7 +11,7 @@ const mu_member_sign_t *mu_member_sign(
     mu_engine_t *engine,
     const mu_name_t *name,
     const mu_sign_t *matter,
-    const mu_source_t *source) {
+    const mu_node_source_t *source) {
   assert(name->as_stator.engine == engine);
   assert(matter->as_stator.engine == engine);
 

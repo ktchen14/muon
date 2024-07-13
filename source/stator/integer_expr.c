@@ -2,7 +2,6 @@
 
 #include "../engine.h"
 #include "../stator.h"
-#include "../status.h"
 
 #include <inttypes.h>
 #include <stddef.h>
@@ -10,7 +9,7 @@
 #include <stdio.h>
 
 const mu_integer_expr_t *mu_integer_expr(
-    mu_engine_t *engine, uint64_t data, const mu_source_t *source) {
+    mu_engine_t *engine, uint64_t data, const mu_node_source_t *source) {
   size_t size = sizeof(mu_integer_expr_t);
 
   mu_integer_expr_t *result;
