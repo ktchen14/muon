@@ -5,32 +5,33 @@ target_sources(muon PRIVATE
   common.c
   inductor.c
   main.c
-  name.c
-  node.c
   script.c
-  type.c
 
-  node/access_expr.c
-  node/integer_expr.c
-  node/member_expr.c
-  node/name_expr.c
-  node/record_expr.c
-  node/vector_expr.c
-  node/zero_expr.c
+  stator.c
 
-  node/integer_sign.c
-  node/member_sign.c
-  node/name_sign.c
-  node/record_sign.c
-  node/variable_sign.c
-  node/vector_sign.c
+  stator/name.c
 
-  node/constant_stmt.c
-  node/type_stmt.c
+  stator/access_expr.c
+  stator/integer_expr.c
+  stator/member_expr.c
+  stator/name_expr.c
+  stator/record_expr.c
+  stator/vector_expr.c
+  stator/zero_expr.c
 
-  type/integer.c
-  type/variable.c
-  type/vector.c
+  stator/integer_sign.c
+  stator/member_sign.c
+  stator/name_sign.c
+  stator/record_sign.c
+  stator/variable_sign.c
+  stator/vector_sign.c
+
+  stator/constant_stmt.c
+  stator/type_stmt.c
+
+  stator/integer_type.c
+  stator/variable_type.c
+  stator/vector_type.c
 
   $<TARGET_OBJECTS:reader>
 )

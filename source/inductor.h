@@ -1,10 +1,8 @@
 #ifndef MU_INDUCTOR_I
 #define MU_INDUCTOR_I
 
-#include "type.h"
-
 // TODO
-#include <muon/node.h>
+#include <muon/stator.h>
 
 #include <assert.h>
 #include <stddef.h>

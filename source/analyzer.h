@@ -2,7 +2,6 @@
 #define MU_ANALYZER_I
 
 #include "common.h"
-#include "node.h"
 #include "script.h"
 #include "stator.h"
 

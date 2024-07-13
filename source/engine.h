@@ -3,11 +3,8 @@
 
 #include <muon/engine.h>  // IWYU pragma: export
 
-#include "name.h"
-#include "node.h"
-#include "type.h"
-
 #include "common.h"
+#include "stator.h"
 
 #include <stddef.h>
 #include <errno.h>

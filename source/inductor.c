@@ -1,7 +1,7 @@
 #include "common.h"
 #include "engine.h"
 #include "inductor.h"
-#include "type.h"
+#include "stator.h"
 
 #include <assert.h>
 #include <stddef.h>

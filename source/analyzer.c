@@ -1,7 +1,6 @@
 #include "engine.h"
-#include "name.h"
-#include "node.h"
 #include "script.h"
+#include "stator.h"
 
 #include <assert.h>
 #include <stddef.h>

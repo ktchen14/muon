@@ -13,7 +13,7 @@
 unsigned char buffer[4096];
 
 #include "inductor.h"
-#include "node.h"
+#include "stator.h"
 
 inductor_t *induce(const mu_script_t *script, inductor_t *inductor) {
   for (size_t i = 0; i < script->argc; i++) {

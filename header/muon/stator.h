@@ -1,74 +1,45 @@
 #ifndef MU_STATOR_H
 #define MU_STATOR_H
 
-#include "common.h"
+#include "stator/common.h"         // IWYU pragma: export
+#include "stator/name.h"           // IWYU pragma: export
+#include "stator/node.h"           // IWYU pragma: export
+#include "stator/type.h"           // IWYU pragma: export
 
-#include <stddef.h>
+#include "stator/access_expr.h"    // IWYU pragma: export
+#include "stator/integer_expr.h"   // IWYU pragma: export
+#include "stator/member_expr.h"    // IWYU pragma: export
+#include "stator/name_expr.h"      // IWYU pragma: export
+#include "stator/record_expr.h"    // IWYU pragma: export
+#include "stator/vector_expr.h"    // IWYU pragma: export
+#include "stator/zero_expr.h"      // IWYU pragma: export
 
-/// Expands to emit(lower, upper, title, ...) for each kind of node
-#define MU_EACH_NODE_KIND(emit, ...) \
-  MU_EACH_EXPR_KIND(MU_EMIT_WITH_SUFFIX, _expr, _EXPR, Expr, emit, ##__VA_ARGS__) \
-  MU_EACH_SIGN_KIND(MU_EMIT_WITH_SUFFIX, _sign, _SIGN, Sign, emit, ##__VA_ARGS__) \
-  MU_EACH_STMT_KIND(MU_EMIT_WITH_SUFFIX, _stmt, _STMT, Stmt, emit, ##__VA_ARGS__)
+#include "stator/integer_sign.h"   // IWYU pragma: export
+#include "stator/member_sign.h"    // IWYU pragma: export
+#include "stator/name_sign.h"      // IWYU pragma: export
+#include "stator/record_sign.h"    // IWYU pragma: export
+#include "stator/variable_sign.h"  // IWYU pragma: export
+#include "stator/vector_sign.h"    // IWYU pragma: export
 
-#define MU_EMIT_WITH_SUFFIX(l, u, t, lsuffix, usuffix, tsuffix, emit, ...) \
-  emit(l##lsuffix, u##usuffix, t##tsuffix, ##__VA_ARGS__)
+#include "stator/constant_stmt.h"  // IWYU pragma: export
+#include "stator/type_stmt.h"      // IWYU pragma: export
 
-/// Expands to emit(lower, upper, title, ...) for each kind of expr
-#define MU_EACH_EXPR_KIND(emit, ...) \
-  emit(access, ACCESS, Access, ##__VA_ARGS__) \
-  emit(integer, INTEGER, Integer, ##__VA_ARGS__) \
-  emit(member, MEMBER, Member, ##__VA_ARGS__) \
-  emit(name, NAME, Name, ##__VA_ARGS__) \
-  emit(record, RECORD, Record, ##__VA_ARGS__) \
-  emit(vector, VECTOR, Vector, ##__VA_ARGS__) \
-  emit(zero, ZERO, Zero, ##__VA_ARGS__)
+#include "stator/integer_type.h"   // IWYU pragma: export
+#include "stator/vector_type.h"    // IWYU pragma: export
 
-/// Expands to emit(lower, upper, title, ...) for each kind of sign
-#define MU_EACH_SIGN_KIND(emit, ...) \
-  emit(integer, INTEGER, Integer, ##__VA_ARGS__) \
-  emit(member, MEMBER, Member, ##__VA_ARGS__) \
-  emit(name, NAME, Name, ##__VA_ARGS__) \
-  emit(record, RECORD, Record, ##__VA_ARGS__) \
-  emit(variable, VARIABLE, Variable, ##__VA_ARGS__) \
-  emit(vector, VECTOR, Vector, ##__VA_ARGS__)
+/// Emit debugging information on the abstract @a node to the debug stream
+void mu_node_debug(const mu_node_t *node) __attribute__((nonnull));
 
-/// Expands to emit(lower, upper, title, ...) for each kind of stmt
-#define MU_EACH_STMT_KIND(emit, ...) \
-  emit(constant, CONSTANT, Constant, ##__VA_ARGS__) \
-  emit(type, TYPE, Type, ##__VA_ARGS__)
+/// Emit debugging information on the abstract @a expr to the debug stream
+void mu_expr_debug(const mu_expr_t *expr) __attribute__((nonnull));
 
-/// Expands to emit(lower, upper, title, ...) for each kind of type
-#define MU_EACH_TYPE_KIND(emit, ...) \
-  emit(integer, INTEGER, Integer, ##__VA_ARGS__) \
-  emit(variable, VARIABLE, Variable, ##__VA_ARGS__) \
-  emit(vector, VECTOR, Vector, ##__VA_ARGS__)
+/// Emit debugging information on the abstract @a sign to the debug stream
+void mu_sign_debug(const mu_sign_t *sign) __attribute__((nonnull));
 
-/**
- * @brief An enumeration of each kind of stator
- */
-typedef enum {
-  MU_NAME_STATOR,
+/// Emit debugging information on the abstract @a stmt to the debug stream
+void mu_stmt_debug(const mu_stmt_t *stmt) __attribute__((nonnull));
 
-#define MU_EMIT(l, upper, t, kind) MU_##upper##_##kind##_STATOR,
-  MU_EACH_EXPR_KIND(MU_EMIT, EXPR)
-  MU_EACH_SIGN_KIND(MU_EMIT, SIGN)
-  MU_EACH_STMT_KIND(MU_EMIT, STMT)
-
-  MU_EACH_TYPE_KIND(MU_EMIT, TYPE)
-#undef MU_EMIT
-} mu_stator_kind_t;
-
-typedef struct mu_engine_t mu_engine_t;
-
-/// An abstract stator
-typedef struct {
-  mu_stator_kind_t kind;
-  const mu_engine_t *engine;
-  size_t id;
-} mu_stator_t;
-
-/// The header that each concrete stator must have
-#define MU_STATOR_HEADER mu_stator_t as_stator
+/// Emit debugging information on the abstract @a type to the debug stream
+void mu_type_debug(const mu_type_t *type) __attribute__((nonnull));
 
 #endif /* MU_STATOR_H */

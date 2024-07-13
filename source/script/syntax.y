@@ -5,8 +5,7 @@
 %code requires {
 #include <muon.h>
 #include "../common.h"
-#include "../name.h"
-#include "../node.h"
+#include "../stator.h"
 #include "../script.h"
 
 typedef struct {
