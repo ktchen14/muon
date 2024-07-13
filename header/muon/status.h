@@ -3,6 +3,8 @@
 
 #include <stddef.h>
 
+#include "stator.h"
+
 /**
  * @brief Source location of a Muon syntax object
  */
@@ -50,8 +52,11 @@ typedef struct {
 typedef struct mu_status_t mu_status_t;
 
 const mu_memo_t *mu_memo(
-    mu_status_t *status, const mu_source_t *source, const char *format, ...)
-  __attribute__((nonnull));
+    mu_status_t *status,
+    const mu_node_source_t *source,
+    const char *restrict format,
+    ...)
+  __attribute__((format(printf, 3, 4), nonnull));
 
 __attribute__((const, nonnull, returns_nonnull))
 static inline const char *mu_memo_name(const mu_memo_t *memo) {
