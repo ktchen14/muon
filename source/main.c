@@ -82,7 +82,7 @@ int main(int argc, char *argv[argc]) {
       while ((next = node_at(node, node_cursor(node)->i++)) != NULL)
         node = node_continue(node, next);
 
-      const mu_type_t *type = inductor_type(&inductor, node);
+      const mu_type_t *type = inductor_type(inductor, node);
 
       if (type == NULL)
         fprintf(stderr, "Node %zu: NONE\n", node->as_stator.id);

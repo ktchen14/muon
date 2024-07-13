@@ -57,7 +57,7 @@ static inline const mu_type_t *type_at(const mu_type_t *type, size_t i) {
   __builtin_unreachable();
 }
 
-__attribute__((nonnull, pure))
+__attribute__((nonnull))
 static inline const mu_type_t *type_reduce(
     const mu_type_t *type, inductor_t *inductor) {
 #define MU_EMIT(lower, upper, _) \

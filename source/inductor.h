@@ -36,9 +36,7 @@ struct inductor_t {
   inductor_member_t *data;
 };
 
-/**
- * @brief Create an inductor on the @a engine
- */
+/// Initialize the @a inductor
 inductor_t *inductor_initialize(inductor_t *inductor, mu_engine_t *engine)
   __attribute__((nonnull));
 
@@ -70,8 +68,7 @@ static inline const mu_type_t *inductor_type_root(
   return result->type;
 }
 
-const mu_type_t *inductor_type(
-    inductor_t **inductor, const mu_node_t *node);
+const mu_type_t *inductor_type(inductor_t *inductor, const mu_node_t *node);
 
 inductor_t *inductor_equate_node_node(
     inductor_t *inductor, const mu_node_t *a, const mu_node_t *b);
@@ -81,9 +78,5 @@ inductor_t *inductor_equate_node_type(
 
 inductor_t *inductor_equate_type_type(
     inductor_t *inductor, const mu_type_t *a, const mu_type_t *b);
-
-#define inductor_member(node_or_type) _Generic((node_or_type), \
-    const mu_node_t *: (inductor_member_t) { INDUCTOR_NODE, .id = (node_or_type)->as_stator.id, .node = (node_or_type) }, \
-    const mu_type_t *: (inductor_member_t) { INDUCTOR_NODE, .id = (node_or_type)->as_stator.id, .type = (node_or_type) })
 
 #endif /* MU_INDUCTOR_I */
