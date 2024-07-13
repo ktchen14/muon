@@ -25,7 +25,7 @@ static inline void *node_allocate(mu_engine_t *engine, size_t size) {
     return errno = ENOMEM, NULL;
 
   node_header_t *header;
-  if (rare((header = engine_allocate(engine, size)) == NULL))
+  if ((header = engine_allocate(engine, size)) == NULL)
     return NULL;
   *header = (node_header_t) {0};
 
@@ -38,7 +38,7 @@ static inline void *type_allocate(mu_engine_t *engine, size_t size) {
     return errno = ENOMEM, NULL;
 
   type_header_t *header;
-  if (rare((header = engine_allocate(engine, size)) == NULL))
+  if ((header = engine_allocate(engine, size)) == NULL)
     return NULL;
   *header = (type_header_t) {0};
 

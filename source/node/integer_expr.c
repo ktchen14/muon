@@ -14,7 +14,7 @@ const mu_integer_expr_t *mu_integer_expr(
   size_t size = sizeof(mu_integer_expr_t);
 
   mu_integer_expr_t *result;
-  if (rare((result = node_allocate(engine, size)) == NULL))
+  if ((result = node_allocate(engine, size)) == NULL)
     return NULL;
   *result = (mu_integer_expr_t) {
     .as_expr.kind = MU_INTEGER_EXPR, .data = data,

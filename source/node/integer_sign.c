@@ -12,7 +12,7 @@ const mu_integer_sign_t *mu_integer_sign(
   size_t size = sizeof(mu_integer_sign_t);
 
   mu_integer_sign_t *result;
-  if (rare((result = node_allocate(engine, size)) == NULL))
+  if ((result = node_allocate(engine, size)) == NULL)
     return NULL;
   *result = (mu_integer_sign_t) {
     .as_sign.kind = MU_INTEGER_SIGN,
