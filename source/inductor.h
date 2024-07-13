@@ -9,19 +9,7 @@
 #include <assert.h>
 #include <stddef.h>
 
-typedef struct {
-  /// Whether the target stator is a node or type
-  enum {
-    INDUCTOR_NONE, INDUCTOR_NODE, INDUCTOR_TYPE,
-  } kind;
-  size_t id;
-  union {
-    const mu_stator_t *stator;
-    const mu_node_t *node;
-    const mu_type_t *type;
-  };
-} inductor_member_t;
-
+typedef struct inductor_member_t inductor_member_t;
 typedef struct inductor_t inductor_t;
 
 struct inductor_t {
@@ -31,52 +19,40 @@ struct inductor_t {
 
   size_t node_length;
   size_t type_length;
-
-  // Length = node_length + type_length
-  inductor_member_t *data;
+  inductor_member_t *data;  // length = node_length + type_length
 };
 
-/// Initialize the @a inductor
+/// Initialize the @a inductor to handle nodes and types in the @a engine
 inductor_t *inductor_initialize(inductor_t *inductor, mu_engine_t *engine)
   __attribute__((nonnull));
 
-const inductor_member_t *inductor_get(
-    const inductor_t *inductor, const inductor_member_t *member)
-  __attribute__((nonnull, pure, returns_nonnull));
-
-const inductor_member_t *inductor_set(
-    inductor_t *inductor,
-    const inductor_member_t *restrict source,
-    const inductor_member_t *restrict target)
+const mu_type_t *inductor_type_root(
+    inductor_t *inductor, const mu_type_t *type)
   __attribute__((nonnull));
 
-const inductor_member_t *inductor_root(
-    inductor_t *inductor, const inductor_member_t *member)
+/// Return the archtype of the @a type in the @a inductor
+const mu_type_t *inductor_type_of_type(
+    inductor_t *inductor, const mu_type_t *type)
   __attribute__((nonnull));
 
-__attribute__((nonnull))
-static inline const mu_type_t *inductor_type_root(
-    inductor_t *inductor, const mu_type_t *type) {
-  inductor_member_t member = {
-    INDUCTOR_TYPE, .id = type->as_stator.id, .type = type,
-  };
+/// Return the archtype of the @a node in the @a inductor
+const mu_type_t *inductor_type_of_node(
+    inductor_t *inductor, const mu_node_t *node)
+  __attribute__((nonnull));
 
-  const inductor_member_t *result;
-  result = inductor_root(inductor, &member);
-  assert(result->kind == INDUCTOR_TYPE);
-
-  return result->type;
-}
-
-const mu_type_t *inductor_type(inductor_t *inductor, const mu_node_t *node);
-
+/// Equate node @a a to node @a b in the @a inductor
 inductor_t *inductor_equate_node_node(
-    inductor_t *inductor, const mu_node_t *a, const mu_node_t *b);
+    inductor_t *inductor, const mu_node_t *a, const mu_node_t *b)
+  __attribute__((nonnull));
 
+/// Equate node @a a to type @a b in the @a inductor
 inductor_t *inductor_equate_node_type(
-    inductor_t *inductor, const mu_node_t *a, const mu_type_t *b);
+    inductor_t *inductor, const mu_node_t *a, const mu_type_t *b)
+  __attribute__((nonnull));
 
+/// Equate type @a a to type @a b in the @a inductor
 inductor_t *inductor_equate_type_type(
-    inductor_t *inductor, const mu_type_t *a, const mu_type_t *b);
+    inductor_t *inductor, const mu_type_t *a, const mu_type_t *b)
+  __attribute__((nonnull));
 
 #endif /* MU_INDUCTOR_I */
