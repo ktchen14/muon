@@ -4,27 +4,30 @@
 #include "type.h"
 
 #include <assert.h>
+#include <errno.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 typedef inductor_member_t member_t;
 
-inductor_t *inductor_create(mu_engine_t *engine) {
+inductor_t *inductor_initialize(inductor_t *inductor, mu_engine_t *engine) {
   size_t length = engine->node_number + engine->type_number;
 
   size_t size;
-  if (rare((size = struct_size(inductor_t, data, length)) == 0))
+  if (rare(__builtin_mul_overflow(sizeof(member_t), length, &size)))
+    return errno = ENOMEM, NULL;
+
+  member_t *data;
+  if ((data = malloc(size)) == NULL)
     return NULL;
 
-  inductor_t *inductor;
-  if ((inductor = malloc(size)) == NULL)
-    return NULL;
   *inductor = (inductor_t) {
     .engine = engine,
     .length = length,
     .node_length = engine->node_number,
     .type_length = engine->type_number,
+    .data = data,
   };
 
   for (size_t i = 0; i < length; i++)
@@ -206,11 +209,11 @@ static inductor_t *inductor_equate(
     return inductor;
 
   if (a->kind == INDUCTOR_NODE && b->kind == INDUCTOR_NODE) {
-    inductor->data[a->id] = *b;
+    inductor_set(inductor, a, b);
   } else if (a->kind == INDUCTOR_NODE && b->kind == INDUCTOR_TYPE) {
-    inductor->data[a->id] = *b;
+    inductor_set(inductor, a, b);
   } else if (a->kind == INDUCTOR_TYPE && b->kind == INDUCTOR_NODE) {
-    inductor->data[b->id] = *a;
+    inductor_set(inductor, b, a);
   } else
     return inductor_unify(inductor, a->type, b->type);
 
@@ -219,7 +222,6 @@ static inductor_t *inductor_equate(
 
 static const member_t member_none = {0};
 
-__attribute__((nonnull, pure, returns_nonnull))
 const member_t *inductor_get(
     const inductor_t *inductor, const member_t *member) {
   if (member->kind == INDUCTOR_NODE) {
@@ -231,6 +233,36 @@ const member_t *inductor_get(
     return &member_none;
 
   return &inductor->data[inductor->node_length + member->id];
+}
+
+const member_t *inductor_set(
+    inductor_t *inductor, const member_t *source, const member_t *target) {
+  if (source->kind == INDUCTOR_NODE) {
+    assert(source->id < inductor->node_length);
+    inductor->data[source->id] = *target;
+  }
+
+  if (source->id >= inductor->type_length) {
+    size_t length = inductor->node_length + source->id + 1;
+
+    size_t size;
+    if (rare(__builtin_mul_overflow(sizeof(member_t), length, &size)))
+      return errno = ENOMEM, NULL;
+
+    member_t *data;
+    if ((data = realloc(inductor->data, size)) == NULL)
+      return NULL;
+
+    for (size_t i = inductor->node_length + inductor->type_length; i < length; i++)
+      data[i] = (member_t) {0};
+
+    inductor->length = inductor->node_length + inductor->type_length;
+    inductor->type_length = source->id + 1;
+    inductor->data = data;
+  }
+
+  inductor->data[inductor->node_length + source->id] = *target;
+  return target;
 }
 
 inductor_t *inductor_equate_node_node(

@@ -34,26 +34,25 @@ const mu_vector_expr_t *mu_vector_expr(
 
 inductor_t *vector_expr_induce(
     const mu_vector_expr_t *expr, inductor_t *inductor) {
-  // The type of a vector expr is [a]
-  const mu_variable_type_t *a;
-  if ((a = mu_variable_type(inductor->engine)) == NULL)
+  mu_engine_t *engine = inductor->engine;
+
+  // The type of a vector expr is [matter_type]
+  const mu_variable_type_t *matter_type;
+  if ((matter_type = mu_variable_type(engine)) == NULL)
     return NULL;
 
-  const mu_vector_type_t *type;
-  if ((type = mu_vector_type(inductor->engine, &a->as_type)) == NULL)
-    return NULL;
-
-  if ((inductor = inductor_extend_type(inductor, &type->as_type)) == NULL)
+  const mu_vector_type_t *vector_type;
+  if ((vector_type = mu_vector_type(engine, &matter_type->as_type)) == NULL)
     return NULL;
 
   for (size_t i = 0; i < expr->argc; i++) {
     const mu_expr_t *argument = expr->argv[i];
-    inductor = inductor_equate_node_type(inductor, &argument->as_node, &a->as_type);
+    inductor = inductor_equate_node_type(inductor, &argument->as_node, &matter_type->as_type);
     if (inductor == NULL)
       return NULL;
   }
 
-  return inductor_equate_node_type(inductor, &expr->as_node, &type->as_type);
+  return inductor_equate_node_type(inductor, &expr->as_node, &vector_type->as_type);
 }
 
 void mu_vector_expr_debug(const mu_vector_expr_t *expr) {

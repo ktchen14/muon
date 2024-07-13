@@ -32,28 +32,24 @@ struct inductor_t {
   size_t node_length;
   size_t type_length;
 
-  inductor_member_t data[];
+  inductor_member_t *data;
 };
 
 /**
  * @brief Create an inductor on the @a engine
  */
-inductor_t *inductor_create(mu_engine_t *engine)
+inductor_t *inductor_initialize(inductor_t *inductor, mu_engine_t *engine)
   __attribute__((nonnull));
-
-/// @internal Extend the @a inductor so that it's able to hold the @a type
-inductor_t *inductor_reallocate(inductor_t *inductor, const mu_type_t *type)
-  __attribute__((nonnull));
-
-static inline inductor_t *inductor_extend_type(
-    inductor_t *inductor, const mu_type_t *type) {
-  if (type->as_stator.id < inductor->length)
-    return inductor;
-  return inductor_reallocate(inductor, type);
-}
 
 const inductor_member_t *inductor_get(
-    const inductor_t *inductor, const inductor_member_t *member);
+    const inductor_t *inductor, const inductor_member_t *member)
+  __attribute__((nonnull, pure, returns_nonnull));
+
+const inductor_member_t *inductor_set(
+    inductor_t *inductor,
+    const inductor_member_t *restrict source,
+    const inductor_member_t *restrict target)
+  __attribute__((nonnull));
 
 static inline const inductor_member_t *inductor_root(
     inductor_t *inductor, const inductor_member_t *member) {
@@ -92,5 +88,9 @@ inductor_t *inductor_equate_node_type(
 
 inductor_t *inductor_equate_type_type(
     inductor_t *inductor, const mu_type_t *a, const mu_type_t *b);
+
+#define inductor_member(node_or_type) _Generic((node_or_type), \
+    const mu_node_t *: (inductor_member_t) { INDUCTOR_NODE, .id = (node_or_type)->as_stator.id, .node = (node_or_type) }, \
+    const mu_type_t *: (inductor_member_t) { INDUCTOR_NODE, .id = (node_or_type)->as_stator.id, .type = (node_or_type) })
 
 #endif /* MU_INDUCTOR_I */
