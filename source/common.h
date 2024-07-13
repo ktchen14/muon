@@ -1,11 +1,7 @@
 #ifndef MU_COMMON_I
 #define MU_COMMON_I
 
-#include <muon/common.h>
-
 #include <stddef.h>
-
-typedef mu_char8_t char8_t;
 
 /// Mark that @c ... will, in the common case, evaluate to 1
 #define common(...) __builtin_expect((__VA_ARGS__), 1)

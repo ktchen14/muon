@@ -12,7 +12,7 @@
 
 /*!conditions:re2c*/
 
-#define YYCTYPE char8_t
+#define YYCTYPE mu_char8_t
 
 typedef struct {
   size_t offset, line, column;
@@ -75,7 +75,7 @@ static yytoken_kind_t scan_next(
 #define YYGETCONDITION()     (*condition)
 #define YYSETCONDITION(next) (*condition = next)
 
-#define UTF8(...) ((char8_t *) __VA_ARGS__)
+#define UTF8(...) ((mu_char8_t *) __VA_ARGS__)
 
     /*!re2c
       re2c:api = custom;
@@ -181,7 +181,7 @@ static void symbol_debug(
 
 
 mu_script_t *mu_read_script(
-    mu_engine_t *engine, mu_status_t *status, const char8_t *string) {
+    mu_engine_t *engine, mu_status_t *status, const mu_char8_t *string) {
   syntax_t syntax = { .engine = engine };
   scan_t scan = {0};
 

@@ -7,11 +7,13 @@
 #include "engine.h"
 #include "status.h"
 
+typedef unsigned char mu_char8_t;
+
 void scan_debug(const unsigned char *string, const char *name)
   __attribute__((nonnull(1)));
 
 mu_script_t *mu_read_script(
-    mu_engine_t *engine, mu_status_t *status, const char8_t *buffer)
+    mu_engine_t *engine, mu_status_t *status, const mu_char8_t *buffer)
   __attribute__((nonnull));
 
 #endif /* MU_SCRIPT_I */

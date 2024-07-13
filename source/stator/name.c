@@ -14,12 +14,12 @@
 #include <uchar.h>
 #include <wchar.h>
 
-size_t c8rtomb(char *restrict s, char8_t c8, mbstate_t *restrict ps);
+size_t c8rtomb(char *restrict s, mu_char8_t c8, mbstate_t *restrict ps);
 
 const mu_name_t *mu_name(
     mu_engine_t *engine,
     size_t length,
-    const char8_t text[restrict static length]) {
+    const mu_char8_t text[restrict static length]) {
   // Calculate the size of the name_header_t
   size_t size = offsetof(name_header_t, name.text) + 1;
   if (rare(__builtin_add_overflow(size, length, &size)))
@@ -56,7 +56,7 @@ _Thread_local mbstate_t cs = {0};
 
 void mu_name_debug(const mu_name_t *name) {
   for (size_t i = 0; i < name->length; i++) {
-    char8_t c = name->text[i];
+    mu_char8_t c = name->text[i];
 
     size_t size;
     if ((size = c8rtomb(conversion, c, &cs)) == 0)
