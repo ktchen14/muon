@@ -1,8 +1,9 @@
 #ifndef MU_STATOR_NODE_H
 #define MU_STATOR_NODE_H
 
-#include "common.h"     // IWYU pragma: export
-#include "../status.h"
+#include "common.h"  // IWYU pragma: export
+
+#include "name.h"
 
 /// Expands to emit(lower, upper, title, ...) for each kind of node
 #define MU_EACH_NODE_KIND(emit, ...) \
@@ -85,6 +86,24 @@ typedef enum {
 #undef MU_EMIT
 } mu_stmt_kind_t;
 
+/// Source location of a node
+typedef struct {
+  /// Name of the source file or stream
+  const mu_name_t *name;
+
+  /// Byte offset into the source file or stream (zero-indexed)
+  size_t offset;
+
+  /// Length, in bytes
+  size_t length;
+
+  /// Line number in the source file or stream (one-indexed)
+  size_t line;
+
+  /// Column number in the source file or stream (one-indexed)
+  size_t column;
+} mu_node_source_t;
+
 /// An abstract node
 typedef struct {
   union {
@@ -92,7 +111,7 @@ typedef struct {
     mu_stator_t as_stator;
   };
 
-  mu_source_t source;
+  mu_node_source_t source;
 } mu_node_t;
 
 /// An abstract expr

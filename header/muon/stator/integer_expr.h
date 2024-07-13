@@ -3,8 +3,6 @@
 
 #include "node.h"
 
-#include "../status.h"
-
 #include <stdint.h>
 
 typedef struct {
@@ -14,7 +12,7 @@ typedef struct {
 } mu_integer_expr_t;
 
 const mu_integer_expr_t *mu_integer_expr(
-    mu_engine_t *engine, uint64_t data, const mu_source_t *source)
+    mu_engine_t *engine, uint64_t data, const mu_node_source_t *source)
   __attribute__((malloc, nonnull(1)));
 
 void mu_integer_expr_debug(const mu_integer_expr_t *expr)

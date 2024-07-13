@@ -12,7 +12,7 @@ typedef struct {
 } mu_name_expr_t;
 
 const mu_name_expr_t *mu_name_expr(
-    mu_engine_t *engine, const mu_name_t *name, const mu_source_t *source)
+    mu_engine_t *engine, const mu_name_t *name, const mu_node_source_t *source)
   __attribute__((malloc, nonnull(1, 2)));
 
 void mu_name_expr_debug(const mu_name_expr_t *expr)

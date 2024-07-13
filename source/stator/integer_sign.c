@@ -2,7 +2,6 @@
 
 #include "../engine.h"
 #include "../stator.h"
-#include "../status.h"
 
 #include <stddef.h>
 #include <stdio.h>
