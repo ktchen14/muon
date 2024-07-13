@@ -26,12 +26,13 @@ typedef struct inductor_t inductor_t;
 
 struct inductor_t {
   mu_engine_t *engine;
+
   const mu_stmt_t *const *node_to_stmt;
-  size_t length;
 
   size_t node_length;
   size_t type_length;
 
+  // Length = node_length + type_length
   inductor_member_t *data;
 };
 
@@ -51,17 +52,9 @@ const inductor_member_t *inductor_set(
     const inductor_member_t *restrict target)
   __attribute__((nonnull));
 
-static inline const inductor_member_t *inductor_root(
-    inductor_t *inductor, const inductor_member_t *member) {
-  for (;;) {
-    const inductor_member_t *next = inductor_get(inductor, member);
-    if (next->kind == INDUCTOR_NONE)
-      return member;
-    member = next;
-  }
-
-  return member;
-}
+const inductor_member_t *inductor_root(
+    inductor_t *inductor, const inductor_member_t *member)
+  __attribute__((nonnull));
 
 __attribute__((nonnull))
 static inline const mu_type_t *inductor_type_root(

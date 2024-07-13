@@ -36,7 +36,6 @@ inductor_t *vector_expr_induce(
     const mu_vector_expr_t *expr, inductor_t *inductor) {
   mu_engine_t *engine = inductor->engine;
 
-  // The type of a vector expr is [matter_type]
   const mu_variable_type_t *matter_type;
   if ((matter_type = mu_variable_type(engine)) == NULL)
     return NULL;
@@ -46,13 +45,14 @@ inductor_t *vector_expr_induce(
     return NULL;
 
   for (size_t i = 0; i < expr->argc; i++) {
-    const mu_expr_t *argument = expr->argv[i];
-    inductor = inductor_equate_node_type(inductor, &argument->as_node, &matter_type->as_type);
-    if (inductor == NULL)
+    const mu_node_t *node = &expr->argv[i]->as_node;
+    const mu_type_t *type = &matter_type->as_type;
+    if ((inductor = inductor_equate_node_type(inductor, node, type)) == NULL)
       return NULL;
   }
 
-  return inductor_equate_node_type(inductor, &expr->as_node, &vector_type->as_type);
+  const mu_type_t *type = &vector_type->as_type;
+  return inductor_equate_node_type(inductor, &expr->as_node, type);
 }
 
 void mu_vector_expr_debug(const mu_vector_expr_t *expr) {
