@@ -15,6 +15,7 @@ typedef struct inductor_member_t {
   } kind;
 
   size_t id;
+  size_t index;
 
   union {
     const mu_stator_t *stator;
@@ -25,19 +26,26 @@ typedef struct inductor_member_t {
 
 static const member_t member_none = {0};
 
+__attribute__((nonnull, pure))
+static inline size_t inductor_length(const inductor_t *inductor) {
+  return inductor->node_length + inductor->type_length;
+}
+
 /// Create a node member
 __attribute__((nonnull))
 static inline member_t node_member(
     const inductor_t *inductor, const mu_node_t *node) {
   assert(node->as_stator.id < inductor->node_length);
-  return (member_t) { INDUCTOR_NODE, .id = node->as_stator.id, .node = node };
+  size_t index = node->as_stator.id;
+  return (member_t) { INDUCTOR_NODE, .id = node->as_stator.id, .index = index, .node = node };
 }
 
 /// Create a type member
 __attribute__((nonnull))
 static inline member_t type_member(
     const inductor_t *inductor, const mu_type_t *type) {
-  return (member_t) { INDUCTOR_TYPE, .id = type->as_stator.id, .type = type };
+  size_t index = inductor->node_length + type->as_stator.id;
+  return (member_t) { INDUCTOR_TYPE, .id = type->as_stator.id, .index = index, .type = type };
 }
 
 static const member_t *inductor_get(
@@ -98,40 +106,32 @@ inductor_t *inductor_equate_type_type(
 
 const member_t *inductor_get(
     const inductor_t *inductor, const member_t *member) {
-  if (member->kind == INDUCTOR_NODE) {
-    assert(member->id < inductor->node_length);
-    return &inductor->data[member->id];
-  }
-
-  if (member->id >= inductor->type_length)
+  if (member->index >= inductor_length(inductor))
     return &member_none;
-
-  return &inductor->data[inductor->node_length + member->id];
+  return &inductor->data[member->index];
 }
 
 const member_t *inductor_set(
     inductor_t *inductor,
     const member_t *restrict source,
     const member_t *restrict target) {
-  if (source->kind == INDUCTOR_NODE) {
-    assert(source->id < inductor->node_length);
-    inductor->data[source->id] = *target;
+  size_t origin = inductor_length(inductor);
+
+  if (source->index < origin) {
+    inductor->data[source->index] = *target;
     return target;
   }
 
-  if (source->id >= inductor->type_length) {
-    fprintf(stderr, "Reallocating\n");
-    size_t origin = inductor->node_length + inductor->type_length;
-    size_t length = inductor->node_length + source->id + 200;
+  fprintf(stderr, "Reallocating\n");
+  size_t length = inductor->node_length + source->id + 200;
 
-    member_t *data = inductor->data;
-    if ((data = realloc(data, sizeof(member_t[length]))) == NULL)
-      return NULL;
-    for (size_t i = origin; i < length; data[i++] = (member_t) {0});
+  member_t *data = inductor->data;
+  if ((data = realloc(data, sizeof(member_t[length]))) == NULL)
+    return NULL;
+  for (size_t i = origin; i < length; data[i++] = (member_t) {0});
 
-    inductor->type_length = source->id + 200;
-    inductor->data = data;
-  }
+  inductor->type_length = source->id + 200;
+  inductor->data = data;
 
   inductor->data[inductor->node_length + source->id] = *target;
   return target;
