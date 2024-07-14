@@ -10,12 +10,13 @@
 #include <errno.h>
 #include <stdlib.h>
 
-/// Allocate a stator of the @a size in the @a engine
+/// @internal Allocate a stator of the @a size in the @a engine
 __attribute__((malloc, nonnull))
 static inline void *engine_allocate(mu_engine_t *engine, size_t size) {
   return malloc(size);
 }
 
+/// @internal Allocate a node of size @a size in the @a engine
 __attribute__((malloc, nonnull))
 static inline void *node_allocate(mu_engine_t *engine, size_t size) {
   if (rare((size = struct_size(node_header_t, data, size)) == 0))
@@ -29,6 +30,7 @@ static inline void *node_allocate(mu_engine_t *engine, size_t size) {
   return header->data;
 }
 
+/// @internal Allocate a type of size @a size in the @a engine
 __attribute__((malloc, nonnull))
 static inline void *type_allocate(mu_engine_t *engine, size_t size) {
   if (rare((size = struct_size(type_header_t, data, size)) == 0))
@@ -42,7 +44,7 @@ static inline void *type_allocate(mu_engine_t *engine, size_t size) {
   return header->data;
 }
 
-/// Assign the @a name to the @a engine
+/// @internal Assign the @a name to the @a engine
 __attribute__((nonnull))
 static inline mu_name_t *assign_name(mu_engine_t *engine, mu_name_t *name) {
   name->as_stator.engine = engine;
@@ -51,7 +53,7 @@ static inline mu_name_t *assign_name(mu_engine_t *engine, mu_name_t *name) {
   return name;
 }
 
-/// Assign the abstract @a node to the @a engine
+/// @internal Assign the abstract @a node to the @a engine
 __attribute__((nonnull, returns_nonnull))
 static inline mu_node_t *assign_node(mu_engine_t *engine, mu_node_t *node) {
   node->as_stator.engine = engine;
@@ -59,7 +61,7 @@ static inline mu_node_t *assign_node(mu_engine_t *engine, mu_node_t *node) {
   return node;
 }
 
-/// Assign the abstract @a type to the @a engine
+/// @internal Assign the abstract @a type to the @a engine
 __attribute__((nonnull, returns_nonnull))
 static inline mu_type_t *assign_type(mu_engine_t *engine, mu_type_t *type) {
   type->as_stator.engine = engine;

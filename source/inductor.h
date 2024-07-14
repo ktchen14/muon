@@ -1,7 +1,6 @@
 #ifndef MU_INDUCTOR_I
 #define MU_INDUCTOR_I
 
-// TODO
 #include <muon/stator.h>
 
 #include <assert.h>
