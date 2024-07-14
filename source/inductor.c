@@ -1,6 +1,7 @@
 #include "common.h"
 #include "inductor.h"
 #include "stator.h"
+#include "status.h"
 
 #include <assert.h>
 #include <stddef.h>
@@ -49,7 +50,11 @@ static inductor_t *inductor_equate(inductor_t *inductor, member_t a, member_t b)
 static member_t inductor_root(inductor_t *inductor, member_t member)
   __attribute__((nonnull));
 
-inductor_t *inductor_initialize(inductor_t *inductor, mu_engine_t *engine) {
+inductor_t *inductor_initialize(
+    inductor_t *inductor,
+    mu_engine_t *engine,
+    const mu_stmt_t *const *node_to_stmt,
+    mu_status_t *status) {
   size_t length = engine->node_number + engine->type_number;
   member_t *data;
   if ((data = malloc(sizeof(member_t[length]))) == NULL)
@@ -61,6 +66,8 @@ inductor_t *inductor_initialize(inductor_t *inductor, mu_engine_t *engine) {
     .node_number = engine->node_number,
     .length = length,
     .data = data,
+    .node_to_stmt = node_to_stmt,
+    .status = status,
   };
   return inductor;
 }
@@ -79,6 +86,8 @@ const mu_type_t *inductor_type_root(
 const mu_type_t *inductor_type_of_node(inductor_t *inductor, const mu_node_t *node) {
   member_t member = inductor_root(inductor, node_member(inductor, node));
 
+  // If the root member of the node isn't a type, then we need to create a
+  // variable type to become the type of the node
   if (member.kind == NODE) {
     const mu_variable_type_t *variable_type;
     if ((variable_type = mu_variable_type(inductor->engine)) == NULL)
@@ -91,9 +100,8 @@ const mu_type_t *inductor_type_of_node(inductor_t *inductor, const mu_node_t *no
     return next.type;
   }
 
-  const mu_type_t *type = member.type;
+  const mu_type_t *type = member.type, *next;
   do {
-    const mu_type_t *next;
     while ((next = type_at(type, type_cursor(type)->i++)) != NULL) {
       member_t result = inductor_root(inductor, type_member(inductor, next));
       assert(result.kind == TYPE);
@@ -247,8 +255,9 @@ static inductor_t *inductor_equate(inductor_t *inductor, member_t a, member_t b)
           break;
         }
 
-        if (next_a->kind != next_b->kind)
+        if (next_a->kind != next_b->kind) {
           assert(0);
+        }
 
         type_a = type_continue(type_a, next_a);
         type_b = type_continue(type_b, next_b);

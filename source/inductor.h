@@ -3,6 +3,8 @@
 
 #include <muon/stator.h>
 
+#include "status.h"
+
 #include <assert.h>
 #include <stddef.h>
 
@@ -12,15 +14,21 @@ typedef struct inductor_t inductor_t;
 struct inductor_t {
   mu_engine_t *engine;
 
-  const mu_stmt_t *const *node_to_stmt;
-
   size_t node_number;
   size_t length;
   inductor_member_t *data;
+
+  const mu_stmt_t *const *node_to_stmt;
+
+  mu_status_t *status;
 };
 
 /// Initialize the @a inductor to handle nodes and types in the @a engine
-inductor_t *inductor_initialize(inductor_t *inductor, mu_engine_t *engine)
+inductor_t *inductor_initialize(
+    inductor_t *inductor,
+    mu_engine_t *engine,
+    const mu_stmt_t *const *node_to_stmt,
+    mu_status_t *status)
   __attribute__((nonnull));
 
 void inductor_raze(inductor_t *inductor) __attribute__((nonnull));

@@ -68,9 +68,9 @@ int main(int argc, char *argv[argc]) {
       fprintf(stderr, "Stator #%zu = Stator #%zu\n", i, resolution[i]->as_stator.id);
   }
 
-  inductor_t *inductor = inductor_initialize(&(inductor_t) {0}, &engine);
+  inductor_t *inductor = inductor_initialize(
+      &(inductor_t) {0}, &engine, resolution, &status);
   assert(inductor != NULL);
-  inductor->node_to_stmt = resolution;
 
   inductor = induce(script, inductor);
 
