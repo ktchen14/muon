@@ -9,6 +9,7 @@
   MU_EACH_SIGN_KIND(MU_EMIT_NODE, _sign, _SIGN, Sign, emit, ##__VA_ARGS__) \
   MU_EACH_STMT_KIND(MU_EMIT_NODE, _stmt, _STMT, Stmt, emit, ##__VA_ARGS__)
 
+// TODO: rename this
 /// @internal Used as @c emit in MU_EACH_NODE_KIND
 #define MU_EMIT_NODE(l, u, t, lsuffix, usuffix, tsuffix, emit, ...) \
   emit(l##lsuffix, u##usuffix, t##tsuffix, ##__VA_ARGS__)

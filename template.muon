@@ -3,3 +3,6 @@ constant y Integer = x
 constant z = [x, y, 3]
 constant a = [x, y]
 constant b = [a, a]
+
+constant a1 Boolean = true
+constant b1 Boolean = false
