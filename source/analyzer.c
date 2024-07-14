@@ -37,16 +37,15 @@ const mu_stmt_t *const *resolve_names(mu_engine_t *engine, const mu_script_t *sc
       while ((next = node_at(node, node_cursor(node)->i++)) != NULL)
         node = node_continue(node, next);
 
-      mu_node_kind_t kind = node->kind;
-      if (kind == MU_NAME_EXPR_NODE) {
-        const mu_name_expr_t *expr = (const mu_name_expr_t *) node;
+      const mu_name_expr_t *name_expr;
+      if ((name_expr = mu_node_cast(node, name_expr)) == NULL)
+        continue;
 
-        const mu_stmt_t *target;
-        target = script_get(script, expr->name);
-        assert(target != NULL);
+      const mu_stmt_t *target;
+      target = script_get(script, name_expr->name);
+      assert(target != NULL);
 
-        result[expr->as_stator.id] = target;
-      }
+      result[name_expr->as_stator.id] = target;
     } while ((node = node_return(node)) != NULL);
   }
 
