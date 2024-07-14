@@ -163,11 +163,26 @@ static inductor_t *inductor_set(
 }
 
 static member_t inductor_root(inductor_t *inductor, member_t member) {
+  member_t origin = member;
+
+  size_t height = 0;
+  member = origin;
   for (member_t next;; member = next) {
     if ((next = inductor_get(inductor, member)).kind == NONE)
       break;
+    height++;
   }
-  return member;
+
+  member_t root = member;
+
+  member = origin;
+  for (size_t i = 0; i < height; i++) {
+    member_t next = inductor->data[member.index];
+    inductor->data[member.index] = root;
+    member = next;
+  }
+
+  return root;
 }
 
 static inductor_t *inductor_equate(inductor_t *inductor, member_t a, member_t b) {
