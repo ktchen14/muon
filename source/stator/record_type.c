@@ -48,18 +48,30 @@ const mu_record_type_t *record_type_activate(mu_record_type_t *type) {
 
 const mu_record_type_t *record_type_reduce(
     const mu_record_type_t *type, inductor_t *inductor) {
-  return NULL;
-  /* const mu_type_t *matter = type->matter; */
+  mu_engine_t *engine = inductor->engine;
 
-  /* const mu_type_t *result; */
-  /* if ((result = inductor_type_root(inductor, type->matter)) == matter) */
-  /*   return type; */
-  /* return mu_record_type(inductor->engine, result); */
+  mu_record_type_t *allocation;
+  if ((allocation = record_type_allocate(engine, type->argc)) == NULL)
+    return NULL;
+
+  for (size_t i = 0; i < type->argc; i++)
+    allocation->argv[i] = inductor_type_root(inductor, type->argv[i]);
+
+  return record_type_activate(allocation);
 }
 
 void mu_record_type_debug(const mu_record_type_t *type) {
   putc('(', stderr);
-  for (size_t i = 0; i < type->argc; i++)
-    mu_type_debug(type->argv[i]);
+  if (type->argc > 0) {
+    mu_type_debug(type->argv[0]);
+
+    if (type->argc > 1) {
+      for (size_t i = 1; i < type->argc; i++) {
+        fputs(", ", stderr);
+        mu_type_debug(type->argv[i]);
+      }
+    } else
+      putc(',', stderr);
+  }
   putc(')', stderr);
 }

@@ -6,3 +6,5 @@ constant b = [a, a]
 
 constant a1 Boolean = true
 constant b1 Boolean = false
+
+constant r = (a: 1, b: true)
