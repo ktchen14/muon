@@ -42,9 +42,9 @@ const mu_type_t *vector_expr_induce(
 
   for (size_t i = 0; i < expr->argc; i++) {
     const mu_expr_t *argument = expr->argv[i];
-    const mu_type_t *argument_type = inductor_node_type(inductor, &argument->as_node);
-    assert(argument_type != NULL);
-    if (inductor_equate_type_type(inductor, &matter_type->as_type, argument_type) == NULL)
+    const mu_type_t *type = inductor_node(inductor, &argument->as_node);
+    assert(type != NULL);
+    if (inductor_equate(inductor, &matter_type->as_type, type) == NULL)
       return NULL;
   }
 

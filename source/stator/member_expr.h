@@ -22,7 +22,7 @@ static inline const mu_type_t *member_expr_induce(
     const mu_member_expr_t *expr, inductor_t *inductor) {
   mu_engine_t *engine = inductor->engine;
 
-  const mu_type_t *matter = inductor_node_type(inductor, &expr->matter->as_node);
+  const mu_type_t *matter = inductor_node(inductor, &expr->matter->as_node);
   assert(matter != NULL);
 
   const mu_member_type_t *member_type;

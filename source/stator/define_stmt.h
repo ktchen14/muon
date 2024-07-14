@@ -19,7 +19,7 @@ static inline const mu_node_t *define_stmt_at(
 __attribute__((nonnull, pure))
 static inline const mu_type_t *define_stmt_induce(
     const mu_define_stmt_t *stmt, inductor_t *inductor) {
-  const mu_type_t *type = inductor_node_type(inductor, &stmt->expr->as_node);
+  const mu_type_t *type = inductor_node(inductor, &stmt->expr->as_node);
   assert(type != NULL);
   return type;
 }

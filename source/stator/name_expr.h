@@ -29,14 +29,14 @@ static inline const mu_type_t *name_expr_induce(
   }
 
   const mu_type_t *type;
-  if ((type = inductor_node_type(inductor, &target->as_node)) != NULL)
+  if ((type = inductor_node(inductor, &target->as_node)) != NULL)
     return type;
 
   const mu_variable_type_t *variable_type;
   if ((variable_type = mu_variable_type(inductor->engine)) == NULL)
     return NULL;
-  inductor->node_to_type[target->as_stator.id] = &variable_type->as_type;
-  return &variable_type->as_type;
+
+  return inductor_node(inductor, &target->as_node) = &variable_type->as_type;
 }
 
 #endif /* MU_STATOR_NAME_EXPR_I */

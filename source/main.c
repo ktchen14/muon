@@ -24,8 +24,16 @@ inductor_t *induce(const mu_script_t *script, inductor_t *inductor) {
       while ((next = node_at(node, node_cursor(node)->i++)) != NULL)
         node = node_continue(node, next);
 
-      inductor = node_induce(node, inductor);
-      assert(inductor != NULL);
+      const mu_type_t *type;
+      if ((type = node_induce(node, inductor)) == NULL)
+        return NULL;
+
+      const mu_type_t *extant;
+      if ((extant = inductor_node(inductor, node)) != NULL) {
+        if (inductor_equate(inductor, extant, type) == NULL)
+          return NULL;
+      } else
+        inductor_node(inductor, node) = type;
     } while ((node = node_return(node)) != NULL);
   }
 

@@ -43,9 +43,9 @@ const mu_type_t *record_expr_induce(
 
   for (size_t i = 0; i < expr->argc; i++) {
     const mu_expr_t *argument = expr->argv[i];
-    const mu_type_t *argument_type = inductor_node_type(inductor, &argument->as_node);
-    assert(argument_type != NULL);
-    allocation->argv[i] = argument_type;
+    const mu_type_t *type = inductor_node(inductor, &argument->as_node);
+    assert(type != NULL);
+    allocation->argv[i] = type;
   }
 
   const mu_record_type_t *record_type = record_type_activate(allocation);
