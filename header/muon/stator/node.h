@@ -21,7 +21,7 @@
  * @verbatim
  *   MU_ACCESS_EXPR_NODE = MU_ACCESS_EXPR_STATOR,
  *   ...
- *   MU_INTEGER_SIGN_NODE = MU_INTEGER_SIGN_STATOR,
+ *   MU_BOOLEAN_SIGN_NODE = MU_BOOLEAN_SIGN_STATOR,
  *   ...
  *   MU_TYPE_STMT_NODE = MU_TYPE_STMT_STATOR,
  * @endverbatim
@@ -56,8 +56,8 @@ typedef enum {
  * This will define:
  *
  * @verbatim
+ *   MU_BOOLEAN_SIGN = MU_BOOLEAN_SIGN_NODE,
  *   MU_INTEGER_SIGN = MU_INTEGER_SIGN_NODE,
- *   MU_MEMBER_SIGN = MU_MEMBER_SIGN_NODE,
  *   ...
  *   MU_VECTOR_SIGN = MU_VECTOR_SIGN_NODE,
  * @endverbatim

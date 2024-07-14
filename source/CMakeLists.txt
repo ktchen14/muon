@@ -20,6 +20,7 @@ target_sources(muon PRIVATE
   stator/vector_expr.c
   stator/zero_expr.c
 
+  stator/boolean_sign.c
   stator/integer_sign.c
   stator/member_sign.c
   stator/name_sign.c

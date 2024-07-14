@@ -14,6 +14,7 @@
 #include "stator/vector_expr.h"    // IWYU pragma: export
 #include "stator/zero_expr.h"      // IWYU pragma: export
 
+#include "stator/boolean_sign.h"   // IWYU pragma: export
 #include "stator/integer_sign.h"   // IWYU pragma: export
 #include "stator/member_sign.h"    // IWYU pragma: export
 #include "stator/name_sign.h"      // IWYU pragma: export
