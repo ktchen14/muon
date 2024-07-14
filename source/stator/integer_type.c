@@ -1,7 +1,7 @@
 #include "integer_type.h"
 
-#include "../engine.h"
-#include "../stator.h"
+#include "engine.h"
+#include "type.h"
 
 #include <stddef.h>
 #include <stdio.h>

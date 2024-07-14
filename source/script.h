@@ -4,7 +4,7 @@
 #include <muon/script.h>  // IWYU pragma: export
 
 #include "common.h"
-#include "engine.h"
+#include "stator.h"
 #include "status.h"
 
 typedef unsigned char mu_char8_t;

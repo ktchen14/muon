@@ -1,8 +1,7 @@
 #include "name.h"
 
 #include "../common.h"
-#include "../engine.h"
-#include "../stator.h"
+#include "engine.h"
 
 #include <assert.h>
 #include <errno.h>
@@ -48,7 +47,10 @@ const mu_name_t *mu_name(
     return already;
   }
 
-  return assign_name(engine, name);
+  name->as_stator.engine = engine;
+  name->as_stator.id = engine->name_number++;
+  engine->name[name->as_stator.id] = name;
+  return name;
 }
 
 _Thread_local char conversion[MB_LEN_MAX];

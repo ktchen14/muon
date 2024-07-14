@@ -1,7 +1,7 @@
 #include "variable_sign.h"
 
-#include "../engine.h"
-#include "../stator.h"
+#include "engine.h"
+#include "node.h"
 
 #include <stddef.h>
 #include <stdio.h>

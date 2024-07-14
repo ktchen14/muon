@@ -1,8 +1,9 @@
 #include "vector_expr.h"
 
-#include "../engine.h"
+#include "engine.h"
+#include "node.h"
+#include "type.h"
 #include "../inductor.h"
-#include "../stator.h"
 
 #include <assert.h>
 #include <errno.h>

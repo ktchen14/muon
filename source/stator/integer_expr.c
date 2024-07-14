@@ -1,7 +1,7 @@
 #include "integer_expr.h"
 
-#include "../engine.h"
-#include "../stator.h"
+#include "engine.h"
+#include "node.h"
 
 #include <inttypes.h>
 #include <stddef.h>

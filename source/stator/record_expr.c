@@ -1,7 +1,7 @@
 #include "record_expr.h"
 
-#include "../engine.h"
-#include "../stator.h"
+#include "engine.h"
+#include "node.h"
 
 #include <assert.h>
 #include <errno.h>

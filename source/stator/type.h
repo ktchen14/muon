@@ -9,7 +9,11 @@
 #include "variable_type.h"     // IWYU pragma: export
 #include "vector_type.h"       // IWYU pragma: export
 
+#include "engine.h"
+#include "../common.h"
+
 #include <assert.h>
+#include <errno.h>
 #include <stddef.h>
 
 typedef struct {
@@ -25,6 +29,32 @@ typedef struct {
 #undef MU_EMIT
   }) char data[];
 } type_header_t;
+
+/// @internal Allocate a type of size @a size in the @a engine
+__attribute__((malloc, nonnull))
+static inline void *type_allocate(mu_engine_t *engine, size_t size) {
+  if (rare((size = struct_size(type_header_t, data, size)) == 0))
+    return errno = ENOMEM, NULL;
+
+  type_header_t *header;
+  if ((header = engine_allocate(engine, size)) == NULL)
+    return NULL;
+  *header = (type_header_t) {0};
+
+  return header->data;
+}
+
+/// @internal Assign the abstract @a type to the @a engine
+__attribute__((nonnull, returns_nonnull))
+static inline mu_type_t *assign_type(mu_engine_t *engine, mu_type_t *type) {
+  type->as_stator.engine = engine;
+  type->as_stator.id = engine->type_number++;
+  return type;
+}
+
+/// Assign the concrete @a type to the @a engine
+#define assign_type(engine, type) \
+  ((typeof((type))) (assign_type)((engine), &(type)->as_type))
 
 /// Return the cursor attached to the @a type
 __attribute__((const, nonnull, returns_nonnull))

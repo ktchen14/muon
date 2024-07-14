@@ -1,8 +1,8 @@
 #include "vector_type.h"
 
-#include "../engine.h"
+#include "engine.h"
+#include "type.h"
 #include "../inductor.h"
-#include "../stator.h"
 
 #include <assert.h>
 #include <stddef.h>

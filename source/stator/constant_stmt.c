@@ -1,8 +1,9 @@
 #include "constant_stmt.h"
 
-#include "../engine.h"
+#include "engine.h"
+#include "name.h"
+#include "node.h"
 #include "../inductor.h"
-#include "../stator.h"
 
 #include <assert.h>
 #include <stddef.h>

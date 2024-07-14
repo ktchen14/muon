@@ -1,7 +1,7 @@
 #include "vector_sign.h"
 
-#include "../engine.h"
-#include "../stator.h"
+#include "engine.h"
+#include "node.h"
 
 #include <assert.h>
 #include <stddef.h>
