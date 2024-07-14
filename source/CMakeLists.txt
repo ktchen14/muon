@@ -32,6 +32,8 @@ target_sources(muon PRIVATE
   stator/define_stmt.c
   stator/type_stmt.c
 
+  stator/member_test.c
+
   stator/boolean_type.c
   stator/integer_type.c
   stator/member_type.c

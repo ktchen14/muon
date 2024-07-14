@@ -12,6 +12,7 @@
 
 const mu_member_type_t *mu_member_type(
     mu_engine_t *engine, const mu_name_t *name, const mu_type_t *matter) {
+  assert(name->as_stator.engine == engine);
   assert(matter->as_stator.engine == engine);
 
   size_t size = sizeof(mu_member_type_t);
