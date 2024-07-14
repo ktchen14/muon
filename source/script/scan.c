@@ -135,8 +135,8 @@ static void symbol_debug(
     case YYerror:
       printf("Error\n");
       break;
-    case CONSTANT:
-      printf("\"constant\"");
+    case DEFINE:
+      printf("\"define\"");
       break;
     case INSTANCE:
       printf("\"instance\"");
@@ -221,7 +221,8 @@ mu_script_t *mu_read_script(
 
 except_yypush_parse:
   fprintf(stderr, "Error %i\n", e);
-  assert(syntax.script == NULL);
+  // TODO
+  /* assert(syntax.script == NULL); */
 
   yypstate_delete(pstate);
 

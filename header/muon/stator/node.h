@@ -20,7 +20,7 @@
 #include "variable_sign.h"  // IWYU pragma: export
 #include "vector_sign.h"    // IWYU pragma: export
 
-#include "constant_stmt.h"  // IWYU pragma: export
+#include "define_stmt.h"    // IWYU pragma: export
 #include "type_stmt.h"      // IWYU pragma: export
 
 #include <stddef.h>

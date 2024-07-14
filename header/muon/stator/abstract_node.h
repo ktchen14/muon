@@ -75,7 +75,7 @@ typedef enum {
  * This will define:
  *
  * @verbatim
- *   MU_CONSTANT_STMT = MU_CONSTANT_STMT_NODE,
+ *   MU_DEFINE_STMT = MU_DEFINE_STMT_NODE,
  *   MU_TYPE_STMT = MU_TYPE_STMT_NODE,
  * @endverbatim
  */

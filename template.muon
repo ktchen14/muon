@@ -1,10 +1,10 @@
-constant x = 1
-constant y Integer = x
-constant z = [x, y, 3]
-constant a = [x, y]
-constant b = [a, a]
+define x = 1
+define y Integer = x
+define z = [x, y, 3]
+define a = [x, y]
+define b = [a, a]
 
-constant a1 Boolean = true
-constant b1 Boolean = false
+define a1 Boolean = true
+define b1 Boolean = false
 
-constant r = (a: 1, b: true)
+define r = (a: 1, b: true)

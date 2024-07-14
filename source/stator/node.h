@@ -22,7 +22,7 @@
 #include "variable_sign.h"     // IWYU pragma: export
 #include "vector_sign.h"       // IWYU pragma: export
 
-#include "constant_stmt.h"     // IWYU pragma: export
+#include "define_stmt.h"       // IWYU pragma: export
 #include "type_stmt.h"         // IWYU pragma: export
 
 #include "engine.h"
@@ -122,8 +122,8 @@ static inline inductor_t *node_induce(
     MU_EACH_SIGN_KIND(MU_EMIT)
 #undef MU_EMIT
 
-    case MU_CONSTANT_STMT_NODE:
-      return constant_stmt_induce((const mu_constant_stmt_t *) node, inductor);
+    case MU_DEFINE_STMT_NODE:
+      return define_stmt_induce((const mu_define_stmt_t *) node, inductor);
 
     case MU_TYPE_STMT_NODE:
       return inductor;

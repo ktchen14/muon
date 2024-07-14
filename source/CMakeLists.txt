@@ -29,7 +29,7 @@ target_sources(muon PRIVATE
   stator/variable_sign.c
   stator/vector_sign.c
 
-  stator/constant_stmt.c
+  stator/define_stmt.c
   stator/type_stmt.c
 
   stator/boolean_type.c

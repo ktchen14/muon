@@ -26,7 +26,7 @@
 
 /// Expands to emit(lower, upper, title, ...) for each kind of stmt
 #define MU_EACH_STMT_KIND(emit, ...) \
-  emit(constant, CONSTANT, Constant, ##__VA_ARGS__) \
+  emit(define, DEFINE, Define, ##__VA_ARGS__) \
   emit(type, TYPE, Type, ##__VA_ARGS__)
 
 /// Expands to emit(lower, upper, title, ...) for each kind of type

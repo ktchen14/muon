@@ -1,4 +1,4 @@
-#include "constant_stmt.h"
+#include "define_stmt.h"
 
 #include "engine.h"
 #include "name.h"
@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 
-const mu_constant_stmt_t *mu_constant_stmt(
+const mu_define_stmt_t *mu_define_stmt(
     mu_engine_t *engine,
     const mu_name_t *name,
     const mu_expr_t *expr,
@@ -19,13 +19,13 @@ const mu_constant_stmt_t *mu_constant_stmt(
   assert(expr->as_stator.engine == engine);
   assert(sign == NULL || sign->as_stator.engine == engine);
 
-  size_t size = sizeof(mu_constant_stmt_t);
+  size_t size = sizeof(mu_define_stmt_t);
 
-  mu_constant_stmt_t *result;
+  mu_define_stmt_t *result;
   if ((result = node_allocate(engine, size)) == NULL)
     return NULL;
-  *result = (mu_constant_stmt_t) {
-    .as_stmt.kind = MU_CONSTANT_STMT,
+  *result = (mu_define_stmt_t) {
+    .as_stmt.kind = MU_DEFINE_STMT,
     .name = name,
     .expr = expr,
     .sign = sign,
@@ -34,14 +34,14 @@ const mu_constant_stmt_t *mu_constant_stmt(
   return assign_node(engine, result);
 }
 
-inductor_t *constant_stmt_induce(
-    const mu_constant_stmt_t *stmt, inductor_t *inductor) {
+inductor_t *define_stmt_induce(
+    const mu_define_stmt_t *stmt, inductor_t *inductor) {
   return inductor_equate_node_node(inductor, &stmt->as_node, &stmt->expr->as_node);
 }
 
-void mu_constant_stmt_debug(const mu_constant_stmt_t *stmt) {
+void mu_define_stmt_debug(const mu_define_stmt_t *stmt) {
   fprintf(stderr, "%*s", debug_indent, "");
-  fprintf(stderr, "Constant Stmt #%zu: name = ", stmt->as_stator.id);
+  fprintf(stderr, "Define Stmt #%zu: name = ", stmt->as_stator.id);
   mu_name_debug(stmt->name);
   putc('\n', stderr);
 

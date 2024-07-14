@@ -21,6 +21,7 @@ typedef struct {
 %define api.location.type { mu_node_source_t }
 %define api.pure full
 %define api.push-pull push
+%define parse.error detailed
 %locations
 %parse-param { syntax_t *syntax }
 %start script
@@ -56,10 +57,10 @@ typedef struct {
   const mu_vector_sign_t *vector_sign;
 
   const mu_stmt_t *stmt;
-  const mu_constant_stmt_t *constant_stmt;
+  const mu_define_stmt_t *define_stmt;
 }
 
-%token CONSTANT "constant"
+%token DEFINE "define"
 %token INSTANCE "instance"
 %token TYPE "type"
 %token BOOLEAN "Boolean"
@@ -88,7 +89,7 @@ typedef struct {
 %type <name_sign> name_sign
 %type <vector_sign> vector_sign
 
-%type <constant_stmt> constant_stmt
+%type <define_stmt> define_stmt
 
 %type <i> record_argv vector_argv
 
@@ -243,13 +244,13 @@ vector_sign: '[' sign ']' {
 // ================================== Stmt ================================ {{{1
 
 stmt:
-  constant_stmt { $$ = &$constant_stmt->as_stmt; }
+  define_stmt { $$ = &$define_stmt->as_stmt; }
 
-constant_stmt: "constant" _ name _ sign _ '=' _ expr '\n' {
-  $$ = mu_constant_stmt(syntax->engine, $name, $expr, $sign);
+define_stmt: "define" _ name _ sign _ '=' _ expr '\n' {
+  $$ = mu_define_stmt(syntax->engine, $name, $expr, $sign);
 
-} | "constant" _ name _ '=' _ expr '\n' {
-  $$ = mu_constant_stmt(syntax->engine, $name, $expr, NULL);
+} | "define" _ name _ '=' _ expr '\n' {
+  $$ = mu_define_stmt(syntax->engine, $name, $expr, NULL);
 }
 
 // ============================= Miscellaneous ============================ {{{1

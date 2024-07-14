@@ -12,9 +12,10 @@ stop = [\x00];
 
 // ================================ Keyword ====================================
 
-<normal> "constant" { return CONSTANT; }
+<normal> "define"   { return DEFINE; }
 <normal> "instance" { return INSTANCE; }
 <normal> "type"     { return TYPE; }
+
 <normal> "Boolean"  { return BOOLEAN; }
 <normal> "Integer"  { return INTEGER; }
 

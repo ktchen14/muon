@@ -10,14 +10,14 @@ const mu_stmt_t *script_get(const mu_script_t *script, const mu_name_t *name) {
   for (size_t i = 0; i < script->argc; i++) {
     const mu_stmt_t *stmt = script->argv[i];
 
-    const mu_constant_stmt_t *constant_stmt;
-    if ((constant_stmt = mu_stmt_cast(stmt, constant_stmt)) == NULL)
+    const mu_define_stmt_t *define_stmt;
+    if ((define_stmt = mu_stmt_cast(stmt, define_stmt)) == NULL)
       continue;
 
-    if (constant_stmt->name != name)
+    if (define_stmt->name != name)
       continue;
 
-    return &constant_stmt->as_stmt;
+    return &define_stmt->as_stmt;
   }
 
   return NULL;
