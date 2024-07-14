@@ -14,7 +14,6 @@ typedef struct inductor_member_t {
     INDUCTOR_NONE, INDUCTOR_NODE, INDUCTOR_TYPE,
   } kind;
 
-  size_t id;
   size_t index;
 
   union {
@@ -26,26 +25,21 @@ typedef struct inductor_member_t {
 
 static const member_t member_none = {0};
 
-__attribute__((nonnull, pure))
-static inline size_t inductor_length(const inductor_t *inductor) {
-  return inductor->node_length + inductor->type_length;
-}
-
 /// Create a node member
 __attribute__((nonnull))
 static inline member_t node_member(
     const inductor_t *inductor, const mu_node_t *node) {
-  assert(node->as_stator.id < inductor->node_length);
+  assert(node->as_stator.id < inductor->node_number);
   size_t index = node->as_stator.id;
-  return (member_t) { INDUCTOR_NODE, .id = node->as_stator.id, .index = index, .node = node };
+  return (member_t) { INDUCTOR_NODE, .index = index, .node = node };
 }
 
 /// Create a type member
 __attribute__((nonnull))
 static inline member_t type_member(
     const inductor_t *inductor, const mu_type_t *type) {
-  size_t index = inductor->node_length + type->as_stator.id;
-  return (member_t) { INDUCTOR_TYPE, .id = type->as_stator.id, .index = index, .type = type };
+  size_t index = inductor->node_number + type->as_stator.id;
+  return (member_t) { INDUCTOR_TYPE, .index = index, .type = type };
 }
 
 static const member_t *inductor_get(
@@ -76,8 +70,8 @@ inductor_t *inductor_initialize(inductor_t *inductor, mu_engine_t *engine) {
 
   *inductor = (inductor_t) {
     .engine = engine,
-    .node_length = engine->node_number,
-    .type_length = engine->type_number + 200,
+    .node_number = engine->node_number,
+    .length = length,
     .data = data,
   };
   return inductor;
@@ -106,7 +100,7 @@ inductor_t *inductor_equate_type_type(
 
 const member_t *inductor_get(
     const inductor_t *inductor, const member_t *member) {
-  if (member->index >= inductor_length(inductor))
+  if (member->index >= inductor->length)
     return &member_none;
   return &inductor->data[member->index];
 }
@@ -115,7 +109,7 @@ const member_t *inductor_set(
     inductor_t *inductor,
     const member_t *restrict source,
     const member_t *restrict target) {
-  size_t origin = inductor_length(inductor);
+  size_t origin = inductor->length;
 
   if (source->index < origin) {
     inductor->data[source->index] = *target;
@@ -123,17 +117,17 @@ const member_t *inductor_set(
   }
 
   fprintf(stderr, "Reallocating\n");
-  size_t length = inductor->node_length + source->id + 200;
+  size_t length = source->index + 200;
 
   member_t *data = inductor->data;
   if ((data = realloc(data, sizeof(member_t[length]))) == NULL)
     return NULL;
   for (size_t i = origin; i < length; data[i++] = (member_t) {0});
 
-  inductor->type_length = source->id + 200;
+  inductor->length = length;
   inductor->data = data;
 
-  inductor->data[inductor->node_length + source->id] = *target;
+  inductor->data[source->index] = *target;
   return target;
 }
 

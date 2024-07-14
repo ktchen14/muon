@@ -14,9 +14,9 @@ struct inductor_t {
 
   const mu_stmt_t *const *node_to_stmt;
 
-  size_t node_length;
-  size_t type_length;
-  inductor_member_t *data;  // length = node_length + type_length
+  size_t node_number;
+  size_t length;
+  inductor_member_t *data;
 };
 
 /// Initialize the @a inductor to handle nodes and types in the @a engine
