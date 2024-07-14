@@ -39,7 +39,7 @@ typedef enum {
  *
  * @verbatim
  *   MU_ACCESS_EXPR = MU_ACCESS_EXPR_NODE,
- *   MU_INTEGER_EXPR = MU_INTEGER_EXPR_NODE,
+ *   MU_BOOLEAN_EXPR = MU_BOOLEAN_EXPR_NODE,
  *   ...
  *   MU_ZERO_EXPR = MU_ZERO_EXPR_NODE,
  * @endverbatim

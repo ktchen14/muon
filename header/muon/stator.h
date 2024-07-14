@@ -7,6 +7,7 @@
 #include "stator/type.h"           // IWYU pragma: export
 
 #include "stator/access_expr.h"    // IWYU pragma: export
+#include "stator/boolean_expr.h"   // IWYU pragma: export
 #include "stator/integer_expr.h"   // IWYU pragma: export
 #include "stator/member_expr.h"    // IWYU pragma: export
 #include "stator/name_expr.h"      // IWYU pragma: export
