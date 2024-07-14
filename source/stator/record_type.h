@@ -7,6 +7,12 @@
 
 #include <stddef.h>
 
+mu_record_type_t *record_type_allocate(mu_engine_t *engine, size_t argc)
+  __attribute__((malloc, nonnull));
+
+const mu_record_type_t *record_type_activate(mu_record_type_t *type)
+  __attribute__((nonnull, returns_nonnull));
+
 const mu_record_type_t *record_type_reduce(
     const mu_record_type_t *type, inductor_t *inductor)
   __attribute__((nonnull));

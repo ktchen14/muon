@@ -2,6 +2,8 @@
 
 #include "engine.h"
 #include "node.h"
+#include "type.h"
+#include "../inductor.h"
 
 #include <assert.h>
 #include <errno.h>
@@ -29,6 +31,34 @@ const mu_record_expr_t *mu_record_expr(
   memcpy(&result->argv, argv, sizeof(const mu_expr_t *[argc]));
 
   return assign_node(engine, result);
+}
+
+inductor_t *record_expr_induce(
+    const mu_record_expr_t *expr, inductor_t *inductor) {
+  mu_engine_t *engine = inductor->engine;
+
+  mu_record_type_t *allocation;
+  if ((allocation = record_type_allocate(engine, expr->argc)) == NULL)
+    return NULL;
+
+  for (size_t i = 0; i < expr->argc; i++) {
+    const mu_variable_type_t *variable_type;
+    if ((variable_type = mu_variable_type(engine)) == NULL)
+      return NULL;
+    allocation->argv[i] = &variable_type->as_type;
+  }
+
+  const mu_record_type_t *record_type = record_type_activate(allocation);
+
+  for (size_t i = 0; i < record_type->argc; i++) {
+    const mu_node_t *node = &expr->argv[i]->as_node;
+    const mu_type_t *type = record_type->argv[i];
+    if (inductor_equate_node_type(inductor, node, type) == NULL)
+      return NULL;
+  }
+
+  const mu_type_t *type = &record_type->as_type;
+  return inductor_equate_node_type(inductor, &expr->as_node, type);
 }
 
 void mu_record_expr_debug(const mu_record_expr_t *expr) {

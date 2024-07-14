@@ -15,10 +15,8 @@ static inline const mu_node_t *record_expr_at(
   return i < expr->argc ? &expr->argv[i]->as_node : NULL;
 }
 
-__attribute__((nonnull))
-static inline inductor_t *record_expr_induce(
-    const mu_record_expr_t *expr, inductor_t *inductor) {
-  assert(0);
-}
+inductor_t *record_expr_induce(
+    const mu_record_expr_t *expr, inductor_t *inductor)
+  __attribute__((nonnull));
 
 #endif /* MU_STATOR_RECORD_EXPR_I */
