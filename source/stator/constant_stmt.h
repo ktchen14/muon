@@ -13,8 +13,6 @@ static inline const mu_node_t *constant_stmt_at(
   return i == 0 ? &stmt->expr->as_node : NULL;
 }
 
-typedef struct inductor_t inductor_t;
-
 inductor_t *constant_stmt_induce(
     const mu_constant_stmt_t *stmt, inductor_t *inductor)
   __attribute__((nonnull));
