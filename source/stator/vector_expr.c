@@ -32,7 +32,7 @@ const mu_vector_expr_t *mu_vector_expr(
   return assign_node(engine, result);
 }
 
-inductor_t *vector_expr_induce(
+const mu_type_t *vector_expr_induce(
     const mu_vector_expr_t *expr, inductor_t *inductor) {
   mu_engine_t *engine = inductor->engine;
 
@@ -40,19 +40,18 @@ inductor_t *vector_expr_induce(
   if ((matter_type = mu_variable_type(engine)) == NULL)
     return NULL;
 
-  const mu_vector_type_t *vector_type;
-  if ((vector_type = mu_vector_type(engine, &matter_type->as_type)) == NULL)
-    return NULL;
-
   for (size_t i = 0; i < expr->argc; i++) {
-    const mu_node_t *node = &expr->argv[i]->as_node;
-    const mu_type_t *type = &matter_type->as_type;
-    if ((inductor = inductor_equate_node_type(inductor, node, type)) == NULL)
+    const mu_expr_t *argument = expr->argv[i];
+    const mu_type_t *argument_type = inductor_node_type(inductor, &argument->as_node);
+    assert(argument_type != NULL);
+    if (inductor_equate_type_type(inductor, &matter_type->as_type, argument_type) == NULL)
       return NULL;
   }
 
-  const mu_type_t *type = &vector_type->as_type;
-  return inductor_equate_node_type(inductor, &expr->as_node, type);
+  const mu_vector_type_t *vector_type;
+  if ((vector_type = mu_vector_type(engine, &matter_type->as_type)) == NULL)
+    return NULL;
+  return &vector_type->as_type;
 }
 
 void mu_vector_expr_debug(const mu_vector_expr_t *expr) {

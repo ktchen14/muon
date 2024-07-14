@@ -4,6 +4,8 @@
 #include <muon/stator/vector_expr.h>  // IWYU pragma: export
 
 #include "abstract_node.h"
+#include "abstract_type.h"
+
 #include "../inductor.h"
 
 #include <stddef.h>
@@ -15,7 +17,7 @@ static inline const mu_node_t *vector_expr_at(
   return i < expr->argc ? &expr->argv[i]->as_node : NULL;
 }
 
-inductor_t *vector_expr_induce(
+const mu_type_t *vector_expr_induce(
     const mu_vector_expr_t *expr, inductor_t *inductor)
   __attribute__((nonnull));
 

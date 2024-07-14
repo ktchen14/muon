@@ -4,7 +4,7 @@
 #include <muon/stator/access_expr.h>  // IWYU pragma: export
 
 #include "abstract_node.h"
-#include "../inductor.h"
+#include "abstract_type.h"
 
 #include <assert.h>
 #include <stddef.h>
@@ -16,7 +16,7 @@ static inline const mu_node_t *access_expr_at(
 }
 
 __attribute__((nonnull))
-static inline inductor_t *access_expr_induce(
+static inline const mu_type_t *access_expr_induce(
     const mu_access_expr_t *expr, inductor_t *inductor) {
   assert(0);
 }

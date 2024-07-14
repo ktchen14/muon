@@ -3,8 +3,6 @@
 #include "engine.h"
 #include "name.h"
 #include "node.h"
-#include "type.h"
-#include "../inductor.h"
 
 #include <assert.h>
 #include <stddef.h>
@@ -24,28 +22,6 @@ const mu_member_expr_t *mu_member_expr(
     .as_expr.kind = MU_MEMBER_EXPR, .name = name, .matter = matter
   };
   return assign_node(engine, result);
-}
-
-inductor_t *member_expr_induce(
-    const mu_member_expr_t *expr, inductor_t *inductor) {
-  mu_engine_t *engine = inductor->engine;
-
-  const mu_variable_type_t *matter_type;
-  if ((matter_type = mu_variable_type(engine)) == NULL)
-    return NULL;
-
-  const mu_node_t *node = &expr->matter->as_node;
-  const mu_type_t *type = &matter_type->as_type;
-  if ((inductor_equate_node_type(inductor, node, type)) == NULL)
-    return NULL;
-
-  const mu_member_type_t *member_type;
-  type = &matter_type->as_type;
-  if ((member_type = mu_member_type(engine, expr->name, type)) == NULL)
-    return NULL;
-
-  type = &member_type->as_type;
-  return inductor_equate_node_type(inductor, &expr->as_node, type);
 }
 
 void mu_member_expr_debug(const mu_member_expr_t *expr) {

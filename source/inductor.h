@@ -19,6 +19,7 @@ struct inductor_t {
   inductor_member_t *data;
 
   const mu_stmt_t *const *node_to_stmt;
+  const mu_type_t **node_to_type;
 
   mu_status_t *status;
 };
@@ -32,6 +33,12 @@ inductor_t *inductor_initialize(
   __attribute__((nonnull));
 
 void inductor_raze(inductor_t *inductor) __attribute__((nonnull));
+
+__attribute__((nonnull, pure))
+static inline const mu_type_t *inductor_node_type(
+    const inductor_t *inductor, const mu_node_t *node) {
+  return inductor->node_to_type[node->as_stator.id];
+}
 
 const mu_type_t *inductor_type_root(
     inductor_t *inductor, const mu_type_t *type)

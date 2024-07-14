@@ -4,6 +4,8 @@
 #include <muon/stator/zero_expr.h>  // IWYU pragma: export
 
 #include "abstract_node.h"
+#include "abstract_type.h"
+#include "variable_type.h"
 #include "../inductor.h"
 
 #include <stddef.h>
@@ -15,9 +17,12 @@ static inline const mu_node_t *zero_expr_at(
 }
 
 __attribute__((nonnull))
-static inline inductor_t *zero_expr_induce(
+static inline const mu_type_t *zero_expr_induce(
     const mu_zero_expr_t *expr, inductor_t *inductor) {
-  return inductor;
+  const mu_variable_type_t *variable_type;
+  if ((variable_type = mu_variable_type(inductor->engine)) == NULL)
+    return NULL;
+  return &variable_type->as_type;
 }
 
 #endif /* MU_STATOR_ZERO_EXPR_I */

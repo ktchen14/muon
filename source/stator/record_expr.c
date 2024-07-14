@@ -33,7 +33,7 @@ const mu_record_expr_t *mu_record_expr(
   return assign_node(engine, result);
 }
 
-inductor_t *record_expr_induce(
+const mu_type_t *record_expr_induce(
     const mu_record_expr_t *expr, inductor_t *inductor) {
   mu_engine_t *engine = inductor->engine;
 
@@ -42,23 +42,14 @@ inductor_t *record_expr_induce(
     return NULL;
 
   for (size_t i = 0; i < expr->argc; i++) {
-    const mu_variable_type_t *variable_type;
-    if ((variable_type = mu_variable_type(engine)) == NULL)
-      return NULL;
-    allocation->argv[i] = &variable_type->as_type;
+    const mu_expr_t *argument = expr->argv[i];
+    const mu_type_t *argument_type = inductor_node_type(inductor, &argument->as_node);
+    assert(argument_type != NULL);
+    allocation->argv[i] = argument_type;
   }
 
   const mu_record_type_t *record_type = record_type_activate(allocation);
-
-  for (size_t i = 0; i < record_type->argc; i++) {
-    const mu_node_t *node = &expr->argv[i]->as_node;
-    const mu_type_t *type = record_type->argv[i];
-    if (inductor_equate_node_type(inductor, node, type) == NULL)
-      return NULL;
-  }
-
-  const mu_type_t *type = &record_type->as_type;
-  return inductor_equate_node_type(inductor, &expr->as_node, type);
+  return &record_type->as_type;
 }
 
 void mu_record_expr_debug(const mu_record_expr_t *expr) {

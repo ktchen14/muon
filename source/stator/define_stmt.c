@@ -3,7 +3,6 @@
 #include "engine.h"
 #include "name.h"
 #include "node.h"
-#include "../inductor.h"
 
 #include <assert.h>
 #include <stddef.h>
@@ -32,11 +31,6 @@ const mu_define_stmt_t *mu_define_stmt(
   };
 
   return assign_node(engine, result);
-}
-
-inductor_t *define_stmt_induce(
-    const mu_define_stmt_t *stmt, inductor_t *inductor) {
-  return inductor_equate_node_node(inductor, &stmt->as_node, &stmt->expr->as_node);
 }
 
 void mu_define_stmt_debug(const mu_define_stmt_t *stmt) {
