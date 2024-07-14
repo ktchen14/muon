@@ -41,7 +41,6 @@ typedef struct {
 typedef struct {
   node_cursor_t cursor;
   _Alignas(union {
-    mu_node_t node;
 #define MU_EMIT(lower, u, t) mu_##lower##_t lower;
     MU_EACH_NODE_KIND(MU_EMIT)
 #undef MU_EMIT
@@ -56,7 +55,6 @@ typedef struct {
 typedef struct {
   type_cursor_t cursor;
   _Alignas(union {
-    mu_type_t type;
 #define MU_EMIT(lower, u, t) mu_##lower##_type_t lower;
     MU_EACH_TYPE_KIND(MU_EMIT)
 #undef MU_EMIT
