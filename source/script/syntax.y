@@ -42,11 +42,13 @@ typedef struct {
 
   const mu_expr_t *expr;
   const mu_access_expr_t *access_expr;
+  const mu_boolean_expr_t *boolean_expr;
   const mu_integer_expr_t *integer_expr;
   const mu_name_expr_t *name_expr;
   const mu_vector_expr_t *vector_expr;
 
   const mu_sign_t *sign;
+  const mu_boolean_sign_t *boolean_sign;
   const mu_integer_sign_t *integer_sign;
   const mu_name_sign_t *name_sign;
   const mu_vector_sign_t *vector_sign;
@@ -58,6 +60,7 @@ typedef struct {
 %token CONSTANT "constant"
 %token INSTANCE "instance"
 %token TYPE "type"
+%token BOOLEAN "Boolean"
 %token INTEGER "Integer"
 
 %token <integer> INTEGER_LITERAL
@@ -71,11 +74,13 @@ typedef struct {
 
 %type <expr> expr
 %type <access_expr> access_expr
+%type <boolean_expr> boolean_expr
 %type <integer_expr> integer_expr
 %type <name_expr> name_expr
 %type <vector_expr> vector_expr
 
 %type <sign> sign
+%type <boolean_sign> boolean_sign
 %type <integer_sign> integer_sign
 %type <name_sign> name_sign
 %type <vector_sign> vector_sign
@@ -127,12 +132,17 @@ script_argv: {
 
 expr: '(' expr ')' { $$ = $2; } |
   access_expr  { $$ = &$access_expr->as_expr; } |
+  boolean_expr { $$ = &$boolean_expr->as_expr; } |
   integer_expr { $$ = &$integer_expr->as_expr; } |
   name_expr    { $$ = &$name_expr->as_expr; } |
   vector_expr  { $$ = &$vector_expr->as_expr; }
 
 access_expr: expr '.' name {
   $$ = mu_access_expr(syntax->engine, $name, $expr, &@$);
+}
+
+boolean_expr: BOOLEAN_LITERAL {
+  $$ = mu_boolean_expr(syntax->engine, $1, &@$);
 }
 
 integer_expr: INTEGER_LITERAL {
@@ -170,9 +180,14 @@ name: NAME {
 // ================================== Sign ================================ {{{1
 
 sign: '(' sign ')' { $$ = $2; } |
+  boolean_sign { $$ = &$boolean_sign->as_sign; } |
   integer_sign { $$ = &$integer_sign->as_sign; } |
   name_sign    { $$ = &$name_sign->as_sign; } |
   vector_sign  { $$ = &$vector_sign->as_sign; }
+
+boolean_sign: "Boolean" {
+  $$ = mu_boolean_sign(syntax->engine, &@$);
+}
 
 integer_sign: "Integer" {
   $$ = mu_integer_sign(syntax->engine, &@$);
