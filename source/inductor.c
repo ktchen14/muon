@@ -11,51 +11,43 @@
 typedef struct inductor_member_t {
   /// Whether the target stator is a node or type
   enum {
-    INDUCTOR_NONE, INDUCTOR_NODE, INDUCTOR_TYPE,
+    NONE, INDUCTOR_NODE, INDUCTOR_TYPE,
   } kind;
 
   size_t index;
 
   union {
-    const mu_stator_t *stator;
     const mu_node_t *node;
     const mu_type_t *type;
   };
 } member_t;
 
-static const member_t member_none = {0};
+/// @internal Create a node member
+static member_t node_member(const inductor_t *inductor, const mu_node_t *node)
+  __attribute__((nonnull));
 
-/// Create a node member
-__attribute__((nonnull))
-static inline member_t node_member(
-    const inductor_t *inductor, const mu_node_t *node) {
-  assert(node->as_stator.id < inductor->node_number);
-  size_t index = node->as_stator.id;
-  return (member_t) { INDUCTOR_NODE, .index = index, .node = node };
-}
+/// @internal Create a type member
+static member_t type_member(const inductor_t *inductor, const mu_type_t *type)
+  __attribute__((nonnull));
 
-/// Create a type member
-__attribute__((nonnull))
-static inline member_t type_member(
-    const inductor_t *inductor, const mu_type_t *type) {
-  size_t index = inductor->node_number + type->as_stator.id;
-  return (member_t) { INDUCTOR_TYPE, .index = index, .type = type };
-}
-
+/// Get the next member
 static const member_t *inductor_get(
     const inductor_t *inductor, const member_t *member)
   __attribute__((nonnull, pure, returns_nonnull));
 
+/// Set the next member
 static const member_t *inductor_set(
     inductor_t *inductor,
     const member_t *restrict source,
     const member_t *restrict target)
   __attribute__((nonnull));
 
+/// Equate @a a and @a b
 static inductor_t *inductor_equate(
     inductor_t *inductor, const member_t *a, const member_t *b)
   __attribute__((nonnull));
 
+/// Return the archetypal member
 static const member_t *inductor_root(
     inductor_t *inductor, const member_t *member)
   __attribute__((nonnull));
@@ -100,8 +92,9 @@ inductor_t *inductor_equate_type_type(
 
 const member_t *inductor_get(
     const inductor_t *inductor, const member_t *member) {
+  static const member_t none = {0};
   if (member->index >= inductor->length)
-    return &member_none;
+    return &none;
   return &inductor->data[member->index];
 }
 
@@ -116,7 +109,6 @@ const member_t *inductor_set(
     return target;
   }
 
-  fprintf(stderr, "Reallocating\n");
   size_t length = source->index + 200;
 
   member_t *data = inductor->data;
@@ -133,14 +125,22 @@ const member_t *inductor_set(
 
 static const member_t *inductor_root(
     inductor_t *inductor, const member_t *member) {
-  for (;;) {
-    const member_t *next = inductor_get(inductor, member);
-    if (next->kind == INDUCTOR_NONE)
-      return member;
-    member = next;
+  for (const member_t *next;; member = next) {
+    if ((next = inductor_get(inductor, member))->kind == NONE)
+      break;
   }
-
   return member;
+}
+
+const mu_type_t *inductor_type_root(
+    inductor_t *inductor, const mu_type_t *type) {
+  member_t member = type_member(inductor, type);
+
+  const member_t *result;
+  result = inductor_root(inductor, &member);
+  assert(result->kind == INDUCTOR_TYPE);
+
+  return result->type;
 }
 
 const mu_type_t *inductor_type_of_node(inductor_t *inductor, const mu_node_t *node) {
@@ -185,15 +185,18 @@ static inductor_t *inductor_equate(
   if (a == b)
     return inductor;
 
+  // If both a and b are nodes, then a = b unless they're the same node
   if (a->kind == INDUCTOR_NODE && b->kind == INDUCTOR_NODE) {
     if (a->node == b->node)
       return inductor;
     return inductor_set(inductor, a, b), inductor;
   }
 
+  // If a is a node and b is a type, then a = b
   if (a->kind == INDUCTOR_NODE && b->kind == INDUCTOR_TYPE)
     return inductor_set(inductor, a, b), inductor;
 
+  // If a is a type and b is a node, then b = a
   if (a->kind == INDUCTOR_TYPE && b->kind == INDUCTOR_NODE)
     return inductor_set(inductor, b, a), inductor;
 
@@ -267,13 +270,13 @@ static inductor_t *inductor_equate(
   return inductor;
 }
 
-const mu_type_t *inductor_type_root(
-    inductor_t *inductor, const mu_type_t *type) {
-  member_t member = type_member(inductor, type);
+static member_t node_member(const inductor_t *inductor, const mu_node_t *node) {
+  assert(node->as_stator.id < inductor->node_number);
+  size_t index = node->as_stator.id;
+  return (member_t) { INDUCTOR_NODE, .index = index, .node = node };
+}
 
-  const member_t *result;
-  result = inductor_root(inductor, &member);
-  assert(result->kind == INDUCTOR_TYPE);
-
-  return result->type;
+static member_t type_member(const inductor_t *inductor, const mu_type_t *type) {
+  size_t index = inductor->node_number + type->as_stator.id;
+  return (member_t) { INDUCTOR_TYPE, .index = index, .type = type };
 }
