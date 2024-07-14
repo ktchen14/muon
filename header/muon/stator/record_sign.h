@@ -16,7 +16,7 @@ typedef struct {
 const mu_record_sign_t *mu_record_sign(
     mu_engine_t *engine,
     size_t argc,
-    const mu_sign_t *argv[argc],
+    const mu_sign_t *const argv[argc],
     const mu_node_source_t *source)
   __attribute__((malloc, nonnull(1)));
 

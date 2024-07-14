@@ -8,11 +8,6 @@
 #include <assert.h>
 #include <stddef.h>
 
-__attribute__((const, nonnull))
-static inline size_t variable_type_size(const mu_variable_type_t *type) {
-  return sizeof(mu_variable_type_t);
-}
-
 __attribute__((nonnull, pure))
 static inline const mu_variable_type_t *variable_type_reduce(
     const mu_variable_type_t *type, const inductor_t *inductor_t) {

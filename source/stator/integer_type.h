@@ -9,11 +9,6 @@
 #include <stddef.h>
 
 __attribute__((const, nonnull))
-static inline size_t integer_type_size(const mu_integer_type_t *type) {
-  return sizeof(mu_integer_type_t);
-}
-
-__attribute__((const, nonnull))
 static inline const mu_integer_type_t *integer_type_reduce(
     const mu_integer_type_t *type, const inductor_t *inductor) {
   return type;

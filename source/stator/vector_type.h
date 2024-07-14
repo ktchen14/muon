@@ -7,11 +7,6 @@
 
 #include <stddef.h>
 
-__attribute__((const, nonnull))
-static inline size_t vector_type_size(const mu_vector_type_t *type) {
-  return sizeof(mu_vector_type_t);
-}
-
 const mu_vector_type_t *vector_type_reduce(
     const mu_vector_type_t *type, inductor_t *inductor)
   __attribute__((nonnull));

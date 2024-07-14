@@ -13,7 +13,7 @@
 #include <string.h>
 
 const mu_vector_expr_t *mu_vector_expr(
-    mu_engine_t *engine, size_t argc, const mu_expr_t *argv[argc]) {
+    mu_engine_t *engine, size_t argc, const mu_expr_t *const argv[argc]) {
   for (size_t i = 0; i < argc; i++)
     assert(argv[i]->as_stator.engine == engine);
 

@@ -14,7 +14,7 @@ typedef struct {
 } mu_record_type_t;
 
 const mu_record_type_t *mu_record_type(
-    mu_engine_t *engine, size_t argc, const mu_type_t *argv[argc])
+    mu_engine_t *engine, size_t argc, const mu_type_t *const argv[argc])
   __attribute__((malloc, nonnull));
 
 void mu_record_type_debug(const mu_record_type_t *type)
