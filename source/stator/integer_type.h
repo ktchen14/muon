@@ -9,15 +9,15 @@
 #include <stddef.h>
 
 __attribute__((const, nonnull))
-static inline const mu_integer_type_t *integer_type_reduce(
-    const mu_integer_type_t *type, const inductor_t *inductor) {
-  return type;
-}
-
-__attribute__((const, nonnull))
 static inline const mu_type_t *integer_type_at(
     const mu_integer_type_t *type, size_t i) {
   return NULL;
+}
+
+__attribute__((const, nonnull))
+static inline const mu_integer_type_t *integer_type_reduce(
+    const mu_integer_type_t *type, const inductor_t *inductor) {
+  return type;
 }
 
 #endif /* MU_STATOR_INTEGER_TYPE_I */

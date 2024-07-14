@@ -7,14 +7,14 @@
 
 #include <stddef.h>
 
-const mu_vector_type_t *vector_type_reduce(
-    const mu_vector_type_t *type, inductor_t *inductor)
-  __attribute__((nonnull));
-
 __attribute__((nonnull, pure))
 static inline const mu_type_t *vector_type_at(
     const mu_vector_type_t *type, size_t i) {
   return i == 0 ? type->matter : NULL;
 }
+
+const mu_vector_type_t *vector_type_reduce(
+    const mu_vector_type_t *type, inductor_t *inductor)
+  __attribute__((nonnull));
 
 #endif /* MU_STATOR_VECTOR_TYPE_I */

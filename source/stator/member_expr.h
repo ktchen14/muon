@@ -15,11 +15,8 @@ static inline const mu_node_t *member_expr_at(
   return i == 0 ? &expr->matter->as_node : NULL;
 }
 
-__attribute__((nonnull))
-static inline inductor_t *member_expr_induce(
-    const mu_member_expr_t *expr, inductor_t *inductor) {
-  return inductor_equate_node_node(inductor, &expr->as_node, &expr->matter->as_node);
-  assert(0);
-}
+inductor_t *member_expr_induce(
+    const mu_member_expr_t *expr, inductor_t *inductor)
+  __attribute__((nonnull));
 
 #endif /* MU_STATOR_MEMBER_EXPR_I */

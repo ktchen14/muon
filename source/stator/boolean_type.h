@@ -9,15 +9,15 @@
 #include <stddef.h>
 
 __attribute__((const, nonnull))
-static inline const mu_boolean_type_t *boolean_type_reduce(
-    const mu_boolean_type_t *type, const inductor_t *inductor) {
-  return type;
-}
-
-__attribute__((const, nonnull))
 static inline const mu_type_t *boolean_type_at(
     const mu_boolean_type_t *type, size_t i) {
   return NULL;
+}
+
+__attribute__((const, nonnull))
+static inline const mu_boolean_type_t *boolean_type_reduce(
+    const mu_boolean_type_t *type, const inductor_t *inductor) {
+  return type;
 }
 
 #endif /* MU_STATOR_BOOLEAN_TYPE_I */

@@ -13,14 +13,14 @@ mu_record_type_t *record_type_allocate(mu_engine_t *engine, size_t argc)
 const mu_record_type_t *record_type_activate(mu_record_type_t *type)
   __attribute__((nonnull, returns_nonnull));
 
-const mu_record_type_t *record_type_reduce(
-    const mu_record_type_t *type, inductor_t *inductor)
-  __attribute__((nonnull));
-
 __attribute__((nonnull, pure))
 static inline const mu_type_t *record_type_at(
     const mu_record_type_t *type, size_t i) {
   return i < type->argc ? type->argv[i] : NULL;
 }
+
+const mu_record_type_t *record_type_reduce(
+    const mu_record_type_t *type, inductor_t *inductor)
+  __attribute__((nonnull));
 
 #endif /* MU_STATOR_RECORD_TYPE_I */

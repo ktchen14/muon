@@ -15,8 +15,8 @@ static inline const mu_node_t *vector_expr_at(
   return i < expr->argc ? &expr->argv[i]->as_node : NULL;
 }
 
-__attribute__((nonnull))
 inductor_t *vector_expr_induce(
-    const mu_vector_expr_t *expr, inductor_t *inductor);
+    const mu_vector_expr_t *expr, inductor_t *inductor)
+  __attribute__((nonnull));
 
 #endif /* MU_STATOR_VECTOR_EXPR_I */
