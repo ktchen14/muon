@@ -6,7 +6,7 @@
 /**
  * @brief An enumeration of each kind of type
  *
- * MU_INTEGER_TYPE = MU_INTEGER_TYPE_STATOR
+ * MU_BOOLEAN_TYPE = MU_BOOLEAN_TYPE_STATOR
  * ...
  * MU_VECTOR_TYPE = MU_VECTOR_TYPE_STATOR,
  */

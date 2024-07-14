@@ -30,6 +30,7 @@ target_sources(muon PRIVATE
   stator/constant_stmt.c
   stator/type_stmt.c
 
+  stator/boolean_type.c
   stator/integer_type.c
   stator/variable_type.c
   stator/vector_type.c

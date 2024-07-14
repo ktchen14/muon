@@ -26,6 +26,7 @@
 #include "stator/constant_stmt.h"  // IWYU pragma: export
 #include "stator/type_stmt.h"      // IWYU pragma: export
 
+#include "stator/boolean_type.h"   // IWYU pragma: export
 #include "stator/integer_type.h"   // IWYU pragma: export
 #include "stator/variable_type.h"  // IWYU pragma: export
 #include "stator/vector_type.h"    // IWYU pragma: export
