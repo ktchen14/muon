@@ -1,6 +1,8 @@
 #ifndef MU_ENGINE_H
 #define MU_ENGINE_H
 
+#include "stator.h"
+
 #include <stddef.h>
 
 typedef struct mu_engine_t mu_engine_t;
