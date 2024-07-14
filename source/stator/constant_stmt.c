@@ -40,7 +40,7 @@ inductor_t *constant_stmt_induce(
 
 void mu_constant_stmt_debug(const mu_constant_stmt_t *stmt) {
   fprintf(stderr, "%*s", debug_indent, "");
-  fprintf(stderr, "Constant Stmt #%zu: ", stmt->as_stator.id);
+  fprintf(stderr, "Constant Stmt #%zu: name = ", stmt->as_stator.id);
   mu_name_debug(stmt->name);
   putc('\n', stderr);
 
