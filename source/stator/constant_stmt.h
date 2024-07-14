@@ -3,7 +3,7 @@
 
 #include <muon/stator/constant_stmt.h>  // IWYU pragma: export
 
-#include "node.h"
+#include "abstract_node.h"
 
 #include <stddef.h>
 

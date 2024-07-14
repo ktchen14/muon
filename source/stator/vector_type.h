@@ -3,7 +3,7 @@
 
 #include <muon/stator/vector_type.h>  // IWYU pragma: export
 
-#include "type.h"
+#include "abstract_type.h"
 
 #include <stddef.h>
 

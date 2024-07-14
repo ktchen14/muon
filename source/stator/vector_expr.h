@@ -3,7 +3,7 @@
 
 #include <muon/stator/vector_expr.h>  // IWYU pragma: export
 
-#include "node.h"
+#include "abstract_node.h"
 #include "../inductor.h"
 
 #include <stddef.h>

@@ -1,4 +1,4 @@
-#include "stator.h"
+#include "node.h"
 
 void mu_node_debug(const mu_node_t *node) {
   switch (node->kind) {
@@ -40,17 +40,6 @@ void mu_stmt_debug(const mu_stmt_t *stmt) {
       mu_##lower##_stmt_debug((const mu_##lower##_stmt_t *) stmt); \
       break;
     MU_EACH_STMT_KIND(MU_EMIT)
-#undef MU_EMIT
-  }
-}
-
-void mu_type_debug(const mu_type_t *type) {
-  switch (type->kind) {
-#define MU_EMIT(lower, upper, t) \
-    case MU_##upper##_TYPE: \
-      mu_##lower##_type_debug((const mu_##lower##_type_t *) type); \
-      break;
-  MU_EACH_TYPE_KIND(MU_EMIT)
 #undef MU_EMIT
   }
 }

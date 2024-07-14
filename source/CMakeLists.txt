@@ -8,9 +8,9 @@ target_sources(muon PRIVATE
   script.c
   status.c
 
-  stator.c
-
   stator/name.c
+  stator/node.c
+  stator/type.c
 
   stator/access_expr.c
   stator/boolean_expr.c

@@ -1,7 +1,7 @@
 #ifndef MU_STATOR_RECORD_SIGN_H
 #define MU_STATOR_RECORD_SIGN_H
 
-#include "node.h"
+#include "abstract_node.h"
 
 #include <stddef.h>
 

@@ -3,7 +3,7 @@
 
 #include <muon/stator/integer_sign.h>  // IWYU pragma: export
 
-#include "node.h"
+#include "abstract_node.h"
 
 #include <stddef.h>
 

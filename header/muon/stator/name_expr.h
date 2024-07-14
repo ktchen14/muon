@@ -1,7 +1,7 @@
 #ifndef MU_STATOR_NAME_EXPR_H
 #define MU_STATOR_NAME_EXPR_H
 
-#include "node.h"
+#include "abstract_node.h"
 
 #include "name.h"
 

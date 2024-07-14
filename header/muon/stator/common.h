@@ -36,6 +36,9 @@
   emit(variable, VARIABLE, Variable, ##__VA_ARGS__) \
   emit(vector, VECTOR, Vector, ##__VA_ARGS__)
 
+/// @internal Used to emit each abstract branch in a cast
+#define MU_CAST_EMIT(l, upper, t, ...) || _kind == MU_##upper##__VA_ARGS__
+
 /**
  * @brief An enumeration of each kind of stator
  */

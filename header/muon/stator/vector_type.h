@@ -1,7 +1,7 @@
 #ifndef MU_STATOR_VECTOR_TYPE_H
 #define MU_STATOR_VECTOR_TYPE_H
 
-#include "type.h"
+#include "abstract_type.h"
 
 typedef struct {
   MU_TYPE_HEADER;

@@ -1,7 +1,7 @@
 #ifndef MU_STATOR_MEMBER_SIGN_H
 #define MU_STATOR_MEMBER_SIGN_H
 
-#include "node.h"
+#include "abstract_node.h"
 
 #include "name.h"
 

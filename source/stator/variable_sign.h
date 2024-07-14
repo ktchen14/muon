@@ -3,7 +3,7 @@
 
 #include <muon/stator/variable_sign.h>  // IWYU pragma: export
 
-#include "node.h"
+#include "abstract_node.h"
 
 #include <stddef.h>
 

@@ -1,7 +1,7 @@
 #ifndef MU_STATOR_INTEGER_SIGN_H
 #define MU_STATOR_INTEGER_SIGN_H
 
-#include "node.h"
+#include "abstract_node.h"
 
 typedef struct {
   MU_SIGN_HEADER;

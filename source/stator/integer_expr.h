@@ -3,9 +3,9 @@
 
 #include <muon/stator/integer_expr.h>  // IWYU pragma: export
 
-#include "node.h"
+#include "abstract_node.h"
+#include "abstract_type.h"
 #include "integer_type.h"
-#include "type.h"
 #include "../inductor.h"
 
 #include <stddef.h>
