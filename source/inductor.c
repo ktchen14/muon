@@ -46,24 +46,24 @@ void inductor_raze(inductor_t *inductor) {
   free(inductor->data);
 }
 
-inductor_t *inductor_equate(
+const mu_type_t *inductor_equate(
     inductor_t *inductor, const mu_type_t *a, const mu_type_t *b) {
   if (a == b)
-    return inductor;
+    return a;
 
   a = inductor_root(inductor, a);
   b = inductor_root(inductor, b);
 
   // If a and b refer to the same node/type
   if (a == b)
-    return inductor;
+    return a;
 
   // If a is a variable type, then just equate it to b
   if (a->kind == MU_VARIABLE_TYPE)
-    return inductor_set(inductor, a, b), inductor;
+    return inductor_set(inductor, a, b);
 
   if (b->kind == MU_VARIABLE_TYPE)
-    return inductor_set(inductor, b, a), inductor;
+    return inductor_set(inductor, b, a);
 
   // Otherwise, both a and b are concrete types. If they don't have the same
   // kind, then they can't be unified.
@@ -113,10 +113,9 @@ inductor_t *inductor_equate(
 
     // Now that we've unified each type within a and b, unify them
     inductor_set(inductor, a, b);
-  } while (a = type_return(a), b = type_return(b), a != NULL && b != NULL);
+  } while ((a = type_return(a)) != NULL && (b = type_return(b)) != NULL);
 
-  assert(a == NULL && b == NULL);
-  return inductor;
+  return b;
 }
 
 static inline size_t indexof(const inductor_t *inductor, const mu_type_t *type) {
@@ -198,4 +197,27 @@ const mu_type_t *inductor_root(inductor_t *inductor, const mu_type_t *type) {
   }
 
   return root;
+}
+
+const mu_type_t *induce_node(inductor_t *inductor, const mu_node_t *root) {
+  const mu_node_t *node = root, *next;
+  do {
+    while ((next = node_at(node, node_cursor(node)->i++)) != NULL)
+      node = node_continue(node, next);
+
+    // Induce the type of the node
+    const mu_type_t *type;
+    if ((type = node_induce(node, inductor)) == NULL)
+      return NULL;
+
+    // If the node already had a type assigned to it, then we have to equate
+    // this induced type with the existing one
+    const mu_type_t *extant;
+    if ((extant = inductor_node(inductor, node)) == NULL)
+      inductor_node(inductor, node) = type;
+    else if (inductor_equate(inductor, extant, type) == NULL)
+      return NULL;
+  } while ((node = node_return(node)) != NULL);
+
+  return inductor_node(inductor, root);
 }

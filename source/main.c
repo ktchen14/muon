@@ -15,31 +15,6 @@ unsigned char buffer[4096];
 #include "inductor.h"
 #include "stator.h"
 
-inductor_t *induce(const mu_script_t *script, inductor_t *inductor) {
-  for (size_t i = 0; i < script->argc; i++) {
-    const mu_node_t *node = &script->argv[i]->as_node;
-
-    do {
-      const mu_node_t *next;
-      while ((next = node_at(node, node_cursor(node)->i++)) != NULL)
-        node = node_continue(node, next);
-
-      const mu_type_t *type;
-      if ((type = node_induce(node, inductor)) == NULL)
-        return NULL;
-
-      const mu_type_t *extant;
-      if ((extant = inductor_node(inductor, node)) != NULL) {
-        if (inductor_equate(inductor, extant, type) == NULL)
-          return NULL;
-      } else
-        inductor_node(inductor, node) = type;
-    } while ((node = node_return(node)) != NULL);
-  }
-
-  return inductor;
-}
-
 int main(int argc, char *argv[argc]) {
   const char *muon_name = argc > 0 ? argv[0] : "muon";
   if (argc < 2) {
@@ -80,7 +55,10 @@ int main(int argc, char *argv[argc]) {
       &(inductor_t) {0}, &engine, resolution, &status);
   assert(inductor != NULL);
 
-  inductor = induce(script, inductor);
+  for (size_t i = 0; i < script->argc; i++) {
+    if (induce_node(inductor, &script->argv[i]->as_node) == NULL)
+      assert(0);
+  }
 
   for (size_t i = 0; i < script->argc; i++) {
     const mu_node_t *node = &script->argv[i]->as_node;

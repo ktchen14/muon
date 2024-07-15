@@ -54,8 +54,11 @@ const mu_type_t *inductor_type_of_node(
   __attribute__((nonnull));
 
 /// Equate type @a a to type @a b in the @a inductor
-inductor_t *inductor_equate(
+const mu_type_t *inductor_equate(
     inductor_t *inductor, const mu_type_t *a, const mu_type_t *b)
+  __attribute__((nonnull));
+
+const mu_type_t *induce_node(inductor_t *inductor, const mu_node_t *node)
   __attribute__((nonnull));
 
 #endif /* MU_INDUCTOR_I */
