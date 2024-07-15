@@ -1,5 +1,5 @@
-#include "common.h"
 #include "inductor.h"
+
 #include "stator.h"
 #include "status.h"
 
@@ -8,17 +8,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-/// Get the next member
+/// Get the next type equivalent to @a type in the @a inductor
 static const mu_type_t *inductor_get(
     const inductor_t *inductor, const mu_type_t *type)
   __attribute__((nonnull, pure));
 
-/// Set the next member
+/// Set the next equivalent type of @a source to @a target in the @a inductor
 static const mu_type_t *inductor_set(
     inductor_t *inductor,
     const mu_type_t *restrict source,
     const mu_type_t *restrict target)
   __attribute__((nonnull));
+
+__attribute__((nonnull, pure))
+static inline size_t slot(const inductor_t *inductor, const mu_type_t *type) {
+  return inductor->node_number + type->as_stator.id;
+}
 
 inductor_t *inductor_initialize(
     inductor_t *inductor,
@@ -26,16 +31,17 @@ inductor_t *inductor_initialize(
     const mu_stmt_t *const *node_to_stmt,
     mu_status_t *status) {
   size_t length = engine->node_number + engine->type_number;
-  const mu_type_t **data;
-  if ((data = malloc(sizeof(const mu_type_t *[length]))) == NULL)
+
+  const mu_type_t **induce;
+  if ((induce = malloc(sizeof(const mu_type_t *[length]))) == NULL)
     return NULL;
-  for (size_t i = 0; i < length; data[i++] = NULL);
+  for (size_t i = 0; i < length; induce[i++] = NULL);
 
   *inductor = (inductor_t) {
     .engine = engine,
     .node_number = engine->node_number,
     .length = length,
-    .data = data,
+    .induce = induce,
     .node_to_stmt = node_to_stmt,
     .status = status,
   };
@@ -43,8 +49,31 @@ inductor_t *inductor_initialize(
 }
 
 void inductor_raze(inductor_t *inductor) {
-  free(inductor->data);
+  free(inductor->induce);
 }
+
+const mu_type_t *inductor_root(inductor_t *inductor, const mu_type_t *type) {
+  const mu_type_t *origin = type;
+
+  size_t height = 0;
+  for (const mu_type_t *next;; type = next) {
+    if ((next = inductor_get(inductor, type)) == NULL)
+      break;
+    height++;
+  }
+
+  const mu_type_t *root = type;
+
+  type = origin;
+  for (size_t i = 0; i < height; i++) {
+    const mu_type_t *next = inductor->induce[slot(inductor, type)];
+    inductor->induce[slot(inductor, type)] = root;
+    type = next;
+  }
+
+  return root;
+}
+
 
 const mu_type_t *inductor_equate(
     inductor_t *inductor, const mu_type_t *a, const mu_type_t *b) {
@@ -118,15 +147,11 @@ const mu_type_t *inductor_equate(
   return b;
 }
 
-static inline size_t indexof(const inductor_t *inductor, const mu_type_t *type) {
-  return inductor->node_number + type->as_stator.id;
-}
-
 static const mu_type_t *inductor_get(
     const inductor_t *inductor, const mu_type_t *type) {
-  if (indexof(inductor, type) >= inductor->length)
+  if (slot(inductor, type) >= inductor->length)
     return NULL;
-  return inductor->data[indexof(inductor, type)];
+  return inductor->induce[slot(inductor, type)];
 }
 
 static const mu_type_t *inductor_set(
@@ -135,19 +160,19 @@ static const mu_type_t *inductor_set(
     const mu_type_t *restrict target) {
   size_t origin = inductor->length;
 
-  if (indexof(inductor, source) < origin)
-    return inductor->data[indexof(inductor, source)] = target;
+  if (slot(inductor, source) < origin)
+    return inductor->induce[slot(inductor, source)] = target;
 
-  size_t length = indexof(inductor, source) + 1;
+  size_t length = slot(inductor, source) + 1;
 
-  const mu_type_t **data = inductor->data;
-  if ((data = realloc(data, sizeof(const mu_type_t *[length]))) == NULL)
+  const mu_type_t **induce = inductor->induce;
+  if ((induce = realloc(induce, sizeof(const mu_type_t *[length]))) == NULL)
     return NULL;
-  for (size_t i = origin; i < length; data[i++] = NULL);
+  for (size_t i = origin; i < length; induce[i++] = NULL);
 
   inductor->length = length;
-  inductor->data = data;
-  return inductor->data[indexof(inductor, source)] = target;
+  inductor->induce = induce;
+  return inductor->induce[slot(inductor, source)] = target;
 }
 
 const mu_type_t *inductor_type_of_node(
@@ -175,28 +200,6 @@ const mu_type_t *inductor_type_of_node(
   } while ((type = type_return(type)) != NULL);
 
   return inductor_root(inductor, root);
-}
-
-const mu_type_t *inductor_root(inductor_t *inductor, const mu_type_t *type) {
-  const mu_type_t *origin = type;
-
-  size_t height = 0;
-  for (const mu_type_t *next;; type = next) {
-    if ((next = inductor_get(inductor, type)) == NULL)
-      break;
-    height++;
-  }
-
-  const mu_type_t *root = type;
-
-  type = origin;
-  for (size_t i = 0; i < height; i++) {
-    const mu_type_t *next = inductor->data[indexof(inductor, type)];
-    inductor->data[indexof(inductor, type)] = root;
-    type = next;
-  }
-
-  return root;
 }
 
 const mu_type_t *induce_node(inductor_t *inductor, const mu_node_t *root) {
