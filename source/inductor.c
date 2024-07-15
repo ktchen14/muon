@@ -8,8 +8,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef const mu_type_t *member_t;
-
 /// Get the next member
 static const mu_type_t *inductor_get(
     const inductor_t *inductor, const mu_type_t *type)
@@ -28,10 +26,10 @@ inductor_t *inductor_initialize(
     const mu_stmt_t *const *node_to_stmt,
     mu_status_t *status) {
   size_t length = engine->node_number + engine->type_number;
-  member_t *data;
-  if ((data = malloc(sizeof(member_t[length]))) == NULL)
+  const mu_type_t **data;
+  if ((data = malloc(sizeof(const mu_type_t *[length]))) == NULL)
     return NULL;
-  for (size_t i = 0; i < length; data[i++] = (member_t) {0});
+  for (size_t i = 0; i < length; data[i++] = NULL);
 
   *inductor = (inductor_t) {
     .engine = engine,
@@ -143,10 +141,10 @@ static const mu_type_t *inductor_set(
 
   size_t length = indexof(inductor, source) + 1;
 
-  member_t *data = inductor->data;
-  if ((data = realloc(data, sizeof(member_t[length]))) == NULL)
+  const mu_type_t **data = inductor->data;
+  if ((data = realloc(data, sizeof(const mu_type_t *[length]))) == NULL)
     return NULL;
-  for (size_t i = origin; i < length; data[i++] = (member_t) {0});
+  for (size_t i = origin; i < length; data[i++] = NULL);
 
   inductor->length = length;
   inductor->data = data;

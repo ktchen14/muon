@@ -8,7 +8,6 @@
 #include <assert.h>
 #include <stddef.h>
 
-typedef struct inductor_member_t inductor_member_t;
 typedef struct inductor_t inductor_t;
 
 struct inductor_t {
@@ -48,11 +47,6 @@ void inductor_raze(inductor_t *inductor) __attribute__((nonnull));
 const mu_type_t *inductor_root(inductor_t *inductor, const mu_type_t *type);
 
 #define inductor_type_root inductor_root
-
-/// Return the archtype of the @a type in the @a inductor
-const mu_type_t *inductor_type_of_type(
-    inductor_t *inductor, const mu_type_t *type)
-  __attribute__((nonnull));
 
 /// Return the archtype of the @a node in the @a inductor
 const mu_type_t *inductor_type_of_node(
