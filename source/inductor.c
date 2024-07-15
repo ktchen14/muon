@@ -53,22 +53,18 @@ void inductor_raze(inductor_t *inductor) {
 }
 
 const mu_type_t *inductor_root(inductor_t *inductor, const mu_type_t *type) {
-  const mu_type_t *origin = type;
+  const mu_type_t *root = type;
 
   size_t height = 0;
-  for (const mu_type_t *next;; type = next) {
-    if ((next = inductor_get(inductor, type)) == NULL)
+  for (const mu_type_t *next;; root = next) {
+    if ((next = inductor_get(inductor, root)) == NULL)
       break;
     height++;
   }
 
-  const mu_type_t *root = type;
-
-  type = origin;
-  for (size_t i = 0; i < height; i++) {
-    const mu_type_t *next = inductor->induce[slot(inductor, type)];
+  for (const mu_type_t *next; height-- > 0; type = next) {
+    next = inductor->induce[slot(inductor, type)];
     inductor->induce[slot(inductor, type)] = root;
-    type = next;
   }
 
   return root;
