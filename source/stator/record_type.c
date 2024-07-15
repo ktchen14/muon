@@ -55,7 +55,7 @@ const mu_record_type_t *record_type_reduce(
     return NULL;
 
   for (size_t i = 0; i < type->argc; i++)
-    allocation->argv[i] = inductor_root(inductor, type->argv[i]);
+    allocation->argv[i] = reduce_type_result(inductor, type->argv[i]);
 
   return record_type_activate(allocation);
 }

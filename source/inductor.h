@@ -69,4 +69,6 @@ const mu_type_t *reduce_type(inductor_t *inductor, const mu_type_t *type)
 const mu_type_t *reduce_node(inductor_t *inductor, const mu_node_t *node)
   __attribute__((nonnull));
 
+const mu_type_t *reduce_type_result(inductor_t *inductor, const mu_type_t *type);
+
 #endif /* MU_INDUCTOR_I */

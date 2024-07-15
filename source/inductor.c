@@ -20,6 +20,7 @@ static const mu_type_t *inductor_set(
     const mu_type_t *restrict target)
   __attribute__((nonnull));
 
+/// Return the index where the next equivalent type to @a type should be
 __attribute__((nonnull, pure))
 static inline size_t slot(const inductor_t *inductor, const mu_type_t *type) {
   return inductor->node_number + type->as_stator.id;
@@ -203,8 +204,16 @@ const mu_type_t *reduce_type(
   // have i == 0 because we always do type_cursor(type)->i++ before we
   // type_continue from it.
   const mu_type_t *next;
-  while ((next = inductor_get(inductor, type)) != NULL)
+  while ((next = inductor_get(inductor, type)) != NULL) {
+    if ((result = inductor->reduce[slot(inductor, next)]) != NULL) {
+      do {
+        inductor->reduce[slot(inductor, type)] = result;
+      } while ((type = type_return(type)) != NULL);
+      return result;
+    }
+
     type = type_continue(type, next);
+  }
 
   for (;;) {
     while ((next = type_at(type, type_cursor(type)->i++)) != NULL) {
@@ -213,8 +222,9 @@ const mu_type_t *reduce_type(
 
       type = type_continue(type, next);
 
-      while ((next = inductor_get(inductor, type)) != NULL)
+      while ((next = inductor_get(inductor, type)) != NULL) {
         type = type_continue(type, next);
+      }
     }
 
     const mu_type_t *result;
@@ -243,6 +253,12 @@ const mu_type_t *reduce_node(inductor_t *inductor, const mu_node_t *node) {
   const mu_type_t *type = inductor_node(inductor, node);
   assert(type != NULL);
   return reduce_type(inductor, type);
+}
+
+const mu_type_t *reduce_type_result(inductor_t *inductor, const mu_type_t *type) {
+  if (slot(inductor, type) >= inductor->length)
+    return type;
+  return inductor->reduce[slot(inductor, type)];
 }
 
 static const mu_type_t *inductor_get(
