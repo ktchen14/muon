@@ -37,7 +37,7 @@ const mu_type_t *vector_expr_induce(
   mu_engine_t *engine = inductor->engine;
 
   const mu_variable_type_t *matter_type;
-  if ((matter_type = mu_variable_type(engine)) == NULL)
+  if ((matter_type = mu_open_type(engine)) == NULL)
     return NULL;
 
   for (size_t i = 0; i < expr->argc; i++) {

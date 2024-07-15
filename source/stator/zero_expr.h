@@ -19,10 +19,10 @@ static inline const mu_node_t *zero_expr_at(
 __attribute__((nonnull))
 static inline const mu_type_t *zero_expr_induce(
     const mu_zero_expr_t *expr, inductor_t *inductor) {
-  const mu_variable_type_t *variable_type;
-  if ((variable_type = mu_variable_type(inductor->engine)) == NULL)
+  const mu_variable_type_t *open_type;
+  if ((open_type = mu_open_type(inductor->engine)) == NULL)
     return NULL;
-  return &variable_type->as_type;
+  return &open_type->as_type;
 }
 
 #endif /* MU_STATOR_ZERO_EXPR_I */

@@ -22,21 +22,21 @@ static inline const mu_type_t *name_expr_induce(
     const mu_name_expr_t *expr, inductor_t *inductor) {
   const mu_stmt_t *target;
   if ((target = inductor->node_to_stmt[expr->as_stator.id]) == NULL) {
-    const mu_variable_type_t *variable_type;
-    if ((variable_type = mu_variable_type(inductor->engine)) == NULL)
+    const mu_variable_type_t *open_type;
+    if ((open_type = mu_open_type(inductor->engine)) == NULL)
       return NULL;
-    return &variable_type->as_type;
+    return &open_type->as_type;
   }
 
   const mu_type_t *type;
   if ((type = inductor_node(inductor, &target->as_node)) != NULL)
     return type;
 
-  const mu_variable_type_t *variable_type;
-  if ((variable_type = mu_variable_type(inductor->engine)) == NULL)
+  const mu_variable_type_t *open_type;
+  if ((open_type = mu_open_type(inductor->engine)) == NULL)
     return NULL;
 
-  return inductor_node(inductor, &target->as_node) = &variable_type->as_type;
+  return inductor_node(inductor, &target->as_node) = &open_type->as_type;
 }
 
 #endif /* MU_STATOR_NAME_EXPR_I */
