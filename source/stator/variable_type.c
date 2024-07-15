@@ -36,4 +36,14 @@ const mu_variable_type_t *mu_open_type(mu_engine_t *engine) {
 
 void mu_variable_type_debug(const mu_variable_type_t *type) {
   fprintf(stderr, "Variable #%zu", type->as_stator.id);
+
+  if (type->argc > 0) {
+    putc('(', stderr);
+    for (size_t i = 0; i < type->argc; i++) {
+      if (i > 1)
+        fputs(", ", stderr);
+      mu_test_debug(type->argv[i]);
+    }
+    putc(')', stderr);
+  }
 }

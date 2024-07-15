@@ -24,6 +24,7 @@ stop = [\x00];
 <normal> "("                { return '('; }
 <normal> ")"                { return ')'; }
 <normal> ","                { return ','; }
+<normal> "."                { return '.'; }
 <normal> ":"                { return ':'; }
 <normal> "="                { return '='; }
 <normal> "["                { return '['; }

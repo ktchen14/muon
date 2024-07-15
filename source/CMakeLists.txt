@@ -10,6 +10,7 @@ target_sources(muon PRIVATE
 
   stator/name.c
   stator/node.c
+  stator/test.c
   stator/type.c
 
   stator/access_expr.c
