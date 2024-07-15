@@ -155,33 +155,60 @@ except:
   return NULL;
 }
 
-static const mu_type_t *inductor_get(
-    const inductor_t *inductor, const mu_type_t *type) {
-  if (slot(inductor, type) >= inductor->length)
-    return NULL;
-  return inductor->induce[slot(inductor, type)];
+const mu_type_t *induce_node(inductor_t *inductor, const mu_node_t *root) {
+  const mu_node_t *node = root, *next;
+  do {
+    while ((next = node_at(node, node_cursor(node)->i++)) != NULL)
+      node = node_continue(node, next);
+
+    // Induce the type of the node
+    const mu_type_t *type;
+    if ((type = node_induce(node, inductor)) == NULL)
+      return NULL;
+
+    // If the node already had a type assigned to it, then we have to equate
+    // this induced type with the existing one
+    const mu_type_t *extant;
+    if ((extant = inductor_node(inductor, node)) == NULL)
+      inductor_node(inductor, node) = type;
+    else if (inductor_equate(inductor, extant, type) == NULL)
+      return NULL;
+  } while ((node = node_return(node)) != NULL);
+
+  return inductor_node(inductor, root);
 }
 
-static const mu_type_t *inductor_set(
-    inductor_t *inductor,
-    const mu_type_t *restrict source,
-    const mu_type_t *restrict target) {
-  if (slot(inductor, source) >= inductor->length) {
-    size_t length = slot(inductor, source) + 1;
+const mu_type_t *reduce_type(
+    inductor_t *inductor, const mu_type_t *origin) {
+  const mu_type_t *result;
+  if ((result = inductor->reduce[slot(inductor, origin)]) != NULL)
+    return result;
 
-    size_t next_size = sizeof(const mu_type_t *[length]);
+  const mu_type_t *root = inductor_root(inductor, origin);
+  assert(root != NULL);
 
-    const mu_type_t **induce = inductor->induce;
-    if ((induce = realloc(induce, next_size)) == NULL)
+  const mu_type_t *type = root, *next;
+  do {
+    while ((next = type_at(type, type_cursor(type)->i++)) != NULL) {
+      if (inductor->reduce[slot(inductor, next)] != NULL)
+        continue;
+
+      const mu_type_t *root = inductor_root(inductor, next);
+      assert(root != NULL);
+
+      type = type_continue(type, root);
+    }
+
+    const mu_type_t *result;
+    if ((result = type_reduce(type, inductor)) == NULL)
       return NULL;
-    for (size_t i = inductor->length; i < length; i++)
-      induce[i] = NULL;
 
-    inductor->length = length;
-    inductor->induce = induce;
-  }
+    if (result == type)
+      continue;
+    inductor_set(inductor, type, result);
+  } while ((type = type_return(type)) != NULL);
 
-  return inductor->induce[slot(inductor, source)] = target;
+  return inductor_root(inductor, root);
 }
 
 const mu_type_t *inductor_type_of_node(
@@ -211,25 +238,31 @@ const mu_type_t *inductor_type_of_node(
   return inductor_root(inductor, root);
 }
 
-const mu_type_t *induce_node(inductor_t *inductor, const mu_node_t *root) {
-  const mu_node_t *node = root, *next;
-  do {
-    while ((next = node_at(node, node_cursor(node)->i++)) != NULL)
-      node = node_continue(node, next);
+static const mu_type_t *inductor_get(
+    const inductor_t *inductor, const mu_type_t *type) {
+  if (slot(inductor, type) >= inductor->length)
+    return NULL;
+  return inductor->induce[slot(inductor, type)];
+}
 
-    // Induce the type of the node
-    const mu_type_t *type;
-    if ((type = node_induce(node, inductor)) == NULL)
+static const mu_type_t *inductor_set(
+    inductor_t *inductor,
+    const mu_type_t *restrict source,
+    const mu_type_t *restrict target) {
+  if (slot(inductor, source) >= inductor->length) {
+    size_t length = slot(inductor, source) + 1;
+
+    size_t next_size = sizeof(const mu_type_t *[length]);
+
+    const mu_type_t **induce = inductor->induce;
+    if ((induce = realloc(induce, next_size)) == NULL)
       return NULL;
+    for (size_t i = inductor->length; i < length; i++)
+      induce[i] = NULL;
 
-    // If the node already had a type assigned to it, then we have to equate
-    // this induced type with the existing one
-    const mu_type_t *extant;
-    if ((extant = inductor_node(inductor, node)) == NULL)
-      inductor_node(inductor, node) = type;
-    else if (inductor_equate(inductor, extant, type) == NULL)
-      return NULL;
-  } while ((node = node_return(node)) != NULL);
+    inductor->length = length;
+    inductor->induce = induce;
+  }
 
-  return inductor_node(inductor, root);
+  return inductor->induce[slot(inductor, source)] = target;
 }

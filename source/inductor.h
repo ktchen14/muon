@@ -16,6 +16,7 @@ struct inductor_t {
   size_t node_number;
   size_t length;
   const mu_type_t **induce; /* const mu_type_t *[length] */
+  const mu_type_t **reduce;
 
   const mu_stmt_t *const *node_to_stmt;
 
