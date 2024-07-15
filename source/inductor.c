@@ -70,7 +70,6 @@ const mu_type_t *inductor_root(inductor_t *inductor, const mu_type_t *type) {
   return root;
 }
 
-
 const mu_type_t *inductor_equate(
     inductor_t *inductor, const mu_type_t *a, const mu_type_t *b) {
   // If a and b are the same type, then just return
@@ -190,63 +189,60 @@ const mu_type_t *induce_node(inductor_t *inductor, const mu_node_t *root) {
 }
 
 const mu_type_t *reduce_type(
-    inductor_t *inductor, const mu_type_t *origin) {
+    inductor_t *inductor, const mu_type_t *type) {
+  const mu_type_t *root = type;
+
+  // Return if we already have this type's reduction
   const mu_type_t *result;
-  if ((result = inductor->reduce[slot(inductor, origin)]) != NULL)
+  if ((result = inductor->reduce[slot(inductor, type)]) != NULL)
     return result;
 
-  const mu_type_t *root = inductor_root(inductor, origin);
-  assert(root != NULL);
+  // Like inductor_root, except that we link each intermediate type until we get
+  // to to the root. When we link an intermediate type like this, the anterior
+  // type's cursor will have i == 0. Normally, an anterior type's cursor can't
+  // have i == 0 because we always do type_cursor(type)->i++ before we
+  // type_continue from it.
+  const mu_type_t *next;
+  while ((next = inductor_get(inductor, type)) != NULL)
+    type = type_continue(type, next);
 
-  const mu_type_t *type = root, *next;
-  do {
+  for (;;) {
     while ((next = type_at(type, type_cursor(type)->i++)) != NULL) {
       if (inductor->reduce[slot(inductor, next)] != NULL)
         continue;
 
-      const mu_type_t *root = inductor_root(inductor, next);
-      assert(root != NULL);
+      type = type_continue(type, next);
 
-      type = type_continue(type, root);
+      while ((next = inductor_get(inductor, type)) != NULL)
+        type = type_continue(type, next);
     }
 
     const mu_type_t *result;
     if ((result = type_reduce(type, inductor)) == NULL)
-      return NULL;
+      goto except;
 
-    if (result == type)
-      continue;
-    inductor_set(inductor, type, result);
-  } while ((type = type_return(type)) != NULL);
+    do {
+      inductor->reduce[slot(inductor, type)] = result;
 
-  return inductor_root(inductor, root);
+      if ((type = type_return(type)) == NULL)
+        goto exit;
+    } while (type_cursor(type)->i == 0);
+  };
+
+exit:
+  result = inductor->reduce[slot(inductor, root)];
+  assert(result != NULL);
+  return result;
+
+except:
+  while ((type = type_return(type)) != NULL);
+  return NULL;
 }
 
-const mu_type_t *inductor_type_of_node(
-    inductor_t *inductor, const mu_node_t *node) {
-  const mu_type_t *root = inductor_node(inductor, node);
-  assert(root != NULL);
-
-  root = inductor_root(inductor, root);
-  assert(root != NULL);
-
-  const mu_type_t *type = root, *next;
-  do {
-    while ((next = type_at(type, type_cursor(type)->i++)) != NULL) {
-      const mu_type_t *result = inductor_root(inductor, next);
-      type = type_continue(type, result);
-    }
-
-    const mu_type_t *result;
-    if ((result = type_reduce(type, inductor)) == NULL)
-      return NULL;
-
-    if (result == type)
-      continue;
-    inductor_set(inductor, type, result);
-  } while ((type = type_return(type)) != NULL);
-
-  return inductor_root(inductor, root);
+const mu_type_t *reduce_node(inductor_t *inductor, const mu_node_t *node) {
+  const mu_type_t *type = inductor_node(inductor, node);
+  assert(type != NULL);
+  return reduce_type(inductor, type);
 }
 
 static const mu_type_t *inductor_get(

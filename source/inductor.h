@@ -63,9 +63,10 @@ const mu_type_t *inductor_equate(
 const mu_type_t *induce_node(inductor_t *inductor, const mu_node_t *node)
   __attribute__((nonnull));
 
-/// Return the archtype of the @a node in the @a inductor
-const mu_type_t *inductor_type_of_node(
-    inductor_t *inductor, const mu_node_t *node)
+const mu_type_t *reduce_type(inductor_t *inductor, const mu_type_t *type)
+  __attribute__((nonnull));
+
+const mu_type_t *reduce_node(inductor_t *inductor, const mu_node_t *node)
   __attribute__((nonnull));
 
 #endif /* MU_INDUCTOR_I */

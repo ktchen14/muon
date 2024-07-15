@@ -60,6 +60,13 @@ int main(int argc, char *argv[argc]) {
       assert(0);
   }
 
+  size_t length = 1000;
+  const mu_type_t **reduce;
+  if ((reduce = malloc(sizeof(const mu_type_t *[length]))) == NULL)
+    abort();
+  for (size_t i = 0; i < length; reduce[i++] = NULL);
+  inductor->reduce = reduce;
+
   for (size_t i = 0; i < script->argc; i++) {
     const mu_node_t *node = &script->argv[i]->as_node;
 
@@ -68,15 +75,13 @@ int main(int argc, char *argv[argc]) {
       while ((next = node_at(node, node_cursor(node)->i++)) != NULL)
         node = node_continue(node, next);
 
-      const mu_type_t *type = inductor_type_of_node(inductor, node);
+      const mu_type_t *type;
+      if ((type = reduce_node(inductor, node)) == NULL)
+        abort();
 
-      if (type == NULL)
-        fprintf(stderr, "Node %zu: NONE\n", node->as_stator.id);
-      else {
-        fprintf(stderr, "Node %zu: ", node->as_stator.id);
-        mu_type_debug(type);
-        putc('\n', stderr);
-      }
+      fprintf(stderr, "Node %zu: ", node->as_stator.id);
+      mu_type_debug(type);
+      putc('\n', stderr);
     } while ((node = node_return(node)) != NULL);
   }
 
