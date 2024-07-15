@@ -73,25 +73,26 @@ const mu_type_t *inductor_root(inductor_t *inductor, const mu_type_t *type) {
 
 const mu_type_t *inductor_equate(
     inductor_t *inductor, const mu_type_t *a, const mu_type_t *b) {
+  // If a and b are the same type, or are both equivalent to the same type, then
+  // just return
   if (a == b)
     return a;
 
   a = inductor_root(inductor, a);
   b = inductor_root(inductor, b);
 
-  // If a and b refer to the same node/type
   if (a == b)
     return a;
 
-  // If a is a variable type, then just equate it to b
+  // If a is a variable type, then just equate it to b and return
   if (a->kind == MU_VARIABLE_TYPE)
     return inductor_set(inductor, a, b);
 
+  // If b is a variable type, then just equate it to a and return
   if (b->kind == MU_VARIABLE_TYPE)
     return inductor_set(inductor, b, a);
 
-  // Otherwise, both a and b are concrete types. If they don't have the same
-  // kind, then they can't be unified.
+  // Otherwise, a and b have to have the same kind
   if (a->kind != b->kind)
     assert(0);
 
@@ -100,47 +101,58 @@ const mu_type_t *inductor_equate(
       const mu_type_t *next_a = type_at(a, type_cursor(a)->i++);
       const mu_type_t *next_b = type_at(b, type_cursor(b)->i++);
 
-      if (next_a == NULL && next_b == NULL) {
+      if (next_a == NULL && next_b == NULL)
         break;
-      } else if (next_a == NULL && next_b != NULL) {
+
+      if (next_a == NULL && next_b != NULL)
         assert(0);
-      } else if (next_a != NULL && next_b == NULL) {
+
+      if (next_a != NULL && next_b == NULL)
         assert(0);
-      } else if (next_a != NULL && next_b != NULL) {
-        if (next_a == next_b)
-          break;
 
-        if (next_a->kind == MU_VARIABLE_TYPE) {
-          inductor_set(inductor, next_a, next_b);
-          break;
-        }
+      if (next_a == next_b)
+        continue;
 
-        if (next_b->kind == MU_VARIABLE_TYPE) {
-          inductor_set(inductor, next_a, next_b);
-          break;
-        }
+      next_a = inductor_root(inductor, next_a);
+      next_b = inductor_root(inductor, next_b);
 
-        if (next_a->kind != next_b->kind) {
-          assert(0);
-        }
+      if (next_a == next_b)
+        continue;
 
-        a = type_continue(a, next_a);
-        b = type_continue(b, next_b);
+      if (next_a->kind == MU_VARIABLE_TYPE) {
+        if (inductor_set(inductor, next_a, next_b) == NULL)
+          goto except;
+        break;
       }
+
+      if (next_b->kind == MU_VARIABLE_TYPE) {
+        if (inductor_set(inductor, next_a, next_b) == NULL)
+          goto except;
+        break;
+      }
+
+      if (next_a->kind != next_b->kind)
+        assert(0);
+
+      a = type_continue(a, next_a);
+      b = type_continue(b, next_b);
     }
 
-    // Swap a and b if b is a variable type
-    if (b->kind == MU_VARIABLE_TYPE) {
-      const mu_type_t *t = a;
-      a = b;
-      b = t;
-    }
-
-    // Now that we've unified each type within a and b, unify them
-    inductor_set(inductor, a, b);
+    if (inductor_set(inductor, a, b) == NULL)
+      goto except;
   } while ((a = type_return(a)) != NULL && (b = type_return(b)) != NULL);
 
-  return b;
+  // Ensure that type_return(b) is also NULL
+  const mu_type_t *result = b;
+  b = type_return(b);
+  assert(b == NULL);
+
+  return result;
+
+except:
+  while ((a = type_return(a)) != NULL);
+  while ((b = type_return(b)) != NULL);
+  return NULL;
 }
 
 static const mu_type_t *inductor_get(
@@ -154,20 +166,21 @@ static const mu_type_t *inductor_set(
     inductor_t *inductor,
     const mu_type_t *restrict source,
     const mu_type_t *restrict target) {
-  size_t origin = inductor->length;
+  if (slot(inductor, source) >= inductor->length) {
+    size_t length = slot(inductor, source) + 1;
 
-  if (slot(inductor, source) < origin)
-    return inductor->induce[slot(inductor, source)] = target;
+    size_t next_size = sizeof(const mu_type_t *[length]);
 
-  size_t length = slot(inductor, source) + 1;
+    const mu_type_t **induce = inductor->induce;
+    if ((induce = realloc(induce, next_size)) == NULL)
+      return NULL;
+    for (size_t i = inductor->length; i < length; i++)
+      induce[i] = NULL;
 
-  const mu_type_t **induce = inductor->induce;
-  if ((induce = realloc(induce, sizeof(const mu_type_t *[length]))) == NULL)
-    return NULL;
-  for (size_t i = origin; i < length; induce[i++] = NULL);
+    inductor->length = length;
+    inductor->induce = induce;
+  }
 
-  inductor->length = length;
-  inductor->induce = induce;
   return inductor->induce[slot(inductor, source)] = target;
 }
 
