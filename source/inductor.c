@@ -84,16 +84,19 @@ const mu_type_t *inductor_equate(
   if (a == b)
     return a;
 
-  // If a is a variable type, then just equate it to b and return
-  if (a->kind == MU_VARIABLE_TYPE)
+  // If a is an open type, then just equate it to b and return
+  const mu_variable_type_t *va;
+  if ((va = mu_type_cast(a, va)) != NULL && va->argc == 0)
     return inductor_set(inductor, a, b);
 
-  // If b is a variable type, then just equate it to a and return
-  if (b->kind == MU_VARIABLE_TYPE)
+  // If b is an open type, then just equate it to a and return
+  const mu_variable_type_t *vb;
+  if ((vb = mu_type_cast(b, vb)) != NULL && vb->argc == 0)
     return inductor_set(inductor, b, a);
 
-  // Otherwise, ensure that a and b have the same kind
-  if (a->kind != b->kind)
+  // Otherwise, ensure that either a or b is a variable type, or a and b have
+  // the same kind
+  if (va == NULL && vb == NULL && a->kind != b->kind)
     assert(0);
 
   // Traverse a and b at the same time and equate each reachable couple
@@ -123,22 +126,23 @@ const mu_type_t *inductor_equate(
       if (next_a == next_b)
         continue;
 
-      // If next_a is a variable type, then equate it to next_b and skip them
-      if (next_a->kind == MU_VARIABLE_TYPE) {
+      // If next_a is an open type, then equate it to next_b and skip them
+      if ((va = mu_type_cast(next_a, va)) != NULL && va->argc == 0) {
         if (inductor_set(inductor, next_a, next_b) == NULL)
           goto except;
         continue;
       }
 
-      // If next_b is a variable type, then equate it to next_a and skip them
-      if (next_b->kind == MU_VARIABLE_TYPE) {
+      // If next_b is an open type, then equate it to next_a and skip them
+      if ((vb = mu_type_cast(next_b, vb)) != NULL && vb->argc == 0) {
         if (inductor_set(inductor, next_a, next_b) == NULL)
           goto except;
         continue;
       }
 
-      // Otherwise, ensure that next_a and next_b have the same kind
-      if (next_a->kind != next_b->kind)
+      // Otherwise, ensure that either next_a or next_b is a variable type, or
+      // next_a and next_b have the same kind
+      if (va == NULL && vb == NULL && next_a->kind != next_b->kind)
         assert(0);
 
       a = type_continue(a, next_a);
