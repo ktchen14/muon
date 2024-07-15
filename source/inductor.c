@@ -73,14 +73,14 @@ const mu_type_t *inductor_root(inductor_t *inductor, const mu_type_t *type) {
 
 const mu_type_t *inductor_equate(
     inductor_t *inductor, const mu_type_t *a, const mu_type_t *b) {
-  // If a and b are the same type, or are both equivalent to the same type, then
-  // just return
+  // If a and b are the same type, then just return
   if (a == b)
     return a;
 
   a = inductor_root(inductor, a);
   b = inductor_root(inductor, b);
 
+  // If a and b are both equivalent to the same type, then just return
   if (a == b)
     return a;
 
@@ -92,10 +92,11 @@ const mu_type_t *inductor_equate(
   if (b->kind == MU_VARIABLE_TYPE)
     return inductor_set(inductor, b, a);
 
-  // Otherwise, a and b have to have the same kind
+  // Otherwise, ensure that a and b have the same kind
   if (a->kind != b->kind)
     assert(0);
 
+  // Traverse a and b at the same time and equate each reachable couple
   do {
     for (;;) {
       const mu_type_t *next_a = type_at(a, type_cursor(a)->i++);
@@ -110,27 +111,33 @@ const mu_type_t *inductor_equate(
       if (next_a != NULL && next_b == NULL)
         assert(0);
 
+      // If next_a and next_b are the same type, then skip them
       if (next_a == next_b)
         continue;
 
       next_a = inductor_root(inductor, next_a);
       next_b = inductor_root(inductor, next_b);
 
+      // If next_a and next_b are both equivalent to the same type, then skip
+      // them
       if (next_a == next_b)
         continue;
 
+      // If next_a is a variable type, then equate it to next_b and skip them
       if (next_a->kind == MU_VARIABLE_TYPE) {
         if (inductor_set(inductor, next_a, next_b) == NULL)
           goto except;
-        break;
+        continue;
       }
 
+      // If next_b is a variable type, then equate it to next_a and skip them
       if (next_b->kind == MU_VARIABLE_TYPE) {
         if (inductor_set(inductor, next_a, next_b) == NULL)
           goto except;
-        break;
+        continue;
       }
 
+      // Otherwise, ensure that next_a and next_b have the same kind
       if (next_a->kind != next_b->kind)
         assert(0);
 
@@ -138,6 +145,10 @@ const mu_type_t *inductor_equate(
       b = type_continue(b, next_b);
     }
 
+    // We should only return when next_a and next_b are both NULL. Here, we know
+    // that all types reachable from both a and b have been equated. Next,
+    // equate them. We know we can do this with inductor_set because we only
+    // continue into a root type.
     if (inductor_set(inductor, a, b) == NULL)
       goto except;
   } while ((a = type_return(a)) != NULL && (b = type_return(b)) != NULL);
