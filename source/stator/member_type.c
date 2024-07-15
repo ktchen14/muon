@@ -32,7 +32,7 @@ const mu_member_type_t *member_type_reduce(
   const mu_type_t *matter = type->matter;
 
   const mu_type_t *result;
-  if ((result = inductor_type_root(inductor, type->matter)) == matter)
+  if ((result = inductor_root(inductor, type->matter)) == matter)
     return type;
   return mu_member_type(inductor->engine, type->name, result);
 }

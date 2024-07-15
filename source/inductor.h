@@ -46,8 +46,6 @@ void inductor_raze(inductor_t *inductor) __attribute__((nonnull));
 
 const mu_type_t *inductor_root(inductor_t *inductor, const mu_type_t *type);
 
-#define inductor_type_root inductor_root
-
 /// Return the archtype of the @a node in the @a inductor
 const mu_type_t *inductor_type_of_node(
     inductor_t *inductor, const mu_node_t *node)

@@ -30,7 +30,7 @@ const mu_vector_type_t *vector_type_reduce(
   const mu_type_t *matter = type->matter;
 
   const mu_type_t *result;
-  if ((result = inductor_type_root(inductor, type->matter)) == matter)
+  if ((result = inductor_root(inductor, type->matter)) == matter)
     return type;
   return mu_vector_type(inductor->engine, result);
 }
