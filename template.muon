@@ -8,4 +8,3 @@ define a1 Boolean = true
 define b1 Boolean = false
 
 define r = (a: 1, b: true)
-define r2 = r.a
