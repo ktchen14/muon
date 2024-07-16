@@ -31,10 +31,6 @@ static const mu_type_t *equate(
 static const mu_type_t *get_root(induce_t *induce, const mu_type_t *type)
   __attribute__((nonnull, returns_nonnull));
 
-/// Get the next type equivalent to @a type in the @a induce context
-const mu_type_t *get(const induce_t *induce, const mu_type_t *type)
-  __attribute__((nonnull, pure));
-
 /// Set the next equivalent type of @a source to @a target in the @a induce
 /// context
 static const mu_type_t *set(induce_t *induce,
@@ -47,13 +43,6 @@ __attribute__((nonnull, pure))
 static inline size_t slot(const induce_t *induce, const mu_type_t *type) {
   return induce->node_number + type->as_stator.id;
 }
-
-#define MU_EMIT(lower, u, t, kind) \
-  __attribute__((nonnull)) static const mu_type_t *lower##_##kind##_induce( \
-      const mu_##lower##_##kind##_t *expr, induce_t *induce);
-  MU_EACH_EXPR_KIND(MU_EMIT, expr)
-  MU_EACH_STMT_KIND(MU_EMIT, stmt)
-#undef MU_EMIT
 
 static const mu_type_t *node_induce(const mu_node_t *node, induce_t *induce)
   __attribute__((nonnull));
@@ -86,7 +75,7 @@ const mu_type_t *get_root(induce_t *induce, const mu_type_t *type) {
 
   size_t height = 0;
   for (const mu_type_t *next;; root = next) {
-    if ((next = get(induce, root)) == NULL)
+    if ((next = induce_get(induce, root)) == NULL)
       break;
     height++;
   }
@@ -229,7 +218,7 @@ const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
   return induce_evince(induce, root);
 }
 
-const mu_type_t *get(const induce_t *induce, const mu_type_t *type) {
+const mu_type_t *induce_get(const induce_t *induce, const mu_type_t *type) {
   if (slot(induce, type) >= induce->length)
     return NULL;
   return induce->data[slot(induce, type)];
@@ -257,7 +246,7 @@ static const mu_type_t *set(
   return induce->data[slot(induce, source)] = target;
 }
 
-static const mu_type_t *access_expr_induce(
+__attribute__((nonnull)) static const mu_type_t *access_expr_induce(
     const mu_access_expr_t *expr, induce_t *induce) {
   mu_engine_t *engine = induce->engine;
 
@@ -281,7 +270,7 @@ static const mu_type_t *access_expr_induce(
   return &open_type->as_type;
 }
 
-static const mu_type_t *boolean_expr_induce(
+__attribute__((nonnull)) static const mu_type_t *boolean_expr_induce(
     const mu_boolean_expr_t *expr, induce_t *induce) {
   const mu_boolean_type_t *boolean_type;
   if ((boolean_type = mu_boolean_type(induce->engine)) == NULL)
@@ -289,7 +278,7 @@ static const mu_type_t *boolean_expr_induce(
   return &boolean_type->as_type;
 }
 
-static const mu_type_t *integer_expr_induce(
+__attribute__((nonnull)) static const mu_type_t *integer_expr_induce(
     const mu_integer_expr_t *expr, induce_t *induce) {
   const mu_integer_type_t *integer_type;
   if ((integer_type = mu_integer_type(induce->engine)) == NULL)
@@ -297,7 +286,7 @@ static const mu_type_t *integer_expr_induce(
   return &integer_type->as_type;
 }
 
-static const mu_type_t *member_expr_induce(
+__attribute__((nonnull)) static const mu_type_t *member_expr_induce(
     const mu_member_expr_t *expr, induce_t *induce) {
   mu_engine_t *engine = induce->engine;
 
@@ -309,7 +298,7 @@ static const mu_type_t *member_expr_induce(
   return &member_type->as_type;
 }
 
-static const mu_type_t *name_expr_induce(
+__attribute__((nonnull)) static const mu_type_t *name_expr_induce(
     const mu_name_expr_t *expr, induce_t *induce) {
   const mu_stmt_t *target;
   if ((target = induce->node_to_stmt[expr->as_stator.id]) == NULL) {
@@ -322,7 +311,7 @@ static const mu_type_t *name_expr_induce(
   return induce_evince(induce, &target->as_node);
 }
 
-const mu_type_t *record_expr_induce(
+__attribute__((nonnull)) const mu_type_t *record_expr_induce(
     const mu_record_expr_t *expr, induce_t *induce) {
   mu_engine_t *engine = induce->engine;
 
@@ -337,7 +326,7 @@ const mu_type_t *record_expr_induce(
   return &record_type->as_type;
 }
 
-const mu_type_t *vector_expr_induce(
+__attribute__((nonnull)) const mu_type_t *vector_expr_induce(
     const mu_vector_expr_t *expr, induce_t *induce) {
   mu_engine_t *engine = induce->engine;
 
@@ -357,7 +346,7 @@ const mu_type_t *vector_expr_induce(
   return &vector_type->as_type;
 }
 
-static const mu_type_t *zero_expr_induce(
+__attribute__((nonnull)) static const mu_type_t *zero_expr_induce(
     const mu_zero_expr_t *expr, induce_t *induce) {
   const mu_variable_type_t *open_type;
   if ((open_type = mu_open_type(induce->engine)) == NULL)
@@ -365,12 +354,12 @@ static const mu_type_t *zero_expr_induce(
   return &open_type->as_type;
 }
 
-__attribute__((pure)) static const mu_type_t *define_stmt_induce(
+__attribute__((nonnull, pure)) static const mu_type_t *define_stmt_induce(
     const mu_define_stmt_t *stmt, induce_t *induce) {
   return induce_evince(induce, &stmt->expr->as_node);
 }
 
-static const mu_type_t *type_stmt_induce(
+__attribute__((nonnull)) static const mu_type_t *type_stmt_induce(
     const mu_type_stmt_t *stmt, induce_t *induce) {
   assert(0);
 }

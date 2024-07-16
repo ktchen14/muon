@@ -39,6 +39,10 @@ static inline const mu_type_t *induce_evince(
   return type;
 }
 
+/// Get the next type equivalent to @a type in the @a induce context
+const mu_type_t *induce_get(const induce_t *induce, const mu_type_t *type)
+  __attribute__((nonnull, pure));
+
 /**
  * @brief Return the type of the @a node
  *
