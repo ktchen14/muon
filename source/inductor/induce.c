@@ -8,8 +8,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef inductor_t induce_t;
-
 /**
  * @brief Equate type @a to type @a b in the @a induce engine
  *
@@ -46,13 +44,13 @@ static const mu_type_t *set(induce_t *induce,
 
 /// Return the index where the next equivalent type to @a type should be
 __attribute__((nonnull, pure))
-static inline size_t slot(const inductor_t *inductor, const mu_type_t *type) {
-  return inductor->node_number + type->as_stator.id;
+static inline size_t slot(const induce_t *induce, const mu_type_t *type) {
+  return induce->node_number + type->as_stator.id;
 }
 
 #define MU_EMIT(lower, u, t, kind) \
   __attribute__((nonnull)) static const mu_type_t *lower##_##kind##_induce( \
-      const mu_##lower##_##kind##_t *expr, inductor_t *inductor);
+      const mu_##lower##_##kind##_t *expr, induce_t *induce);
   MU_EACH_EXPR_KIND(MU_EMIT, expr)
   MU_EACH_STMT_KIND(MU_EMIT, stmt)
 #undef MU_EMIT
@@ -60,31 +58,31 @@ static inline size_t slot(const inductor_t *inductor, const mu_type_t *type) {
 static const mu_type_t *node_induce(const mu_node_t *node, induce_t *induce)
   __attribute__((nonnull));
 
-inductor_t *inductor_initialize(
-    inductor_t *inductor,
+induce_t *inductor_initialize(
+    induce_t *induce,
     mu_engine_t *engine,
     const mu_stmt_t *const *node_to_stmt,
     mu_status_t *status) {
   size_t length = engine->node_number + engine->type_number;
 
-  const mu_type_t **induce;
-  if ((induce = malloc(sizeof(const mu_type_t *[length]))) == NULL)
+  const mu_type_t **data;
+  if ((data = malloc(sizeof(const mu_type_t *[length]))) == NULL)
     return NULL;
-  for (size_t i = 0; i < length; induce[i++] = NULL);
+  for (size_t i = 0; i < length; data[i++] = NULL);
 
-  *inductor = (inductor_t) {
+  *induce = (induce_t) {
     .engine = engine,
     .node_number = engine->node_number,
     .length = length,
-    .data = induce,
+    .data = data,
     .node_to_stmt = node_to_stmt,
     .status = status,
   };
-  return inductor;
+  return induce;
 }
 
-void inductor_raze(inductor_t *inductor) {
-  free(inductor->data);
+void inductor_raze(induce_t *induce) {
+  free(induce->data);
 }
 
 const mu_type_t *get_root(induce_t *induce, const mu_type_t *type) {
@@ -217,22 +215,22 @@ static inline const mu_node_t *indirect_at(
     return node_at(node, i);
 }
 
-const mu_type_t *induce_node(inductor_t *inductor, const mu_node_t *root) {
+const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
   const mu_node_t *node = root, *next;
   do {
-    while ((next = indirect_at(node, node_cursor(node)->i++, inductor->node_to_stmt)) != NULL)
+    while ((next = indirect_at(node, node_cursor(node)->i++, induce->node_to_stmt)) != NULL)
       node = node_continue(node, next);
 
     // Induce the type of the node
     const mu_type_t *type;
-    if ((type = node_induce(node, inductor)) == NULL)
+    if ((type = node_induce(node, induce)) == NULL)
       return NULL;
 
-    assert(node->as_stator.id < inductor->node_number);
-    inductor->data[node->as_stator.id] = type;
+    assert(node->as_stator.id < induce->node_number);
+    induce->data[node->as_stator.id] = type;
   } while ((node = node_return(node)) != NULL);
 
-  return induce_evince(inductor, root);
+  return induce_evince(induce, root);
 }
 
 const mu_type_t *get(const induce_t *induce, const mu_type_t *type) {
@@ -242,25 +240,25 @@ const mu_type_t *get(const induce_t *induce, const mu_type_t *type) {
 }
 
 static const mu_type_t *set(
-    inductor_t *inductor,
+    induce_t *induce,
     const mu_type_t *restrict source,
     const mu_type_t *restrict target) {
-  if (slot(inductor, source) >= inductor->length) {
-    size_t length = slot(inductor, source) + 1;
+  if (slot(induce, source) >= induce->length) {
+    size_t length = slot(induce, source) + 1;
 
     size_t next_size = sizeof(const mu_type_t *[length]);
 
-    const mu_type_t **induce = inductor->data;
-    if ((induce = realloc(induce, next_size)) == NULL)
+    const mu_type_t **data = induce->data;
+    if ((data = realloc(data, next_size)) == NULL)
       return NULL;
-    for (size_t i = inductor->length; i < length; i++)
-      induce[i] = NULL;
+    for (size_t i = induce->length; i < length; i++)
+      data[i] = NULL;
 
-    inductor->length = length;
-    inductor->data = induce;
+    induce->length = length;
+    induce->data = data;
   }
 
-  return inductor->data[slot(inductor, source)] = target;
+  return induce->data[slot(induce, source)] = target;
 }
 
 static const mu_type_t *access_expr_induce(
