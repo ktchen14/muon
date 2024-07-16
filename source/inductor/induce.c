@@ -14,20 +14,19 @@
  * On allocation failure, @c errno is set by the allocator. This function can't
  * fail otherwise. The behavior is undefined if:
  *
- *   - @a induce, @a a, or @a b is @c NULL
- *   - @a a or @a b isn't in the same zone as that of the @a induce engine
+ * - @a induce, @a a, or @a b is @c NULL
+ * - @a a or @a b isn't in the same zone as that of the @a induce engine
  *
  * @param induce the induce engine
  * @param a the type to equate to @a b
  * @param b the type to equate to @a a
- * @return the root type equivalent to both @a a and @a b on success; otherwise
- *   @c NULL
+ * @return a type equivalent to both @a a and @a b on success; otherwise @c NULL
  */
 static const mu_type_t *equate(
     induce_t *induce, const mu_type_t *a, const mu_type_t *b)
   __attribute__((nonnull));
 
-/// Return the archtype of the @a type in the @a induce context
+/// Return the root type equivalent to @a type in the @a induce context
 static const mu_type_t *get_root(induce_t *induce, const mu_type_t *type)
   __attribute__((nonnull, returns_nonnull));
 
@@ -44,6 +43,7 @@ static inline size_t slot(const induce_t *induce, const mu_type_t *type) {
   return induce->node_number + type->as_stator.id;
 }
 
+/// Induce the abstract @a node with the @a induce engine
 static const mu_type_t *node_induce(const mu_node_t *node, induce_t *induce)
   __attribute__((nonnull));
 
@@ -103,13 +103,27 @@ static const mu_type_t *equate(
 
   // If a is an open type, then just equate it to b and return
   const mu_variable_type_t *va;
-  if ((va = mu_type_cast(a, va)) != NULL && va->argc == 0)
-    return set(induce, a, b);
+  if ((va = mu_type_cast(a, va)) != NULL) {
+    if (b->kind == MU_MEMBER_TYPE)
+      assert(0);
+
+    if (va->argc == 0)
+      return set(induce, a, b);
+
+    // Fall through
+  }
 
   // If b is an open type, then just equate it to a and return
   const mu_variable_type_t *vb;
-  if ((vb = mu_type_cast(b, vb)) != NULL && vb->argc == 0)
-    return set(induce, b, a);
+  if ((vb = mu_type_cast(b, vb)) != NULL) {
+    if (a->kind == MU_MEMBER_TYPE)
+      assert(0);
+
+    if (vb->argc == 0)
+      return set(induce, b, a);
+
+    // Fall through
+  }
 
   // Otherwise, ensure that either a or b is a variable type, or a and b have
   // the same kind
@@ -288,10 +302,9 @@ __attribute__((nonnull)) static const mu_type_t *integer_expr_induce(
 
 __attribute__((nonnull)) static const mu_type_t *member_expr_induce(
     const mu_member_expr_t *expr, induce_t *induce) {
-  mu_engine_t *engine = induce->engine;
-
   const mu_type_t *matter = induce_evince(induce, &expr->matter->as_node);
 
+  mu_engine_t *engine = induce->engine;
   const mu_member_type_t *member_type;
   if ((member_type = mu_member_type(engine, expr->name, matter)) == NULL)
     return NULL;
@@ -301,14 +314,13 @@ __attribute__((nonnull)) static const mu_type_t *member_expr_induce(
 __attribute__((nonnull)) static const mu_type_t *name_expr_induce(
     const mu_name_expr_t *expr, induce_t *induce) {
   const mu_stmt_t *target;
-  if ((target = induce->node_to_stmt[expr->as_stator.id]) == NULL) {
-    const mu_variable_type_t *open_type;
-    if ((open_type = mu_open_type(induce->engine)) == NULL)
-      return NULL;
-    return &open_type->as_type;
-  }
+  if ((target = induce->node_to_stmt[expr->as_stator.id]) != NULL)
+    return induce_evince(induce, &target->as_node);
 
-  return induce_evince(induce, &target->as_node);
+  const mu_variable_type_t *open_type;
+  if ((open_type = mu_open_type(induce->engine)) == NULL)
+    return NULL;
+  return &open_type->as_type;
 }
 
 __attribute__((nonnull)) const mu_type_t *record_expr_induce(
@@ -321,17 +333,13 @@ __attribute__((nonnull)) const mu_type_t *record_expr_induce(
 
   for (size_t i = 0; i < expr->argc; i++)
     allocation->argv[i] = induce_evince(induce, &expr->argv[i]->as_node);
-
-  const mu_record_type_t *record_type = record_type_activate(allocation);
-  return &record_type->as_type;
+  return &record_type_activate(allocation)->as_type;
 }
 
 __attribute__((nonnull)) const mu_type_t *vector_expr_induce(
     const mu_vector_expr_t *expr, induce_t *induce) {
-  mu_engine_t *engine = induce->engine;
-
   const mu_variable_type_t *matter_type;
-  if ((matter_type = mu_open_type(engine)) == NULL)
+  if ((matter_type = mu_open_type(induce->engine)) == NULL)
     return NULL;
 
   for (size_t i = 0; i < expr->argc; i++) {
@@ -340,6 +348,7 @@ __attribute__((nonnull)) const mu_type_t *vector_expr_induce(
       return NULL;
   }
 
+  mu_engine_t *engine = induce->engine;
   const mu_vector_type_t *vector_type;
   if ((vector_type = mu_vector_type(engine, &matter_type->as_type)) == NULL)
     return NULL;

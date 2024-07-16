@@ -99,6 +99,7 @@ static inline const mu_node_t *node_return(const mu_node_t *node) {
   return anterior;
 }
 
+/// Return the <em>i</em>th node in the abstract @a node
 static inline const mu_node_t *node_at(const mu_node_t *node, size_t i) {
   switch (node->kind) {
 #define MU_EMIT(lower, upper, t) \

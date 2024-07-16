@@ -28,12 +28,21 @@ induce_t *induce_initialize(
   __attribute__((nonnull));
 
 /**
- * @brief Return the type of the @a node in the @a induce context
+ * @brief Return the type of the @a node within the @a induce context
+ *
+ * The behavior is undefined if:
+ *
+ * - @a induce or @a node is @c NULL
+ * - @a node isn't in the same engine as the @a induce context is initialized to
+ *   operate on
+ * - @a node was assigned to the engine after the @a induce context was
+ *   initialized
  */
 __attribute__((nonnull, pure, returns_nonnull))
 static inline const mu_type_t *induce_evince(
     const induce_t *induce, const mu_node_t *node) {
   assert(node->as_stator.id < induce->node_number);
+
   const mu_type_t *type = induce->data[node->as_stator.id];
   assert(type != NULL);
   return type;
