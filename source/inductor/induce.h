@@ -1,5 +1,5 @@
-#ifndef MU_INDUCTOR_INDUCTOR_I
-#define MU_INDUCTOR_INDUCTOR_I
+#ifndef MU_INDUCTOR_INDUCE_I
+#define MU_INDUCTOR_INDUCE_I
 
 #include <muon/stator.h>
 
@@ -41,12 +41,4 @@ void inductor_raze(inductor_t *inductor) __attribute__((nonnull));
 const mu_type_t *induce_node(inductor_t *inductor, const mu_node_t *node)
   __attribute__((nonnull));
 
-const mu_type_t *reduce_type(inductor_t *inductor, const mu_type_t *type)
-  __attribute__((nonnull));
-
-const mu_type_t *reduce_node(inductor_t *inductor, const mu_node_t *node)
-  __attribute__((nonnull));
-
-const mu_type_t *reduce_type_result(inductor_t *inductor, const mu_type_t *type);
-
-#endif /* MU_INDUCTOR_I */
+#endif /* MU_INDUCTOR_INDUCE_I */

@@ -111,16 +111,4 @@ static inline const mu_type_t *type_import(
   __builtin_unreachable();
 }
 
-__attribute__((nonnull))
-static inline const mu_type_t *type_reduce(
-    const mu_type_t *type, inductor_t *inductor) {
-#define MU_EMIT(lower, upper, _) \
-    case MU_##upper##_TYPE: \
-      return &lower##_type_reduce((const mu_##lower##_type_t *) type, inductor)->as_type;
-  switch (type->kind) { MU_EACH_TYPE_KIND(MU_EMIT) }
-#undef MU_EMIT
-
-  __builtin_unreachable();
-}
-
 #endif /* MU_STATOR_TYPE_I */

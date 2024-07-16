@@ -22,10 +22,4 @@ static inline const mu_variable_type_t *variable_type_import(
   return mu_variable_type(import->engine, 0, NULL);
 }
 
-__attribute__((nonnull, pure))
-static inline const mu_variable_type_t *variable_type_reduce(
-    const mu_variable_type_t *type, const inductor_t *inductor_t) {
-  return type;
-}
-
 #endif /* MU_STATOR_VARIABLE_TYPE_I */

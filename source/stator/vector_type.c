@@ -2,7 +2,6 @@
 
 #include "engine.h"
 #include "type.h"
-#include "../inductor.h"
 
 #include <assert.h>
 #include <stddef.h>
@@ -31,16 +30,6 @@ const mu_vector_type_t *vector_type_import(
   if ((matter = import_retrieve(import->type, matter)) == type->matter)
     return type;
   return mu_vector_type(import->engine, matter);
-}
-
-const mu_vector_type_t *vector_type_reduce(
-    const mu_vector_type_t *type, inductor_t *inductor) {
-  const mu_type_t *matter = type->matter;
-
-  const mu_type_t *result;
-  if ((result = reduce_type_result(inductor, type->matter)) == matter)
-    return type;
-  return mu_vector_type(inductor->engine, result);
 }
 
 void mu_vector_type_debug(const mu_vector_type_t *type) {

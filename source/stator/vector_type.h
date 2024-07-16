@@ -17,8 +17,4 @@ const mu_vector_type_t *vector_type_import(
     const mu_vector_type_t *type, const import_t *import)
   __attribute__((nonnull));
 
-const mu_vector_type_t *vector_type_reduce(
-    const mu_vector_type_t *type, inductor_t *inductor)
-  __attribute__((nonnull));
-
 #endif /* MU_STATOR_VECTOR_TYPE_I */

@@ -1,4 +1,4 @@
-#include "inductor.h"
+#include "induce.h"
 
 #include "../stator.h"
 #include "../status.h"
@@ -7,8 +7,6 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-// ================================ General =============================== {{{1
 
 typedef inductor_t induce_t;
 
@@ -332,8 +330,6 @@ static const mu_type_t *set(
   return inductor->induce[slot(inductor, source)] = target;
 }
 
-// ================================ Specific ============================== {{{1
-
 static const mu_type_t *access_expr_induce(
     const mu_access_expr_t *expr, induce_t *induce) {
   mu_engine_t *engine = induce->engine;
@@ -491,5 +487,3 @@ static const mu_type_t *node_induce(const mu_node_t *node, induce_t *induce) {
 
   __builtin_unreachable();
 }
-
-// vim: set foldmethod=marker:

@@ -3,7 +3,6 @@
 #include "engine.h"
 #include "name.h"
 #include "type.h"
-#include "../inductor.h"
 
 #include <assert.h>
 #include <stddef.h>
@@ -33,16 +32,6 @@ const mu_member_type_t *member_type_import(
   if ((matter = import_retrieve(import->type, matter)) == type->matter)
     return type;
   return mu_member_type(import->engine, type->name, matter);
-}
-
-const mu_member_type_t *member_type_reduce(
-    const mu_member_type_t *type, inductor_t *inductor) {
-  const mu_type_t *matter = type->matter;
-
-  const mu_type_t *result;
-  if ((result = reduce_type_result(inductor, type->matter)) == matter)
-    return type;
-  return mu_member_type(inductor->engine, type->name, result);
 }
 
 void mu_member_type_debug(const mu_member_type_t *type) {

@@ -2,7 +2,6 @@
 
 #include "engine.h"
 #include "type.h"
-#include "../inductor.h"
 
 #include <assert.h>
 #include <errno.h>
@@ -56,20 +55,6 @@ const mu_record_type_t *record_type_import(
 
   for (size_t i = 0; i < type->argc; i++)
     allocation->argv[i] = import_retrieve(import->type, type->argv[i]);
-
-  return record_type_activate(allocation);
-}
-
-const mu_record_type_t *record_type_reduce(
-    const mu_record_type_t *type, inductor_t *inductor) {
-  mu_engine_t *engine = inductor->engine;
-
-  mu_record_type_t *allocation;
-  if ((allocation = record_type_allocate(engine, type->argc)) == NULL)
-    return NULL;
-
-  for (size_t i = 0; i < type->argc; i++)
-    allocation->argv[i] = reduce_type_result(inductor, type->argv[i]);
 
   return record_type_activate(allocation);
 }

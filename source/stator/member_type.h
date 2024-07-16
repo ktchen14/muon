@@ -17,8 +17,4 @@ const mu_member_type_t *member_type_import(
     const mu_member_type_t *type, const import_t *import)
   __attribute__((nonnull));
 
-const mu_member_type_t *member_type_reduce(
-    const mu_member_type_t *type, inductor_t *inductor)
-  __attribute__((nonnull));
-
 #endif /* MU_STATOR_MEMBER_TYPE_I */
