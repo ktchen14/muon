@@ -1,4 +1,5 @@
 #include "reduce.h"
+#include "induce.h"
 
 #include "../stator.h"
 
@@ -20,18 +21,6 @@ static inline size_t slot(const reduce_t *reduce, const mu_type_t *type) {
 /// Get the next type equivalent to @a type in the @a induce context
 const mu_type_t *get(const induce_t *induce, const mu_type_t *type)
   __attribute__((nonnull, pure));
-
-/**
- * @brief Return the type of the @a node in the @a induce context
- *
- * The result is an rvalue.
- */
-#define evince(inductor, node) (*({ \
-    induce_t *_inductor = (inductor); \
-    const mu_node_t *_node = (node); \
-    assert(_node->as_stator.id < _inductor->node_number); \
-    &_inductor->induce[_node->as_stator.id]; \
-  }))
 
 const mu_type_t *reduce_type(reduce_t *reduce_ctx, const mu_type_t *type) {
   assert(type_cursor(type)->anterior == NULL && type_cursor(type)->i == 0);
@@ -90,7 +79,5 @@ except_type_reduce:
 }
 
 const mu_type_t *reduce_node(reduce_t *reduce, const mu_node_t *node) {
-  const mu_type_t *type = evince(reduce->inductor, node);
-  assert(type != NULL);
-  return reduce_type(reduce, type);
+  return reduce_type(reduce, induce_evince(reduce->inductor, node));
 }

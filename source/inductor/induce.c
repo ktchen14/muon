@@ -11,18 +11,6 @@
 typedef inductor_t induce_t;
 
 /**
- * @brief Return the type of the @a node in the @a induce context
- *
- * The result is an rvalue.
- */
-#define evince(inductor, node) (*({ \
-    induce_t *_inductor = (inductor); \
-    const mu_node_t *_node = (node); \
-    assert(_node->as_stator.id < _inductor->node_number); \
-    &_inductor->induce[_node->as_stator.id]; \
-  }))
-
-/**
  * @brief Equate type @a to type @a b in the @a induce engine
  *
  * On allocation failure, @c errno is set by the allocator. This function can't
@@ -88,7 +76,7 @@ inductor_t *inductor_initialize(
     .engine = engine,
     .node_number = engine->node_number,
     .length = length,
-    .induce = induce,
+    .data = induce,
     .node_to_stmt = node_to_stmt,
     .status = status,
   };
@@ -96,7 +84,7 @@ inductor_t *inductor_initialize(
 }
 
 void inductor_raze(inductor_t *inductor) {
-  free(inductor->induce);
+  free(inductor->data);
 }
 
 const mu_type_t *get_root(induce_t *induce, const mu_type_t *type) {
@@ -110,8 +98,8 @@ const mu_type_t *get_root(induce_t *induce, const mu_type_t *type) {
   }
 
   for (const mu_type_t *next; height-- > 0; type = next) {
-    next = induce->induce[slot(induce, type)];
-    induce->induce[slot(induce, type)] = root;
+    next = induce->data[slot(induce, type)];
+    induce->data[slot(induce, type)] = root;
   }
 
   return root;
@@ -240,22 +228,17 @@ const mu_type_t *induce_node(inductor_t *inductor, const mu_node_t *root) {
     if ((type = node_induce(node, inductor)) == NULL)
       return NULL;
 
-    // If the node already had a type assigned to it, then we have to equate
-    // this induced type with the existing one
-    const mu_type_t *extant;
-    if ((extant = evince(inductor, node)) == NULL)
-      evince(inductor, node) = type;
-    else if (equate(inductor, extant, type) == NULL)
-      return NULL;
+    assert(node->as_stator.id < inductor->node_number);
+    inductor->data[node->as_stator.id] = type;
   } while ((node = node_return(node)) != NULL);
 
-  return evince(inductor, root);
+  return induce_evince(inductor, root);
 }
 
 const mu_type_t *get(const induce_t *induce, const mu_type_t *type) {
   if (slot(induce, type) >= induce->length)
     return NULL;
-  return induce->induce[slot(induce, type)];
+  return induce->data[slot(induce, type)];
 }
 
 static const mu_type_t *set(
@@ -267,17 +250,17 @@ static const mu_type_t *set(
 
     size_t next_size = sizeof(const mu_type_t *[length]);
 
-    const mu_type_t **induce = inductor->induce;
+    const mu_type_t **induce = inductor->data;
     if ((induce = realloc(induce, next_size)) == NULL)
       return NULL;
     for (size_t i = inductor->length; i < length; i++)
       induce[i] = NULL;
 
     inductor->length = length;
-    inductor->induce = induce;
+    inductor->data = induce;
   }
 
-  return inductor->induce[slot(inductor, source)] = target;
+  return inductor->data[slot(inductor, source)] = target;
 }
 
 static const mu_type_t *access_expr_induce(
@@ -296,8 +279,7 @@ static const mu_type_t *access_expr_induce(
   if ((variable_type = mu_variable_type(engine, 1, (const mu_test_t *[]) { &member_test->as_test })) == NULL)
     return NULL;
 
-  const mu_type_t *matter = evince(induce, &expr->matter->as_node);
-  assert(matter != NULL);
+  const mu_type_t *matter = induce_evince(induce, &expr->matter->as_node);
 
   if (equate(induce, &variable_type->as_type, matter) == NULL)
     return NULL;
@@ -325,8 +307,7 @@ static const mu_type_t *member_expr_induce(
     const mu_member_expr_t *expr, induce_t *induce) {
   mu_engine_t *engine = induce->engine;
 
-  const mu_type_t *matter = evince(induce, &expr->matter->as_node);
-  assert(matter != NULL);
+  const mu_type_t *matter = induce_evince(induce, &expr->matter->as_node);
 
   const mu_member_type_t *member_type;
   if ((member_type = mu_member_type(engine, expr->name, matter)) == NULL)
@@ -344,9 +325,7 @@ static const mu_type_t *name_expr_induce(
     return &open_type->as_type;
   }
 
-  const mu_type_t *type = evince(induce, &target->as_node);
-  assert(type != NULL);
-  return type;
+  return induce_evince(induce, &target->as_node);
 }
 
 const mu_type_t *record_expr_induce(
@@ -357,12 +336,8 @@ const mu_type_t *record_expr_induce(
   if ((allocation = record_type_allocate(engine, expr->argc)) == NULL)
     return NULL;
 
-  for (size_t i = 0; i < expr->argc; i++) {
-    const mu_expr_t *argument = expr->argv[i];
-    const mu_type_t *type = evince(induce, &argument->as_node);
-    assert(type != NULL);
-    allocation->argv[i] = type;
-  }
+  for (size_t i = 0; i < expr->argc; i++)
+    allocation->argv[i] = induce_evince(induce, &expr->argv[i]->as_node);
 
   const mu_record_type_t *record_type = record_type_activate(allocation);
   return &record_type->as_type;
@@ -377,9 +352,7 @@ const mu_type_t *vector_expr_induce(
     return NULL;
 
   for (size_t i = 0; i < expr->argc; i++) {
-    const mu_expr_t *argument = expr->argv[i];
-    const mu_type_t *type = evince(induce, &argument->as_node);
-    assert(type != NULL);
+    const mu_type_t *type = induce_evince(induce, &expr->argv[i]->as_node);
     if (equate(induce, &matter_type->as_type, type) == NULL)
       return NULL;
   }
@@ -400,9 +373,7 @@ static const mu_type_t *zero_expr_induce(
 
 __attribute__((pure)) static const mu_type_t *define_stmt_induce(
     const mu_define_stmt_t *stmt, induce_t *induce) {
-  const mu_type_t *type = evince(induce, &stmt->expr->as_node);
-  assert(type != NULL);
-  return type;
+  return induce_evince(induce, &stmt->expr->as_node);
 }
 
 static const mu_type_t *type_stmt_induce(
