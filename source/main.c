@@ -60,12 +60,13 @@ int main(int argc, char *argv[argc]) {
       assert(0);
   }
 
+  reduce_t reduce = { .inductor = inductor };
   size_t length = 1000;
-  const mu_type_t **reduce;
-  if ((reduce = malloc(sizeof(const mu_type_t *[length]))) == NULL)
+  const mu_type_t **reduce_data;
+  if ((reduce_data = malloc(sizeof(const mu_type_t *[length]))) == NULL)
     abort();
-  for (size_t i = 0; i < length; reduce[i++] = NULL);
-  inductor->reduce = reduce;
+  for (size_t i = 0; i < length; reduce_data[i++] = NULL);
+  reduce.data = reduce_data;
 
   for (size_t i = 0; i < script->argc; i++) {
     const mu_node_t *node = &script->argv[i]->as_node;
@@ -76,7 +77,7 @@ int main(int argc, char *argv[argc]) {
         node = node_continue(node, next);
 
       const mu_type_t *type;
-      if ((type = reduce_node(inductor, node)) == NULL)
+      if ((type = reduce_node(&reduce, node)) == NULL)
         abort();
 
       fprintf(stderr, "Node %zu: ", node->as_stator.id);

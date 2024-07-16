@@ -5,6 +5,7 @@ target_sources(muon PRIVATE
 
   analyzer.c
   inductor/induce.c
+  inductor/reduce.c
   script.c
   status.c
 

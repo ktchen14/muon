@@ -46,7 +46,7 @@ static const mu_type_t *get_root(induce_t *induce, const mu_type_t *type)
   __attribute__((nonnull, returns_nonnull));
 
 /// Get the next type equivalent to @a type in the @a induce context
-static const mu_type_t *get(const induce_t *induce, const mu_type_t *type)
+const mu_type_t *get(const induce_t *induce, const mu_type_t *type)
   __attribute__((nonnull, pure));
 
 /// Set the next equivalent type of @a source to @a target in the @a induce
@@ -239,70 +239,7 @@ const mu_type_t *induce_node(inductor_t *inductor, const mu_node_t *root) {
   return evince(inductor, root);
 }
 
-const mu_type_t *reduce_type(inductor_t *inductor, const mu_type_t *type) {
-  assert(type_cursor(type)->anterior == NULL && type_cursor(type)->i == 0);
-  const mu_type_t **reduce = inductor->reduce;
-
-  // Return if the type, or a type equivalent to it, is already reduced. We
-  // traverse the union-find structure, like get_root, to find each
-  // equivalent type. However, at each step, we link the next equivalent type to
-  // the previous one using the cursor. When we link an intermediate type like
-  // this, the anterior type's cursor will have i == 0. Normally, an anterior
-  // type's cursor can't have i == 0 because we always do type_cursor(type)->i++
-  // before we type_continue from it.
-  for (const mu_type_t *result;;) {
-    if ((result = reduce[slot(inductor, type)]) != NULL) {
-      while ((type = type_return(type)) != NULL)
-        reduce[slot(inductor, type)] = result;
-      return result;
-    }
-
-    if ((result = get(inductor, type)) == NULL)
-      break;
-    type = type_continue(type, result);
-  }
-
-  for (const mu_type_t *next, *result;;) {
-    while ((next = type_at(type, type_cursor(type)->i++)) != NULL) {
-      if (reduce[slot(inductor, next)] != NULL)
-        continue;
-
-      type = type_continue(type, next);
-
-      while ((next = get(inductor, type)) != NULL)
-        type = type_continue(type, next);
-    }
-
-    if ((result = type_reduce(type, inductor)) == NULL)
-      goto except_type_reduce;
-
-    // Unwind each equivalent type and record its reduce result
-    do {
-      reduce[slot(inductor, type)] = result;
-
-      if ((type = type_return(type)) == NULL)
-        return result;
-    } while (type_cursor(type)->i == 0);
-  };
-
-except_type_reduce:
-  while ((type = type_return(type)) != NULL);
-  return NULL;
-}
-
-const mu_type_t *reduce_node(inductor_t *inductor, const mu_node_t *node) {
-  const mu_type_t *type = evince(inductor, node);
-  assert(type != NULL);
-  return reduce_type(inductor, type);
-}
-
-const mu_type_t *reduce_type_result(inductor_t *inductor, const mu_type_t *type) {
-  if (slot(inductor, type) >= inductor->length)
-    return type;
-  return inductor->reduce[slot(inductor, type)];
-}
-
-static const mu_type_t *get(const induce_t *induce, const mu_type_t *type) {
+const mu_type_t *get(const induce_t *induce, const mu_type_t *type) {
   if (slot(induce, type) >= induce->length)
     return NULL;
   return induce->induce[slot(induce, type)];

@@ -19,7 +19,6 @@ struct inductor_t {
   size_t node_number;
   size_t length;
   const mu_type_t **induce; /* const mu_type_t *[length] */
-  const mu_type_t **reduce;
 };
 
 /// Initialize the @a inductor to handle nodes and types in the @a engine
