@@ -10,14 +10,36 @@
 
 // ================================ General =============================== {{{1
 
-/// Get the next type equivalent to @a type in the @a inductor
-static const mu_type_t *inductor_get(
-    const inductor_t *inductor, const mu_type_t *type)
+typedef inductor_t induce_t;
+
+/**
+ * @brief Return the type of the @a node in the @a induce context
+ *
+ * The result is an rvalue.
+ */
+#define evince(inductor, node) (*({ \
+    induce_t *_inductor = (inductor); \
+    const mu_node_t *_node = (node); \
+    assert(_node->as_stator.id < _inductor->node_number); \
+    &_inductor->induce[_node->as_stator.id]; \
+  }))
+
+/// Equate type @a a to type @a b in the @a inductor
+static const mu_type_t *equate(
+    inductor_t *inductor, const mu_type_t *a, const mu_type_t *b)
+  __attribute__((nonnull));
+
+/// Return the archtype of the @a type in the @a induce context
+static const mu_type_t *get_root(induce_t *induce, const mu_type_t *type)
+  __attribute__((nonnull, returns_nonnull));
+
+/// Get the next type equivalent to @a type in the @a induce context
+static const mu_type_t *get(const induce_t *induce, const mu_type_t *type)
   __attribute__((nonnull, pure));
 
-/// Set the next equivalent type of @a source to @a target in the @a inductor
-static const mu_type_t *inductor_set(
-    inductor_t *inductor,
+/// Set the next equivalent type of @a source to @a target in the @a induce
+/// context
+static const mu_type_t *set(induce_t *induce,
     const mu_type_t *restrict source,
     const mu_type_t *restrict target)
   __attribute__((nonnull));
@@ -35,7 +57,7 @@ static inline size_t slot(const inductor_t *inductor, const mu_type_t *type) {
   MU_EACH_STMT_KIND(MU_EMIT, stmt)
 #undef MU_EMIT
 
-static const mu_type_t *node_induce(const mu_node_t *node, inductor_t *inductor)
+static const mu_type_t *node_induce(const mu_node_t *node, induce_t *induce)
   __attribute__((nonnull));
 
 inductor_t *inductor_initialize(
@@ -65,32 +87,32 @@ void inductor_raze(inductor_t *inductor) {
   free(inductor->induce);
 }
 
-const mu_type_t *inductor_root(inductor_t *inductor, const mu_type_t *type) {
+const mu_type_t *get_root(induce_t *induce, const mu_type_t *type) {
   const mu_type_t *root = type;
 
   size_t height = 0;
   for (const mu_type_t *next;; root = next) {
-    if ((next = inductor_get(inductor, root)) == NULL)
+    if ((next = get(induce, root)) == NULL)
       break;
     height++;
   }
 
   for (const mu_type_t *next; height-- > 0; type = next) {
-    next = inductor->induce[slot(inductor, type)];
-    inductor->induce[slot(inductor, type)] = root;
+    next = induce->induce[slot(induce, type)];
+    induce->induce[slot(induce, type)] = root;
   }
 
   return root;
 }
 
-const mu_type_t *inductor_equate(
-    inductor_t *inductor, const mu_type_t *a, const mu_type_t *b) {
+static const mu_type_t *equate(
+    induce_t *induce, const mu_type_t *a, const mu_type_t *b) {
   // If a and b are the same type, then just return
   if (a == b)
     return a;
 
-  a = inductor_root(inductor, a);
-  b = inductor_root(inductor, b);
+  a = get_root(induce, a);
+  b = get_root(induce, b);
 
   // If a and b are both equivalent to the same type, then just return
   if (a == b)
@@ -99,12 +121,12 @@ const mu_type_t *inductor_equate(
   // If a is an open type, then just equate it to b and return
   const mu_variable_type_t *va;
   if ((va = mu_type_cast(a, va)) != NULL && va->argc == 0)
-    return inductor_set(inductor, a, b);
+    return set(induce, a, b);
 
   // If b is an open type, then just equate it to a and return
   const mu_variable_type_t *vb;
   if ((vb = mu_type_cast(b, vb)) != NULL && vb->argc == 0)
-    return inductor_set(inductor, b, a);
+    return set(induce, b, a);
 
   // Otherwise, ensure that either a or b is a variable type, or a and b have
   // the same kind
@@ -130,8 +152,8 @@ const mu_type_t *inductor_equate(
       if (next_a == next_b)
         continue;
 
-      next_a = inductor_root(inductor, next_a);
-      next_b = inductor_root(inductor, next_b);
+      next_a = get_root(induce, next_a);
+      next_b = get_root(induce, next_b);
 
       // If next_a and next_b are both equivalent to the same type, then skip
       // them
@@ -140,14 +162,14 @@ const mu_type_t *inductor_equate(
 
       // If next_a is an open type, then equate it to next_b and skip them
       if ((va = mu_type_cast(next_a, va)) != NULL && va->argc == 0) {
-        if (inductor_set(inductor, next_a, next_b) == NULL)
+        if (set(induce, next_a, next_b) == NULL)
           goto except;
         continue;
       }
 
       // If next_b is an open type, then equate it to next_a and skip them
       if ((vb = mu_type_cast(next_b, vb)) != NULL && vb->argc == 0) {
-        if (inductor_set(inductor, next_a, next_b) == NULL)
+        if (set(induce, next_a, next_b) == NULL)
           goto except;
         continue;
       }
@@ -163,9 +185,9 @@ const mu_type_t *inductor_equate(
 
     // We should only return when next_a and next_b are both NULL. Here, we know
     // that all types reachable from both a and b have been equated. Next,
-    // equate them. We know we can do this with inductor_set because we only
+    // equate them. We know we can do this with set because we only
     // continue into a root type.
-    if (inductor_set(inductor, a, b) == NULL)
+    if (set(induce, a, b) == NULL)
       goto except;
   } while ((a = type_return(a)) != NULL && (b = type_return(b)) != NULL);
 
@@ -196,13 +218,13 @@ const mu_type_t *induce_node(inductor_t *inductor, const mu_node_t *root) {
     // If the node already had a type assigned to it, then we have to equate
     // this induced type with the existing one
     const mu_type_t *extant;
-    if ((extant = inductor_node(inductor, node)) == NULL)
-      inductor_node(inductor, node) = type;
-    else if (inductor_equate(inductor, extant, type) == NULL)
+    if ((extant = evince(inductor, node)) == NULL)
+      evince(inductor, node) = type;
+    else if (equate(inductor, extant, type) == NULL)
       return NULL;
   } while ((node = node_return(node)) != NULL);
 
-  return inductor_node(inductor, root);
+  return evince(inductor, root);
 }
 
 const mu_type_t *reduce_type(inductor_t *inductor, const mu_type_t *type) {
@@ -210,7 +232,7 @@ const mu_type_t *reduce_type(inductor_t *inductor, const mu_type_t *type) {
   const mu_type_t **reduce = inductor->reduce;
 
   // Return if the type, or a type equivalent to it, is already reduced. We
-  // traverse the union-find structure, like inductor_root, to find each
+  // traverse the union-find structure, like get_root, to find each
   // equivalent type. However, at each step, we link the next equivalent type to
   // the previous one using the cursor. When we link an intermediate type like
   // this, the anterior type's cursor will have i == 0. Normally, an anterior
@@ -223,7 +245,7 @@ const mu_type_t *reduce_type(inductor_t *inductor, const mu_type_t *type) {
       return result;
     }
 
-    if ((result = inductor_get(inductor, type)) == NULL)
+    if ((result = get(inductor, type)) == NULL)
       break;
     type = type_continue(type, result);
   }
@@ -235,7 +257,7 @@ const mu_type_t *reduce_type(inductor_t *inductor, const mu_type_t *type) {
 
       type = type_continue(type, next);
 
-      while ((next = inductor_get(inductor, type)) != NULL)
+      while ((next = get(inductor, type)) != NULL)
         type = type_continue(type, next);
     }
 
@@ -257,7 +279,7 @@ except_type_reduce:
 }
 
 const mu_type_t *reduce_node(inductor_t *inductor, const mu_node_t *node) {
-  const mu_type_t *type = inductor_node(inductor, node);
+  const mu_type_t *type = evince(inductor, node);
   assert(type != NULL);
   return reduce_type(inductor, type);
 }
@@ -268,14 +290,13 @@ const mu_type_t *reduce_type_result(inductor_t *inductor, const mu_type_t *type)
   return inductor->reduce[slot(inductor, type)];
 }
 
-static const mu_type_t *inductor_get(
-    const inductor_t *inductor, const mu_type_t *type) {
-  if (slot(inductor, type) >= inductor->length)
+static const mu_type_t *get(const induce_t *induce, const mu_type_t *type) {
+  if (slot(induce, type) >= induce->length)
     return NULL;
-  return inductor->induce[slot(inductor, type)];
+  return induce->induce[slot(induce, type)];
 }
 
-static const mu_type_t *inductor_set(
+static const mu_type_t *set(
     inductor_t *inductor,
     const mu_type_t *restrict source,
     const mu_type_t *restrict target) {
@@ -300,8 +321,8 @@ static const mu_type_t *inductor_set(
 // ================================ Specific ============================== {{{1
 
 static const mu_type_t *access_expr_induce(
-    const mu_access_expr_t *expr, inductor_t *inductor) {
-  mu_engine_t *engine = inductor->engine;
+    const mu_access_expr_t *expr, induce_t *induce) {
+  mu_engine_t *engine = induce->engine;
 
   const mu_variable_type_t *open_type;
   if ((open_type = mu_open_type(engine)) == NULL)
@@ -315,36 +336,36 @@ static const mu_type_t *access_expr_induce(
   if ((variable_type = mu_variable_type(engine, 1, (const mu_test_t *[]) { &member_test->as_test })) == NULL)
     return NULL;
 
-  const mu_type_t *matter = inductor_node(inductor, &expr->matter->as_node);
+  const mu_type_t *matter = evince(induce, &expr->matter->as_node);
   assert(matter != NULL);
 
-  if (inductor_equate(inductor, &variable_type->as_type, matter) == NULL)
+  if (equate(induce, &variable_type->as_type, matter) == NULL)
     return NULL;
 
   return &open_type->as_type;
 }
 
 static const mu_type_t *boolean_expr_induce(
-    const mu_boolean_expr_t *expr, inductor_t *inductor) {
+    const mu_boolean_expr_t *expr, induce_t *induce) {
   const mu_boolean_type_t *boolean_type;
-  if ((boolean_type = mu_boolean_type(inductor->engine)) == NULL)
+  if ((boolean_type = mu_boolean_type(induce->engine)) == NULL)
     return NULL;
   return &boolean_type->as_type;
 }
 
 static const mu_type_t *integer_expr_induce(
-    const mu_integer_expr_t *expr, inductor_t *inductor) {
+    const mu_integer_expr_t *expr, induce_t *induce) {
   const mu_integer_type_t *integer_type;
-  if ((integer_type = mu_integer_type(inductor->engine)) == NULL)
+  if ((integer_type = mu_integer_type(induce->engine)) == NULL)
     return NULL;
   return &integer_type->as_type;
 }
 
 static const mu_type_t *member_expr_induce(
-    const mu_member_expr_t *expr, inductor_t *inductor) {
-  mu_engine_t *engine = inductor->engine;
+    const mu_member_expr_t *expr, induce_t *induce) {
+  mu_engine_t *engine = induce->engine;
 
-  const mu_type_t *matter = inductor_node(inductor, &expr->matter->as_node);
+  const mu_type_t *matter = evince(induce, &expr->matter->as_node);
   assert(matter != NULL);
 
   const mu_member_type_t *member_type;
@@ -354,29 +375,29 @@ static const mu_type_t *member_expr_induce(
 }
 
 static const mu_type_t *name_expr_induce(
-    const mu_name_expr_t *expr, inductor_t *inductor) {
+    const mu_name_expr_t *expr, induce_t *induce) {
   const mu_stmt_t *target;
-  if ((target = inductor->node_to_stmt[expr->as_stator.id]) == NULL) {
+  if ((target = induce->node_to_stmt[expr->as_stator.id]) == NULL) {
     const mu_variable_type_t *open_type;
-    if ((open_type = mu_open_type(inductor->engine)) == NULL)
+    if ((open_type = mu_open_type(induce->engine)) == NULL)
       return NULL;
     return &open_type->as_type;
   }
 
   const mu_type_t *type;
-  if ((type = inductor_node(inductor, &target->as_node)) != NULL)
+  if ((type = evince(induce, &target->as_node)) != NULL)
     return type;
 
   const mu_variable_type_t *open_type;
-  if ((open_type = mu_open_type(inductor->engine)) == NULL)
+  if ((open_type = mu_open_type(induce->engine)) == NULL)
     return NULL;
 
-  return inductor_node(inductor, &target->as_node) = &open_type->as_type;
+  return evince(induce, &target->as_node) = &open_type->as_type;
 }
 
 const mu_type_t *record_expr_induce(
-    const mu_record_expr_t *expr, inductor_t *inductor) {
-  mu_engine_t *engine = inductor->engine;
+    const mu_record_expr_t *expr, induce_t *induce) {
+  mu_engine_t *engine = induce->engine;
 
   mu_record_type_t *allocation;
   if ((allocation = record_type_allocate(engine, expr->argc)) == NULL)
@@ -384,7 +405,7 @@ const mu_type_t *record_expr_induce(
 
   for (size_t i = 0; i < expr->argc; i++) {
     const mu_expr_t *argument = expr->argv[i];
-    const mu_type_t *type = inductor_node(inductor, &argument->as_node);
+    const mu_type_t *type = evince(induce, &argument->as_node);
     assert(type != NULL);
     allocation->argv[i] = type;
   }
@@ -394,8 +415,8 @@ const mu_type_t *record_expr_induce(
 }
 
 const mu_type_t *vector_expr_induce(
-    const mu_vector_expr_t *expr, inductor_t *inductor) {
-  mu_engine_t *engine = inductor->engine;
+    const mu_vector_expr_t *expr, induce_t *induce) {
+  mu_engine_t *engine = induce->engine;
 
   const mu_variable_type_t *matter_type;
   if ((matter_type = mu_open_type(engine)) == NULL)
@@ -403,9 +424,9 @@ const mu_type_t *vector_expr_induce(
 
   for (size_t i = 0; i < expr->argc; i++) {
     const mu_expr_t *argument = expr->argv[i];
-    const mu_type_t *type = inductor_node(inductor, &argument->as_node);
+    const mu_type_t *type = evince(induce, &argument->as_node);
     assert(type != NULL);
-    if (inductor_equate(inductor, &matter_type->as_type, type) == NULL)
+    if (equate(induce, &matter_type->as_type, type) == NULL)
       return NULL;
   }
 
@@ -416,31 +437,30 @@ const mu_type_t *vector_expr_induce(
 }
 
 static const mu_type_t *zero_expr_induce(
-    const mu_zero_expr_t *expr, inductor_t *inductor) {
+    const mu_zero_expr_t *expr, induce_t *induce) {
   const mu_variable_type_t *open_type;
-  if ((open_type = mu_open_type(inductor->engine)) == NULL)
+  if ((open_type = mu_open_type(induce->engine)) == NULL)
     return NULL;
   return &open_type->as_type;
 }
 
 __attribute__((pure)) static const mu_type_t *define_stmt_induce(
-    const mu_define_stmt_t *stmt, inductor_t *inductor) {
-  const mu_type_t *type = inductor_node(inductor, &stmt->expr->as_node);
+    const mu_define_stmt_t *stmt, induce_t *induce) {
+  const mu_type_t *type = evince(induce, &stmt->expr->as_node);
   assert(type != NULL);
   return type;
 }
 
 static const mu_type_t *type_stmt_induce(
-    const mu_type_stmt_t *stmt, inductor_t *inductor) {
+    const mu_type_stmt_t *stmt, induce_t *induce) {
   assert(0);
 }
 
-static const mu_type_t *node_induce(
-    const mu_node_t *node, inductor_t *inductor) {
+static const mu_type_t *node_induce(const mu_node_t *node, induce_t *induce) {
   switch (node->kind) {
 #define MU_EMIT(lower, upper, t) \
     case MU_##upper##_EXPR_NODE: \
-      return lower##_expr_induce((const mu_##lower##_expr_t *) node, inductor);
+      return lower##_expr_induce((const mu_##lower##_expr_t *) node, induce);
     MU_EACH_EXPR_KIND(MU_EMIT)
 #undef MU_EMIT
 
@@ -450,7 +470,7 @@ static const mu_type_t *node_induce(
 
 #define MU_EMIT(lower, upper, t) \
     case MU_##upper##_STMT_NODE: \
-      return lower##_stmt_induce((const mu_##lower##_stmt_t *) node, inductor);
+      return lower##_stmt_induce((const mu_##lower##_stmt_t *) node, induce);
     MU_EACH_STMT_KIND(MU_EMIT)
 #undef MU_EMIT
   }

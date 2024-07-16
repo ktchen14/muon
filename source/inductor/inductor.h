@@ -34,27 +34,6 @@ inductor_t *inductor_initialize(
 void inductor_raze(inductor_t *inductor) __attribute__((nonnull));
 
 /**
- * @brief Return the type of the @a node in the @a inductor
- *
- * The result is an rvalue.
- */
-#define inductor_node(inductor, node) (*({ \
-    inductor_t *_inductor = (inductor); \
-    const mu_node_t *_node = (node); \
-    assert(_node->as_stator.id < _inductor->node_number); \
-    &_inductor->induce[_node->as_stator.id]; \
-  }))
-
-/// Return the archtype of the @a type in the @a inductor
-const mu_type_t *inductor_root(inductor_t *inductor, const mu_type_t *type)
-  __attribute__((nonnull, returns_nonnull));
-
-/// Equate type @a a to type @a b in the @a inductor
-const mu_type_t *inductor_equate(
-    inductor_t *inductor, const mu_type_t *a, const mu_type_t *b)
-  __attribute__((nonnull));
-
-/**
  * @brief Return the type of the @a node
  *
  * This will traverse each node reachable from the @a node and will add all
