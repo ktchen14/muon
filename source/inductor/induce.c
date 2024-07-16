@@ -43,7 +43,7 @@ static inline size_t slot(const induce_t *induce, const mu_type_t *type) {
   return induce->node_number + type->as_stator.id;
 }
 
-/// Induce the abstract @a node with the @a induce engine
+/// Induce the type of the abstract @a node with the @a induce engine
 static const mu_type_t *node_induce(const mu_node_t *node, induce_t *induce)
   __attribute__((nonnull));
 
@@ -260,6 +260,8 @@ static const mu_type_t *set(
   return induce->data[slot(induce, source)] = target;
 }
 
+// ---------------------------------- Expr -------------------------------- {{{1
+
 __attribute__((nonnull)) static const mu_type_t *access_expr_induce(
     const mu_access_expr_t *expr, induce_t *induce) {
   mu_engine_t *engine = induce->engine;
@@ -286,29 +288,28 @@ __attribute__((nonnull)) static const mu_type_t *access_expr_induce(
 
 __attribute__((nonnull)) static const mu_type_t *boolean_expr_induce(
     const mu_boolean_expr_t *expr, induce_t *induce) {
-  const mu_boolean_type_t *boolean_type;
-  if ((boolean_type = mu_boolean_type(induce->engine)) == NULL)
+  const mu_boolean_type_t *result;
+  if ((result = mu_boolean_type(induce->engine)) == NULL)
     return NULL;
-  return &boolean_type->as_type;
+  return &result->as_type;
 }
 
 __attribute__((nonnull)) static const mu_type_t *integer_expr_induce(
     const mu_integer_expr_t *expr, induce_t *induce) {
-  const mu_integer_type_t *integer_type;
-  if ((integer_type = mu_integer_type(induce->engine)) == NULL)
+  const mu_integer_type_t *result;
+  if ((result = mu_integer_type(induce->engine)) == NULL)
     return NULL;
-  return &integer_type->as_type;
+  return &result->as_type;
 }
 
 __attribute__((nonnull)) static const mu_type_t *member_expr_induce(
     const mu_member_expr_t *expr, induce_t *induce) {
   const mu_type_t *matter = induce_evince(induce, &expr->matter->as_node);
 
-  mu_engine_t *engine = induce->engine;
-  const mu_member_type_t *member_type;
-  if ((member_type = mu_member_type(engine, expr->name, matter)) == NULL)
+  const mu_member_type_t *result;
+  if ((result = mu_member_type(induce->engine, expr->name, matter)) == NULL)
     return NULL;
-  return &member_type->as_type;
+  return &result->as_type;
 }
 
 __attribute__((nonnull)) static const mu_type_t *name_expr_induce(
@@ -317,13 +318,13 @@ __attribute__((nonnull)) static const mu_type_t *name_expr_induce(
   if ((target = induce->node_to_stmt[expr->as_stator.id]) != NULL)
     return induce_evince(induce, &target->as_node);
 
-  const mu_variable_type_t *open_type;
-  if ((open_type = mu_open_type(induce->engine)) == NULL)
+  const mu_variable_type_t *result;
+  if ((result = mu_open_type(induce->engine)) == NULL)
     return NULL;
-  return &open_type->as_type;
+  return &result->as_type;
 }
 
-__attribute__((nonnull)) const mu_type_t *record_expr_induce(
+__attribute__((nonnull)) static const mu_type_t *record_expr_induce(
     const mu_record_expr_t *expr, induce_t *induce) {
   mu_engine_t *engine = induce->engine;
 
@@ -336,7 +337,7 @@ __attribute__((nonnull)) const mu_type_t *record_expr_induce(
   return &record_type_activate(allocation)->as_type;
 }
 
-__attribute__((nonnull)) const mu_type_t *vector_expr_induce(
+__attribute__((nonnull)) static const mu_type_t *vector_expr_induce(
     const mu_vector_expr_t *expr, induce_t *induce) {
   const mu_variable_type_t *matter_type;
   if ((matter_type = mu_open_type(induce->engine)) == NULL)
@@ -348,20 +349,81 @@ __attribute__((nonnull)) const mu_type_t *vector_expr_induce(
       return NULL;
   }
 
-  mu_engine_t *engine = induce->engine;
-  const mu_vector_type_t *vector_type;
-  if ((vector_type = mu_vector_type(engine, &matter_type->as_type)) == NULL)
+  const mu_vector_type_t *result;
+  if ((result = mu_vector_type(induce->engine, &matter_type->as_type)) == NULL)
     return NULL;
-  return &vector_type->as_type;
+  return &result->as_type;
 }
 
 __attribute__((nonnull)) static const mu_type_t *zero_expr_induce(
     const mu_zero_expr_t *expr, induce_t *induce) {
-  const mu_variable_type_t *open_type;
-  if ((open_type = mu_open_type(induce->engine)) == NULL)
+  const mu_variable_type_t *result;
+  if ((result = mu_open_type(induce->engine)) == NULL)
     return NULL;
-  return &open_type->as_type;
+  return &result->as_type;
 }
+
+// ---------------------------------- Sign -------------------------------- {{{1
+
+__attribute__((nonnull)) static const mu_type_t *boolean_sign_induce(
+    const mu_boolean_sign_t *sign, induce_t *induce) {
+  const mu_boolean_type_t *result;
+  if ((result = mu_boolean_type(induce->engine)) == NULL)
+    return NULL;
+  return &result->as_type;
+}
+
+__attribute__((nonnull)) static const mu_type_t *integer_sign_induce(
+    const mu_integer_sign_t *sign, induce_t *induce) {
+  const mu_integer_type_t *result;
+  if ((result = mu_integer_type(induce->engine)) == NULL)
+    return NULL;
+  return &result->as_type;
+}
+
+__attribute__((nonnull)) static const mu_type_t *member_sign_induce(
+    const mu_member_sign_t *sign, induce_t *induce) {
+  const mu_type_t *matter = induce_evince(induce, &sign->matter->as_node);
+
+  const mu_member_type_t *result;
+  if ((result = mu_member_type(induce->engine, sign->name, matter)) == NULL)
+    return NULL;
+  return &result->as_type;
+}
+
+__attribute__((nonnull)) static const mu_type_t *name_sign_induce(
+    const mu_name_sign_t *sign, induce_t *induce) {
+  const mu_stmt_t *target;
+  if ((target = induce->node_to_stmt[sign->as_stator.id]) != NULL)
+    return induce_evince(induce, &target->as_node);
+
+  const mu_variable_type_t *result;
+  if ((result = mu_open_type(induce->engine)) == NULL)
+    return NULL;
+  return &result->as_type;
+}
+
+__attribute__((nonnull)) static const mu_type_t *record_sign_induce(
+    const mu_record_sign_t *sign, induce_t *induce) {
+  assert(0);
+}
+
+__attribute__((nonnull)) static const mu_type_t *variable_sign_induce(
+    const mu_variable_sign_t *sign, induce_t *induce) {
+  assert(0);
+}
+
+__attribute__((nonnull)) static const mu_type_t *vector_sign_induce(
+    const mu_vector_sign_t *sign, induce_t *induce) {
+  const mu_type_t *matter = induce_evince(induce, &sign->matter->as_node);
+
+  const mu_vector_type_t *result;
+  if ((result = mu_vector_type(induce->engine, matter)) == NULL)
+    return NULL;
+  return &result->as_type;
+}
+
+// ---------------------------------- Stmt -------------------------------- {{{1
 
 __attribute__((nonnull, pure)) static const mu_type_t *define_stmt_induce(
     const mu_define_stmt_t *stmt, induce_t *induce) {
@@ -373,24 +435,17 @@ __attribute__((nonnull)) static const mu_type_t *type_stmt_induce(
   assert(0);
 }
 
+// -------------------------------- Abstract ------------------------------ {{{1
+
 static const mu_type_t *node_induce(const mu_node_t *node, induce_t *induce) {
   switch (node->kind) {
 #define MU_EMIT(lower, upper, t) \
-    case MU_##upper##_EXPR_NODE: \
-      return lower##_expr_induce((const mu_##lower##_expr_t *) node, induce);
-    MU_EACH_EXPR_KIND(MU_EMIT)
-#undef MU_EMIT
-
-#define MU_EMIT(lower, upper, t) case MU_##upper##_SIGN: return NULL;
-    MU_EACH_SIGN_KIND(MU_EMIT)
-#undef MU_EMIT
-
-#define MU_EMIT(lower, upper, t) \
-    case MU_##upper##_STMT_NODE: \
-      return lower##_stmt_induce((const mu_##lower##_stmt_t *) node, induce);
-    MU_EACH_STMT_KIND(MU_EMIT)
+    case MU_##upper##_NODE: \
+      return lower##_induce((const mu_##lower##_t *) node, induce);
+    MU_EACH_NODE_KIND(MU_EMIT)
 #undef MU_EMIT
   }
-
   __builtin_unreachable();
 }
+
+// vim: set foldmethod=marker:
