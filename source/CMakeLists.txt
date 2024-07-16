@@ -3,7 +3,7 @@ add_subdirectory(script)
 target_sources(muon PRIVATE
   common.c
 
-  analyzer.c
+  inductor/detect.c
   inductor/induce.c
   inductor/reduce.c
   script.c

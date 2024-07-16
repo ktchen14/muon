@@ -1,5 +1,5 @@
-#include "script.h"
-#include "stator.h"
+#include "../script.h"
+#include "../stator.h"
 
 #include <assert.h>
 #include <stddef.h>

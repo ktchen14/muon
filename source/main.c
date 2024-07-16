@@ -1,5 +1,6 @@
 #include <muon.h>
-#include "analyzer.h"
+
+#include "inductor.h"
 #include "script.h"
 #include "stator.h"
 #include "status.h"
