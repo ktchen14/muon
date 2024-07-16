@@ -1,7 +1,7 @@
 #include "inductor.h"
 
-#include "stator.h"
-#include "status.h"
+#include "../stator.h"
+#include "../status.h"
 
 #include <assert.h>
 #include <stddef.h>
