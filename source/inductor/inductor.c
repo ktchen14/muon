@@ -24,9 +24,23 @@ typedef inductor_t induce_t;
     &_inductor->induce[_node->as_stator.id]; \
   }))
 
-/// Equate type @a a to type @a b in the @a inductor
+/**
+ * @brief Equate type @a to type @a b in the @a induce engine
+ *
+ * On allocation failure, @c errno is set by the allocator. This function can't
+ * fail otherwise. The behavior is undefined if:
+ *
+ *   - @a induce, @a a, or @a b is @c NULL
+ *   - @a a or @a b isn't in the same zone as that of the @a induce engine
+ *
+ * @param induce the induce engine
+ * @param a the type to equate to @a b
+ * @param b the type to equate to @a a
+ * @return the root type equivalent to both @a a and @a b on success; otherwise
+ *   @c NULL
+ */
 static const mu_type_t *equate(
-    inductor_t *inductor, const mu_type_t *a, const mu_type_t *b)
+    induce_t *induce, const mu_type_t *a, const mu_type_t *b)
   __attribute__((nonnull));
 
 /// Return the archtype of the @a type in the @a induce context

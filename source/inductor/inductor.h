@@ -12,15 +12,14 @@ typedef struct inductor_t inductor_t;
 
 struct inductor_t {
   mu_engine_t *engine;
+  mu_status_t *status;
+
+  const mu_stmt_t *const *node_to_stmt;
 
   size_t node_number;
   size_t length;
   const mu_type_t **induce; /* const mu_type_t *[length] */
   const mu_type_t **reduce;
-
-  const mu_stmt_t *const *node_to_stmt;
-
-  mu_status_t *status;
 };
 
 /// Initialize the @a inductor to handle nodes and types in the @a engine
