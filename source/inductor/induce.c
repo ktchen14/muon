@@ -344,15 +344,9 @@ static const mu_type_t *name_expr_induce(
     return &open_type->as_type;
   }
 
-  const mu_type_t *type;
-  if ((type = evince(induce, &target->as_node)) != NULL)
-    return type;
-
-  const mu_variable_type_t *open_type;
-  if ((open_type = mu_open_type(induce->engine)) == NULL)
-    return NULL;
-
-  return evince(induce, &target->as_node) = &open_type->as_type;
+  const mu_type_t *type = evince(induce, &target->as_node);
+  assert(type != NULL);
+  return type;
 }
 
 const mu_type_t *record_expr_induce(
