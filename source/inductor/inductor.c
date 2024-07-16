@@ -8,6 +8,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// ================================ General =============================== {{{1
+
 /// Get the next type equivalent to @a type in the @a inductor
 static const mu_type_t *inductor_get(
     const inductor_t *inductor, const mu_type_t *type)
@@ -25,6 +27,16 @@ __attribute__((nonnull, pure))
 static inline size_t slot(const inductor_t *inductor, const mu_type_t *type) {
   return inductor->node_number + type->as_stator.id;
 }
+
+#define MU_EMIT(lower, u, t, kind) \
+  __attribute__((nonnull)) static const mu_type_t *lower##_##kind##_induce( \
+      const mu_##lower##_##kind##_t *expr, inductor_t *inductor);
+  MU_EACH_EXPR_KIND(MU_EMIT, expr)
+  MU_EACH_STMT_KIND(MU_EMIT, stmt)
+#undef MU_EMIT
+
+static const mu_type_t *node_induce(const mu_node_t *node, inductor_t *inductor)
+  __attribute__((nonnull));
 
 inductor_t *inductor_initialize(
     inductor_t *inductor,
@@ -284,3 +296,166 @@ static const mu_type_t *inductor_set(
 
   return inductor->induce[slot(inductor, source)] = target;
 }
+
+// ================================ Specific ============================== {{{1
+
+static const mu_type_t *access_expr_induce(
+    const mu_access_expr_t *expr, inductor_t *inductor) {
+  mu_engine_t *engine = inductor->engine;
+
+  const mu_variable_type_t *open_type;
+  if ((open_type = mu_open_type(engine)) == NULL)
+    return NULL;
+
+  const mu_member_test_t *member_test;
+  if ((member_test = mu_member_test(engine, expr->name, &open_type->as_type)) == NULL)
+    return NULL;
+
+  const mu_variable_type_t *variable_type;
+  if ((variable_type = mu_variable_type(engine, 1, (const mu_test_t *[]) { &member_test->as_test })) == NULL)
+    return NULL;
+
+  const mu_type_t *matter = inductor_node(inductor, &expr->matter->as_node);
+  assert(matter != NULL);
+
+  if (inductor_equate(inductor, &variable_type->as_type, matter) == NULL)
+    return NULL;
+
+  return &open_type->as_type;
+}
+
+static const mu_type_t *boolean_expr_induce(
+    const mu_boolean_expr_t *expr, inductor_t *inductor) {
+  const mu_boolean_type_t *boolean_type;
+  if ((boolean_type = mu_boolean_type(inductor->engine)) == NULL)
+    return NULL;
+  return &boolean_type->as_type;
+}
+
+static const mu_type_t *integer_expr_induce(
+    const mu_integer_expr_t *expr, inductor_t *inductor) {
+  const mu_integer_type_t *integer_type;
+  if ((integer_type = mu_integer_type(inductor->engine)) == NULL)
+    return NULL;
+  return &integer_type->as_type;
+}
+
+static const mu_type_t *member_expr_induce(
+    const mu_member_expr_t *expr, inductor_t *inductor) {
+  mu_engine_t *engine = inductor->engine;
+
+  const mu_type_t *matter = inductor_node(inductor, &expr->matter->as_node);
+  assert(matter != NULL);
+
+  const mu_member_type_t *member_type;
+  if ((member_type = mu_member_type(engine, expr->name, matter)) == NULL)
+    return NULL;
+  return &member_type->as_type;
+}
+
+static const mu_type_t *name_expr_induce(
+    const mu_name_expr_t *expr, inductor_t *inductor) {
+  const mu_stmt_t *target;
+  if ((target = inductor->node_to_stmt[expr->as_stator.id]) == NULL) {
+    const mu_variable_type_t *open_type;
+    if ((open_type = mu_open_type(inductor->engine)) == NULL)
+      return NULL;
+    return &open_type->as_type;
+  }
+
+  const mu_type_t *type;
+  if ((type = inductor_node(inductor, &target->as_node)) != NULL)
+    return type;
+
+  const mu_variable_type_t *open_type;
+  if ((open_type = mu_open_type(inductor->engine)) == NULL)
+    return NULL;
+
+  return inductor_node(inductor, &target->as_node) = &open_type->as_type;
+}
+
+const mu_type_t *record_expr_induce(
+    const mu_record_expr_t *expr, inductor_t *inductor) {
+  mu_engine_t *engine = inductor->engine;
+
+  mu_record_type_t *allocation;
+  if ((allocation = record_type_allocate(engine, expr->argc)) == NULL)
+    return NULL;
+
+  for (size_t i = 0; i < expr->argc; i++) {
+    const mu_expr_t *argument = expr->argv[i];
+    const mu_type_t *type = inductor_node(inductor, &argument->as_node);
+    assert(type != NULL);
+    allocation->argv[i] = type;
+  }
+
+  const mu_record_type_t *record_type = record_type_activate(allocation);
+  return &record_type->as_type;
+}
+
+const mu_type_t *vector_expr_induce(
+    const mu_vector_expr_t *expr, inductor_t *inductor) {
+  mu_engine_t *engine = inductor->engine;
+
+  const mu_variable_type_t *matter_type;
+  if ((matter_type = mu_open_type(engine)) == NULL)
+    return NULL;
+
+  for (size_t i = 0; i < expr->argc; i++) {
+    const mu_expr_t *argument = expr->argv[i];
+    const mu_type_t *type = inductor_node(inductor, &argument->as_node);
+    assert(type != NULL);
+    if (inductor_equate(inductor, &matter_type->as_type, type) == NULL)
+      return NULL;
+  }
+
+  const mu_vector_type_t *vector_type;
+  if ((vector_type = mu_vector_type(engine, &matter_type->as_type)) == NULL)
+    return NULL;
+  return &vector_type->as_type;
+}
+
+static const mu_type_t *zero_expr_induce(
+    const mu_zero_expr_t *expr, inductor_t *inductor) {
+  const mu_variable_type_t *open_type;
+  if ((open_type = mu_open_type(inductor->engine)) == NULL)
+    return NULL;
+  return &open_type->as_type;
+}
+
+__attribute__((pure)) static const mu_type_t *define_stmt_induce(
+    const mu_define_stmt_t *stmt, inductor_t *inductor) {
+  const mu_type_t *type = inductor_node(inductor, &stmt->expr->as_node);
+  assert(type != NULL);
+  return type;
+}
+
+static const mu_type_t *type_stmt_induce(
+    const mu_type_stmt_t *stmt, inductor_t *inductor) {
+  assert(0);
+}
+
+static const mu_type_t *node_induce(
+    const mu_node_t *node, inductor_t *inductor) {
+  switch (node->kind) {
+#define MU_EMIT(lower, upper, t) \
+    case MU_##upper##_EXPR_NODE: \
+      return lower##_expr_induce((const mu_##lower##_expr_t *) node, inductor);
+    MU_EACH_EXPR_KIND(MU_EMIT)
+#undef MU_EMIT
+
+#define MU_EMIT(lower, upper, t) case MU_##upper##_SIGN: return NULL;
+    MU_EACH_SIGN_KIND(MU_EMIT)
+#undef MU_EMIT
+
+#define MU_EMIT(lower, upper, t) \
+    case MU_##upper##_STMT_NODE: \
+      return lower##_stmt_induce((const mu_##lower##_stmt_t *) node, inductor);
+    MU_EACH_STMT_KIND(MU_EMIT)
+#undef MU_EMIT
+  }
+
+  __builtin_unreachable();
+}
+
+// vim: set foldmethod=marker:

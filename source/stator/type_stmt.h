@@ -15,9 +15,4 @@ static inline const mu_node_t *type_stmt_at(
   return i == 0 ? &stmt->sign->as_node : NULL;
 }
 
-static inline const mu_type_t *type_stmt_induce(
-    const mu_type_stmt_t *stmt, inductor_t *inductor) {
-  assert(0);
-}
-
 #endif /* MU_STATOR_TYPE_STMT_I */

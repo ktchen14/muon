@@ -5,7 +5,6 @@
 
 #include "abstract_node.h"
 #include "abstract_type.h"
-#include "../inductor.h"
 
 #include <assert.h>
 #include <stddef.h>
@@ -15,9 +14,5 @@ static inline const mu_node_t *record_expr_at(
     const mu_record_expr_t *expr, size_t i) {
   return i < expr->argc ? &expr->argv[i]->as_node : NULL;
 }
-
-const mu_type_t *record_expr_induce(
-    const mu_record_expr_t *expr, inductor_t *inductor)
-  __attribute__((nonnull));
 
 #endif /* MU_STATOR_RECORD_EXPR_I */

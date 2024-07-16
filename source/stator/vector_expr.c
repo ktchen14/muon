@@ -2,8 +2,6 @@
 
 #include "engine.h"
 #include "node.h"
-#include "type.h"
-#include "../inductor.h"
 
 #include <assert.h>
 #include <errno.h>
@@ -30,28 +28,6 @@ const mu_vector_expr_t *mu_vector_expr(
   memcpy(&result->argv, argv, sizeof(const mu_expr_t *[argc]));
 
   return assign_node(engine, result);
-}
-
-const mu_type_t *vector_expr_induce(
-    const mu_vector_expr_t *expr, inductor_t *inductor) {
-  mu_engine_t *engine = inductor->engine;
-
-  const mu_variable_type_t *matter_type;
-  if ((matter_type = mu_open_type(engine)) == NULL)
-    return NULL;
-
-  for (size_t i = 0; i < expr->argc; i++) {
-    const mu_expr_t *argument = expr->argv[i];
-    const mu_type_t *type = inductor_node(inductor, &argument->as_node);
-    assert(type != NULL);
-    if (inductor_equate(inductor, &matter_type->as_type, type) == NULL)
-      return NULL;
-  }
-
-  const mu_vector_type_t *vector_type;
-  if ((vector_type = mu_vector_type(engine, &matter_type->as_type)) == NULL)
-    return NULL;
-  return &vector_type->as_type;
 }
 
 void mu_vector_expr_debug(const mu_vector_expr_t *expr) {
