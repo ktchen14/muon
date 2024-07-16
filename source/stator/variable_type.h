@@ -4,6 +4,7 @@
 #include <muon/stator/variable_type.h>  // IWYU pragma: export
 
 #include "abstract_type.h"
+#include "test.h"
 
 #include <assert.h>
 #include <stddef.h>
@@ -11,6 +12,14 @@
 __attribute__((const, nonnull))
 static inline const mu_type_t *variable_type_at(
     const mu_variable_type_t *type, size_t i) {
+  if (i >= type->argc)
+    return NULL;
+
+  const mu_test_t *test = type->argv[i];
+
+  const mu_member_test_t *member_test;
+  if ((member_test = mu_test_cast(test, member_test)) != NULL)
+    return member_test->type;
   return NULL;
 }
 
