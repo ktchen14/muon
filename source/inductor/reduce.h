@@ -9,7 +9,7 @@
 #include <stddef.h>
 
 typedef struct {
-  inductor_t *inductor; 
+  induce_t *induce; 
   const mu_type_t **data;
 } reduce_t;
 

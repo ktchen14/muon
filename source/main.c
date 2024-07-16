@@ -13,7 +13,6 @@
 
 unsigned char buffer[4096];
 
-#include "inductor.h"
 #include "stator.h"
 
 int main(int argc, char *argv[argc]) {
@@ -52,16 +51,16 @@ int main(int argc, char *argv[argc]) {
       fprintf(stderr, "Stator #%zu = Stator #%zu\n", i, resolution[i]->as_stator.id);
   }
 
-  inductor_t *inductor = inductor_initialize(
-      &(inductor_t) {0}, &engine, resolution, &status);
-  assert(inductor != NULL);
+  induce_t *induce = induce_initialize(
+      &(induce_t) {0}, &engine, resolution, &status);
+  assert(induce != NULL);
 
   for (size_t i = 0; i < script->argc; i++) {
-    if (induce_node(inductor, &script->argv[i]->as_node) == NULL)
+    if (induce_node(induce, &script->argv[i]->as_node) == NULL)
       assert(0);
   }
 
-  reduce_t reduce = { .inductor = inductor };
+  reduce_t reduce = { .induce = induce };
   size_t length = 1000;
   const mu_type_t **reduce_data;
   if ((reduce_data = malloc(sizeof(const mu_type_t *[length]))) == NULL)

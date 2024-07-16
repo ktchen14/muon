@@ -58,7 +58,7 @@ static inline size_t slot(const induce_t *induce, const mu_type_t *type) {
 static const mu_type_t *node_induce(const mu_node_t *node, induce_t *induce)
   __attribute__((nonnull));
 
-induce_t *inductor_initialize(
+induce_t *induce_initialize(
     induce_t *induce,
     mu_engine_t *engine,
     const mu_stmt_t *const *node_to_stmt,
@@ -79,10 +79,6 @@ induce_t *inductor_initialize(
     .status = status,
   };
   return induce;
-}
-
-void inductor_raze(induce_t *induce) {
-  free(induce->data);
 }
 
 const mu_type_t *get_root(induce_t *induce, const mu_type_t *type) {

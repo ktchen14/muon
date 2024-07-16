@@ -20,16 +20,16 @@ typedef struct {
 } induce_t;
 
 /// Initialize the @a inductor to handle nodes and types in the @a engine
-induce_t *inductor_initialize(
-    induce_t *inductor,
+induce_t *induce_initialize(
+    induce_t *induce,
     mu_engine_t *engine,
     const mu_stmt_t *const *node_to_stmt,
     mu_status_t *status)
   __attribute__((nonnull));
 
-void inductor_raze(induce_t *inductor) __attribute__((nonnull));
-
-/// Return the type of the @a node in the @a induce context
+/**
+ * @brief Return the type of the @a node in the @a induce context
+ */
 __attribute__((nonnull, pure, returns_nonnull))
 static inline const mu_type_t *induce_evince(
     const induce_t *induce, const mu_node_t *node) {
