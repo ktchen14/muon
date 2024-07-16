@@ -14,6 +14,14 @@ static inline const mu_type_t *integer_type_at(
   return NULL;
 }
 
+__attribute__((nonnull))
+static inline const mu_integer_type_t *integer_type_import(
+    const mu_integer_type_t *type, const import_t *import) {
+  if (import->engine == type->as_stator.engine)
+    return type;
+  return mu_integer_type(import->engine);
+}
+
 __attribute__((const, nonnull))
 static inline const mu_integer_type_t *integer_type_reduce(
     const mu_integer_type_t *type, const inductor_t *inductor) {

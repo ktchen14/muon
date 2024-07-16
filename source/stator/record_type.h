@@ -19,6 +19,10 @@ static inline const mu_type_t *record_type_at(
   return i < type->argc ? type->argv[i] : NULL;
 }
 
+const mu_record_type_t *record_type_import(
+    const mu_record_type_t *type, const import_t *import)
+  __attribute__((nonnull));
+
 const mu_record_type_t *record_type_reduce(
     const mu_record_type_t *type, inductor_t *inductor)
   __attribute__((nonnull));

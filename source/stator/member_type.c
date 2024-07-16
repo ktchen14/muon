@@ -27,6 +27,14 @@ const mu_member_type_t *mu_member_type(
   return assign_type(engine, result);
 }
 
+const mu_member_type_t *member_type_import(
+    const mu_member_type_t *type, const import_t *import) {
+  const mu_type_t *matter = type->matter;
+  if ((matter = import_retrieve(import->type, matter)) == type->matter)
+    return type;
+  return mu_member_type(import->engine, type->name, matter);
+}
+
 const mu_member_type_t *member_type_reduce(
     const mu_member_type_t *type, inductor_t *inductor) {
   const mu_type_t *matter = type->matter;

@@ -17,7 +17,7 @@ typedef enum {
 } mu_type_kind_t;
 
 /// An abstract type
-typedef struct {
+typedef struct mu_type_t {
   union {
     mu_type_kind_t kind;
     mu_stator_t as_stator;

@@ -14,6 +14,14 @@ static inline const mu_type_t *variable_type_at(
   return NULL;
 }
 
+__attribute__((nonnull))
+static inline const mu_variable_type_t *variable_type_import(
+    const mu_variable_type_t *type, const import_t *import) {
+  if (import->engine == type->as_stator.engine)
+    return type;
+  return mu_variable_type(import->engine, 0, NULL);
+}
+
 __attribute__((nonnull, pure))
 static inline const mu_variable_type_t *variable_type_reduce(
     const mu_variable_type_t *type, const inductor_t *inductor_t) {

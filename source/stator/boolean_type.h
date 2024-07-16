@@ -14,6 +14,14 @@ static inline const mu_type_t *boolean_type_at(
   return NULL;
 }
 
+__attribute__((nonnull))
+static inline const mu_boolean_type_t *boolean_type_import(
+    const mu_boolean_type_t *type, const import_t *import) {
+  if (import->engine == type->as_stator.engine)
+    return type;
+  return mu_boolean_type(import->engine);
+}
+
 __attribute__((const, nonnull))
 static inline const mu_boolean_type_t *boolean_type_reduce(
     const mu_boolean_type_t *type, const inductor_t *inductor) {

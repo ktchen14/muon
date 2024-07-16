@@ -46,6 +46,20 @@ const mu_record_type_t *record_type_activate(mu_record_type_t *type) {
   return assign_type(engine, type);
 }
 
+const mu_record_type_t *record_type_import(
+    const mu_record_type_t *type, const import_t *import) {
+  mu_engine_t *engine = import->engine;
+
+  mu_record_type_t *allocation;
+  if ((allocation = record_type_allocate(engine, type->argc)) == NULL)
+    return NULL;
+
+  for (size_t i = 0; i < type->argc; i++)
+    allocation->argv[i] = import_retrieve(import->type, type->argv[i]);
+
+  return record_type_activate(allocation);
+}
+
 const mu_record_type_t *record_type_reduce(
     const mu_record_type_t *type, inductor_t *inductor) {
   mu_engine_t *engine = inductor->engine;

@@ -25,6 +25,14 @@ const mu_vector_type_t *mu_vector_type(
   return assign_type(engine, result);
 }
 
+const mu_vector_type_t *vector_type_import(
+    const mu_vector_type_t *type, const import_t *import) {
+  const mu_type_t *matter = type->matter;
+  if ((matter = import_retrieve(import->type, matter)) == type->matter)
+    return type;
+  return mu_vector_type(import->engine, matter);
+}
+
 const mu_vector_type_t *vector_type_reduce(
     const mu_vector_type_t *type, inductor_t *inductor) {
   const mu_type_t *matter = type->matter;

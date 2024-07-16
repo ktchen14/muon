@@ -105,7 +105,7 @@ typedef struct {
 } mu_node_source_t;
 
 /// An abstract node
-typedef struct {
+typedef struct mu_node_t {
   union {
     mu_node_kind_t kind;
     mu_stator_t as_stator;

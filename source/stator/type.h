@@ -96,6 +96,22 @@ static inline const mu_type_t *type_at(const mu_type_t *type, size_t i) {
 }
 
 __attribute__((nonnull))
+static inline const mu_type_t *type_import(
+    const mu_type_t *type, import_t *import) {
+#define MU_EMIT(lower, upper, _) \
+    case MU_##upper##_TYPE: { \
+      const mu_##lower##_type_t *result = (const mu_##lower##_type_t *) type; \
+      if ((result = lower##_type_import(result, import)) == NULL) \
+        return NULL; \
+      return &result->as_type; \
+    }
+  switch (type->kind) { MU_EACH_TYPE_KIND(MU_EMIT) }
+#undef MU_EMIT
+
+  __builtin_unreachable();
+}
+
+__attribute__((nonnull))
 static inline const mu_type_t *type_reduce(
     const mu_type_t *type, inductor_t *inductor) {
 #define MU_EMIT(lower, upper, _) \
