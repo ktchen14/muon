@@ -216,10 +216,23 @@ except:
   return NULL;
 }
 
+static inline const mu_node_t *indirect_at(
+    const mu_node_t *node,
+    size_t i,
+    const mu_stmt_t *const *node_to_stmt) {
+  if (node->kind == MU_NAME_EXPR_NODE) {
+    const mu_stmt_t *stmt;
+    if ((stmt = node_to_stmt[node->as_stator.id]) == NULL)
+      return NULL;
+    return i == 0 ? &stmt->as_node : NULL;
+  } else
+    return node_at(node, i);
+}
+
 const mu_type_t *induce_node(inductor_t *inductor, const mu_node_t *root) {
   const mu_node_t *node = root, *next;
   do {
-    while ((next = node_at(node, node_cursor(node)->i++)) != NULL)
+    while ((next = indirect_at(node, node_cursor(node)->i++, inductor->node_to_stmt)) != NULL)
       node = node_continue(node, next);
 
     // Induce the type of the node
