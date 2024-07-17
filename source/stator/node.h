@@ -108,7 +108,7 @@ static inline const mu_node_t *node_at(const mu_node_t *node, size_t i) {
     MU_EACH_NODE_KIND(MU_EMIT)
 #undef MU_EMIT
   }
-  assert(0);
+  __builtin_unreachable();
 }
 
 #endif /* MU_STATOR_NODE_I */
