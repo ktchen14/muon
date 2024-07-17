@@ -115,12 +115,6 @@ static const mu_type_t *equate_continue(
   return next_a;
 }
 
-// Possible returns:
-//   STOP - out of memory
-//   NOTEQUAL - return from both types: types can't be equated
-//   EQUAL - return from both types: types were equated
-//   CONTINUE - continue trying to equate new types
-
 static const mu_type_t *equate(
     induce_t *induce, const mu_type_t *a, const mu_type_t *b) {
   // If a and b are the same type, then just return
@@ -140,16 +134,16 @@ static const mu_type_t *equate(
 
   // Traverse a and b at the same time and equate each reachable couple
   do {
-    for (;;) {
-      const mu_variable_type_t *va = mu_type_cast(a, va);
-      const mu_variable_type_t *vb = mu_type_cast(b, vb);
+    for (const mu_type_t *next_a, *next_b;;) {
+      if (a->kind != MU_VARIABLE_TYPE && b->kind != MU_VARIABLE_TYPE) {
+        next_a = type_at(a, type_cursor(a)->i++);
+        next_b = type_at(b, type_cursor(b)->i++);
 
-      if (va == NULL && vb == NULL) {
-        const mu_type_t *next_a = type_at(a, type_cursor(a)->i++);
-        const mu_type_t *next_b = type_at(b, type_cursor(b)->i++);
-
-        if (next_a == NULL && next_b == NULL)
+        if (next_a == NULL && next_b == NULL) {
+          if (set(induce, a, b) == NULL)
+            goto except;
           break;
+        }
 
         if (next_a == NULL && next_b != NULL)
           assert(0);
@@ -157,26 +151,24 @@ static const mu_type_t *equate(
         if (next_a != NULL && next_b == NULL)
           assert(0);
 
-        // If next_a and next_b are the same type, then skip them
-        if (next_a == next_b)
-          continue;
+      } else if (a->kind == MU_VARIABLE_TYPE && b->kind == MU_VARIABLE_TYPE) {
+        assert(!"Unimplemented");
 
-        next_a = get_root(induce, next_a);
-        next_b = get_root(induce, next_b);
+      } else {
+        if (b->kind == MU_VARIABLE_TYPE) {
+          const mu_type_t *t = a;
+          a = b;
+          b = t;
+        }
 
-        // If next_a and next_b are both equivalent to the same type, then skip
-        // them
-        if (next_a == next_b)
-          continue;
+        const mu_variable_type_t *va = mu_type_cast(a, va);
+        assert(va != NULL);
 
-        equate_continue(induce, &a, next_a, &b, next_b);
-
-      } else if (va != NULL && vb == NULL) {
         const mu_test_t *test;
         if ((test = variable_type_test_at(va, type_cursor(a)->i++)) == NULL) {
           if (set(induce, a, b) == NULL)
             goto except;
-          goto type_return;
+          break;
         }
         assert(test->kind == MU_MEMBER_TEST);
         const mu_member_test_t *member_test = (const mu_member_test_t *) test;
@@ -187,38 +179,29 @@ static const mu_type_t *equate(
         const mu_type_t *next;
         if ((next = record_type_get_name(rb, member_test->name)) == NULL)
           assert(0);
-        equate_continue(induce, &a, member_test->type, &b, next);
 
-      } else if (vb != NULL && va == NULL) {
-        const mu_test_t *test;
-        if ((test = variable_type_test_at(vb, type_cursor(b)->i++)) == NULL) {
-          if (set(induce, b, a) == NULL)
-            goto except;
-          goto type_return;
-        }
-        assert(test->kind == MU_MEMBER_TEST);
-        const mu_member_test_t *member_test = (const mu_member_test_t *) test;
-
-        const mu_record_type_t *ra = mu_type_cast(a, ra);
-        assert(ra != NULL);
-
-        const mu_type_t *next;
-        if ((next = record_type_get_name(ra, member_test->name)) == NULL)
-          assert(0);
-        equate_continue(induce, &a, next, &b, member_test->type);
-
-      } else if (va != NULL && vb != NULL) {
-        assert(!"Unimplemented");
+        next_a = member_test->type;
+        next_b = next;
       }
-    }
 
-    // We should only return when next_a and next_b are both NULL. Here, we know
-    // that all types reachable from both a and b have been equated. Next,
-    // equate them. We know we can do this with set because we only
-    // continue into a root type.
-    if (set(induce, a, b) == NULL)
-      goto except;
-  type_return:;
+      // If next_a and next_b are the same type, then skip them
+      if (next_a == next_b)
+        continue;
+
+      next_a = get_root(induce, next_a);
+      next_b = get_root(induce, next_b);
+
+      // If next_a and next_b are both equivalent to the same type, then skip
+      // them
+      if (next_a == next_b)
+        continue;
+
+      if (next_a->kind != MU_VARIABLE_TYPE && next_b->kind != MU_VARIABLE_TYPE && next_a->kind != next_b->kind)
+        assert(0);
+
+      a = type_continue(a, next_a);
+      b = type_continue(b, next_b);
+    }
   } while ((a = type_return(a)) != NULL && (b = type_return(b)) != NULL);
 
   // Ensure that type_return(b) is also NULL
