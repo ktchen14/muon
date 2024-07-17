@@ -31,4 +31,10 @@ static inline const mu_variable_type_t *variable_type_import(
   return mu_variable_type(import->engine, 0, NULL);
 }
 
+__attribute__((nonnull, pure))
+static inline const mu_test_t *variable_type_test_at(
+    const mu_variable_type_t *type, size_t i) {
+  return i < type->argc ? type->argv[i] : NULL;
+}
+
 #endif /* MU_STATOR_VARIABLE_TYPE_I */

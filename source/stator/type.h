@@ -67,6 +67,7 @@ static inline type_cursor_t *type_cursor(const mu_type_t *type) {
 }
 
 /// Continue into the type
+__attribute__((nonnull(2)))
 static inline const mu_type_t *type_continue(
     const mu_type_t *type, const mu_type_t *next) {
   type_cursor_t *cursor = type_cursor(next);

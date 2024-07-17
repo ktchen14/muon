@@ -88,6 +88,44 @@ const mu_type_t *get_root(induce_t *induce, const mu_type_t *type) {
   return root;
 }
 
+__attribute__((nonnull, pure))
+static inline const mu_type_t *record_type_get_name(
+    const mu_record_type_t *type, const mu_name_t *name) {
+  for (size_t i = 0; i < type->argc; i++) {
+    const mu_member_type_t *member_type;
+    if ((member_type = mu_type_cast(type->argv[i], member_type)) == NULL)
+      continue;
+    if (member_type->name != name)
+      continue;
+    return member_type->matter;
+  }
+
+  return NULL;
+}
+
+static const mu_type_t *equate_continue(
+    induce_t *induce,
+    const mu_type_t *restrict *restrict a,
+    const mu_type_t *restrict next_a,
+    const mu_type_t *restrict *restrict b,
+    const mu_type_t *restrict next_b) {
+  if (next_a->kind == MU_MEMBER_TYPE && next_b->kind == MU_MEMBER_TYPE) {
+    const mu_member_type_t *ma = (const mu_member_type_t *) a;
+    const mu_member_type_t *mb = (const mu_member_type_t *) b;
+    if (ma->name != mb->name)
+      assert(0);
+  } else if (next_a->kind == MU_VARIABLE_TYPE && next_b->kind == MU_MEMBER_TYPE) {
+    assert(0);
+  } else if (next_a->kind == MU_MEMBER_TYPE && next_b->kind == MU_VARIABLE_TYPE) {
+    assert(0);
+  } else if (next_a->kind != MU_VARIABLE_TYPE && next_b->kind != MU_VARIABLE_TYPE && next_a->kind != next_b->kind)
+    assert(0);
+
+  *a = type_continue(*a, next_a);
+  *b = type_continue(*b, next_b);
+  return next_a;
+}
+
 static const mu_type_t *equate(
     induce_t *induce, const mu_type_t *a, const mu_type_t *b) {
   // If a and b are the same type, then just return
@@ -101,83 +139,82 @@ static const mu_type_t *equate(
   if (a == b)
     return a;
 
-  // If a is an open type, then just equate it to b and return
-  const mu_variable_type_t *va;
-  if ((va = mu_type_cast(a, va)) != NULL) {
-    if (b->kind == MU_MEMBER_TYPE)
-      assert(0);
-
-    if (va->argc == 0)
-      return set(induce, a, b);
-
-    // Fall through
-  }
-
-  // If b is an open type, then just equate it to a and return
-  const mu_variable_type_t *vb;
-  if ((vb = mu_type_cast(b, vb)) != NULL) {
-    if (a->kind == MU_MEMBER_TYPE)
-      assert(0);
-
-    if (vb->argc == 0)
-      return set(induce, b, a);
-
-    // Fall through
-  }
-
   // Otherwise, ensure that either a or b is a variable type, or a and b have
   // the same kind
-  if (va == NULL && vb == NULL && a->kind != b->kind)
-    assert(0);
+  equate_continue(induce, &(const mu_type_t *) {0}, a, &(const mu_type_t *) {0}, b);
 
   // Traverse a and b at the same time and equate each reachable couple
   do {
     for (;;) {
-      const mu_type_t *next_a = type_at(a, type_cursor(a)->i++);
-      const mu_type_t *next_b = type_at(b, type_cursor(b)->i++);
+      const mu_variable_type_t *va = mu_type_cast(a, va);
+      const mu_variable_type_t *vb = mu_type_cast(b, vb);
 
-      if (next_a == NULL && next_b == NULL)
-        break;
+      if (va == NULL && vb == NULL) {
+        const mu_type_t *next_a = type_at(a, type_cursor(a)->i++);
+        const mu_type_t *next_b = type_at(b, type_cursor(b)->i++);
 
-      if (next_a == NULL && next_b != NULL)
-        assert(0);
+        if (next_a == NULL && next_b == NULL)
+          break;
 
-      if (next_a != NULL && next_b == NULL)
-        assert(0);
+        if (next_a == NULL && next_b != NULL)
+          assert(0);
 
-      // If next_a and next_b are the same type, then skip them
-      if (next_a == next_b)
-        continue;
+        if (next_a != NULL && next_b == NULL)
+          assert(0);
 
-      next_a = get_root(induce, next_a);
-      next_b = get_root(induce, next_b);
+        // If next_a and next_b are the same type, then skip them
+        if (next_a == next_b)
+          continue;
 
-      // If next_a and next_b are both equivalent to the same type, then skip
-      // them
-      if (next_a == next_b)
-        continue;
+        next_a = get_root(induce, next_a);
+        next_b = get_root(induce, next_b);
 
-      // If next_a is an open type, then equate it to next_b and skip them
-      if ((va = mu_type_cast(next_a, va)) != NULL && va->argc == 0) {
-        if (set(induce, next_a, next_b) == NULL)
-          goto except;
-        continue;
+        // If next_a and next_b are both equivalent to the same type, then skip
+        // them
+        if (next_a == next_b)
+          continue;
+
+        equate_continue(induce, &a, next_a, &b, next_b);
+
+      } else if (va != NULL && vb == NULL) {
+        const mu_test_t *test;
+        if ((test = variable_type_test_at(va, type_cursor(a)->i++)) == NULL) {
+          if (set(induce, a, b) == NULL)
+            goto except;
+          goto type_return;
+        }
+        assert(test->kind == MU_MEMBER_TEST);
+        const mu_member_test_t *member_test = (const mu_member_test_t *) test;
+
+        const mu_record_type_t *rb = mu_type_cast(b, rb);
+        assert(rb != NULL);
+
+        const mu_type_t *next;
+        if ((next = record_type_get_name(rb, member_test->name)) == NULL)
+          assert(0);
+        equate_continue(induce, &a, member_test->type, &b, next);
+
+      } else if (vb != NULL && va == NULL) {
+        const mu_test_t *test;
+        if ((test = variable_type_test_at(vb, type_cursor(b)->i++)) == NULL) {
+          if (set(induce, b, a) == NULL)
+            goto except;
+          goto type_return;
+        }
+        assert(test->kind == MU_MEMBER_TEST);
+        const mu_member_test_t *member_test = (const mu_member_test_t *) test;
+
+        const mu_record_type_t *ra = mu_type_cast(a, ra);
+        assert(ra != NULL);
+
+        const mu_type_t *next;
+        if ((next = record_type_get_name(ra, member_test->name)) == NULL)
+          assert(0);
+        equate_continue(induce, &a, next, &b, member_test->type);
+
+      } else if (va != NULL && vb != NULL) {
+        assert(!"Unimplemented");
       }
-
-      // If next_b is an open type, then equate it to next_a and skip them
-      if ((vb = mu_type_cast(next_b, vb)) != NULL && vb->argc == 0) {
-        if (set(induce, next_a, next_b) == NULL)
-          goto except;
-        continue;
-      }
-
-      // Otherwise, ensure that either next_a or next_b is a variable type, or
-      // next_a and next_b have the same kind
-      if (va == NULL && vb == NULL && next_a->kind != next_b->kind)
-        assert(0);
-
-      a = type_continue(a, next_a);
-      b = type_continue(b, next_b);
     }
 
     // We should only return when next_a and next_b are both NULL. Here, we know
@@ -186,6 +223,7 @@ static const mu_type_t *equate(
     // continue into a root type.
     if (set(induce, a, b) == NULL)
       goto except;
+  type_return:;
   } while ((a = type_return(a)) != NULL && (b = type_return(b)) != NULL);
 
   // Ensure that type_return(b) is also NULL
@@ -205,13 +243,15 @@ static inline const mu_node_t *indirect_at(
     const mu_node_t *node,
     size_t i,
     const mu_stmt_t *const *node_to_stmt) {
-  if (node->kind == MU_NAME_EXPR_NODE) {
-    const mu_stmt_t *stmt;
-    if ((stmt = node_to_stmt[node->as_stator.id]) == NULL)
-      return NULL;
-    return i == 0 ? &stmt->as_node : NULL;
-  } else
-    return node_at(node, i);
+  const mu_stmt_t *stmt;
+  switch (node->kind) {
+    case MU_NAME_EXPR_NODE:
+    case MU_NAME_SIGN_NODE:
+      if ((stmt = node_to_stmt[node->as_stator.id]) == NULL)
+        return NULL;
+      return i == 0 ? &stmt->as_node : NULL;
+    default: return node_at(node, i);
+  }
 }
 
 const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
