@@ -6,7 +6,6 @@
 #include "abstract_type.h"     // IWYU pragma: export
 #include "boolean_type.h"      // IWYU pragma: export
 #include "integer_type.h"      // IWYU pragma: export
-#include "member_type.h"       // IWYU pragma: export
 #include "record_type.h"       // IWYU pragma: export
 #include "variable_type.h"     // IWYU pragma: export
 #include "vector_type.h"       // IWYU pragma: export

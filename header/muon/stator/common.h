@@ -37,7 +37,6 @@
 #define MU_EACH_TYPE_KIND(emit, ...) \
   emit(boolean, BOOLEAN, Boolean, ##__VA_ARGS__) \
   emit(integer, INTEGER, Integer, ##__VA_ARGS__) \
-  emit(member, MEMBER, Member, ##__VA_ARGS__) \
   emit(record, RECORD, Record, ##__VA_ARGS__) \
   emit(variable, VARIABLE, Variable, ##__VA_ARGS__) \
   emit(vector, VECTOR, Vector, ##__VA_ARGS__)

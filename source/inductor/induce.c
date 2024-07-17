@@ -92,12 +92,10 @@ __attribute__((nonnull, pure))
 static inline const mu_type_t *record_type_get_name(
     const mu_record_type_t *type, const mu_name_t *name) {
   for (size_t i = 0; i < type->argc; i++) {
-    const mu_member_type_t *member_type;
-    if ((member_type = mu_type_cast(type->argv[i], member_type)) == NULL)
+    const mu_type_member_t member = type->argv[i];
+    if (member.name != name)
       continue;
-    if (member_type->name != name)
-      continue;
-    return member_type->matter;
+    return member.type;
   }
 
   return NULL;
@@ -109,16 +107,7 @@ static const mu_type_t *equate_continue(
     const mu_type_t *restrict next_a,
     const mu_type_t *restrict *restrict b,
     const mu_type_t *restrict next_b) {
-  if (next_a->kind == MU_MEMBER_TYPE && next_b->kind == MU_MEMBER_TYPE) {
-    const mu_member_type_t *ma = (const mu_member_type_t *) a;
-    const mu_member_type_t *mb = (const mu_member_type_t *) b;
-    if (ma->name != mb->name)
-      assert(0);
-  } else if (next_a->kind == MU_VARIABLE_TYPE && next_b->kind == MU_MEMBER_TYPE) {
-    assert(0);
-  } else if (next_a->kind == MU_MEMBER_TYPE && next_b->kind == MU_VARIABLE_TYPE) {
-    assert(0);
-  } else if (next_a->kind != MU_VARIABLE_TYPE && next_b->kind != MU_VARIABLE_TYPE && next_a->kind != next_b->kind)
+  if (next_a->kind != MU_VARIABLE_TYPE && next_b->kind != MU_VARIABLE_TYPE && next_a->kind != next_b->kind)
     assert(0);
 
   *a = type_continue(*a, next_a);
@@ -356,16 +345,6 @@ __attribute__((nonnull)) static const mu_type_t *integer_expr_induce(
   return &result->as_type;
 }
 
-__attribute__((nonnull)) static const mu_type_t *member_expr_induce(
-    const mu_member_expr_t *expr, induce_t *induce) {
-  const mu_type_t *matter = induce_evince(induce, &expr->matter->as_node);
-
-  const mu_member_type_t *result;
-  if ((result = mu_member_type(induce->engine, expr->name, matter)) == NULL)
-    return NULL;
-  return &result->as_type;
-}
-
 __attribute__((nonnull)) static const mu_type_t *name_expr_induce(
     const mu_name_expr_t *expr, induce_t *induce) {
   const mu_stmt_t *target;
@@ -386,8 +365,15 @@ __attribute__((nonnull)) static const mu_type_t *record_expr_induce(
   if ((allocation = record_type_allocate(engine, expr->argc)) == NULL)
     return NULL;
 
-  for (size_t i = 0; i < expr->argc; i++)
-    allocation->argv[i] = induce_evince(induce, &expr->argv[i]->as_node);
+  for (size_t i = 0; i < expr->argc; i++) {
+    const mu_type_t *old_type = induce_evince(induce, &expr->argv[i]->as_node);
+    const mu_member_type_t *mt = mu_type_cast(old_type, mt);
+    assert(mt != NULL);
+
+    const mu_name_t *name = mt->name;
+    const mu_type_t *type = mt->matter;
+    allocation->argv[i] = (mu_type_member_t) { .name = name, .type = type };
+  }
   return &record_type_activate(allocation)->as_type;
 }
 
@@ -437,12 +423,7 @@ __attribute__((nonnull)) static const mu_type_t *integer_sign_induce(
 
 __attribute__((nonnull)) static const mu_type_t *member_sign_induce(
     const mu_member_sign_t *sign, induce_t *induce) {
-  const mu_type_t *matter = induce_evince(induce, &sign->matter->as_node);
-
-  const mu_member_type_t *result;
-  if ((result = mu_member_type(induce->engine, sign->name, matter)) == NULL)
-    return NULL;
-  return &result->as_type;
+  assert(0);
 }
 
 __attribute__((nonnull)) static const mu_type_t *name_sign_induce(

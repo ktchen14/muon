@@ -9,5 +9,6 @@ define b1 Boolean = false
 
 define r1 = (a: 1, b: true)
 define r2 = (a: r1, b: 2)
+define r3 = (b: r1, a: 2)
 define h = r2.a.a
 define ha = r2.a.b

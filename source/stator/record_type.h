@@ -16,7 +16,7 @@ const mu_record_type_t *record_type_activate(mu_record_type_t *type)
 __attribute__((nonnull, pure))
 static inline const mu_type_t *record_type_at(
     const mu_record_type_t *type, size_t i) {
-  return i < type->argc ? type->argv[i] : NULL;
+  return i < type->argc ? type->argv[i].type : NULL;
 }
 
 const mu_record_type_t *record_type_import(
