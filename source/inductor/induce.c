@@ -457,7 +457,24 @@ __attribute__((nonnull)) static const mu_type_t *type_stmt_induce(
   assert(0);
 }
 
-// -------------------------------- Abstract ------------------------------ {{{1
+// ---------------------------------- Type -------------------------------- {{{1
+
+/* static int boolean_type_equate( */
+/*     const mu_boolean_type_t *a, const mu_type_t *b, induce_t *induce) { */
+/*   return b->kind == MU_BOOLEAN_TYPE; */
+/* } */
+
+/* static int integer_type_equate( */
+/*     const mu_integer_type_t *a, const mu_type_t *b, induce_t *induce) { */
+/*   return b->kind == MU_INTEGER_TYPE; */
+/* } */
+
+/* static int vector_type_equate( */
+/*     const mu_vector_type_t *a, const mu_type_t *b, induce_t *induce) { */
+/*   b->kind == MU_INTEGER_TYPE; */
+/* } */
+
+/* // -------------------------------- Abstract ------------------------------ {{{1 */
 
 static const mu_type_t *node_induce(const mu_node_t *node, induce_t *induce) {
   switch (node->kind) {
@@ -469,5 +486,15 @@ static const mu_type_t *node_induce(const mu_node_t *node, induce_t *induce) {
   }
   __builtin_unreachable();
 }
+
+/* static int xequate(const mu_type_t *a, const mu_type_t *b, induce_t *induce) { */
+/*   switch(a->kind) { */
+/* #define MU_EMIT(lower, upper, t) \ */
+/*     case MU_##upper##_TYPE: \ */
+/*       return lower##_type_equate((const mu_##lower##_type_t *) a, b, induce); */
+/*     MU_EACH_TYPE_KIND(MU_EMIT) */
+/* #undef MU_EMIT */
+/*   } */
+/* } */
 
 // vim: set foldmethod=marker:
