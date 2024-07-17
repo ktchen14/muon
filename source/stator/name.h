@@ -30,8 +30,6 @@ static inline name_cursor_t *name_cursor(const mu_name_t *name) {
 /// Compare name @a a to name @a b
 __attribute__((nonnull, pure))
 static inline int name_cmp(const mu_name_t *a, const mu_name_t *b) {
-  assert(a->as_stator.engine == b->as_stator.engine);
-
   int result;
   if ((result = memcmp(a->text, b->text, minimum(a->length, b->length))) != 0)
     return result;

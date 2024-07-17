@@ -10,6 +10,9 @@
 #include <stdio.h>
 #include <string.h>
 
+/// Emit debugging information on the expr @a member to the debug stream
+static void expr_member_debug(mu_expr_member_t member);
+
 const mu_record_expr_t *mu_record_expr(
     mu_engine_t *engine, size_t argc, const mu_expr_member_t argv[argc]) {
   mu_record_expr_t *result;
@@ -46,7 +49,6 @@ const mu_record_expr_t *record_expr_activate(mu_record_expr_t *expr) {
     .as_expr.kind = MU_RECORD_EXPR, .argc = expr->argc
   };
   memcpy(expr, &source, offsetof(mu_record_expr_t, argv));
-
   return assign_node(engine, expr);
 }
 
@@ -55,14 +57,19 @@ void mu_record_expr_debug(const mu_record_expr_t *expr) {
   fprintf(stderr, "Record Expr #%zu:\n", expr->as_stator.id);
 
   WITH_DEBUG_INDENT() {
-    for (size_t i = 0; i < expr->argc; i++) {
-      mu_expr_member_t member = expr->argv[i];
-
-      fprintf(stderr, "%*s", debug_indent, "");
-      fprintf(stderr, "Member: ");
-      mu_name_debug(member.name);
-      putc('\n', stderr);
-      WITH_DEBUG_INDENT() { mu_expr_debug(member.expr); }
-    }
+    for (size_t i = 0; i < expr->argc; i++)
+      expr_member_debug(expr->argv[i]);
   }
+}
+
+static void expr_member_debug(mu_expr_member_t member) {
+  fprintf(stderr, "%*s", debug_indent, "");
+  if (member.name != NULL) {
+    fprintf(stderr, "Member: ");
+    mu_name_debug(member.name);
+    putc('\n', stderr);
+  } else
+    fputs("Member:\n", stderr);
+
+  WITH_DEBUG_INDENT() { mu_expr_debug(member.expr); }
 }

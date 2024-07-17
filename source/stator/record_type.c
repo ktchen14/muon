@@ -10,6 +10,9 @@
 #include <stdio.h>
 #include <string.h>
 
+/// Emit debugging information on the type @a member to the debug stream
+static void type_member_debug(mu_type_member_t member);
+
 const mu_record_type_t *mu_record_type(
     mu_engine_t *engine, size_t argc, const mu_type_member_t argv[argc]) {
   mu_record_type_t *result;
@@ -52,7 +55,6 @@ const mu_record_type_t *record_type_activate(mu_record_type_t *type) {
     .as_type.kind = MU_RECORD_TYPE, .argc = type->argc
   };
   memcpy(type, &source, offsetof(mu_record_type_t, argv));
-
   return assign_type(engine, type);
 }
 
@@ -77,14 +79,6 @@ const mu_record_type_t *record_type_import(
   return record_type_activate(allocation);
 }
 
-static void type_member_debug(mu_type_member_t member) {
-  if (member.name != NULL) {
-    mu_name_debug(member.name);
-    fputs(": ", stderr);
-  }
-  mu_type_debug(member.type);
-}
-
 void mu_record_type_debug(const mu_record_type_t *type) {
   putc('(', stderr);
   if (type->argc > 0) {
@@ -99,4 +93,12 @@ void mu_record_type_debug(const mu_record_type_t *type) {
       putc(',', stderr);
   }
   putc(')', stderr);
+}
+
+static void type_member_debug(mu_type_member_t member) {
+  if (member.name != NULL) {
+    mu_name_debug(member.name);
+    fputs(": ", stderr);
+  }
+  mu_type_debug(member.type);
 }

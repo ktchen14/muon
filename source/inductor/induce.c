@@ -359,7 +359,7 @@ __attribute__((nonnull)) static const mu_type_t *record_expr_induce(
   }
   assert(i == j);
   qsort(&allocation->argv[j], expr->argc - j, sizeof(mu_expr_member_t),
-      expr_member_cmp);
+      type_member_cmp);
   // TODO: check for duplicates
   return &record_type_activate(allocation)->as_type;
 }

@@ -11,7 +11,6 @@
 #include "vector_type.h"       // IWYU pragma: export
 
 #include "engine.h"
-#include "../common.h"
 
 #include <assert.h>
 #include <errno.h>
