@@ -365,15 +365,19 @@ __attribute__((nonnull)) static const mu_type_t *record_expr_induce(
   if ((allocation = record_type_allocate(engine, expr->argc)) == NULL)
     return NULL;
 
-  for (size_t i = 0; i < expr->argc; i++) {
-    const mu_type_t *old_type = induce_evince(induce, &expr->argv[i]->as_node);
-    const mu_member_type_t *mt = mu_type_cast(old_type, mt);
-    assert(mt != NULL);
+  size_t i = 0, j = expr->argc;
+  for (size_t k = 0; k < expr->argc; k++) {
+    const mu_name_t *member_name = expr->argv[k].name;
+    const mu_expr_t *member_expr = expr->argv[k].expr;
+    const mu_type_t *member_type = induce_evince(induce, &member_expr->as_node);
 
-    const mu_name_t *name = mt->name;
-    const mu_type_t *type = mt->matter;
-    allocation->argv[i] = (mu_type_member_t) { .name = name, .type = type };
+    mu_type_member_t member = { .name = member_name, .type = member_type };
+    allocation->argv[member.name == NULL ? i++ : --j] = member;
   }
+  assert(i == j);
+  qsort(&allocation->argv[j], expr->argc - j, sizeof(mu_expr_member_t),
+      expr_member_cmp);
+  // TODO: check for duplicates
   return &record_type_activate(allocation)->as_type;
 }
 

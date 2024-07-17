@@ -15,6 +15,8 @@ typedef struct {
   size_t stmt_i;
   const mu_expr_t *expr[800];
   size_t expr_i;
+  mu_expr_member_t expr_member[800];
+  size_t expr_member_i;
 } syntax_t;
 }
 
@@ -42,10 +44,10 @@ typedef struct {
   const mu_name_t *name;
 
   const mu_expr_t *expr;
+  mu_expr_member_t expr_member;
   const mu_access_expr_t *access_expr;
   const mu_boolean_expr_t *boolean_expr;
   const mu_integer_expr_t *integer_expr;
-  const mu_member_expr_t *member_expr;
   const mu_name_expr_t *name_expr;
   const mu_record_expr_t *record_expr;
   const mu_vector_expr_t *vector_expr;
@@ -76,10 +78,10 @@ typedef struct {
 %type <sign> sign
 %type <stmt> stmt
 
+%type <expr_member> expr_member
 %type <access_expr> access_expr
 %type <boolean_expr> boolean_expr
 %type <integer_expr> integer_expr
-%type <member_expr> member_expr
 %type <name_expr> name_expr
 %type <record_expr> record_expr
 %type <vector_expr> vector_expr
@@ -155,39 +157,39 @@ integer_expr: INTEGER_LITERAL {
   $$ = mu_integer_expr(syntax->engine, $1, &@$);
 }
 
-member_expr: name ':' _ expr {
-  $$ = mu_member_expr(syntax->engine, $name, $expr);
-}
-
 name_expr: name {
   $$ = mu_name_expr(syntax->engine, $1, &@$);
 }
 
 // --------------------------------- Record ------------------------------- {{{2
 
+expr_member: name ':' _ expr {
+  $$ = (mu_expr_member_t) { .name = $name, .expr = $expr };
+}
+
 record_expr: '(' record_argv ')' {
   size_t i = $record_argv;
-  syntax->expr_i -= i;
-  $$ = mu_record_expr(syntax->engine, i, syntax->expr);
+  syntax->expr_member_i -= i;
+  $$ = mu_record_expr(syntax->engine, i, &syntax->expr_member[syntax->expr_member_i]);
 
 } | '(' ')' {
   $$ = mu_record_expr(syntax->engine, 0, NULL);
 }
 
-record_argv: member_expr {
-  syntax->expr[syntax->expr_i++] = &$member_expr->as_expr;
+record_argv: expr_member {
+  syntax->expr_member[syntax->expr_member_i++] = $expr_member;
   $$ = 1;
 
 } | expr {
-  syntax->expr[syntax->expr_i++] = $expr;
+  syntax->expr_member[syntax->expr_member_i++] = (mu_expr_member_t) { .expr = $expr };
   $$ = 1;
 
-} | record_argv ',' _ member_expr {
-  syntax->expr[syntax->expr_i++] = &$member_expr->as_expr;
+} | record_argv ',' _ expr_member {
+  syntax->expr_member[syntax->expr_member_i++] = $expr_member;
   $$ = $1 + 1;
 
 } | record_argv ',' _ expr {
-  syntax->expr[syntax->expr_i++] = $expr;
+  syntax->expr_member[syntax->expr_member_i++] = (mu_expr_member_t) { .expr = $expr };
   $$ = $1 + 1;
 }
 
@@ -196,7 +198,7 @@ record_argv: member_expr {
 vector_expr: '[' vector_argv ']' {
   size_t i = $vector_argv;
   syntax->expr_i -= i;
-  $$ = mu_vector_expr(syntax->engine, i, syntax->expr);
+  $$ = mu_vector_expr(syntax->engine, i, &syntax->expr[syntax->expr_i]);
 
 } | '[' ']' {
   $$ = mu_vector_expr(syntax->engine, 0, NULL);

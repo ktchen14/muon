@@ -8,7 +8,6 @@
 #include "access_expr.h"       // IWYU pragma: export
 #include "boolean_expr.h"      // IWYU pragma: export
 #include "integer_expr.h"      // IWYU pragma: export
-#include "member_expr.h"       // IWYU pragma: export
 #include "name_expr.h"         // IWYU pragma: export
 #include "record_expr.h"       // IWYU pragma: export
 #include "vector_expr.h"       // IWYU pragma: export

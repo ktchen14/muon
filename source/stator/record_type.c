@@ -38,6 +38,7 @@ const mu_record_type_t *record_type_activate(mu_record_type_t *type) {
     const mu_name_t *member_name = type->argv[i].name;
     const mu_type_t *member_type = type->argv[i].type;
     assert(member_name == NULL || member_name->as_stator.engine == engine);
+    assert(member_type != NULL);
     assert(member_type->as_stator.engine == engine);
   }
 
