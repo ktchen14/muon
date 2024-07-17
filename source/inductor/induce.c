@@ -126,6 +126,12 @@ static const mu_type_t *equate_continue(
   return next_a;
 }
 
+// Possible returns:
+//   STOP - out of memory
+//   NOTEQUAL - return from both types: types can't be equated
+//   EQUAL - return from both types: types were equated
+//   CONTINUE - continue trying to equate new types
+
 static const mu_type_t *equate(
     induce_t *induce, const mu_type_t *a, const mu_type_t *b) {
   // If a and b are the same type, then just return
@@ -255,17 +261,25 @@ static inline const mu_node_t *indirect_at(
 }
 
 const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
+  assert(root->as_stator.id < induce->node_number);
+
+  if (induce->data[root->as_stator.id] != NULL)
+    return induce->data[root->as_stator.id];
+
   const mu_node_t *node = root, *next;
   do {
-    while ((next = indirect_at(node, node_cursor(node)->i++, induce->node_to_stmt)) != NULL)
+    while ((next = indirect_at(node, node_cursor(node)->i++, induce->node_to_stmt)) != NULL) {
+      assert(node->as_stator.id < induce->node_number);
+
+      if (induce->data[node->as_stator.id] != NULL)
+        continue;
       node = node_continue(node, next);
+    }
 
     // Induce the type of the node
     const mu_type_t *type;
     if ((type = node_induce(node, induce)) == NULL)
       return NULL;
-
-    assert(node->as_stator.id < induce->node_number);
     induce->data[node->as_stator.id] = type;
   } while ((node = node_return(node)) != NULL);
 
