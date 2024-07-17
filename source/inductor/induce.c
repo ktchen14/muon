@@ -283,6 +283,7 @@ static const mu_type_t *set(
     induce->data = data;
   }
 
+  assert(induce->data[slot(induce, source)] == NULL);
   return induce->data[slot(induce, source)] = target;
 }
 
@@ -352,9 +353,10 @@ __attribute__((nonnull)) static const mu_type_t *record_expr_induce(
   for (size_t k = 0; k < expr->argc; k++) {
     const mu_name_t *member_name = expr->argv[k].name;
     const mu_expr_t *member_expr = expr->argv[k].expr;
-    const mu_type_t *member_type = induce_evince(induce, &member_expr->as_node);
 
-    mu_type_member_t member = { .name = member_name, .type = member_type };
+    mu_type_member_t member = {
+      .name = member_name, .type = induce_evince(induce, &member_expr->as_node),
+    };
     allocation->argv[member.name == NULL ? i++ : --j] = member;
   }
   assert(i == j);
@@ -474,7 +476,7 @@ __attribute__((nonnull)) static const mu_type_t *type_stmt_induce(
 /*   b->kind == MU_INTEGER_TYPE; */
 /* } */
 
-/* // -------------------------------- Abstract ------------------------------ {{{1 */
+// -------------------------------- Abstract ------------------------------ {{{1
 
 static const mu_type_t *node_induce(const mu_node_t *node, induce_t *induce) {
   switch (node->kind) {
