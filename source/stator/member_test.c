@@ -29,5 +29,5 @@ const mu_member_test_t *mu_member_test(
 
 void mu_member_test_debug(const mu_member_test_t *test) {
   mu_name_debug(test->name);
-  fputs(": ", stderr);
+  fputs(":", stderr);
 }

@@ -155,8 +155,13 @@ static const mu_type_t *equate(
       } else if (a->kind == MU_VARIABLE_TYPE && b->kind == MU_VARIABLE_TYPE) {
         const mu_variable_type_t *va = (const mu_variable_type_t *) a;
         const mu_variable_type_t *vb = (const mu_variable_type_t *) b;
-        if (va->argc == vb->argc) {
+
+        if (va->argc == 0) {
           if (set(induce, a, b) == NULL)
+            goto except;
+          break;
+        } else if (vb->argc == 0) {
+          if (set(induce, b, a) == NULL)
             goto except;
           break;
         }
@@ -236,9 +241,9 @@ const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
   do {
     const detect_result_t *detect = induce->detect;
     while ((next = detect_at(detect, node, node_cursor(node)->i++)) != NULL) {
-      assert(node->as_stator.id < induce->node_number);
+      assert(next->as_stator.id < induce->node_number);
 
-      if (induce->data[node->as_stator.id] != NULL)
+      if (induce->data[next->as_stator.id] != NULL)
         continue;
       node = node_continue(node, next);
     }

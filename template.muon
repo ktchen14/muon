@@ -1,4 +1,4 @@
-define f = lambda x = [x]
+define f = lambda x = lambda y = (foo: x, bar: y, baz: y.baz)
 
 define a = [1]
 define b = [2]

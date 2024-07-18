@@ -3,9 +3,7 @@
 // ================================ Prologue ============================== {{{1
 
 %code requires {
-#include <muon.h>
-#include "../common.h"
-#include "../stator.h"
+#include <muon/stator.h>
 #include "../script.h"
 
 typedef struct {
@@ -102,7 +100,7 @@ typedef struct {
 
 %type <i> record_argv vector_argv
 
-%left LAMBDA
+%nonassoc LAMBDA
 %left '.'
 
 // ========================= YYLLOC_DEFAULT/yyerror ======================= {{{1

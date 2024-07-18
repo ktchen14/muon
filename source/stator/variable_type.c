@@ -38,7 +38,7 @@ void mu_variable_type_debug(const mu_variable_type_t *type) {
   fprintf(stderr, "Variable #%zu", type->as_stator.id);
 
   if (type->argc > 0) {
-    putc('(', stderr);
+    fputs(" with (", stderr);
     for (size_t i = 0; i < type->argc; i++) {
       if (i > 1)
         fputs(", ", stderr);
