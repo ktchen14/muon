@@ -48,6 +48,7 @@ typedef struct {
   const mu_access_expr_t *access_expr;
   const mu_boolean_expr_t *boolean_expr;
   const mu_integer_expr_t *integer_expr;
+  const mu_lambda_expr_t *lambda_expr;
   const mu_name_expr_t *name_expr;
   const mu_record_expr_t *record_expr;
   const mu_vector_expr_t *vector_expr;
@@ -60,10 +61,13 @@ typedef struct {
 
   const mu_stmt_t *stmt;
   const mu_define_stmt_t *define_stmt;
+
+  const mu_variable_view_t *variable_view;
 }
 
 %token DEFINE "define"
 %token INSTANCE "instance"
+%token LAMBDA "lambda"
 %token TYPE "type"
 %token BOOLEAN "Boolean"
 %token INTEGER "Integer"
@@ -82,6 +86,7 @@ typedef struct {
 %type <access_expr> access_expr
 %type <boolean_expr> boolean_expr
 %type <integer_expr> integer_expr
+%type <lambda_expr> lambda_expr
 %type <name_expr> name_expr
 %type <record_expr> record_expr
 %type <vector_expr> vector_expr
@@ -93,7 +98,12 @@ typedef struct {
 
 %type <define_stmt> define_stmt
 
+%type <variable_view> variable_view
+
 %type <i> record_argv vector_argv
+
+%left LAMBDA
+%left '.'
 
 // ========================= YYLLOC_DEFAULT/yyerror ======================= {{{1
 
@@ -141,6 +151,7 @@ expr: '(' expr ')' { $$ = $2; } |
   access_expr  { $$ = &$access_expr->as_expr; } |
   boolean_expr { $$ = &$boolean_expr->as_expr; } |
   integer_expr { $$ = &$integer_expr->as_expr; } |
+  lambda_expr  { $$ = &$lambda_expr->as_expr; } |
   name_expr    { $$ = &$name_expr->as_expr; } |
   record_expr  { $$ = &$record_expr->as_expr; } |
   vector_expr  { $$ = &$vector_expr->as_expr; }
@@ -155,6 +166,10 @@ boolean_expr: BOOLEAN_LITERAL {
 
 integer_expr: INTEGER_LITERAL {
   $$ = mu_integer_expr(syntax->engine, $1, &@$);
+}
+
+lambda_expr: "lambda" _ variable_view _ '=' _ expr %prec LAMBDA {
+  $$ = mu_lambda_expr(syntax->engine, $variable_view, $expr);
 }
 
 name_expr: name {
@@ -253,6 +268,12 @@ define_stmt: "define" _ name _ sign _ '=' _ expr '\n' {
 
 } | "define" _ name _ '=' _ expr '\n' {
   $$ = mu_define_stmt(syntax->engine, $name, $expr, NULL);
+}
+
+// ================================== View ================================ {{{1
+
+variable_view: name {
+  $$ = mu_variable_view(syntax->engine, &@$, $name);
 }
 
 // ============================= Miscellaneous ============================ {{{1

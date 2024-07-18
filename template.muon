@@ -1,3 +1,5 @@
+define f = lambda x = [x]
+
 define a = [1]
 define b = [2]
 define c = []

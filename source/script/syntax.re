@@ -14,6 +14,7 @@ stop = [\x00];
 
 <normal> "define"   { return DEFINE; }
 <normal> "instance" { return INSTANCE; }
+<normal> "lambda"   { return LAMBDA; }
 <normal> "type"     { return TYPE; }
 
 <normal> "Boolean"  { return BOOLEAN; }

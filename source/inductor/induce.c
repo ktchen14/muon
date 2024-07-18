@@ -153,6 +153,14 @@ static const mu_type_t *equate(
           assert(0);
 
       } else if (a->kind == MU_VARIABLE_TYPE && b->kind == MU_VARIABLE_TYPE) {
+        const mu_variable_type_t *va = (const mu_variable_type_t *) a;
+        const mu_variable_type_t *vb = (const mu_variable_type_t *) b;
+        if (va->argc == vb->argc) {
+          if (set(induce, a, b) == NULL)
+            goto except;
+          break;
+        }
+
         assert(!"Unimplemented");
 
       } else {
