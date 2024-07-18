@@ -44,15 +44,23 @@ int main(int argc, char *argv[argc]) {
 
   mu_script_debug(script);
 
-  const mu_stmt_t *const *resolution = resolve_names(
-      &engine, script);
-  for (size_t i = 0; i < engine.node_number; i++) {
-    if (resolution[i] != NULL)
-      fprintf(stderr, "Stator #%zu = Stator #%zu\n", i, resolution[i]->as_stator.id);
+  detect_t detect_actual;
+  detect_t *detect;
+  if ((detect = detect_initialize(&detect_actual, &engine, &status)) == NULL)
+    assert(0);
+
+  if (detect_script(script, detect) == NULL)
+    assert(0);
+
+  const detect_result_t *detect_result = detect->result;
+
+  for (size_t i = 0; i < detect_result->length; i++) {
+    if (detect_result->data[i] != NULL)
+      fprintf(stderr, "Stator #%zu = Stator #%zu\n", i, detect_result->data[i]->as_stator.id);
   }
 
   induce_t *induce = induce_initialize(
-      &(induce_t) {0}, &engine, resolution, &status);
+      &(induce_t) {0}, &engine, detect_result, &status);
   assert(induce != NULL);
 
   for (size_t i = 0; i < script->argc; i++) {

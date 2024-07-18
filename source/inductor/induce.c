@@ -1,5 +1,6 @@
 #include "induce.h"
 
+#include "detect.h"
 #include "../stator.h"
 #include "../status.h"
 
@@ -50,7 +51,7 @@ static const mu_type_t *node_induce(const mu_node_t *node, induce_t *induce)
 induce_t *induce_initialize(
     induce_t *induce,
     mu_engine_t *engine,
-    const mu_stmt_t *const *node_to_stmt,
+    const detect_result_t *detect,
     mu_status_t *status) {
   size_t length = engine->node_number + engine->type_number;
 
@@ -64,7 +65,7 @@ induce_t *induce_initialize(
     .node_number = engine->node_number,
     .length = length,
     .data = data,
-    .node_to_stmt = node_to_stmt,
+    .detect = detect,
     .status = status,
   };
   return induce;
@@ -217,21 +218,6 @@ except:
   return NULL;
 }
 
-static inline const mu_node_t *indirect_at(
-    const mu_node_t *node,
-    size_t i,
-    const mu_stmt_t *const *node_to_stmt) {
-  const mu_stmt_t *stmt;
-  switch (node->kind) {
-    case MU_NAME_EXPR_NODE:
-    case MU_NAME_SIGN_NODE:
-      if ((stmt = node_to_stmt[node->as_stator.id]) == NULL)
-        return NULL;
-      return i == 0 ? &stmt->as_node : NULL;
-    default: return node_at(node, i);
-  }
-}
-
 const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
   assert(root->as_stator.id < induce->node_number);
 
@@ -240,7 +226,8 @@ const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
 
   const mu_node_t *node = root, *next;
   do {
-    while ((next = indirect_at(node, node_cursor(node)->i++, induce->node_to_stmt)) != NULL) {
+    const detect_result_t *detect = induce->detect;
+    while ((next = detect_at(detect, node, node_cursor(node)->i++)) != NULL) {
       assert(node->as_stator.id < induce->node_number);
 
       if (induce->data[node->as_stator.id] != NULL)
@@ -342,9 +329,9 @@ __attribute__((nonnull)) static const mu_type_t *lambda_expr_induce(
 
 __attribute__((nonnull)) static const mu_type_t *name_expr_induce(
     const mu_name_expr_t *expr, induce_t *induce) {
-  const mu_stmt_t *target;
-  if ((target = induce->node_to_stmt[expr->as_stator.id]) != NULL)
-    return induce_evince(induce, &target->as_node);
+  const mu_node_t *target;
+  if ((target = detect_evince(induce->detect, &expr->as_node)) != NULL)
+    return induce_evince(induce, target);
 
   const mu_variable_type_t *result;
   if ((result = mu_open_type(induce->engine)) == NULL)
@@ -428,9 +415,9 @@ __attribute__((nonnull)) static const mu_type_t *member_sign_induce(
 
 __attribute__((nonnull)) static const mu_type_t *name_sign_induce(
     const mu_name_sign_t *sign, induce_t *induce) {
-  const mu_stmt_t *target;
-  if ((target = induce->node_to_stmt[sign->as_stator.id]) != NULL)
-    return induce_evince(induce, &target->as_node);
+  const mu_node_t *target;
+  if ((target = detect_evince(induce->detect, &sign->as_node)) != NULL)
+    return induce_evince(induce, target);
 
   const mu_variable_type_t *result;
   if ((result = mu_open_type(induce->engine)) == NULL)

@@ -3,6 +3,7 @@
 
 #include <muon/stator.h>
 
+#include "detect.h"
 #include "../status.h"
 
 #include <assert.h>
@@ -12,7 +13,7 @@ typedef struct {
   mu_engine_t *engine;
   mu_status_t *status;
 
-  const mu_stmt_t *const *node_to_stmt;
+  const detect_result_t *detect;
 
   size_t node_number;
   size_t length;
@@ -23,7 +24,7 @@ typedef struct {
 induce_t *induce_initialize(
     induce_t *induce,
     mu_engine_t *engine,
-    const mu_stmt_t *const *node_to_stmt,
+    const detect_result_t *detect,
     mu_status_t *status)
   __attribute__((nonnull));
 
