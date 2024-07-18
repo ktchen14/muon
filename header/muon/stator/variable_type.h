@@ -7,8 +7,8 @@
 typedef struct {
   MU_TYPE_HEADER;
 
+  size_t number;
   size_t argc;
-
   const mu_test_t *argv[/* argc */];
 } mu_variable_type_t;
 

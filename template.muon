@@ -1,8 +1,6 @@
-define f = lambda x = (foo: x, bar: x.baz)
-define g = lambda y = f y
-define h = g (baz: 2)
-
 define a = [1]
 define b = [2]
 define c = []
 define d = [a, b, c]
+
+define e = lambda x = x c

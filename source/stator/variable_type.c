@@ -34,8 +34,21 @@ const mu_variable_type_t *mu_open_type(mu_engine_t *engine) {
   return mu_variable_type(engine, 0, NULL);
 }
 
+static _Atomic size_t next_number = 0;
+static const char *alphabet[] = {
+  "α", "β", "γ", "δ", "ε", "ζ", "η", "θ", "ι", "κ", "μ", "ν", "ξ", "ο", "π",
+  "ρ", "σ", "τ", "υ", "φ", "χ", "ψ", "ω", };
+static size_t alphabet_length = sizeof(alphabet) / sizeof(alphabet[0]);
+
 void mu_variable_type_debug(const mu_variable_type_t *type) {
-  fprintf(stderr, "Variable #%zu", type->as_stator.id);
+  if (type->number == 0)
+    ((mu_variable_type_t *) type)->number = ++next_number;
+
+  size_t number = type->number - 1;
+  do {
+    fprintf(stderr, "%s", alphabet[number % alphabet_length]);
+    number /= alphabet_length;
+  } while (number >= alphabet_length);
 
   if (type->argc > 0) {
     fputs(" with (", stderr);
