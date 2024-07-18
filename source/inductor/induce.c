@@ -329,6 +329,31 @@ __attribute__((nonnull)) static const mu_type_t *integer_expr_induce(
   return &result->as_type;
 }
 
+__attribute__((nonnull)) static const mu_type_t *invoke_expr_induce(
+    const mu_invoke_expr_t *expr, induce_t *induce) {
+  const mu_type_t *lambda = induce_evince(induce, &expr->lambda->as_node);
+  const mu_type_t *matter = induce_evince(induce, &expr->matter->as_node);
+
+  const mu_lambda_type_t *lambda_type;
+  if ((lambda_type = mu_type_cast(lambda, lambda_type)) != NULL) {
+    if (equate(induce, lambda_type->argument, matter) == NULL)
+      return NULL;
+    return lambda_type->output;
+  }
+
+  const mu_variable_type_t *output;
+  if ((output = mu_open_type(induce->engine)) == NULL)
+    return NULL;
+  const mu_type_t *result = &output->as_type;
+
+  if ((lambda_type = mu_lambda_type(induce->engine, matter, result)) == NULL)
+    return NULL;
+
+  if (equate(induce, lambda, &lambda_type->as_type) == NULL)
+    return NULL;
+  return result;
+}
+
 __attribute__((nonnull)) static const mu_type_t *lambda_expr_induce(
     const mu_lambda_expr_t *expr, induce_t *induce) {
   const mu_type_t *argument = induce_evince(induce, &expr->argument->as_node);

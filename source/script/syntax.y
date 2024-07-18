@@ -46,6 +46,7 @@ typedef struct {
   const mu_access_expr_t *access_expr;
   const mu_boolean_expr_t *boolean_expr;
   const mu_integer_expr_t *integer_expr;
+  const mu_invoke_expr_t *invoke_expr;
   const mu_lambda_expr_t *lambda_expr;
   const mu_name_expr_t *name_expr;
   const mu_record_expr_t *record_expr;
@@ -84,6 +85,7 @@ typedef struct {
 %type <access_expr> access_expr
 %type <boolean_expr> boolean_expr
 %type <integer_expr> integer_expr
+%type <invoke_expr> invoke_expr
 %type <lambda_expr> lambda_expr
 %type <name_expr> name_expr
 %type <record_expr> record_expr
@@ -149,6 +151,7 @@ expr: '(' expr ')' { $$ = $2; } |
   access_expr  { $$ = &$access_expr->as_expr; } |
   boolean_expr { $$ = &$boolean_expr->as_expr; } |
   integer_expr { $$ = &$integer_expr->as_expr; } |
+  invoke_expr  { $$ = &$invoke_expr->as_expr; } |
   lambda_expr  { $$ = &$lambda_expr->as_expr; } |
   name_expr    { $$ = &$name_expr->as_expr; } |
   record_expr  { $$ = &$record_expr->as_expr; } |
@@ -164,6 +167,10 @@ boolean_expr: BOOLEAN_LITERAL {
 
 integer_expr: INTEGER_LITERAL {
   $$ = mu_integer_expr(syntax->engine, $1, &@$);
+}
+
+invoke_expr: expr[lambda] _ expr[matter] {
+  $$ = mu_invoke_expr(syntax->engine, $lambda, $matter);
 }
 
 lambda_expr: "lambda" _ variable_view _ '=' _ expr %prec LAMBDA {

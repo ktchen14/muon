@@ -89,7 +89,7 @@ void mu_record_type_debug(const mu_record_type_t *type) {
         fputs(", ", stderr);
         type_member_debug(type->argv[i]);
       }
-    } else
+    } else if (type->argv[0].name == NULL)
       putc(',', stderr);
   }
   putc(')', stderr);
