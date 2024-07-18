@@ -42,6 +42,11 @@ static inline const mu_node_t *detect_at(
   }
 }
 
+__attribute__((nonnull, pure))
+static inline const detect_result_t *detect_result(const detect_t *detect) {
+  return detect->result;
+}
+
 detect_t *detect_initialize(
     detect_t *detect, const mu_engine_t *engine, mu_status_t *status)
   __attribute__((nonnull));

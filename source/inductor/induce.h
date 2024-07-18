@@ -24,7 +24,7 @@ typedef struct {
 induce_t *induce_initialize(
     induce_t *induce,
     mu_engine_t *engine,
-    const detect_result_t *detect,
+    const detect_t *detect,
     mu_status_t *status)
   __attribute__((nonnull));
 

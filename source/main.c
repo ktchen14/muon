@@ -44,31 +44,23 @@ int main(int argc, char *argv[argc]) {
 
   mu_script_debug(script);
 
-  detect_t detect_actual;
-  detect_t *detect;
-  if ((detect = detect_initialize(&detect_actual, &engine, &status)) == NULL)
+  detect_t detect;
+  if (detect_initialize(&detect, &engine, &status) == NULL)
     assert(0);
 
-  if (detect_script(script, detect) == NULL)
+  if (detect_script(script, &detect) == NULL)
     assert(0);
 
-  const detect_result_t *detect_result = detect->result;
-
-  for (size_t i = 0; i < detect_result->length; i++) {
-    if (detect_result->data[i] != NULL)
-      fprintf(stderr, "Stator #%zu = Stator #%zu\n", i, detect_result->data[i]->as_stator.id);
-  }
-
-  induce_t *induce = induce_initialize(
-      &(induce_t) {0}, &engine, detect_result, &status);
-  assert(induce != NULL);
+  induce_t induce;
+  if (induce_initialize(&induce, &engine, &detect, &status) == NULL)
+    assert(0);
 
   for (size_t i = 0; i < script->argc; i++) {
-    if (induce_node(induce, &script->argv[i]->as_node) == NULL)
+    if (induce_node(&induce, &script->argv[i]->as_node) == NULL)
       assert(0);
   }
 
-  reduce_t reduce = { .induce = induce };
+  reduce_t reduce = { .induce = &induce };
   size_t length = 1000;
   const mu_type_t **reduce_data;
   if ((reduce_data = malloc(sizeof(const mu_type_t *[length]))) == NULL)

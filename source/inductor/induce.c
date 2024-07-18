@@ -51,7 +51,7 @@ static const mu_type_t *node_induce(const mu_node_t *node, induce_t *induce)
 induce_t *induce_initialize(
     induce_t *induce,
     mu_engine_t *engine,
-    const detect_result_t *detect,
+    const detect_t *detect,
     mu_status_t *status) {
   size_t length = engine->node_number + engine->type_number;
 
@@ -65,7 +65,7 @@ induce_t *induce_initialize(
     .node_number = engine->node_number,
     .length = length,
     .data = data,
-    .detect = detect,
+    .detect = detect_result(detect),
     .status = status,
   };
   return induce;
