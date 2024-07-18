@@ -43,3 +43,14 @@ void mu_stmt_debug(const mu_stmt_t *stmt) {
 #undef MU_EMIT
   }
 }
+
+void mu_view_debug(const mu_view_t *view) {
+  switch (view->kind) {
+#define MU_EMIT(lower, upper, t) \
+    case MU_##upper##_VIEW: \
+      mu_##lower##_view_debug((const mu_##lower##_view_t *) view); \
+      break;
+    MU_EACH_VIEW_KIND(MU_EMIT)
+#undef MU_EMIT
+  }
+}
