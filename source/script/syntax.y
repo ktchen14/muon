@@ -103,7 +103,8 @@ typedef struct {
 %type <i> record_argv vector_argv
 
 %nonassoc LAMBDA
-%left '.'
+%left     INVOKE ' '
+%left     '.'
 
 // ========================= YYLLOC_DEFAULT/yyerror ======================= {{{1
 
@@ -169,7 +170,7 @@ integer_expr: INTEGER_LITERAL {
   $$ = mu_integer_expr(syntax->engine, $1, &@$);
 }
 
-invoke_expr: expr[lambda] _ expr[matter] {
+invoke_expr: expr[lambda] _ expr[matter] %prec INVOKE {
   $$ = mu_invoke_expr(syntax->engine, $lambda, $matter);
 }
 
