@@ -22,6 +22,8 @@
 #include "define_stmt.h"    // IWYU pragma: export
 #include "type_stmt.h"      // IWYU pragma: export
 
+#include "variable_view.h"  // IWYU pragma: export
+
 #include <stddef.h>
 
 /// @internal Used to emit each branch in mu_expr_cast()
@@ -36,6 +38,10 @@
 #define MU_STMT_CAST_EMIT(lower, upper, t, ...) \
   , const mu_##lower##_stmt_t *: _kind == MU_##upper##_STMT##__VA_ARGS__
 
+/// @internal Used to emit each branch in mu_view_cast()
+#define MU_VIEW_CAST_EMIT(lower, upper, t, ...) \
+  , const mu_##lower##_view_t *: _kind == MU_##upper##_VIEW##__VA_ARGS__
+
 /**
  * @brief Downcast the @a abstract node to the <tt>typeof(concrete)</tt>
  *
@@ -45,6 +51,7 @@
  * - <tt>const mu_expr_t *</tt>
  * - <tt>const mu_sign_t *</tt>
  * - <tt>const mu_stmt_t *</tt>
+ * - <tt>const mu_view_t *</tt>
  *
  * Then if @a abstract is an instance of that type, it will be cast to that type
  * and returned. Otherwise, this will return @c NULL.
@@ -65,6 +72,7 @@
  *   - <tt>const mu_expr_t *</tt>
  *   - <tt>const mu_sign_t *</tt>
  *   - <tt>const mu_stmt_t *</tt>
+ *   - <tt>const mu_view_t *</tt>
  *   - or a const qualified pointer to a concrete node
  */
 #define mu_node_cast(abstract, concrete) ({ \
@@ -75,10 +83,12 @@
     _Bool _castable = _Generic(_concrete, \
       const mu_expr_t *: 0 MU_EACH_EXPR_KIND(MU_CAST_EMIT, _EXPR_NODE), \
       const mu_sign_t *: 0 MU_EACH_SIGN_KIND(MU_CAST_EMIT, _SIGN_NODE), \
-      const mu_stmt_t *: 0 MU_EACH_STMT_KIND(MU_CAST_EMIT, _STMT_NODE) \
+      const mu_stmt_t *: 0 MU_EACH_STMT_KIND(MU_CAST_EMIT, _STMT_NODE), \
+      const mu_view_t *: 0 MU_EACH_VIEW_KIND(MU_CAST_EMIT, _VIEW_NODE) \
       MU_EACH_EXPR_KIND(MU_EXPR_CAST_EMIT, _NODE) \
       MU_EACH_SIGN_KIND(MU_SIGN_CAST_EMIT, _NODE) \
-      MU_EACH_STMT_KIND(MU_STMT_CAST_EMIT, _NODE)); \
+      MU_EACH_STMT_KIND(MU_STMT_CAST_EMIT, _NODE) \
+      MU_EACH_VIEW_KIND(MU_VIEW_CAST_EMIT, _NODE)); \
     _castable ? (typeof(_concrete)) _abstract : NULL; \
   })
 
@@ -178,6 +188,38 @@
     _castable ? (typeof(_concrete)) _abstract : NULL; \
   })
 
+/**
+ * @brief Downcast the @a abstract view to the <tt>typeof(concrete)</tt>
+ *
+ * @a abstract should have type <tt>const mu_view_t *</tt>. @a concrete should
+ * be, or have, the type of a pointer to a const qualified concrete view. Then
+ * if @a abstract is an instance of that type, it will be cast to that type and
+ * returned. Otherwise, this will return @c NULL.
+ *
+ * @par Example:
+ * @code{.c}
+ *   mu_view_t *abstract_view = ...;
+ *
+ *   mu_vector_view_t *view;
+ *   if ((view = mu_view_cast(abstract_view, view)) == NULL)
+ *     return ...;
+ * @endcode
+ *
+ * The behavior is undefined if:
+ * - @a abstract is @c NULL
+ * - @a abstract doesn't have type <tt>const mu_view_t *</tt>
+ * - @a concrete isn't, or doesn't have, the type of a const qualified pointer
+ *   to a concrete view
+ */
+#define mu_view_cast(abstract, concrete) ({ \
+    const mu_view_t *_abstract = (abstract); \
+    typeof(concrete) _concrete; \
+    \
+    mu_view_kind_t _kind = _abstract->kind; \
+    int _castable = _Generic(_concrete MU_EACH_STMT_KIND(MU_STMT_CAST_EMIT)); \
+    _castable ? (typeof(_concrete)) _abstract : NULL; \
+  })
+
 /// Emit debugging information on the abstract @a node to the debug stream
 void mu_node_debug(const mu_node_t *node) __attribute__((nonnull));
 
@@ -189,5 +231,8 @@ void mu_sign_debug(const mu_sign_t *sign) __attribute__((nonnull));
 
 /// Emit debugging information on the abstract @a stmt to the debug stream
 void mu_stmt_debug(const mu_stmt_t *stmt) __attribute__((nonnull));
+
+/// Emit debugging information on the abstract @a view to the debug stream
+void mu_view_debug(const mu_view_t *view) __attribute__((nonnull));
 
 #endif /* MU_STATOR_NODE_H */

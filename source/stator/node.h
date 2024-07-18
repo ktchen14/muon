@@ -24,6 +24,8 @@
 #include "define_stmt.h"       // IWYU pragma: export
 #include "type_stmt.h"         // IWYU pragma: export
 
+#include "variable_view.h"     // IWYU pragma: export
+
 #include "engine.h"
 
 #include <assert.h>

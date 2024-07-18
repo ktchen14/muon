@@ -459,6 +459,16 @@ __attribute__((nonnull)) static const mu_type_t *type_stmt_induce(
   assert(0);
 }
 
+// ---------------------------------- View -------------------------------- {{{1
+
+__attribute__((nonnull)) static const mu_type_t *variable_view_induce(
+    const mu_variable_view_t *view, induce_t *induce) {
+  const mu_variable_type_t *open_type;
+  if ((open_type = mu_open_type(induce->engine)) == NULL)
+    return NULL;
+  return &open_type->as_type;
+}
+
 // ---------------------------------- Type -------------------------------- {{{1
 
 /* static int boolean_type_equate( */

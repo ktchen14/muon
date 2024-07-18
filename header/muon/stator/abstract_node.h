@@ -7,7 +7,8 @@
 #define MU_EACH_NODE_KIND(emit, ...) \
   MU_EACH_EXPR_KIND(MU_EMIT_NODE, _expr, _EXPR, Expr, emit, ##__VA_ARGS__) \
   MU_EACH_SIGN_KIND(MU_EMIT_NODE, _sign, _SIGN, Sign, emit, ##__VA_ARGS__) \
-  MU_EACH_STMT_KIND(MU_EMIT_NODE, _stmt, _STMT, Stmt, emit, ##__VA_ARGS__)
+  MU_EACH_STMT_KIND(MU_EMIT_NODE, _stmt, _STMT, Stmt, emit, ##__VA_ARGS__) \
+  MU_EACH_VIEW_KIND(MU_EMIT_NODE, _view, _VIEW, View, emit, ##__VA_ARGS__)
 
 // TODO: rename this
 /// @internal Used as @c emit in MU_EACH_NODE_KIND
@@ -85,6 +86,21 @@ typedef enum {
 #undef MU_EMIT
 } mu_stmt_kind_t;
 
+/**
+ * @brief An enumeration over each kind of view
+ *
+ * This will define:
+ *
+ * @verbatim
+ *   MU_VARIABLE_VIEW = MU_VARIABLE_VIEW_NODE,
+ * @endverbatim
+ */
+typedef enum {
+#define MU_EMIT(l, upper, t) MU_##upper##_VIEW = MU_##upper##_VIEW_NODE,
+  MU_EACH_VIEW_KIND(MU_EMIT)
+#undef MU_EMIT
+} mu_view_kind_t;
+
 /// Source location of a node
 typedef struct {
   /// Name of the source file or stream
@@ -141,6 +157,15 @@ typedef struct {
   };
 } mu_stmt_t;
 
+/// An abstract view
+typedef struct {
+  union {
+    mu_view_kind_t kind;
+    mu_node_t as_node;
+    mu_stator_t as_stator;
+  };
+} mu_view_t;
+
 /// The header that each concrete node must have
 #define MU_NODE_HEADER union { \
   mu_node_t as_node; \
@@ -164,6 +189,13 @@ typedef struct {
 /// The header that each concrete stmt must have
 #define MU_STMT_HEADER union { \
   mu_stmt_t as_stmt; \
+  mu_node_t as_node; \
+  mu_stator_t as_stator; \
+}
+
+/// The header that each concrete view must have
+#define MU_VIEW_HEADER union { \
+  mu_view_t as_view; \
   mu_node_t as_node; \
   mu_stator_t as_stator; \
 }
