@@ -1,14 +1,4 @@
-define x = 1
-define y Integer = x
-define z = [x, y, 3]
-define a = [x, y]
-define b = [a, a]
-
-define a1 Boolean = true
-define b1 Boolean = false
-
-define r1 = (a: 1, b: true)
-define r2 = (a: r1, b: 2)
-define r3 = (b: r1, a: 2)
-define h = r2.a.a
-define ha = r2.a.b
+define a = [1]
+define b = [2]
+define c = []
+define d = [a, b, c]
