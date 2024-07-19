@@ -1,7 +1,6 @@
 #ifndef MU_INDUCTOR_DETECT_I
 #define MU_INDUCTOR_DETECT_I
 
-#include "../script.h"
 #include "../stator.h"
 #include "../status.h"
 
