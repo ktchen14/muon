@@ -5,14 +5,13 @@
 
 /// Expands to emit(lower, upper, title, ...) for each kind of node
 #define MU_EACH_NODE_KIND(emit, ...) \
-  MU_EACH_EXPR_KIND(MU_EMIT_NODE, _expr, _EXPR, Expr, emit, ##__VA_ARGS__) \
-  MU_EACH_SIGN_KIND(MU_EMIT_NODE, _sign, _SIGN, Sign, emit, ##__VA_ARGS__) \
-  MU_EACH_STMT_KIND(MU_EMIT_NODE, _stmt, _STMT, Stmt, emit, ##__VA_ARGS__) \
-  MU_EACH_VIEW_KIND(MU_EMIT_NODE, _view, _VIEW, View, emit, ##__VA_ARGS__)
+  MU_EACH_EXPR_KIND(MU_EACH_NODE_EMIT, _expr, _EXPR, Expr, emit, ##__VA_ARGS__) \
+  MU_EACH_SIGN_KIND(MU_EACH_NODE_EMIT, _sign, _SIGN, Sign, emit, ##__VA_ARGS__) \
+  MU_EACH_STMT_KIND(MU_EACH_NODE_EMIT, _stmt, _STMT, Stmt, emit, ##__VA_ARGS__) \
+  MU_EACH_VIEW_KIND(MU_EACH_NODE_EMIT, _view, _VIEW, View, emit, ##__VA_ARGS__)
 
-// TODO: rename this
 /// @internal Used as @c emit in MU_EACH_NODE_KIND
-#define MU_EMIT_NODE(l, u, t, lsuffix, usuffix, tsuffix, emit, ...) \
+#define MU_EACH_NODE_EMIT(l, u, t, lsuffix, usuffix, tsuffix, emit, ...) \
   emit(l##lsuffix, u##usuffix, t##tsuffix, ##__VA_ARGS__)
 
 /**
