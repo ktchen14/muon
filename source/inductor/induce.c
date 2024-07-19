@@ -402,6 +402,11 @@ __attribute__((nonnull)) static const mu_type_t *record_expr_induce(
   return &record_type_activate(allocation)->as_type;
 }
 
+__attribute__((nonnull)) static const mu_type_t *sequence_expr_induce(
+    const mu_sequence_expr_t *expr, induce_t *induce) {
+  return induce_evince(induce, &expr->output->as_node);
+}
+
 __attribute__((nonnull)) static const mu_type_t *vector_expr_induce(
     const mu_vector_expr_t *expr, induce_t *induce) {
   const mu_variable_type_t *matter_type;

@@ -23,6 +23,16 @@ mu_script_t *mu_script(size_t argc, const mu_stmt_t *argv[argc]) {
   return script;
 }
 
+const mu_sequence_expr_t *mu_script_to_sequence_expr(
+    mu_engine_t *engine, const mu_script_t *script) {
+  const mu_zero_expr_t *zero_expr;
+  if ((zero_expr = mu_zero_expr(engine)) == NULL)
+    return NULL;
+  const mu_expr_t *output = &zero_expr->as_expr;
+
+  return mu_sequence_expr(engine, output, script->argc, script->argv);
+}
+
 void mu_script_debug(const mu_script_t *script) {
   fprintf(stderr, "Script:\n");
 

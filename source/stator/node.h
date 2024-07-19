@@ -12,6 +12,7 @@
 #include "lambda_expr.h"       // IWYU pragma: export
 #include "name_expr.h"         // IWYU pragma: export
 #include "record_expr.h"       // IWYU pragma: export
+#include "sequence_expr.h"     // IWYU pragma: export
 #include "vector_expr.h"       // IWYU pragma: export
 #include "zero_expr.h"         // IWYU pragma: export
 

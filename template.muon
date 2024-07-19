@@ -1,5 +1,5 @@
 define a = [1]
-define b = [2]
+define b : Integer = [2]
 define c = []
 define d = [a, b, c]
 
