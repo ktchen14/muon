@@ -451,11 +451,6 @@ __attribute__((nonnull)) static const mu_type_t *integer_sign_induce(
   return &result->as_type;
 }
 
-__attribute__((nonnull)) static const mu_type_t *member_sign_induce(
-    const mu_member_sign_t *sign, induce_t *induce) {
-  assert(0);
-}
-
 __attribute__((nonnull)) static const mu_type_t *name_sign_induce(
     const mu_name_sign_t *sign, induce_t *induce) {
   const mu_node_t *target;

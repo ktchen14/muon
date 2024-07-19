@@ -18,7 +18,6 @@
 
 #include "boolean_sign.h"      // IWYU pragma: export
 #include "integer_sign.h"      // IWYU pragma: export
-#include "member_sign.h"       // IWYU pragma: export
 #include "name_sign.h"         // IWYU pragma: export
 #include "record_sign.h"       // IWYU pragma: export
 #include "variable_sign.h"     // IWYU pragma: export

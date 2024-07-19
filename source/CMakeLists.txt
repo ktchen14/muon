@@ -27,7 +27,6 @@ target_sources(muon PRIVATE
 
   stator/boolean_sign.c
   stator/integer_sign.c
-  stator/member_sign.c
   stator/name_sign.c
   stator/record_sign.c
   stator/variable_sign.c
