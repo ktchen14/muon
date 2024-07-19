@@ -11,7 +11,8 @@
 #include <string.h>
 
 const mu_vector_expr_t *mu_vector_expr(
-    mu_engine_t *engine, size_t argc, const mu_expr_t *const argv[argc]) {
+    mu_engine_t *engine, size_t argc, const mu_expr_t *const argv[/* argc */]) {
+  assert(argc == 0 && argv == NULL || argc != 0 && argv != NULL);
   for (size_t i = 0; i < argc; i++)
     assert(argv[i]->as_stator.engine == engine);
 
@@ -25,7 +26,9 @@ const mu_vector_expr_t *mu_vector_expr(
   *result = (mu_vector_expr_t) {
     .as_expr.kind = MU_VECTOR_EXPR, .argc = argc,
   };
-  memcpy(&result->argv, argv, sizeof(const mu_expr_t *[argc]));
+
+  if (argc != 0)
+    memcpy(&result->argv, argv, sizeof(const mu_expr_t *[argc]));
 
   return assign_node(engine, result);
 }

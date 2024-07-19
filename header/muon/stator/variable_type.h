@@ -13,7 +13,7 @@ typedef struct {
 } mu_variable_type_t;
 
 const mu_variable_type_t *mu_variable_type(
-    mu_engine_t *engine, size_t argc, const mu_test_t *argv[argc])
+    mu_engine_t *engine, size_t argc, const mu_test_t *argv[/* argc */])
   __attribute__((malloc, nonnull(1)));
 
 const mu_variable_type_t *mu_open_type(mu_engine_t *engine)

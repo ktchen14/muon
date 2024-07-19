@@ -14,11 +14,16 @@
 static void type_member_debug(mu_type_member_t member);
 
 const mu_record_type_t *mu_record_type(
-    mu_engine_t *engine, size_t argc, const mu_type_member_t argv[argc]) {
+    mu_engine_t *engine, size_t argc, const mu_type_member_t argv[/* argc */]) {
+  assert(argc == 0 && argv == NULL || argc != 0 && argv != NULL);
+
   mu_record_type_t *result;
   if ((result = record_type_allocate(engine, argc)) == NULL)
     return NULL;
-  memcpy(&result->argv, argv, sizeof(const mu_type_member_t[argc]));
+
+  if (argc != 0)
+    memcpy(&result->argv, argv, sizeof(const mu_type_member_t[argc]));
+
   return record_type_activate(result);
 }
 

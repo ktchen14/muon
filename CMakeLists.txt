@@ -9,7 +9,7 @@ project(Muon VERSION "${PROJECT_VERSION}"
   LANGUAGES C
 )
 
-set(CMAKE_C_FLAGS "-g -fsanitize=address -Wno-parentheses")
+set(CMAKE_C_FLAGS "-g -fsanitize=address -fsanitize=undefined -Wno-parentheses")
 
 add_library(muon)
 target_compile_features(muon PUBLIC c_std_11)
