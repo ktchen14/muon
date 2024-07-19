@@ -37,6 +37,31 @@ const mu_variable_type_t *mu_open_type(mu_engine_t *engine) {
   return mu_variable_type(engine, 0, NULL);
 }
 
+mu_variable_type_t *variable_type_allocate(mu_engine_t *engine, size_t argc) {
+  size_t size;
+  if (rare((size = struct_size(mu_variable_type_t, argv, argc)) == 0))
+    return errno = ENOMEM, NULL;
+
+  mu_variable_type_t *result;
+  if ((result = type_allocate(engine, size)) == NULL)
+    return NULL;
+  *result = (mu_variable_type_t) { .as_stator.engine = engine, .argc = argc };
+  return result;
+}
+
+const mu_variable_type_t *variable_type_activate(mu_variable_type_t *type) {
+  mu_engine_t *engine = (mu_engine_t *) type->as_stator.engine;
+
+  for (size_t i = 0; i < type->argc; i++)
+    assert(type->argv[i]->as_stator.engine == engine);
+
+  mu_variable_type_t source = {
+    .as_type.kind = MU_VARIABLE_TYPE, .argc = type->argc
+  };
+  memcpy(type, &source, offsetof(mu_variable_type_t, argv));
+  return assign_type(engine, type);
+}
+
 static _Atomic size_t next_number = 0;
 static const char *alphabet[] = {
   "α", "β", "γ", "δ", "ε", "ζ", "η", "θ", "ι", "κ", "μ", "ν", "ξ", "ο", "π",
@@ -60,7 +85,7 @@ void mu_variable_type_debug(const mu_variable_type_t *type) {
   if (type->argc > 0) {
     fputs(" with (", stderr);
     for (size_t i = 0; i < type->argc; i++) {
-      if (i > 1)
+      if (i > 0)
         fputs(", ", stderr);
       mu_test_debug(type->argv[i]);
     }

@@ -156,17 +156,82 @@ static const mu_type_t *equate(
         const mu_variable_type_t *va = (const mu_variable_type_t *) a;
         const mu_variable_type_t *vb = (const mu_variable_type_t *) b;
 
-        if (va->argc == 0) {
-          if (set(induce, a, b) == NULL)
+        size_t i = type_cursor(a)->i;
+        if (i >= va->argc) {
+          size_t argc = va->argc + vb->argc;
+
+          mu_variable_type_t *result;
+          if ((result = variable_type_allocate(induce->engine, argc)) == NULL)
             goto except;
-          break;
-        } else if (vb->argc == 0) {
-          if (set(induce, b, a) == NULL)
+
+          size_t x = 0, y = 0, z = 0;
+          while (x < va->argc && y < vb->argc) {
+            const mu_test_t *test_a = va->argv[x];
+            const mu_test_t *test_b = vb->argv[y];
+
+            const mu_member_test_t *member_test_a;
+            if ((member_test_a = mu_test_cast(test_a, member_test_a)) == NULL)
+              assert(0);
+
+            const mu_member_test_t *member_test_b;
+            if ((member_test_b = mu_test_cast(test_b, member_test_b)) == NULL)
+              assert(0);
+
+            if (member_test_a->name == member_test_b->name) {
+              result->argv[z++] = &member_test_a->as_test;
+              x++, y++;
+            } else {
+              int cmp_result = name_cmp(member_test_a->name, member_test_b->name);
+              if (cmp_result < 0) {
+                result->argv[z++] = &member_test_a->as_test;
+                x++;
+              } else if (cmp_result > 0) {
+                result->argv[z++] = &member_test_b->as_test;
+                y++;
+              }
+            }
+          }
+
+          for (; x < va->argc; x++)
+            result->argv[z++] = va->argv[x];
+
+          for (; y < vb->argc; y++)
+            result->argv[z++] = vb->argv[y];
+
+          result->argc = z;
+          const mu_variable_type_t *const_result;
+          const_result = variable_type_activate(result);
+
+          if (set(induce, a, &const_result->as_type) == NULL)
+            goto except;
+
+          if (set(induce, b, &const_result->as_type) == NULL)
             goto except;
           break;
         }
+        const mu_test_t *test_a = va->argv[i];
 
-        assert(!"Unimplemented");
+        size_t j = type_cursor(b)->i++;
+        if (j >= vb->argc) {
+          type_cursor(a)->i++;
+          type_cursor(b)->i = 0;
+          continue;
+        }
+        const mu_test_t *test_b = vb->argv[j];
+
+        const mu_member_test_t *member_test_a;
+        if ((member_test_a = mu_test_cast(test_a, member_test_a)) == NULL)
+          assert(0);
+
+        const mu_member_test_t *member_test_b;
+        if ((member_test_b = mu_test_cast(test_b, member_test_b)) == NULL)
+          assert(0);
+
+        if (name_cmp(member_test_a->name, member_test_b->name) != 0)
+          continue;
+
+        next_a = member_test_a->type;
+        next_b = member_test_b->type;
 
       } else {
         if (b->kind == MU_VARIABLE_TYPE) {

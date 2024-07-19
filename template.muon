@@ -3,4 +3,4 @@ define b = [2]
 define c = []
 define d = [a, b, c]
 
-define e = lambda x = x c
+define e = lambda x = x.a x.b

@@ -9,6 +9,12 @@
 #include <assert.h>
 #include <stddef.h>
 
+mu_variable_type_t *variable_type_allocate(mu_engine_t *engine, size_t argc)
+  __attribute__((malloc, nonnull));
+
+const mu_variable_type_t *variable_type_activate(mu_variable_type_t *type)
+  __attribute__((nonnull, returns_nonnull));
+
 __attribute__((const, nonnull))
 static inline const mu_type_t *variable_type_at(
     const mu_variable_type_t *type, size_t i) {
