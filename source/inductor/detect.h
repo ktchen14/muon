@@ -51,6 +51,6 @@ detect_t *detect_initialize(
     detect_t *detect, const mu_engine_t *engine, mu_status_t *status)
   __attribute__((nonnull));
 
-detect_t *detect_script(const mu_script_t *script, detect_t *detect);
+detect_t *detect_node(detect_t *detect, const mu_node_t *node);
 
 #endif /* MU_INDUCTOR_DETECT_I */
