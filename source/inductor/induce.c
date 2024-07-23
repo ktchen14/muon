@@ -58,6 +58,16 @@ static const mu_type_t *append(
 static const mu_type_t *node_induce(const mu_node_t *node, induce_t *induce)
   __attribute__((nonnull));
 
+/**
+ * @brief Nominate the abstract type @a a as a subtype of the abstract type @a b
+ *
+ * This will dispatch to a concrete implementation for each type kind of @a a.
+ * Then, it will return a positive number if @a a is (always or already) a
+ * subtype of @a b, zero if @a a isn't (always or already) a subtype of @a b, or
+ * a negative number if we must continue into @a a and @a b to answer.
+ *
+ * @return an indication of whether type @a a is a subtype of type @a b
+ */
 static int type_nominate(
     const mu_type_t *restrict a, const mu_type_t *restrict b)
   __attribute__((nonnull, pure));
