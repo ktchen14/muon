@@ -14,10 +14,33 @@
 #define RETURN 1
 #define TO_CONTINUE 2
 
+
 static _Thread_local struct {
   const mu_type_t *a;
   const mu_type_t *b;
 } continue_into;
+
+static int CONTINUE(const mu_type_t *from_a, const mu_type_t *from_b, const mu_type_t *a, const mu_type_t *b) {
+  mu_type_debug(a);
+  fprintf(stderr, " <: ");
+  mu_type_debug(b);
+  fprintf(stderr, "\n");
+
+  if (a == b)
+    return RETURN;
+
+  if (a->kind != MU_VARIABLE_TYPE && b->kind != MU_VARIABLE_TYPE && a->kind != b->kind)
+    assert(0);
+  continue_into.a = a;
+  continue_into.b = b;
+
+  return TO_CONTINUE;
+}
+
+#define CONTINUE(...) ({ \
+    fprintf(stderr, "In %s: ", __func__); \
+    CONTINUE(__VA_ARGS__); \
+  })
 
 /**
  * @brief Constrain type @a a to be a subtype of type @a b in the @a induce
@@ -98,20 +121,6 @@ static inline const mu_type_t *record_type_get_name(
   return NULL;
 }
 
-static const mu_type_t *equate_continue(
-    induce_t *induce,
-    const mu_type_t *restrict *restrict a,
-    const mu_type_t *restrict next_a,
-    const mu_type_t *restrict *restrict b,
-    const mu_type_t *restrict next_b) {
-  if (next_a->kind != MU_VARIABLE_TYPE && next_b->kind != MU_VARIABLE_TYPE && next_a->kind != next_b->kind)
-    assert(0);
-
-  *a = type_continue(*a, next_a);
-  *b = type_continue(*b, next_b);
-  return next_a;
-}
-
 static const mu_type_t *subsume(
     induce_t *induce, const mu_type_t *a, const mu_type_t *b) {
   // If a and b are the same type, then just return
@@ -120,7 +129,7 @@ static const mu_type_t *subsume(
 
   // Otherwise, ensure that either a or b is a variable type, or a and b have
   // the same kind
-  equate_continue(induce, &(const mu_type_t *) {0}, a, &(const mu_type_t *) {0}, b);
+  CONTINUE(NULL, NULL, a, b);
 
   // Traverse a and b at the same time and equate each reachable couple
   do {
@@ -436,18 +445,6 @@ __attribute__((nonnull)) static const mu_type_t *variable_view_induce(
 }
 
 // ---------------------------------- Type -------------------------------- {{{1
-
-static int CONTINUE(const mu_type_t *from_a, const mu_type_t *from_b, const mu_type_t *a, const mu_type_t *b) {
-  if (a == b)
-    return RETURN;
-
-  if (a->kind != MU_VARIABLE_TYPE && b->kind != MU_VARIABLE_TYPE && a->kind != b->kind)
-    assert(0);
-  continue_into.a = a;
-  continue_into.b = b;
-
-  return TO_CONTINUE;
-}
 
 static int boolean_type_subsume(
     const mu_boolean_type_t *restrict a,

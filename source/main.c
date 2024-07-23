@@ -70,7 +70,21 @@ int main(int argc, char *argv[argc]) {
   /* for (size_t i = 0; i < length; reduce_data[i++] = NULL); */
   /* reduce.data = reduce_data; */
 
-  /* const mu_node_t *node = &sequence_expr->as_node; */
+  const mu_node_t *node = &sequence_expr->as_node;
+
+  do {
+    const mu_node_t *next;
+    while ((next = node_at(node, node_cursor(node)->i++)) != NULL)
+      node = node_continue(node, next);
+
+    /* const mu_type_t *type; */
+    /* if ((type = reduce_node(&reduce, node)) == NULL) */
+    /*   abort(); */
+
+    fprintf(stderr, "Node %zu: ", node->as_stator.id);
+    mu_type_debug(induce.node_to_type[node->as_stator.id]);
+    putc('\n', stderr);
+  } while ((node = node_return(node)) != NULL);
 
   /* do { */
   /*   const mu_node_t *next; */
