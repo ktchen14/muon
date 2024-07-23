@@ -5,12 +5,23 @@
 #include "../status.h"
 
 #include <assert.h>
+#include <errno.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 
+#define PROBLEM 0
+#define RETURN 1
+#define TO_CONTINUE 2
+
+static _Thread_local struct {
+  const mu_type_t *a;
+  const mu_type_t *b;
+} continue_into;
+
 /**
- * @brief Equate type @a to type @a b in the @a induce engine
+ * @brief Constrain type @a a to be a subtype of type @a b in the @a induce
+ *   engine
  *
  * On allocation failure, @c errno is set by the allocator. This function can't
  * fail otherwise. The behavior is undefined if:
@@ -19,77 +30,62 @@
  * - @a a or @a b isn't in the same zone as that of the @a induce engine
  *
  * @param induce the induce engine
- * @param a the type to equate to @a b
- * @param b the type to equate to @a a
+ * @param a the type to subsume to @a b
+ * @param b the type to subsume to @a a
  * @return a type equivalent to both @a a and @a b on success; otherwise @c NULL
  */
-static const mu_type_t *equate(
+static const mu_type_t *subsume(
     induce_t *induce, const mu_type_t *a, const mu_type_t *b)
   __attribute__((nonnull));
 
-/// Return the root type equivalent to @a type in the @a induce context
-static const mu_type_t *get_root(induce_t *induce, const mu_type_t *type)
-  __attribute__((nonnull, returns_nonnull));
-
-/// Set the next equivalent type of @a source to @a target in the @a induce
-/// context
-static const mu_type_t *set(induce_t *induce,
-    const mu_type_t *restrict source,
-    const mu_type_t *restrict target)
+static const mu_type_t *append(
+    induce_t *induce,
+    const mu_type_t *restrict lower,
+    const mu_type_t *restrict upper)
   __attribute__((nonnull));
-
-/// Return the index where the next equivalent type to @a type should be
-__attribute__((nonnull, pure))
-static inline size_t slot(const induce_t *induce, const mu_type_t *type) {
-  return induce->node_number + type->as_stator.id;
-}
 
 /// Induce the type of the abstract @a node with the @a induce engine
 static const mu_type_t *node_induce(const mu_node_t *node, induce_t *induce)
   __attribute__((nonnull));
 
+static int type_subsume(
+    const mu_type_t *restrict a,
+    const mu_type_t *restrict b,
+    induce_t *induce);
+
 induce_t *induce_initialize(
     induce_t *induce,
     mu_engine_t *engine,
-    const detect_t *detect,
-    mu_status_t *status) {
-  size_t length = engine->node_number + engine->type_number;
+    mu_status_t *status,
+    const detect_t *detect) {
+  assert(detect_result(detect)->engine == engine);
 
-  const mu_type_t **data;
-  if ((data = malloc(sizeof(const mu_type_t *[length]))) == NULL)
+  size_t node_length = engine->node_number;
+
+  const mu_type_t **node_to_type;
+  if ((node_to_type = malloc(sizeof(const mu_type_t *[node_length]))) == NULL)
     return NULL;
-  for (size_t i = 0; i < length; data[i++] = NULL);
+  for (size_t i = 0; i < node_length; node_to_type[i++] = NULL);
+
+  size_t sub_volume = 1;
+  induce_sub_t *sub_data;
+  if ((sub_data = malloc(sizeof(induce_sub_t[sub_volume]))) == NULL)
+    return NULL;
+  for (size_t i = 0; i < sub_volume; sub_data[i++] = (induce_sub_t) {0});
 
   *induce = (induce_t) {
     .engine = engine,
-    .node_number = engine->node_number,
-    .length = length,
-    .data = data,
-    .detect = detect_result(detect),
     .status = status,
+    .detect = detect_result(detect),
+    .node_length = node_length,
+    .node_to_type = node_to_type,
+    .sub_volume = sub_volume,
+    .sub_data = sub_data,
   };
   return induce;
 }
 
-const mu_type_t *get_root(induce_t *induce, const mu_type_t *type) {
-  const mu_type_t *root = type;
-
-  size_t height = 0;
-  for (const mu_type_t *next;; root = next) {
-    if ((next = induce_get(induce, root)) == NULL)
-      break;
-    height++;
-  }
-
-  for (const mu_type_t *next; height-- > 0; type = next) {
-    next = induce->data[slot(induce, type)];
-    induce->data[slot(induce, type)] = root;
-  }
-
-  return root;
-}
-
-__attribute__((nonnull, pure))
+__attribute__((nonnull, pure, unused))
 static inline const mu_type_t *record_type_get_name(
     const mu_record_type_t *type, const mu_name_t *name) {
   for (size_t i = 0; i < type->argc; i++) {
@@ -116,16 +112,9 @@ static const mu_type_t *equate_continue(
   return next_a;
 }
 
-static const mu_type_t *equate(
+static const mu_type_t *subsume(
     induce_t *induce, const mu_type_t *a, const mu_type_t *b) {
   // If a and b are the same type, then just return
-  if (a == b)
-    return a;
-
-  a = get_root(induce, a);
-  b = get_root(induce, b);
-
-  // If a and b are both equivalent to the same type, then just return
   if (a == b)
     return a;
 
@@ -135,151 +124,30 @@ static const mu_type_t *equate(
 
   // Traverse a and b at the same time and equate each reachable couple
   do {
-    for (const mu_type_t *next_a, *next_b;;) {
-      if (a->kind != MU_VARIABLE_TYPE && b->kind != MU_VARIABLE_TYPE) {
-        next_a = type_at(a, type_cursor(a)->i++);
-        next_b = type_at(b, type_cursor(b)->i++);
+    for (;;) {
+      int out = type_subsume(a, b, induce);
 
-        if (next_a == NULL && next_b == NULL) {
-          if (set(induce, a, b) == NULL)
-            goto except;
-          break;
-        }
+      if (out == TO_CONTINUE) {
+        const mu_type_t *next_a = continue_into.a;
+        const mu_type_t *next_b = continue_into.b;
 
-        if (next_a == NULL && next_b != NULL)
-          assert(0);
-
-        if (next_a != NULL && next_b == NULL)
-          assert(0);
-
-      } else if (a->kind == MU_VARIABLE_TYPE && b->kind == MU_VARIABLE_TYPE) {
-        const mu_variable_type_t *va = (const mu_variable_type_t *) a;
-        const mu_variable_type_t *vb = (const mu_variable_type_t *) b;
-
-        size_t i = type_cursor(a)->i;
-        if (i >= va->argc) {
-          size_t argc = va->argc + vb->argc;
-
-          mu_variable_type_t *result;
-          if ((result = variable_type_allocate(induce->engine, argc)) == NULL)
-            goto except;
-
-          size_t x = 0, y = 0, z = 0;
-          while (x < va->argc && y < vb->argc) {
-            const mu_test_t *test_a = va->argv[x];
-            const mu_test_t *test_b = vb->argv[y];
-
-            const mu_member_test_t *member_test_a;
-            if ((member_test_a = mu_test_cast(test_a, member_test_a)) == NULL)
-              assert(0);
-
-            const mu_member_test_t *member_test_b;
-            if ((member_test_b = mu_test_cast(test_b, member_test_b)) == NULL)
-              assert(0);
-
-            if (member_test_a->name == member_test_b->name) {
-              result->argv[z++] = &member_test_a->as_test;
-              x++, y++;
-            } else {
-              int cmp_result = name_cmp(member_test_a->name, member_test_b->name);
-              if (cmp_result < 0) {
-                result->argv[z++] = &member_test_a->as_test;
-                x++;
-              } else if (cmp_result > 0) {
-                result->argv[z++] = &member_test_b->as_test;
-                y++;
-              }
-            }
-          }
-
-          for (; x < va->argc; x++)
-            result->argv[z++] = va->argv[x];
-
-          for (; y < vb->argc; y++)
-            result->argv[z++] = vb->argv[y];
-
-          result->argc = z;
-          const mu_variable_type_t *const_result;
-          const_result = variable_type_activate(result);
-
-          if (set(induce, a, &const_result->as_type) == NULL)
-            goto except;
-
-          if (set(induce, b, &const_result->as_type) == NULL)
-            goto except;
-          break;
-        }
-        const mu_test_t *test_a = va->argv[i];
-
-        size_t j = type_cursor(b)->i++;
-        if (j >= vb->argc) {
-          type_cursor(a)->i++;
-          type_cursor(b)->i = 0;
-          continue;
-        }
-        const mu_test_t *test_b = vb->argv[j];
-
-        const mu_member_test_t *member_test_a;
-        if ((member_test_a = mu_test_cast(test_a, member_test_a)) == NULL)
-          assert(0);
-
-        const mu_member_test_t *member_test_b;
-        if ((member_test_b = mu_test_cast(test_b, member_test_b)) == NULL)
-          assert(0);
-
-        if (name_cmp(member_test_a->name, member_test_b->name) != 0)
+        if (next_a == next_b)
           continue;
 
-        next_a = member_test_a->type;
-        next_b = member_test_b->type;
-
-      } else {
-        if (b->kind == MU_VARIABLE_TYPE) {
-          const mu_type_t *t = a;
-          a = b;
-          b = t;
-        }
-
-        const mu_variable_type_t *va = mu_type_cast(a, va);
-        assert(va != NULL);
-
-        const mu_test_t *test;
-        if ((test = variable_type_test_at(va, type_cursor(a)->i++)) == NULL) {
-          if (set(induce, a, b) == NULL)
-            goto except;
-          break;
-        }
-        assert(test->kind == MU_MEMBER_TEST);
-        const mu_member_test_t *member_test = (const mu_member_test_t *) test;
-
-        const mu_record_type_t *rb = mu_type_cast(b, rb);
-        assert(rb != NULL);
-
-        const mu_type_t *next;
-        if ((next = record_type_get_name(rb, member_test->name)) == NULL)
+        if (next_a->kind != MU_VARIABLE_TYPE && next_b->kind != MU_VARIABLE_TYPE && next_a->kind != next_b->kind)
           assert(0);
 
-        next_a = member_test->type;
-        next_b = next;
+        a = type_continue(a, next_a);
+        b = type_continue(b, next_b);
+
+        continue;
       }
 
-      // If next_a and next_b are the same type, then skip them
-      if (next_a == next_b)
-        continue;
-
-      next_a = get_root(induce, next_a);
-      next_b = get_root(induce, next_b);
-
-      // If next_a and next_b are both equivalent to the same type, then skip
-      // them
-      if (next_a == next_b)
-        continue;
-
-      if (next_a->kind != MU_VARIABLE_TYPE && next_b->kind != MU_VARIABLE_TYPE && next_a->kind != next_b->kind)
+      if (out == PROBLEM)
         assert(0);
 
-      a = type_continue(a, next_a);
-      b = type_continue(b, next_b);
+      if (out == RETURN)
+        break;
     }
   } while ((a = type_return(a)) != NULL && (b = type_return(b)) != NULL);
 
@@ -290,25 +158,25 @@ static const mu_type_t *equate(
 
   return result;
 
-except:
-  while ((a = type_return(a)) != NULL);
-  while ((b = type_return(b)) != NULL);
-  return NULL;
+/* except: */
+/*   while ((a = type_return(a)) != NULL); */
+/*   while ((b = type_return(b)) != NULL); */
+  /* return NULL; */
 }
 
 const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
-  assert(root->as_stator.id < induce->node_number);
+  assert(root->as_stator.id < induce->node_length);
 
-  if (induce->data[root->as_stator.id] != NULL)
-    return induce->data[root->as_stator.id];
+  if (induce->node_to_type[root->as_stator.id] != NULL)
+    return induce->node_to_type[root->as_stator.id];
 
   const mu_node_t *node = root, *next;
   do {
     const detect_result_t *detect = induce->detect;
     while ((next = detect_at(detect, node, node_cursor(node)->i++)) != NULL) {
-      assert(next->as_stator.id < induce->node_number);
+      assert(next->as_stator.id < induce->node_length);
 
-      if (induce->data[next->as_stator.id] != NULL)
+      if (induce->node_to_type[next->as_stator.id] != NULL)
         continue;
       node = node_continue(node, next);
     }
@@ -317,39 +185,44 @@ const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
     const mu_type_t *type;
     if ((type = node_induce(node, induce)) == NULL)
       return NULL;
-    induce->data[node->as_stator.id] = type;
+    induce->node_to_type[node->as_stator.id] = type;
   } while ((node = node_return(node)) != NULL);
 
   return induce_evince(induce, root);
 }
 
-const mu_type_t *induce_get(const induce_t *induce, const mu_type_t *type) {
-  if (slot(induce, type) >= induce->length)
-    return NULL;
-  return induce->data[slot(induce, type)];
-}
-
-static const mu_type_t *set(
+static const mu_type_t *append(
     induce_t *induce,
-    const mu_type_t *restrict source,
-    const mu_type_t *restrict target) {
-  if (slot(induce, source) >= induce->length) {
-    size_t length = slot(induce, source) + 1;
-
-    size_t next_size = sizeof(const mu_type_t *[length]);
-
-    const mu_type_t **data = induce->data;
-    if ((data = realloc(data, next_size)) == NULL)
-      return NULL;
-    for (size_t i = induce->length; i < length; i++)
-      data[i] = NULL;
-
-    induce->length = length;
-    induce->data = data;
+    const mu_type_t *restrict lower,
+    const mu_type_t *restrict upper) {
+  for (size_t i = 0; i < induce->sub_length; i++) {
+    induce_sub_t sub = induce->sub_data[i];
+    if (sub.lower == lower && sub.upper == upper)
+      return lower;
   }
 
-  assert(induce->data[slot(induce, source)] == NULL);
-  return induce->data[slot(induce, source)] = target;
+  if (induce->sub_length >= induce->sub_volume) {
+    size_t volume = induce->sub_volume;
+    if (rare(__builtin_mul_overflow(volume, 2, &volume)))
+      return errno = ENOMEM, NULL;
+
+    size_t size;
+    if (rare(__builtin_mul_overflow(volume, sizeof(induce_sub_t), &size)))
+      return errno = ENOMEM, NULL;
+
+    induce_sub_t *sub_data = induce->sub_data;
+    if ((sub_data = realloc(sub_data, size)) == NULL)
+      return NULL;
+    for (size_t i = induce->sub_volume; i < volume; i++)
+      sub_data[i] = (induce_sub_t) {0};
+
+    induce->sub_volume = volume;
+    induce->sub_data = sub_data;
+  }
+
+  induce->sub_data[induce->sub_length++] = (induce_sub_t) {
+    .lower = lower, .upper = upper };
+  return lower;
 }
 
 // ---------------------------------- Expr -------------------------------- {{{1
@@ -358,24 +231,22 @@ __attribute__((nonnull)) static const mu_type_t *access_expr_induce(
     const mu_access_expr_t *expr, induce_t *induce) {
   mu_engine_t *engine = induce->engine;
 
-  const mu_variable_type_t *open_type;
-  if ((open_type = mu_open_type(engine)) == NULL)
+  const mu_variable_type_t *result;
+  if ((result = mu_open_type(engine)) == NULL)
     return NULL;
 
-  const mu_member_test_t *member_test;
-  if ((member_test = mu_member_test(engine, expr->name, &open_type->as_type)) == NULL)
+  const mu_record_type_t *record_type;
+  const mu_type_member_t argv[] = {
+    { .name = expr->name, .type = &result->as_type }
+  };
+  size_t argc = sizeof(argv) / sizeof(argv[0]);
+  if ((record_type = mu_record_type(engine, argc, argv)) == NULL)
     return NULL;
 
-  const mu_variable_type_t *variable_type;
-  if ((variable_type = mu_variable_type(engine, 1, (const mu_test_t *[]) { &member_test->as_test })) == NULL)
+  const mu_type_t *matter_type = induce_evince(induce, &expr->matter->as_node);
+  if (subsume(induce, matter_type, &record_type->as_type) == NULL)
     return NULL;
-
-  const mu_type_t *matter = induce_evince(induce, &expr->matter->as_node);
-
-  if (equate(induce, &variable_type->as_type, matter) == NULL)
-    return NULL;
-
-  return &open_type->as_type;
+  return &result->as_type;
 }
 
 __attribute__((nonnull)) static const mu_type_t *boolean_expr_induce(
@@ -399,22 +270,16 @@ __attribute__((nonnull)) static const mu_type_t *invoke_expr_induce(
   const mu_type_t *lambda = induce_evince(induce, &expr->lambda->as_node);
   const mu_type_t *matter = induce_evince(induce, &expr->matter->as_node);
 
-  const mu_lambda_type_t *lambda_type;
-  if ((lambda_type = mu_type_cast(lambda, lambda_type)) != NULL) {
-    if (equate(induce, lambda_type->argument, matter) == NULL)
-      return NULL;
-    return lambda_type->output;
-  }
-
   const mu_variable_type_t *output;
   if ((output = mu_open_type(induce->engine)) == NULL)
     return NULL;
   const mu_type_t *result = &output->as_type;
 
+  const mu_lambda_type_t *lambda_type;
   if ((lambda_type = mu_lambda_type(induce->engine, matter, result)) == NULL)
     return NULL;
 
-  if (equate(induce, lambda, &lambda_type->as_type) == NULL)
+  if (subsume(induce, lambda, &lambda_type->as_type) == NULL)
     return NULL;
   return result;
 }
@@ -480,7 +345,7 @@ __attribute__((nonnull)) static const mu_type_t *vector_expr_induce(
 
   for (size_t i = 0; i < expr->argc; i++) {
     const mu_type_t *type = induce_evince(induce, &expr->argv[i]->as_node);
-    if (equate(induce, &matter_type->as_type, type) == NULL)
+    if (subsume(induce, type, &matter_type->as_type) == NULL)
       return NULL;
   }
 
@@ -572,20 +437,118 @@ __attribute__((nonnull)) static const mu_type_t *variable_view_induce(
 
 // ---------------------------------- Type -------------------------------- {{{1
 
-/* static int boolean_type_equate( */
-/*     const mu_boolean_type_t *a, const mu_type_t *b, induce_t *induce) { */
-/*   return b->kind == MU_BOOLEAN_TYPE; */
-/* } */
+static int CONTINUE(const mu_type_t *from_a, const mu_type_t *from_b, const mu_type_t *a, const mu_type_t *b) {
+  if (a == b)
+    return RETURN;
 
-/* static int integer_type_equate( */
-/*     const mu_integer_type_t *a, const mu_type_t *b, induce_t *induce) { */
-/*   return b->kind == MU_INTEGER_TYPE; */
-/* } */
+  if (a->kind != MU_VARIABLE_TYPE && b->kind != MU_VARIABLE_TYPE && a->kind != b->kind)
+    assert(0);
+  continue_into.a = a;
+  continue_into.b = b;
 
-/* static int vector_type_equate( */
-/*     const mu_vector_type_t *a, const mu_type_t *b, induce_t *induce) { */
-/*   b->kind == MU_INTEGER_TYPE; */
-/* } */
+  return TO_CONTINUE;
+}
+
+static int boolean_type_subsume(
+    const mu_boolean_type_t *restrict a,
+    const mu_type_t *restrict b,
+    induce_t *induce) {
+  return 1;
+}
+
+static int integer_type_subsume(
+    const mu_integer_type_t *restrict a,
+    const mu_type_t *restrict b,
+    induce_t *induce) {
+  return RETURN;
+}
+
+static int lambda_type_subsume(
+    const mu_lambda_type_t *restrict a,
+    const mu_type_t *restrict b,
+    induce_t *induce) {
+  assert(b->kind == MU_LAMBDA_TYPE);
+  const mu_lambda_type_t *restrict rb = (const mu_lambda_type_t *) b;
+
+  size_t i = type_cursor(&a->as_type)->i++, j = type_cursor(&rb->as_type)->i++;
+  assert(i == j);
+
+  if (i == 0)
+    return CONTINUE(&a->as_type, b, rb->argument, a->argument);
+  if (i == 1)
+    return CONTINUE(&a->as_type, b, a->output, rb->output);
+
+  return RETURN;
+}
+
+static int record_type_subsume(
+    const mu_record_type_t *restrict a,
+    const mu_type_t *restrict b,
+    induce_t *induce) {
+  assert(b->kind == MU_RECORD_TYPE);
+  const mu_record_type_t *restrict rb = (const mu_record_type_t *) b;
+
+  size_t j = type_cursor(&rb->as_type)->i++;
+
+  if (j >= rb->argc)
+    return RETURN;
+
+  for (size_t i = 0; i < a->argc; i++) {
+    if (a->argv[i].name == rb->argv[j].name) {
+      type_cursor(&a->as_type)->i = i;
+      return CONTINUE(&a->as_type, b, a->argv[i].type, rb->argv[j].type);
+    }
+  }
+
+  return PROBLEM;
+}
+
+static int variable_type_subsume(
+    const mu_variable_type_t *restrict a,
+    const mu_type_t *restrict b,
+    induce_t *induce) {
+  size_t i;
+
+  while ((i = type_cursor(&a->as_type)->i++) < induce->sub_length) {
+    induce_sub_t sub = induce->sub_data[i];
+    if (sub.upper != &a->as_type)
+      continue;
+    return CONTINUE(&a->as_type, b, sub.lower, b);
+  }
+
+  append(induce, &a->as_type, b);
+  return RETURN;
+}
+
+static int variable_type_supersume(
+    const mu_type_t *restrict a,
+    const mu_variable_type_t *restrict b,
+    induce_t *induce) {
+  size_t j;
+
+  while ((j = type_cursor(&b->as_type)->i++) < induce->sub_length) {
+    induce_sub_t sub = induce->sub_data[j];
+    if (sub.lower != &b->as_type)
+      continue;
+    return CONTINUE(a, &b->as_type, a, sub.upper);
+  }
+
+  append(induce, a, &b->as_type);
+  return RETURN;
+}
+
+static int vector_type_subsume(
+    const mu_vector_type_t *restrict a,
+    const mu_type_t *restrict b,
+    induce_t *induce) {
+  assert(b->kind == MU_VECTOR_TYPE);
+  const mu_vector_type_t *restrict rb = (const mu_vector_type_t *) b;
+
+  size_t i = type_cursor(&a->as_type)->i++;
+  if (i == 1)
+    return RETURN;
+  return CONTINUE(&a->as_type, b, a->matter, rb->matter);
+}
 
 // -------------------------------- Abstract ------------------------------ {{{1
 
@@ -600,14 +563,27 @@ static const mu_type_t *node_induce(const mu_node_t *node, induce_t *induce) {
   __builtin_unreachable();
 }
 
-/* static int xequate(const mu_type_t *a, const mu_type_t *b, induce_t *induce) { */
-/*   switch(a->kind) { */
-/* #define MU_EMIT(lower, upper, t) \ */
-/*     case MU_##upper##_TYPE: \ */
-/*       return lower##_type_equate((const mu_##lower##_type_t *) a, b, induce); */
-/*     MU_EACH_TYPE_KIND(MU_EMIT) */
-/* #undef MU_EMIT */
-/*   } */
-/* } */
+static int type_subsume(
+    const mu_type_t *restrict a,
+    const mu_type_t *restrict b,
+    induce_t *induce) {
+  if (a->kind == MU_VARIABLE_TYPE)
+    return variable_type_subsume((const mu_variable_type_t *) a, b, induce);
+
+  if (b->kind == MU_VARIABLE_TYPE)
+    return variable_type_supersume(a, (const mu_variable_type_t *) b, induce);
+
+  if (a->kind != b->kind)
+    return PROBLEM;
+
+  switch (a->kind) {
+#define MU_EMIT(lower, upper, t) \
+    case MU_##upper##_TYPE: \
+      return lower##_type_subsume((const mu_##lower##_type_t *) a, b, induce);
+    MU_EACH_TYPE_KIND(MU_EMIT)
+#undef MU_EMIT
+  }
+  __builtin_unreachable();
+}
 
 // vim: set foldmethod=marker:

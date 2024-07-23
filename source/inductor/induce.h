@@ -10,22 +10,30 @@
 #include <stddef.h>
 
 typedef struct {
+  const mu_type_t *lower;
+  const mu_type_t *upper;
+} induce_sub_t;
+
+typedef struct {
   mu_engine_t *engine;
   mu_status_t *status;
 
   const detect_result_t *detect;
 
-  size_t node_number;
-  size_t length;
-  const mu_type_t **data; /* const mu_type_t *[length] */
+  size_t node_length;
+  const mu_type_t **node_to_type;  /* const mu_type_t *[node_length] */
+
+  size_t sub_volume;
+  size_t sub_length;
+  induce_sub_t *sub_data;
 } induce_t;
 
 /// Initialize the @a inductor to handle nodes and types in the @a engine
 induce_t *induce_initialize(
     induce_t *induce,
     mu_engine_t *engine,
-    const detect_t *detect,
-    mu_status_t *status)
+    mu_status_t *status,
+    const detect_t *detect)
   __attribute__((nonnull));
 
 /**
@@ -42,16 +50,11 @@ induce_t *induce_initialize(
 __attribute__((nonnull, pure, returns_nonnull))
 static inline const mu_type_t *induce_evince(
     const induce_t *induce, const mu_node_t *node) {
-  assert(node->as_stator.id < induce->node_number);
-
-  const mu_type_t *type = induce->data[node->as_stator.id];
+  assert(node->as_stator.id < induce->node_length);
+  const mu_type_t *type = induce->node_to_type[node->as_stator.id];
   assert(type != NULL);
   return type;
 }
-
-/// Get the next type equivalent to @a type in the @a induce context
-const mu_type_t *induce_get(const induce_t *induce, const mu_type_t *type)
-  __attribute__((nonnull, pure));
 
 /**
  * @brief Return the type of the @a node

@@ -56,38 +56,38 @@ int main(int argc, char *argv[argc]) {
     assert(0);
 
   induce_t induce;
-  if (induce_initialize(&induce, &engine, &detect, &status) == NULL)
+  if (induce_initialize(&induce, &engine, &status, &detect) == NULL)
     assert(0);
 
   if (induce_node(&induce, &sequence_expr->as_node) == NULL)
     assert(0);
 
-  reduce_t reduce = { .induce = &induce };
-  size_t length = 1000;
-  const mu_type_t **reduce_data;
-  if ((reduce_data = malloc(sizeof(const mu_type_t *[length]))) == NULL)
-    abort();
-  for (size_t i = 0; i < length; reduce_data[i++] = NULL);
-  reduce.data = reduce_data;
+  /* reduce_t reduce = { .induce = &induce }; */
+  /* size_t length = 1000; */
+  /* const mu_type_t **reduce_data; */
+  /* if ((reduce_data = malloc(sizeof(const mu_type_t *[length]))) == NULL) */
+  /*   abort(); */
+  /* for (size_t i = 0; i < length; reduce_data[i++] = NULL); */
+  /* reduce.data = reduce_data; */
 
-  const mu_node_t *node = &sequence_expr->as_node;
+  /* const mu_node_t *node = &sequence_expr->as_node; */
 
-  do {
-    const mu_node_t *next;
-    while ((next = node_at(node, node_cursor(node)->i++)) != NULL) {
-      if (reduce.data[node->as_stator.id] != NULL)
-        continue;
-      node = node_continue(node, next);
-    }
+  /* do { */
+  /*   const mu_node_t *next; */
+  /*   while ((next = node_at(node, node_cursor(node)->i++)) != NULL) { */
+  /*     if (reduce.data[node->as_stator.id] != NULL) */
+  /*       continue; */
+  /*     node = node_continue(node, next); */
+  /*   } */
 
-    const mu_type_t *type;
-    if ((type = reduce_node(&reduce, node)) == NULL)
-      abort();
+  /*   const mu_type_t *type; */
+  /*   if ((type = reduce_node(&reduce, node)) == NULL) */
+  /*     abort(); */
 
-    fprintf(stderr, "Node %zu: ", node->as_stator.id);
-    mu_type_debug(type);
-    putc('\n', stderr);
-  } while ((node = node_return(node)) != NULL);
+  /*   fprintf(stderr, "Node %zu: ", node->as_stator.id); */
+  /*   mu_type_debug(type); */
+  /*   putc('\n', stderr); */
+  /* } while ((node = node_return(node)) != NULL); */
 
   return EXIT_SUCCESS;
 
