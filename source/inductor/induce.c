@@ -72,6 +72,14 @@ static int type_nominate(
     const mu_type_t *restrict a, const mu_type_t *restrict b)
   __attribute__((nonnull, pure));
 
+typedef struct {
+  enum {
+    RESTRICT_STOP,
+    RESTRICT_RETURN,
+    RESTRICT_CONTINUE,
+  } action;
+} restrict_t;
+
 static int type_restrict(
     const mu_type_t *restrict a, const mu_type_t *restrict b,
     induce_t *induce)
@@ -109,19 +117,6 @@ induce_t *induce_initialize(
   return induce;
 }
 
-__attribute__((nonnull, pure, unused))
-static inline const mu_type_t *record_type_get_name(
-    const mu_record_type_t *type, const mu_name_t *name) {
-  for (size_t i = 0; i < type->argc; i++) {
-    const mu_type_member_t member = type->argv[i];
-    if (member.name != name)
-      continue;
-    return member.type;
-  }
-
-  return NULL;
-}
-
 static const mu_type_t *induce_restrict(
     induce_t *induce, const mu_type_t *a, const mu_type_t *b) {
   // If a and b are the same type, just return
@@ -136,7 +131,7 @@ static const mu_type_t *induce_restrict(
   // Traverse a and b at the same time and equate each reachable couple
   for (;;) {
     next_loop:
-    if (a->kind == MU_VARIABLE_TYPE || (a->kind == MU_VARIABLE_TYPE && b->kind == MU_VARIABLE_TYPE)) {
+    if (a->kind == MU_VARIABLE_TYPE) {
       size_t i;
 
       while ((i = type_cursor(a)->i++) < induce->sub_length) {
@@ -144,12 +139,16 @@ static const mu_type_t *induce_restrict(
         if (sub.upper != a)
           continue;
 
-        fprintf(stderr, "Subsuming (in variable) "); mu_type_debug(sub.lower); fprintf(stderr, " into "); mu_type_debug(b); fprintf(stderr, "\n");
-
-        // sub.lower is a lower of a
-        if (CONTINUE(a, b, sub.lower, b) == RETURN)
+        int nominate;
+        if ((nominate = type_nominate(sub.lower, b)) == 0) {
+          fprintf(stderr, "Type ");
+          mu_type_debug(sub.lower);
+          fprintf(stderr, " isn't a subtype of ");
+          mu_type_debug(b);
+          fprintf(stderr, "\n");
+        } else if (nominate > 0) {
           append(induce, sub.lower, b);
-        else {
+        } else if (nominate < 0) {
           a = type_continue(a, sub.lower);
           goto next_loop;
         }
@@ -211,21 +210,8 @@ static const mu_type_t *induce_restrict(
     }
 
   done:
-    if (type_cursor(a)->anterior == NULL) {
-      assert(type_cursor(b)->anterior == NULL);
-      const mu_type_t *result = b;
-      type_return(a);
-      type_return(b);
-      return result;
-    }
-
-    if (type_cursor(b)->anterior == NULL) {
-      assert(type_cursor(a)->anterior == NULL);
-      const mu_type_t *result = b;
-      type_return(a);
-      type_return(b);
-      return result;
-    }
+    if (type_cursor(a)->anterior == NULL || type_cursor(b)->anterior == NULL)
+      break;
 
     if (type_cursor(a)->anterior->kind == MU_VARIABLE_TYPE && type_cursor(b)->anterior->kind == MU_VARIABLE_TYPE) {
       a = type_return(a);
@@ -240,11 +226,10 @@ static const mu_type_t *induce_restrict(
     }
   }
 
-  // Ensure that type_return(b) is also NULL
+  // Ensure that type_return(a) and type_return(b) are both NULL
   const mu_type_t *result = b;
-  b = type_return(b);
-  assert(b == NULL);
-
+  a = type_return(a), b = type_return(b);
+  assert(a == NULL && b == NULL);
   return result;
 
 except:
@@ -632,6 +617,9 @@ static const mu_type_t *node_induce(const mu_node_t *node, induce_t *induce) {
 
 static int type_nominate(
     const mu_type_t *restrict a, const mu_type_t *restrict b) {
+  if (a == b)
+    return 1;
+
   if (a->kind == MU_VARIABLE_TYPE || b->kind == MU_VARIABLE_TYPE)
     return -1;
 
