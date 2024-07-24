@@ -117,127 +117,6 @@ induce_t *induce_initialize(
   return induce;
 }
 
-static const mu_type_t *induce_restrict(
-    induce_t *induce, const mu_type_t *a, const mu_type_t *b) {
-  // If a and b are the same type, just return
-  if (a == b)
-    return a;
-
-  // Otherwise, ensure that either a or b is a variable type, or a and b have
-  // the same kind
-  if (type_nominate(a, b) >= 0)
-    return a;
-
-  // Traverse a and b at the same time and equate each reachable couple
-  for (;;) {
-    next_loop:
-    if (a->kind == MU_VARIABLE_TYPE) {
-      size_t i;
-
-      while ((i = type_cursor(a)->i++) < induce->sub_length) {
-        induce_sub_t sub = induce->sub_data[i];
-        if (sub.upper != a)
-          continue;
-
-        int nominate;
-        if ((nominate = type_nominate(sub.lower, b)) == 0) {
-          fprintf(stderr, "Type ");
-          mu_type_debug(sub.lower);
-          fprintf(stderr, " isn't a subtype of ");
-          mu_type_debug(b);
-          fprintf(stderr, "\n");
-        } else if (nominate > 0) {
-          append(induce, sub.lower, b);
-        } else if (nominate < 0) {
-          a = type_continue(a, sub.lower);
-          goto next_loop;
-        }
-      }
-
-      fprintf(stderr, "Subsuming (exit variable) "); mu_type_debug(a); fprintf(stderr, " into "); mu_type_debug(b); fprintf(stderr, "\n");
-      append(induce, a, b);
-
-    } else if (b->kind == MU_VARIABLE_TYPE) {
-      size_t j;
-
-      while ((j = type_cursor(b)->i++) < induce->sub_length) {
-        induce_sub_t sub = induce->sub_data[j];
-        if (sub.lower != b)
-          continue;
-
-        fprintf(stderr, "Subsuming (in variable) "); mu_type_debug(a); fprintf(stderr, " into "); mu_type_debug(sub.upper); fprintf(stderr, "\n");
-
-        if (CONTINUE(a, b, a, sub.upper) == RETURN)
-          append(induce, a, sub.upper);
-        else {
-          b = type_continue(b, sub.upper);
-          goto next_loop;
-        }
-      }
-
-      fprintf(stderr, "Subsuming (exit variable) "); mu_type_debug(a); fprintf(stderr, " into "); mu_type_debug(b); fprintf(stderr, "\n");
-      append(induce, a, b);
-
-    } else {
-      int out = type_restrict(a, b, induce);
-      if (out == RETURN)
-        goto done;
-
-      if (out == PROBLEM)
-        goto except;
-
-      assert(out == TO_CONTINUE);
-
-      const mu_type_t *next_a = continue_into.a;
-      const mu_type_t *next_b = continue_into.b;
-
-      if (next_a == next_b)
-        continue;
-
-      fprintf(stderr, "Subsuming normal "); mu_type_debug(next_a); fprintf(stderr, " into "); mu_type_debug(next_b); fprintf(stderr, "\n");
-
-      int nomout = type_nominate(next_a, next_b);
-      if (nomout == 0) {
-        fprintf(stderr, "Can't continue\n");
-        goto except;
-      }
-      if (nomout == 1)
-        goto done;
-
-      a = type_continue(a, next_a);
-      b = type_continue(b, next_b);
-      continue;
-    }
-
-  done:
-    if (type_cursor(a)->anterior == NULL || type_cursor(b)->anterior == NULL)
-      break;
-
-    if (type_cursor(a)->anterior->kind == MU_VARIABLE_TYPE && type_cursor(b)->anterior->kind == MU_VARIABLE_TYPE) {
-      a = type_return(a);
-      b = type_return(b);
-    } else if (type_cursor(a)->anterior->kind == MU_VARIABLE_TYPE) {
-      a = type_return(a);
-    } else if (type_cursor(b)->anterior->kind == MU_VARIABLE_TYPE) {
-      b = type_return(b);
-    } else {
-      a = type_return(a);
-      b = type_return(b);
-    }
-  }
-
-  // Ensure that type_return(a) and type_return(b) are both NULL
-  const mu_type_t *result = b;
-  a = type_return(a), b = type_return(b);
-  assert(a == NULL && b == NULL);
-  return result;
-
-except:
-  while ((a = type_return(a)) != NULL);
-  while ((b = type_return(b)) != NULL);
-  return NULL;
-}
-
 const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
   assert(root->as_stator.id < induce->node_length);
 
@@ -263,6 +142,153 @@ const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
   } while ((node = node_return(node)) != NULL);
 
   return induce_evince(induce, root);
+}
+
+__attribute__((nonnull)) static const mu_type_t *next_lower(
+    const induce_t *induce, size_t *i, const mu_type_t *upper) {
+  size_t index;
+  while ((index = (*i)++) < induce->sub_length) {
+    induce_sub_t sub = induce->sub_data[index];
+    if (sub.upper != upper)
+      continue;
+    return sub.lower;
+  }
+  return NULL;
+}
+
+__attribute__((nonnull)) static const mu_type_t *next_upper(
+    const induce_t *induce, size_t *i, const mu_type_t *lower) {
+  size_t index;
+  while ((index = (*i)++) < induce->sub_length) {
+    induce_sub_t sub = induce->sub_data[index];
+    if (sub.lower != lower)
+      continue;
+    return sub.upper;
+  }
+  return NULL;
+}
+
+static const mu_type_t *induce_restrict(
+    induce_t *induce, const mu_type_t *a, const mu_type_t *b) {
+  // If we don't have to continue into a or b, then just return
+  if (type_nominate(a, b) >= 0)
+    return a;
+
+  for (;;) {
+    if (a->kind == MU_VARIABLE_TYPE) {
+      const mu_type_t *lower;
+      if ((lower = next_lower(induce, &type_cursor(a)->i, a)) == NULL) {
+        fprintf(stderr, "Subsuming (exit variable) "); mu_type_debug(a); fprintf(stderr, " into "); mu_type_debug(b); fprintf(stderr, "\n");
+        append(induce, a, b);
+        goto done;
+      }
+
+      int nominate;
+      if ((nominate = type_nominate(lower, b)) == 0) {
+        fprintf(stderr, "Type ");
+        mu_type_debug(lower);
+        fprintf(stderr, " isn't a subtype of ");
+        mu_type_debug(b);
+        fprintf(stderr, "\n");
+
+      } else if (nominate > 0) {
+        append(induce, lower, b);
+
+      } else if (nominate < 0) {
+        a = type_continue(a, lower);
+      }
+
+      continue;
+
+    } else if (b->kind == MU_VARIABLE_TYPE) {
+      const mu_type_t *upper;
+      if ((upper = next_upper(induce, &type_cursor(b)->i, b)) == NULL) {
+        fprintf(stderr, "Subsuming (exit variable) "); mu_type_debug(a); fprintf(stderr, " into "); mu_type_debug(b); fprintf(stderr, "\n");
+        append(induce, a, b);
+        goto done;
+      }
+
+      int nominate;
+      if ((nominate = type_nominate(a, upper)) == 0) {
+        fprintf(stderr, "Type ");
+        mu_type_debug(a);
+        fprintf(stderr, " isn't a subtype of ");
+        mu_type_debug(upper);
+        fprintf(stderr, "\n");
+
+      } else if (nominate > 0) {
+        append(induce, a, upper);
+
+      } else if (nominate < 0) {
+        b = type_continue(b, upper);
+      }
+
+      continue;
+
+    } else {
+      int out = type_restrict(a, b, induce);
+      if (out == RETURN)
+        goto done;
+
+      if (out == PROBLEM)
+        goto except;
+
+      assert(out == TO_CONTINUE);
+
+      const mu_type_t *next_a = continue_into.a;
+      const mu_type_t *next_b = continue_into.b;
+
+      fprintf(stderr, "Subsuming normal "); mu_type_debug(next_a); fprintf(stderr, " into "); mu_type_debug(next_b); fprintf(stderr, "\n");
+
+      int nominate;
+      if ((nominate = type_nominate(next_a, next_b)) == 0) {
+        fprintf(stderr, "Type ");
+        mu_type_debug(next_a);
+        fprintf(stderr, " isn't a subtype of ");
+        mu_type_debug(next_b);
+        fprintf(stderr, "\n");
+
+      } else if (nominate > 0) {
+
+      } else if (nominate < 0) {
+        a = type_continue(a, next_a);
+        b = type_continue(b, next_b);
+      }
+
+      continue;
+    }
+
+  done:
+    if (type_cursor(a)->anterior == NULL || type_cursor(b)->anterior == NULL)
+      break;
+
+    /* A variable type restricts each type in its lower/upper bounds to the
+     * other operand. Because we can't type_continue() into the same type, when
+     * a variable type does this, the other operand is unaltered. Thus, a
+     * variable type "locks" the other operand.
+     */
+
+    /* TODO: What if both sides have an anterior that's a variable type? This
+     * has to be handled specially */
+    int a_locked = type_cursor(b)->anterior->kind == MU_VARIABLE_TYPE;
+    int b_locked = type_cursor(a)->anterior->kind == MU_VARIABLE_TYPE;
+
+    if (!a_locked)
+      a = type_return(a);
+    if (!b_locked)
+      b = type_return(b);
+  }
+
+  // Ensure that type_return(a) and type_return(b) are both NULL
+  const mu_type_t *result = b;
+  a = type_return(a), b = type_return(b);
+  assert(a == NULL && b == NULL);
+  return result;
+
+except:
+  while ((a = type_return(a)) != NULL);
+  while ((b = type_return(b)) != NULL);
+  return NULL;
 }
 
 static const mu_type_t *append(
@@ -544,13 +570,13 @@ __attribute__((nonnull, pure)) static int vector_type_nominate(
 __attribute__((nonnull)) static int boolean_type_restrict(
     const mu_boolean_type_t *restrict a, const mu_type_t *restrict b,
     induce_t *induce) {
-  __builtin_unreachable();
+  return RETURN;
 }
 
 __attribute__((nonnull)) static int integer_type_restrict(
     const mu_integer_type_t *restrict a, const mu_type_t *restrict b,
     induce_t *induce) {
-  __builtin_unreachable();
+  return RETURN;
 }
 
 __attribute__((nonnull)) static int lambda_type_restrict(
@@ -615,8 +641,7 @@ static const mu_type_t *node_induce(const mu_node_t *node, induce_t *induce) {
   __builtin_unreachable();
 }
 
-static int type_nominate(
-    const mu_type_t *restrict a, const mu_type_t *restrict b) {
+static int type_nominate(const mu_type_t *a, const mu_type_t *b) {
   if (a == b)
     return 1;
 
