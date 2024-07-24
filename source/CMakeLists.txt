@@ -11,7 +11,6 @@ target_sources(muon PRIVATE
 
   stator/name.c
   stator/node.c
-  stator/test.c
   stator/type.c
 
   stator/access_expr.c
@@ -36,8 +35,6 @@ target_sources(muon PRIVATE
   stator/type_stmt.c
 
   stator/variable_view.c
-
-  stator/member_test.c
 
   stator/boolean_type.c
   stator/integer_type.c

@@ -11,6 +11,7 @@
 #include "variable_type.h"     // IWYU pragma: export
 #include "vector_type.h"       // IWYU pragma: export
 
+#include "../common.h"
 #include "engine.h"
 
 #include <assert.h>

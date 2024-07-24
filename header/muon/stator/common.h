@@ -34,10 +34,6 @@
 #define MU_EACH_VIEW_KIND(emit, ...) \
   emit(variable, VARIABLE, Variable, ##__VA_ARGS__)
 
-/// Expands to emit(lower, upper, title, ...) for each kind of test
-#define MU_EACH_TEST_KIND(emit, ...) \
-  emit(member, MEMBER, Member, ##__VA_ARGS__)
-
 /// Expands to emit(lower, upper, title, ...) for each kind of type
 #define MU_EACH_TYPE_KIND(emit, ...) \
   emit(boolean, BOOLEAN, Boolean, ##__VA_ARGS__) \
@@ -61,7 +57,6 @@ typedef enum {
   MU_EACH_SIGN_KIND(MU_EMIT, SIGN)
   MU_EACH_STMT_KIND(MU_EMIT, STMT)
   MU_EACH_VIEW_KIND(MU_EMIT, VIEW)
-  MU_EACH_TEST_KIND(MU_EMIT, TEST)
   MU_EACH_TYPE_KIND(MU_EMIT, TYPE)
 #undef MU_EMIT
 } mu_stator_kind_t;

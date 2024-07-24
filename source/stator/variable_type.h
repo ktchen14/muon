@@ -4,7 +4,6 @@
 #include <muon/stator/variable_type.h>  // IWYU pragma: export
 
 #include "abstract_type.h"
-#include "test.h"
 
 #include <assert.h>
 #include <stddef.h>

@@ -2,7 +2,6 @@
 #define MU_STATOR_VARIABLE_TYPE_H
 
 #include "abstract_type.h"
-#include "abstract_test.h"
 
 typedef struct {
   MU_TYPE_HEADER;

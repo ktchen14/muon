@@ -28,6 +28,7 @@
 
 #include "variable_view.h"     // IWYU pragma: export
 
+#include "../common.h"
 #include "engine.h"
 
 #include <assert.h>
