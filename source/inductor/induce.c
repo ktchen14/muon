@@ -23,7 +23,7 @@ static const mu_type_t *append(
   __attribute__((nonnull));
 
 /**
- * @brief Restrict type @a a to a subtype of type @a b in the @a induce engine
+ * @brief Restrict type @a a to be a subtype of @a b in the @a induce engine
  *
  * On allocation failure, @c errno is set by the allocator. This function can't
  * fail otherwise. The behavior is undefined if:
@@ -159,10 +159,11 @@ static induce_t *restrict_type(
   if (nominate(induce, a, b) >= 0)
     return induce;
 
-  const mu_type_t *last_a = NULL, *next_a, *last_b = NULL, *next_b;
-  int e;
-  do {
+  for (const mu_type_t *last_a = NULL, *last_b = NULL;;) {
+    int e;
+
     if (a->kind != MU_VARIABLE_TYPE && b->kind != MU_VARIABLE_TYPE) {
+      const mu_type_t *next_a, *next_b;
       do {
         if ((e = type_restrict(a, b, induce)) == RETURN)
           goto next;
@@ -181,9 +182,33 @@ static induce_t *restrict_type(
       b = type_continue(b, next_b);
 
     } else if (a->kind == MU_VARIABLE_TYPE) {
+      // Before we restrict a variable type α to be a subtype of β, we must also
+      // restrict *each subtype of α* to be a subtype of β. That is:
+      //
+      //   α <: β   if and only if   ∀(τ | τ <: α) τ <: β
+      //
+      // Select the next τ that's an immediate subtype of α and isn't, already
+      // or trivially, a subtype of β. Then, resume the main loop with:
+      //
+      //   (a, b) = (τ, β)
+      //
+      // If some τ can't be made a subtype of β, just roll back as α <: β isn't
+      // true. Once we've exhausted all subtypes of α, register α <: β.
+      //
+      // Note that when we resume the main loop with (τ, β) from (α, β), we
+      // can't "push" another instance of β. That is, we can't do:
+      //
+      //   β = type_continue(β, β)
+      //
+      // Because the cursor in the type header of β is already in use by this
+      // iteration of the main loop. As a result, when we return from (τ, β),
+      // we'll return to (α, β') where β' is the type that preceded β. In this
+      // case, we need to "repush" β before we move on.
+
       if (last_b != NULL)
         b = type_continue(b, last_b);
 
+      const mu_type_t *next_a;
       do {
         if ((next_a = next_lower(induce, &type_cursor(a)->i, a)) == NULL)
           goto append;
@@ -195,13 +220,37 @@ static induce_t *restrict_type(
       a = type_continue(a, next_a);
 
     } else if (b->kind == MU_VARIABLE_TYPE) {
+      // Before we restrict α to be a subtype of a variable type β, we must also
+      // restrict each α to be a subtype of *each supertype of β*. That is:
+      //
+      //   α <: β   if and only if   ∀(τ | β <: τ) a <: τ
+      //
+      // Select the next τ that's an immediate supertype of β and isn't, already
+      // or trivially, a supertype of α. Then, resume the main loop with:
+      //
+      //   (a, b) = (α, τ)
+      //
+      // If α can't be made a subtype of some τ, just roll back as α <: β isn't
+      // true. Once we've exhausted all supertypes of β, register α <: β.
+      //
+      // Note that when we resume the main loop with (α, τ) from (α, β), we
+      // can't "push" another instance of α. That is, we can't do:
+      //
+      //   α = type_continue(α, α)
+      //
+      // Because the cursor in the type header of α is already in use by this
+      // iteration of the main loop. As a result, when we return from (α, τ),
+      // we'll return to (α', β) where α' is the type that preceded α. In this
+      // case, we need to "repush" α before we move on.
+
       if (last_a != NULL)
         a = type_continue(a, last_a);
 
+      const mu_type_t *next_b;
       do {
         if ((next_b = next_upper(induce, &type_cursor(b)->i, b)) == NULL)
           goto append;
-      } while ((e = nominate(induce, next_a, b)) >= 0);
+      } while ((e = nominate(induce, a, next_b)) >= 0);
 
       if (e == 0)
         goto rollback;
@@ -213,12 +262,15 @@ static induce_t *restrict_type(
     continue;
 
   append:
-    append(induce, a, b);
+    if (append(induce, a, b) == NULL)
+      goto except;
 
   next:
     a = type_return(last_a = a);
     b = type_return(last_b = b);
-  } while (a != NULL && b != NULL);
+    if (a == NULL && b == NULL)
+      break;
+  }
 
   return induce;
 
