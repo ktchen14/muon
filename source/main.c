@@ -56,10 +56,11 @@ int main(int argc, char *argv[argc]) {
   induce_t induce;
   if (induce_initialize(&induce, &engine, &status, &detect) == NULL)
     assert(0);
-  debug_induce = &induce;
 
   if (induce_node(&induce, &sequence_expr->as_node) == NULL)
     assert(0);
+
+  debug_induce = &induce;
 
   /* reduce_t reduce = { .induce = &induce }; */
   /* size_t length = 1000; */

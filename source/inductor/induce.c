@@ -12,14 +12,17 @@
 
 _Thread_local induce_t *debug_induce;
 
+/// Return the next subtype of @a upper in the @a induce engine
 static const mu_type_t *next_lower(
     const induce_t *induce, size_t *index, const mu_type_t *upper)
   __attribute__((nonnull, pure));
 
+/// Return the next supertype of @a lower in the @a induce engine
 static const mu_type_t *next_upper(
     const induce_t *induce, size_t *index, const mu_type_t *lower)
   __attribute__((nonnull, pure));
 
+/// Register @a a <: @a b in the @a induce engine
 static const mu_type_t *append(
     induce_t *induce, const mu_type_t *restrict a, const mu_type_t *restrict b)
   __attribute__((nonnull));

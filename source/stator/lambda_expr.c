@@ -33,7 +33,9 @@ void mu_lambda_expr_debug(const mu_lambda_expr_t *expr) {
   putc('\n', stderr);
 
   WITH_DEBUG_INDENT() {
-    mu_view_debug(&expr->argument->as_view);
+    WITH_DEBUG_NEGATE() {
+      mu_view_debug(&expr->argument->as_view);
+    }
     mu_expr_debug(expr->matter);
   }
 }
