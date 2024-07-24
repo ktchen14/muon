@@ -27,14 +27,17 @@ static const char *alphabet[] = {
   "ρ", "σ", "τ", "υ", "φ", "χ", "ψ", "ω" };
 static size_t alphabet_length = sizeof(alphabet) / sizeof(alphabet[0]);
 
+#include "debug.h"
 #include "../inductor/induce.h"
 
 void mu_variable_type_debug(const mu_variable_type_t *type) {
+  // Assign the variable type a number
   if (type->number == 0)
     ((mu_variable_type_t *) type)->number = ++next_number;
 
   static _Thread_local char buffer[256];
 
+  // Generate a name
   char *name = buffer + sizeof(buffer);
   *--name = '\0';
   for (size_t n = type->number; n-- != 0; n /= alphabet_length) {
@@ -46,19 +49,21 @@ void mu_variable_type_debug(const mu_variable_type_t *type) {
   if (debug_induce == NULL)
     return;
 
-  /* for (size_t i = 0; i < debug_induce->sub_length; i++) { */
-  /*   induce_sub_t sub = debug_induce->sub_data[i]; */
-  /*   if (sub.upper != &type->as_type) */
-  /*     continue; */
-  /*   fprintf(stderr, " ⊔ "); */
-  /*   mu_type_debug(sub.lower); */
-  /* } */
-
-  for (size_t i = 0; i < debug_induce->sub_length; i++) {
-    induce_sub_t sub = debug_induce->sub_data[i];
-    if (sub.lower != &type->as_type)
-      continue;
-    fprintf(stderr, " ⊓ ");
-    mu_type_debug(sub.upper);
+  if (debug_negate) {
+    for (size_t i = 0; i < debug_induce->sub_length; i++) {
+      induce_sub_t sub = debug_induce->sub_data[i];
+      if (sub.lower != &type->as_type)
+        continue;
+      fprintf(stderr, " ⊓ ");
+      mu_type_debug(sub.upper);
+    }
+  } else {
+    for (size_t i = 0; i < debug_induce->sub_length; i++) {
+      induce_sub_t sub = debug_induce->sub_data[i];
+      if (sub.upper != &type->as_type)
+        continue;
+      fprintf(stderr, " ⊔ ");
+      mu_type_debug(sub.lower);
+    }
   }
 }
