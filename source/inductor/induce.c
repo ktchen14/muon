@@ -170,12 +170,18 @@ __attribute__((nonnull)) static const mu_type_t *next_upper(
 
 static const mu_type_t *induce_restrict(
     induce_t *induce, const mu_type_t *a, const mu_type_t *b) {
+  const mu_type_t *const root_a = a, *const root_b = b;
+
   // If we don't have to continue into a or b, then just return
   if (type_nominate(a, b) >= 0)
     return a;
 
-  for (;;) {
+  const mu_type_t *last_a = NULL, *last_b = NULL;
+  do {
     if (a->kind == MU_VARIABLE_TYPE) {
+      if (type_cursor(a)->i > 0)
+        b = type_continue(b, last_b);
+
       const mu_type_t *lower;
       if ((lower = next_lower(induce, &type_cursor(a)->i, a)) == NULL) {
         fprintf(stderr, "Subsuming (exit variable) "); mu_type_debug(a); fprintf(stderr, " into "); mu_type_debug(b); fprintf(stderr, "\n");
@@ -201,6 +207,9 @@ static const mu_type_t *induce_restrict(
       continue;
 
     } else if (b->kind == MU_VARIABLE_TYPE) {
+      if (type_cursor(b)->i > 0)
+        a = type_continue(a, last_a);
+
       const mu_type_t *upper;
       if ((upper = next_upper(induce, &type_cursor(b)->i, b)) == NULL) {
         fprintf(stderr, "Subsuming (exit variable) "); mu_type_debug(a); fprintf(stderr, " into "); mu_type_debug(b); fprintf(stderr, "\n");
@@ -259,31 +268,11 @@ static const mu_type_t *induce_restrict(
     }
 
   done:
-    if (type_cursor(a)->anterior == NULL || type_cursor(b)->anterior == NULL)
-      break;
+    a = type_return(last_a = a);
+    b = type_return(last_b = b);
+  } while (a != NULL && b != NULL);
 
-    /* A variable type restricts each type in its lower/upper bounds to the
-     * other operand. Because we can't type_continue() into the same type, when
-     * a variable type does this, the other operand is unaltered. Thus, a
-     * variable type "locks" the other operand.
-     */
-
-    /* TODO: What if both sides have an anterior that's a variable type? This
-     * has to be handled specially */
-    int a_locked = type_cursor(b)->anterior->kind == MU_VARIABLE_TYPE;
-    int b_locked = type_cursor(a)->anterior->kind == MU_VARIABLE_TYPE;
-
-    if (!a_locked)
-      a = type_return(a);
-    if (!b_locked)
-      b = type_return(b);
-  }
-
-  // Ensure that type_return(a) and type_return(b) are both NULL
-  const mu_type_t *result = b;
-  a = type_return(a), b = type_return(b);
-  assert(a == NULL && b == NULL);
-  return result;
+  return root_b;
 
 except:
   while ((a = type_return(a)) != NULL);
