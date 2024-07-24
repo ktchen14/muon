@@ -5,61 +5,21 @@
 #include "type.h"
 
 #include <assert.h>
-#include <errno.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 
-const mu_variable_type_t *mu_variable_type(
-    mu_engine_t *engine, size_t argc, const mu_test_t *argv[/* argc */]) {
-  assert(argc == 0 && argv == NULL || argc != 0 && argv != NULL);
-  for (size_t i = 0; i < argc; i++)
-    assert(argv[i]->as_stator.engine == engine);
-
-  size_t size;
-  if (rare((size = struct_size(mu_variable_type_t, argv, argc)) == 0))
-    return errno = ENOMEM, NULL;
+const mu_variable_type_t *mu_variable_type(mu_engine_t *engine) {
+  size_t size = sizeof(mu_variable_type_t);
 
   mu_variable_type_t *result;
   if ((result = type_allocate(engine, size)) == NULL)
     return NULL;
   *result = (mu_variable_type_t) {
-    .as_type.kind = MU_VARIABLE_TYPE, .argc = argc,
+    .as_type.kind = MU_VARIABLE_TYPE,
   };
-
-  if (argc != 0)
-    memcpy(&result->argv, argv, sizeof(const mu_test_t *[argc]));
 
   return assign_type(engine, result);
-}
-
-const mu_variable_type_t *mu_open_type(mu_engine_t *engine) {
-  return mu_variable_type(engine, 0, NULL);
-}
-
-mu_variable_type_t *variable_type_allocate(mu_engine_t *engine, size_t argc) {
-  size_t size;
-  if (rare((size = struct_size(mu_variable_type_t, argv, argc)) == 0))
-    return errno = ENOMEM, NULL;
-
-  mu_variable_type_t *result;
-  if ((result = type_allocate(engine, size)) == NULL)
-    return NULL;
-  *result = (mu_variable_type_t) { .as_stator.engine = engine, .argc = argc };
-  return result;
-}
-
-const mu_variable_type_t *variable_type_activate(mu_variable_type_t *type) {
-  mu_engine_t *engine = (mu_engine_t *) type->as_stator.engine;
-
-  for (size_t i = 0; i < type->argc; i++)
-    assert(type->argv[i]->as_stator.engine == engine);
-
-  mu_variable_type_t source = {
-    .as_type.kind = MU_VARIABLE_TYPE, .argc = type->argc
-  };
-  memcpy(type, &source, offsetof(mu_variable_type_t, argv));
-  return assign_type(engine, type);
 }
 
 static _Atomic size_t next_number = 0;

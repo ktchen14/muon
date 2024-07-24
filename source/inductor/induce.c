@@ -346,7 +346,7 @@ __attribute__((nonnull)) static const mu_type_t *access_expr_induce(
   mu_engine_t *engine = induce->engine;
 
   const mu_variable_type_t *result;
-  if ((result = mu_open_type(engine)) == NULL)
+  if ((result = mu_variable_type(engine)) == NULL)
     return NULL;
 
   const mu_record_type_t *record_type;
@@ -385,7 +385,7 @@ __attribute__((nonnull)) static const mu_type_t *invoke_expr_induce(
   const mu_type_t *matter = induce_evince(induce, &expr->matter->as_node);
 
   const mu_variable_type_t *output;
-  if ((output = mu_open_type(induce->engine)) == NULL)
+  if ((output = mu_variable_type(induce->engine)) == NULL)
     return NULL;
   const mu_type_t *result = &output->as_type;
 
@@ -416,7 +416,7 @@ __attribute__((nonnull)) static const mu_type_t *name_expr_induce(
     return induce_evince(induce, target);
 
   const mu_variable_type_t *result;
-  if ((result = mu_open_type(induce->engine)) == NULL)
+  if ((result = mu_variable_type(induce->engine)) == NULL)
     return NULL;
   return &result->as_type;
 }
@@ -454,7 +454,7 @@ __attribute__((nonnull)) static const mu_type_t *sequence_expr_induce(
 __attribute__((nonnull)) static const mu_type_t *vector_expr_induce(
     const mu_vector_expr_t *expr, induce_t *induce) {
   const mu_variable_type_t *matter_type;
-  if ((matter_type = mu_open_type(induce->engine)) == NULL)
+  if ((matter_type = mu_variable_type(induce->engine)) == NULL)
     return NULL;
 
   for (size_t i = 0; i < expr->argc; i++) {
@@ -472,7 +472,7 @@ __attribute__((nonnull)) static const mu_type_t *vector_expr_induce(
 __attribute__((nonnull)) static const mu_type_t *zero_expr_induce(
     const mu_zero_expr_t *expr, induce_t *induce) {
   const mu_variable_type_t *result;
-  if ((result = mu_open_type(induce->engine)) == NULL)
+  if ((result = mu_variable_type(induce->engine)) == NULL)
     return NULL;
   return &result->as_type;
 }
@@ -502,7 +502,7 @@ __attribute__((nonnull)) static const mu_type_t *name_sign_induce(
     return induce_evince(induce, target);
 
   const mu_variable_type_t *result;
-  if ((result = mu_open_type(induce->engine)) == NULL)
+  if ((result = mu_variable_type(induce->engine)) == NULL)
     return NULL;
   return &result->as_type;
 }
@@ -543,10 +543,10 @@ __attribute__((nonnull)) static const mu_type_t *type_stmt_induce(
 
 __attribute__((nonnull)) static const mu_type_t *variable_view_induce(
     const mu_variable_view_t *view, induce_t *induce) {
-  const mu_variable_type_t *open_type;
-  if ((open_type = mu_open_type(induce->engine)) == NULL)
+  const mu_variable_type_t *result;
+  if ((result = mu_variable_type(induce->engine)) == NULL)
     return NULL;
-  return &open_type->as_type;
+  return &result->as_type;
 }
 
 // ---------------------------------- Type -------------------------------- {{{1
