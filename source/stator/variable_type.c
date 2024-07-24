@@ -46,11 +46,19 @@ void mu_variable_type_debug(const mu_variable_type_t *type) {
   if (debug_induce == NULL)
     return;
 
+  /* for (size_t i = 0; i < debug_induce->sub_length; i++) { */
+  /*   induce_sub_t sub = debug_induce->sub_data[i]; */
+  /*   if (sub.upper != &type->as_type) */
+  /*     continue; */
+  /*   fprintf(stderr, " ⊔ "); */
+  /*   mu_type_debug(sub.lower); */
+  /* } */
+
   for (size_t i = 0; i < debug_induce->sub_length; i++) {
     induce_sub_t sub = debug_induce->sub_data[i];
-    if (sub.upper != &type->as_type)
+    if (sub.lower != &type->as_type)
       continue;
     fprintf(stderr, " ⊓ ");
-    mu_type_debug(sub.lower);
+    mu_type_debug(sub.upper);
   }
 }
