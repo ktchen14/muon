@@ -33,6 +33,8 @@ const mu_sequence_expr_t *mu_script_to_sequence_expr(
   return mu_sequence_expr(engine, output, script->argc, script->argv);
 }
 
+#include "stator/debug.h"
+
 void mu_script_debug(const mu_script_t *script) {
   fprintf(stderr, "Script:\n");
 

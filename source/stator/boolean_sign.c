@@ -23,6 +23,8 @@ const mu_boolean_sign_t *mu_boolean_sign(
   return assign_node(engine, result);
 }
 
+#include "debug.h"
+
 void mu_boolean_sign_debug(const mu_boolean_sign_t *sign) {
   fprintf(stderr, "%*s", debug_indent, "");
   fprintf(stderr, "Boolean Sign #%zu\n", sign->as_stator.id);

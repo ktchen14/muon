@@ -23,6 +23,8 @@ const mu_integer_sign_t *mu_integer_sign(
   return assign_node(engine, result);
 }
 
+#include "debug.h"
+
 void mu_integer_sign_debug(const mu_integer_sign_t *sign) {
   fprintf(stderr, "%*s", debug_indent, "");
   fprintf(stderr, "Integer Sign #%zu\n", sign->as_stator.id);

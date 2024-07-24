@@ -25,6 +25,8 @@ const mu_boolean_expr_t *mu_boolean_expr(
   return assign_node(engine, result);
 }
 
+#include "debug.h"
+
 void mu_boolean_expr_debug(const mu_boolean_expr_t *expr) {
   fprintf(stderr, "%*s", debug_indent, "");
   fprintf(stderr, "Boolean Expr #%zu: data = %s\n",

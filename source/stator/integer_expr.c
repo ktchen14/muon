@@ -25,6 +25,8 @@ const mu_integer_expr_t *mu_integer_expr(
   return assign_node(engine, result);
 }
 
+#include "debug.h"
+
 void mu_integer_expr_debug(const mu_integer_expr_t *expr) {
   fprintf(stderr, "%*s", debug_indent, "");
   fprintf(stderr, "Integer Expr #%zu: data = %" PRIu64 "\n",
