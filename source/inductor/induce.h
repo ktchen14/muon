@@ -31,6 +31,8 @@ typedef struct {
   const mu_type_t *next_b;
 } induce_t;
 
+extern _Thread_local induce_t *debug_induce;
+
 /// Initialize the @a inductor to handle nodes and types in the @a engine
 induce_t *induce_initialize(
     induce_t *induce,

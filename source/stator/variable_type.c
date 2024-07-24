@@ -68,6 +68,8 @@ static const char *alphabet[] = {
   "ρ", "σ", "τ", "υ", "φ", "χ", "ψ", "ω" };
 static size_t alphabet_length = sizeof(alphabet) / sizeof(alphabet[0]);
 
+#include "../inductor/induce.h"
+
 void mu_variable_type_debug(const mu_variable_type_t *type) {
   if (type->number == 0)
     ((mu_variable_type_t *) type)->number = ++next_number;
@@ -82,13 +84,14 @@ void mu_variable_type_debug(const mu_variable_type_t *type) {
   }
   fprintf(stderr, "%s", name);
 
-  if (type->argc > 0) {
-    fputs(" with (", stderr);
-    for (size_t i = 0; i < type->argc; i++) {
-      if (i > 0)
-        fputs(", ", stderr);
-      mu_test_debug(type->argv[i]);
-    }
-    putc(')', stderr);
+  if (debug_induce == NULL)
+    return;
+
+  for (size_t i = 0; i < debug_induce->sub_length; i++) {
+    induce_sub_t sub = debug_induce->sub_data[i];
+    if (sub.upper != &type->as_type)
+      continue;
+    fprintf(stderr, " ^ ");
+    mu_type_debug(sub.lower);
   }
 }

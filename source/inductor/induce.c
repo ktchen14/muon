@@ -10,6 +10,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+_Thread_local induce_t *debug_induce;
+
 static const mu_type_t *next_lower(
     const induce_t *induce, size_t *index, const mu_type_t *upper)
   __attribute__((nonnull, pure));
