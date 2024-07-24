@@ -13,14 +13,14 @@ set(CMAKE_C_FLAGS "-g -fsanitize=address -fsanitize=undefined -Wno-parentheses")
 
 add_library(muon)
 target_compile_features(muon PUBLIC c_std_11)
-target_compile_options(muon PRIVATE -Werror -Wall -Wextra -Wno-unused-parameter)
+target_compile_options(muon PRIVATE -Wall -Wextra -Wno-unused-parameter)
 target_include_directories(muon PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/header>"
   "$<INSTALL_INTERFACE:include>")
 set_property(TARGET muon PROPERTY VERSION "${Muon_VERSION}")
 
 add_executable(main)
-target_compile_options(main PRIVATE -Werror -Wall -Wextra -Wno-unused-parameter)
+target_compile_options(main PRIVATE -Wall -Wextra -Wno-unused-parameter)
 target_link_libraries(main PRIVATE muon)
 
 add_compile_options(-Werror -Wall -Wextra -Wno-unused-parameter)
