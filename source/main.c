@@ -86,6 +86,14 @@ int main(int argc, char *argv[argc]) {
     putc('\n', stderr);
   } while ((node = node_return(node)) != NULL);
 
+  for (size_t i = 0; i < induce.sub_length; i++) {
+    induce_sub_t sub = induce.sub_data[i];
+    mu_type_debug(sub.lower);
+    fprintf(stderr, " <: ");
+    mu_type_debug(sub.upper);
+    fprintf(stderr, "\n");
+  }
+
   /* do { */
   /*   const mu_node_t *next; */
   /*   while ((next = node_at(node, node_cursor(node)->i++)) != NULL) { */

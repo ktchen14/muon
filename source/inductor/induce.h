@@ -26,6 +26,9 @@ typedef struct {
   size_t sub_volume;
   size_t sub_length;
   induce_sub_t *sub_data;
+
+  const mu_type_t *next_a;
+  const mu_type_t *next_b;
 } induce_t;
 
 /// Initialize the @a inductor to handle nodes and types in the @a engine
