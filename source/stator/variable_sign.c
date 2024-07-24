@@ -24,7 +24,11 @@ const mu_variable_sign_t *mu_variable_sign(
   return assign_node(engine, result);
 }
 
+#include "debug.h"
+
 void mu_variable_sign_debug(const mu_variable_sign_t *sign) {
   fprintf(stderr, "%*s", debug_indent, "");
-  fprintf(stderr, "Variable Sign #%zu\n", sign->as_stator.id);
+  fprintf(stderr, "Variable Sign #%zu", sign->as_stator.id);
+  debug_node_type(&sign->as_node);
+  putc('\n', stderr);
 }

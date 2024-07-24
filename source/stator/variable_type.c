@@ -91,7 +91,7 @@ void mu_variable_type_debug(const mu_variable_type_t *type) {
     induce_sub_t sub = debug_induce->sub_data[i];
     if (sub.upper != &type->as_type)
       continue;
-    fprintf(stderr, " ^ ");
+    fprintf(stderr, " ⊓ ");
     mu_type_debug(sub.lower);
   }
 }

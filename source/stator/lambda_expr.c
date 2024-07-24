@@ -24,9 +24,13 @@ const mu_lambda_expr_t *mu_lambda_expr(
   return assign_node(engine, result);
 }
 
+#include "debug.h"
+
 void mu_lambda_expr_debug(const mu_lambda_expr_t *expr) {
   fprintf(stderr, "%*s", debug_indent, "");
-  fprintf(stderr, "Lambda Expr #%zu:\n", expr->as_stator.id);
+  fprintf(stderr, "Lambda Expr #%zu:", expr->as_stator.id);
+  debug_node_type(&expr->as_node);
+  putc('\n', stderr);
 
   WITH_DEBUG_INDENT() {
     mu_view_debug(&expr->argument->as_view);

@@ -25,10 +25,13 @@ const mu_type_stmt_t *mu_type_stmt(
   return assign_node(engine, result);
 }
 
+#include "debug.h"
+
 void mu_type_stmt_debug(const mu_type_stmt_t *stmt) {
   fprintf(stderr, "%*s", debug_indent, "");
   fprintf(stderr, "Type Stmt #%zu: ", stmt->as_stator.id);
   mu_name_debug(stmt->name);
+  debug_node_type(&stmt->as_node);
   putc('\n', stderr);
 
   WITH_DEBUG_INDENT() { mu_sign_debug(stmt->sign); }

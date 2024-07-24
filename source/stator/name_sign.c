@@ -27,9 +27,12 @@ const mu_name_sign_t *mu_name_sign(
   return assign_node(engine, result);
 }
 
+#include "debug.h"
+
 void mu_name_sign_debug(const mu_name_sign_t *sign) {
   fprintf(stderr, "%*s", debug_indent, "");
   fprintf(stderr, "Name Sign #%zu: ", sign->as_stator.id);
   mu_name_debug(sign->name);
+  debug_node_type(&sign->as_node);
   putc('\n', stderr);
 }

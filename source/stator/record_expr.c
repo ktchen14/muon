@@ -52,9 +52,13 @@ const mu_record_expr_t *record_expr_activate(mu_record_expr_t *expr) {
   return assign_node(engine, expr);
 }
 
+#include "debug.h"
+
 void mu_record_expr_debug(const mu_record_expr_t *expr) {
   fprintf(stderr, "%*s", debug_indent, "");
-  fprintf(stderr, "Record Expr #%zu:\n", expr->as_stator.id);
+  fprintf(stderr, "Record Expr #%zu:", expr->as_stator.id);
+  debug_node_type(&expr->as_node);
+  putc('\n', stderr);
 
   WITH_DEBUG_INDENT() {
     for (size_t i = 0; i < expr->argc; i++)

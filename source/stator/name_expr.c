@@ -27,9 +27,12 @@ const mu_name_expr_t *mu_name_expr(
   return assign_node(engine, result);
 }
 
+#include "debug.h"
+
 void mu_name_expr_debug(const mu_name_expr_t *expr) {
   fprintf(stderr, "%*s", debug_indent, "");
   fprintf(stderr, "Name Expr #%zu: ", expr->as_stator.id);
   mu_name_debug(expr->name);
+  debug_node_type(&expr->as_node);
   putc('\n', stderr);
 }

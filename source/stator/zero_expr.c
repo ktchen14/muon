@@ -18,7 +18,11 @@ const mu_zero_expr_t *mu_zero_expr(mu_engine_t *engine) {
   return assign_node(engine, result);
 }
 
+#include "debug.h"
+
 void mu_zero_expr_debug(const mu_zero_expr_t *expr) {
   fprintf(stderr, "%*s", debug_indent, "");
-  fprintf(stderr, "Zero Expr #%zu\n", expr->as_stator.id);
+  fprintf(stderr, "Zero Expr #%zu", expr->as_stator.id);
+  debug_node_type(&expr->as_node);
+  putc('\n', stderr);
 }

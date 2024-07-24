@@ -36,6 +36,6 @@ const mu_lambda_type_t *lambda_type_import(
 
 void mu_lambda_type_debug(const mu_lambda_type_t *type) {
   mu_type_debug(type->argument);
-  fputs(" -> ", stderr);
+  fputs(" → ", stderr);
   mu_type_debug(type->output);
 }

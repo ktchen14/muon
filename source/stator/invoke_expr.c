@@ -24,9 +24,13 @@ const mu_invoke_expr_t *mu_invoke_expr(
   return assign_node(engine, result);
 }
 
+#include "debug.h"
+
 void mu_invoke_expr_debug(const mu_invoke_expr_t *expr) {
   fprintf(stderr, "%*s", debug_indent, "");
-  fprintf(stderr, "Invoke Expr #%zu:\n", expr->as_stator.id);
+  fprintf(stderr, "Invoke Expr #%zu:", expr->as_stator.id);
+  debug_node_type(&expr->as_node);
+  putc('\n', stderr);
 
   WITH_DEBUG_INDENT() {
     mu_expr_debug(expr->lambda);

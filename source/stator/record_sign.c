@@ -44,9 +44,13 @@ const mu_record_sign_t *mu_record_sign(
   return assign_node(engine, result);
 }
 
+#include "debug.h"
+
 void mu_record_sign_debug(const mu_record_sign_t *sign) {
   fprintf(stderr, "%*s", debug_indent, "");
-  fprintf(stderr, "Record Sign #%zu:\n", sign->as_stator.id);
+  fprintf(stderr, "Record Sign #%zu:", sign->as_stator.id);
+  debug_node_type(&sign->as_node);
+  putc('\n', stderr);
 
   WITH_DEBUG_INDENT() {
     for (size_t i = 0; i < sign->argc; i++)

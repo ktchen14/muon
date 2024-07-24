@@ -33,10 +33,13 @@ const mu_define_stmt_t *mu_define_stmt(
   return assign_node(engine, result);
 }
 
+#include "debug.h"
+
 void mu_define_stmt_debug(const mu_define_stmt_t *stmt) {
   fprintf(stderr, "%*s", debug_indent, "");
   fprintf(stderr, "Define Stmt #%zu: name = ", stmt->as_stator.id);
   mu_name_debug(stmt->name);
+  debug_node_type(&stmt->as_node);
   putc('\n', stderr);
 
   WITH_DEBUG_INDENT() {

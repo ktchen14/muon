@@ -31,10 +31,13 @@ const mu_access_expr_t *mu_access_expr(
   return assign_node(engine, result);
 }
 
+#include "debug.h"
+
 void mu_access_expr_debug(const mu_access_expr_t *expr) {
   fprintf(stderr, "%*s", debug_indent, "");
   fprintf(stderr, "Access Expr #%zu: name = ", expr->as_stator.id);
   mu_name_debug(expr->name);
+  debug_node_type(&expr->as_node);
   putc('\n', stderr);
 
   WITH_DEBUG_INDENT() { mu_expr_debug(expr->matter); }

@@ -17,4 +17,4 @@ typedef struct {
 
 #define import_retrieve(x, stator) x[(stator)->as_stator.id]
 
-#endif /* MU_STATOR_I */
+#endif /* MU_STATOR_COMMON_I */
