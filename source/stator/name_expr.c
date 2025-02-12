@@ -8,8 +8,7 @@
 #include <stddef.h>
 #include <stdio.h>
 
-const mu_name_expr_t *mu_name_expr(
-    mu_engine_t *engine, const mu_name_t *name) {
+const mu_name_expr_t *mu_name_expr(mu_engine_t *engine, const mu_name_t *name) {
   assert(name->as_stator.engine == engine);
 
   size_t size = sizeof(mu_name_expr_t);
