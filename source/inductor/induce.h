@@ -9,6 +9,51 @@
 #include <assert.h>
 #include <stddef.h>
 
+typedef enum {
+  MU_BOOLEAN_HEAD,
+  MU_INTEGER_HEAD,
+  MU_LAMBDA_HEAD,
+  MU_VECTOR_HEAD,
+} mu_head_kind_t;
+
+typedef enum {
+  MU_CONTRAVARIANCE,
+  MU_COVARIANCE,
+  MU_INVARIANCE,
+} mu_variance_t;
+
+typedef struct {
+  mu_head_kind_t kind;
+  size_t argc;
+  mu_variance_t variance[/* argc */];
+} mu_head_t;
+
+typedef struct type_t type_t;
+
+typedef struct {
+  const mu_name_t *name;
+  const type_t *type;
+} type_member_t;
+
+struct type_t {
+  enum {
+    SIMPLE_TYPE,
+    RECORD_TYPE,
+  } kind;
+
+  union {
+    struct {
+      const mu_head_t *head;
+      const type_t *argv[/* head->argc */];
+    };
+
+    struct {
+      size_t argc;
+      type_member_t schema[];
+    };
+  };
+};
+
 typedef struct {
   const mu_type_t *lower;
   const mu_type_t *upper;
