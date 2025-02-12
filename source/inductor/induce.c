@@ -12,6 +12,13 @@
 
 _Thread_local induce_t *debug_induce;
 
+const type_t *boolean_type(mu_engine_t *engine);
+const type_t *integer_type(mu_engine_t *engine);
+const type_t *lambda_type(mu_engine_t *engine, const type_t *argument, const type_t *output);
+const type_t *record_type(mu_engine_t *engine, size_t argc, const type_member_t[static argc]);
+const type_t *variable_type(mu_engine_t *engine, size_t level);
+const type_t *vector_type(mu_engine_t *engine, const type_t *matter);
+
 /// Register @a a <: @a b in the @a induce engine
 static const mu_type_t *append(
     induce_t *induce, const mu_type_t *restrict a, const mu_type_t *restrict b)
@@ -58,6 +65,33 @@ induce_t *induce_initialize(
     return NULL;
   for (size_t i = 0; i < sub_volume; sub_data[i++] = (induce_sub_t) {0});
 
+  mu_head_t *boolean_head;
+  if ((boolean_head = malloc(sizeof(mu_head_t))) == NULL)
+    return NULL;
+  *boolean_head = (mu_head_t) { .kind = MU_BOOLEAN_HEAD };
+
+  mu_head_t *integer_head;
+  if ((integer_head = malloc(sizeof(mu_head_t))) == NULL)
+    return NULL;
+  *integer_head = (mu_head_t) { .kind = MU_INTEGER_HEAD };
+
+  size_t size;
+
+  mu_head_t *lambda_head;
+  size = struct_size(mu_head_t, variance, 2);
+  if ((lambda_head = malloc(size)) == NULL)
+    return NULL;
+  *lambda_head = (mu_head_t) { .kind = MU_LAMBDA_HEAD, .argc = 2 };
+  lambda_head->variance[0] = MU_CONTRAVARIANCE;
+  lambda_head->variance[1] = MU_COVARIANCE;
+
+  mu_head_t *vector_head;
+  size = struct_size(mu_head_t, variance, 1);
+  if ((vector_head = malloc(size)) == NULL)
+    return NULL;
+  *vector_head = (mu_head_t) { .kind = MU_VECTOR_HEAD, .argc = 1 };
+  vector_head->variance[1] = MU_COVARIANCE;
+
   *induce = (induce_t) {
     .engine = engine,
     .status = status,
@@ -66,6 +100,11 @@ induce_t *induce_initialize(
     .node_to_type = node_to_type,
     .sub_volume = sub_volume,
     .sub_data = sub_data,
+
+    .boolean_head = boolean_head,
+    .integer_head = integer_head,
+    .lambda_head = lambda_head,
+    .vector_head = vector_head,
   };
   return induce;
 }
@@ -225,59 +264,51 @@ static const mu_type_t *append(
 
 // ---------------------------------- Expr -------------------------------- {{{1
 
-__attribute__((nonnull)) static const mu_type_t *access_expr_induce(
-    const mu_access_expr_t *expr, induce_t *induce) {
+__attribute__((nonnull)) static const type_t *access_expr_induce(
+    const mu_access_expr_t *expr, induce_t *induce, size_t level) {
   mu_engine_t *engine = induce->engine;
 
-  const mu_variable_type_t *result;
-  if ((result = mu_variable_type(engine)) == NULL)
+  const type_t *result;
+  if ((result = variable_type(engine, level)) == NULL)
     return NULL;
 
-  const mu_record_type_t *record_type;
-  const mu_type_member_t argv[] = {
-    { .name = expr->name, .type = &result->as_type }
+  const type_t *record_ty;
+  const type_member_t argv[] = {
+    { .name = expr->name, .type = result }
   };
-  size_t argc = sizeof(argv) / sizeof(argv[0]);
-  if ((record_type = mu_record_type(engine, argc, argv)) == NULL)
+  if ((record_ty = record_type(engine, 1, argv)) == NULL)
     return NULL;
 
   const mu_type_t *matter_type = induce_evince(induce, &expr->matter->as_node);
-  if (restrict_type(induce, matter_type, &record_type->as_type) == NULL)
+  if (restrict_type(induce, matter_type, record_ty) == NULL)
     return NULL;
-  return &result->as_type;
+  return result;
 }
 
-__attribute__((nonnull)) static const mu_type_t *boolean_expr_induce(
+__attribute__((nonnull)) static const type_t *boolean_expr_induce(
     const mu_boolean_expr_t *expr, induce_t *induce) {
-  const mu_boolean_type_t *result;
-  if ((result = mu_boolean_type(induce->engine)) == NULL)
-    return NULL;
-  return &result->as_type;
+  return boolean_type(induce->engine);
 }
 
-__attribute__((nonnull)) static const mu_type_t *integer_expr_induce(
+__attribute__((nonnull)) static const type_t *integer_expr_induce(
     const mu_integer_expr_t *expr, induce_t *induce) {
-  const mu_integer_type_t *result;
-  if ((result = mu_integer_type(induce->engine)) == NULL)
-    return NULL;
-  return &result->as_type;
+  return integer_type(induce->engine);
 }
 
-__attribute__((nonnull)) static const mu_type_t *invoke_expr_induce(
-    const mu_invoke_expr_t *expr, induce_t *induce) {
-  const mu_type_t *lambda = induce_evince(induce, &expr->lambda->as_node);
-  const mu_type_t *matter = induce_evince(induce, &expr->matter->as_node);
+__attribute__((nonnull)) static const type_t *invoke_expr_induce(
+    const mu_invoke_expr_t *expr, induce_t *induce, size_t level) {
+  const type_t *lambda = induce_evince(induce, &expr->lambda->as_node);
+  const type_t *matter = induce_evince(induce, &expr->matter->as_node);
 
-  const mu_variable_type_t *output;
-  if ((output = mu_variable_type(induce->engine)) == NULL)
-    return NULL;
-  const mu_type_t *result = &output->as_type;
-
-  const mu_lambda_type_t *lambda_type;
-  if ((lambda_type = mu_lambda_type(induce->engine, matter, result)) == NULL)
+  const type_t *result;
+  if ((result = variable_type(induce->engine, level)) == NULL)
     return NULL;
 
-  if (restrict_type(induce, lambda, &lambda_type->as_type) == NULL)
+  const type_t *lambda_ty;
+  if ((lambda_ty = lambda_type(induce->engine, matter, result)) == NULL)
+    return NULL;
+
+  if (restrict_type(induce, lambda, lambda_ty) == NULL)
     return NULL;
   return result;
 }
@@ -293,16 +324,12 @@ __attribute__((nonnull)) static const mu_type_t *lambda_expr_induce(
   return &result->as_type;
 }
 
-__attribute__((nonnull)) static const mu_type_t *name_expr_induce(
-    const mu_name_expr_t *expr, induce_t *induce) {
+__attribute__((nonnull)) static const type_t *name_expr_induce(
+    const mu_name_expr_t *expr, induce_t *induce, size_t level) {
   const mu_node_t *target;
   if ((target = detect_evince(induce->detect, &expr->as_node)) != NULL)
     return induce_evince(induce, target);
-
-  const mu_variable_type_t *result;
-  if ((result = mu_variable_type(induce->engine)) == NULL)
-    return NULL;
-  return &result->as_type;
+  return variable_type(induce->engine, level);
 }
 
 __attribute__((nonnull)) static const mu_type_t *record_expr_induce(
@@ -335,10 +362,10 @@ __attribute__((nonnull)) static const mu_type_t *sequence_expr_induce(
   return induce_evince(induce, &expr->output->as_node);
 }
 
-__attribute__((nonnull)) static const mu_type_t *vector_expr_induce(
-    const mu_vector_expr_t *expr, induce_t *induce) {
-  const mu_variable_type_t *matter_type;
-  if ((matter_type = mu_variable_type(induce->engine)) == NULL)
+__attribute__((nonnull)) static const type_t *vector_expr_induce(
+    const mu_vector_expr_t *expr, induce_t *induce, size_t level) {
+  const type_t *matter_type;
+  if ((matter_type = variable_type(induce->engine, level)) == NULL)
     return NULL;
 
   for (size_t i = 0; i < expr->argc; i++) {
@@ -347,18 +374,12 @@ __attribute__((nonnull)) static const mu_type_t *vector_expr_induce(
       return NULL;
   }
 
-  const mu_vector_type_t *result;
-  if ((result = mu_vector_type(induce->engine, &matter_type->as_type)) == NULL)
-    return NULL;
-  return &result->as_type;
+  return vector_type(induce->engine, matter_type);
 }
 
-__attribute__((nonnull)) static const mu_type_t *zero_expr_induce(
-    const mu_zero_expr_t *expr, induce_t *induce) {
-  const mu_variable_type_t *result;
-  if ((result = mu_variable_type(induce->engine)) == NULL)
-    return NULL;
-  return &result->as_type;
+__attribute__((nonnull)) static const type_t *zero_expr_induce(
+    const mu_zero_expr_t *expr, induce_t *induce, size_t level) {
+  return variable_type(induce->engine, level);
 }
 
 // ---------------------------------- Sign -------------------------------- {{{1

@@ -17,8 +17,8 @@ typedef enum {
 } mu_head_kind_t;
 
 typedef enum {
-  MU_CONTRAVARIANCE,
   MU_COVARIANCE,
+  MU_CONTRAVARIANCE,
   MU_INVARIANCE,
 } mu_variance_t;
 
@@ -39,20 +39,31 @@ struct type_t {
   enum {
     SIMPLE_TYPE,
     RECORD_TYPE,
+    VARIABLE_TYPE,
   } kind;
 
   union {
+    // SIMPLE_TYPE
     struct {
       const mu_head_t *head;
       const type_t *argv[/* head->argc */];
     };
 
+    // RECORD_TYPE
     struct {
       size_t argc;
       type_member_t schema[];
     };
+
+    // VARIABLE_TYPE
+    size_t level;
   };
 };
+
+typedef struct {
+  const type_t *type;
+  size_t level;
+} type_scheme_t;
 
 typedef struct {
   const mu_type_t *lower;
@@ -74,6 +85,11 @@ typedef struct {
 
   const mu_type_t *next_a;
   const mu_type_t *next_b;
+
+  const mu_head_t *boolean_head;
+  const mu_head_t *integer_head;
+  const mu_head_t *lambda_head;
+  const mu_head_t *vector_head;
 } induce_t;
 
 extern _Thread_local induce_t *debug_induce;
