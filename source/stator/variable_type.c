@@ -44,7 +44,6 @@ void mu_variable_type_debug(const mu_variable_type_t *type) {
     const char *c = alphabet[n % alphabet_length];
     memcpy(name -= strlen(c), c, strlen(c));
   }
-  /* fprintf(stderr, "%s", name); */
 
   if (debug_induce == NULL)
     return;
@@ -62,7 +61,7 @@ void mu_variable_type_debug(const mu_variable_type_t *type) {
     }
 
     if (!already_printed)
-      fprintf(stderr, "⊥");
+      fprintf(stderr, "%s", name);
   } else {
     for (size_t i = 0; i < debug_induce->sub_length; i++) {
       induce_sub_t sub = debug_induce->sub_data[i];
@@ -75,6 +74,6 @@ void mu_variable_type_debug(const mu_variable_type_t *type) {
     }
 
     if (!already_printed)
-      fprintf(stderr, "⊤");
+      fprintf(stderr, "%s", name);
   }
 }
