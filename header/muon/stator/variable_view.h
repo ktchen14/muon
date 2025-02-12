@@ -11,8 +11,8 @@ typedef struct {
 } mu_variable_view_t;
 
 const mu_variable_view_t *mu_variable_view(
-    mu_engine_t *engine, const mu_node_source_t *source, const mu_name_t *name)
-  __attribute__((malloc, nonnull(1, 3)));
+    mu_engine_t *engine, const mu_name_t *name)
+  __attribute__((malloc, nonnull));
 
 void mu_variable_view_debug(const mu_variable_view_t *view)
   __attribute__((nonnull));

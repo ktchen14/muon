@@ -100,33 +100,12 @@ typedef enum {
 #undef MU_EMIT
 } mu_view_kind_t;
 
-/// Source location of a node
-typedef struct {
-  /// Name of the source file or stream
-  // TODO: make this a const mu_name_t *
-  const char *name;
-
-  /// Byte offset into the source file or stream (zero-indexed)
-  size_t offset;
-
-  /// Length, in bytes
-  size_t length;
-
-  /// Line number in the source file or stream (one-indexed)
-  unsigned int line;
-
-  /// Column number in the source file or stream (one-indexed)
-  unsigned int column;
-} mu_node_source_t;
-
 /// An abstract node
 typedef struct mu_node_t {
   union {
     mu_node_kind_t kind;
     mu_stator_t as_stator;
   };
-
-  mu_node_source_t source;
 } mu_node_t;
 
 /// An abstract expr

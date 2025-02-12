@@ -9,9 +9,8 @@ typedef struct {
   _Bool data;
 } mu_boolean_expr_t;
 
-const mu_boolean_expr_t *mu_boolean_expr(
-    mu_engine_t *engine, _Bool data, const mu_node_source_t *source)
-  __attribute__((malloc, nonnull(1)));
+const mu_boolean_expr_t *mu_boolean_expr(mu_engine_t *engine, _Bool data)
+  __attribute__((malloc, nonnull));
 
 void mu_boolean_expr_debug(const mu_boolean_expr_t *expr)
   __attribute__((nonnull));

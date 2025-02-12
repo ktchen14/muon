@@ -7,9 +7,8 @@ typedef struct {
   MU_SIGN_HEADER;
 } mu_integer_sign_t;
 
-const mu_integer_sign_t *mu_integer_sign(
-    mu_engine_t *engine, const mu_node_source_t *source)
-  __attribute__((malloc, nonnull(1)));
+const mu_integer_sign_t *mu_integer_sign(mu_engine_t *engine)
+  __attribute__((malloc, nonnull));
 
 void mu_integer_sign_debug(const mu_integer_sign_t *sign)
   __attribute__((nonnull));

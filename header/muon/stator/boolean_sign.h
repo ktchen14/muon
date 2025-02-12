@@ -7,9 +7,8 @@ typedef struct {
   MU_SIGN_HEADER;
 } mu_boolean_sign_t;
 
-const mu_boolean_sign_t *mu_boolean_sign(
-    mu_engine_t *engine, const mu_node_source_t *source)
-  __attribute__((malloc, nonnull(1)));
+const mu_boolean_sign_t *mu_boolean_sign(mu_engine_t *engine)
+  __attribute__((malloc, nonnull));
 
 void mu_boolean_sign_debug(const mu_boolean_sign_t *sign)
   __attribute__((nonnull));
