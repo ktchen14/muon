@@ -44,26 +44,37 @@ void mu_variable_type_debug(const mu_variable_type_t *type) {
     const char *c = alphabet[n % alphabet_length];
     memcpy(name -= strlen(c), c, strlen(c));
   }
-  fprintf(stderr, "%s", name);
+  /* fprintf(stderr, "%s", name); */
 
   if (debug_induce == NULL)
     return;
 
+  _Bool already_printed = 0;
   if (debug_negate) {
     for (size_t i = 0; i < debug_induce->sub_length; i++) {
       induce_sub_t sub = debug_induce->sub_data[i];
       if (sub.lower != &type->as_type)
         continue;
-      fprintf(stderr, " ⊓ ");
+      if (already_printed)
+        fprintf(stderr, " ⊓ ");
+      already_printed = 1;
       mu_type_debug(sub.upper);
     }
+
+    if (!already_printed)
+      fprintf(stderr, "⊥");
   } else {
     for (size_t i = 0; i < debug_induce->sub_length; i++) {
       induce_sub_t sub = debug_induce->sub_data[i];
       if (sub.upper != &type->as_type)
         continue;
-      fprintf(stderr, " ⊔ ");
+      if (already_printed > 0)
+        fprintf(stderr, " ⊔ ");
+      already_printed = 1;
       mu_type_debug(sub.lower);
     }
+
+    if (!already_printed)
+      fprintf(stderr, "⊤");
   }
 }

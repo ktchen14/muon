@@ -62,56 +62,7 @@ int main(int argc, char *argv[argc]) {
 
   debug_induce = &induce;
 
-  /* reduce_t reduce = { .induce = &induce }; */
-  /* size_t length = 1000; */
-  /* const mu_type_t **reduce_data; */
-  /* if ((reduce_data = malloc(sizeof(const mu_type_t *[length]))) == NULL) */
-  /*   abort(); */
-  /* for (size_t i = 0; i < length; reduce_data[i++] = NULL); */
-  /* reduce.data = reduce_data; */
-
-  /* const mu_node_t *node = &sequence_expr->as_node; */
-
-  /* do { */
-  /*   const mu_node_t *next; */
-  /*   while ((next = node_at(node, node_cursor(node)->i++)) != NULL) */
-  /*     node = node_continue(node, next); */
-
-  /*   /1* const mu_type_t *type; *1/ */
-  /*   /1* if ((type = reduce_node(&reduce, node)) == NULL) *1/ */
-  /*   /1*   abort(); *1/ */
-
-  /*   fprintf(stderr, "Node %zu: ", node->as_stator.id); */
-  /*   mu_type_debug(induce.node_to_type[node->as_stator.id]); */
-  /*   putc('\n', stderr); */
-  /* } while ((node = node_return(node)) != NULL); */
-
   mu_sequence_expr_debug(sequence_expr);
-
-  /* for (size_t i = 0; i < induce.sub_length; i++) { */
-  /*   induce_sub_t sub = induce.sub_data[i]; */
-  /*   mu_type_debug(sub.lower); */
-  /*   fprintf(stderr, " <: "); */
-  /*   mu_type_debug(sub.upper); */
-  /*   fprintf(stderr, "\n"); */
-  /* } */
-
-  /* do { */
-  /*   const mu_node_t *next; */
-  /*   while ((next = node_at(node, node_cursor(node)->i++)) != NULL) { */
-  /*     if (reduce.data[node->as_stator.id] != NULL) */
-  /*       continue; */
-  /*     node = node_continue(node, next); */
-  /*   } */
-
-  /*   const mu_type_t *type; */
-  /*   if ((type = reduce_node(&reduce, node)) == NULL) */
-  /*     abort(); */
-
-  /*   fprintf(stderr, "Node %zu: ", node->as_stator.id); */
-  /*   mu_type_debug(type); */
-  /*   putc('\n', stderr); */
-  /* } while ((node = node_return(node)) != NULL); */
 
   return EXIT_SUCCESS;
 

@@ -12,16 +12,6 @@
 
 _Thread_local induce_t *debug_induce;
 
-/// Return the next subtype of @a upper in the @a induce engine
-static const mu_type_t *next_lower(
-    const induce_t *induce, size_t *index, const mu_type_t *upper)
-  __attribute__((nonnull, pure));
-
-/// Return the next supertype of @a lower in the @a induce engine
-static const mu_type_t *next_upper(
-    const induce_t *induce, size_t *index, const mu_type_t *lower)
-  __attribute__((nonnull, pure));
-
 /// Register @a a <: @a b in the @a induce engine
 static const mu_type_t *append(
     induce_t *induce, const mu_type_t *restrict a, const mu_type_t *restrict b)
@@ -44,56 +34,8 @@ static induce_t *restrict_type(
     induce_t *induce, const mu_type_t *a, const mu_type_t *b)
   __attribute__((nonnull));
 
-#define PROBLEM 0
-#define RETURN 1
-#define TO_CONTINUE 2
-
-static int continue_into(induce_t *induce, const mu_type_t *a, const mu_type_t *b) {
-  induce->next_a = a;
-  induce->next_b = b;
-  return TO_CONTINUE;
-}
-
 /// Induce the type of the abstract @a node with the @a induce engine
 static const mu_type_t *node_induce(const mu_node_t *node, induce_t *induce)
-  __attribute__((nonnull));
-
-/**
- * @brief Nominate the abstract type @a a as a subtype of the abstract type @a b
- *
- * This will dispatch to a concrete implementation for each type kind of @a a.
- * Then, it will return a positive number if @a a is (always or already) a
- * subtype of @a b, zero if @a a isn't (always or already) a subtype of @a b, or
- * a negative number if we must continue into @a a and @a b to answer.
- *
- * @return an indication of whether type @a a is a subtype of type @a b
- */
-__attribute__((nonnull))
-static int nominate(
-    const induce_t *induce, const mu_type_t *a, const mu_type_t *b) {
-  if (a == b)
-    return 1;
-
-  if (a->kind != MU_VARIABLE_TYPE && b->kind != MU_VARIABLE_TYPE && a->kind != b->kind) {
-    fprintf(stderr, "Type ");
-    mu_type_debug(a);
-    fprintf(stderr, " isn't a subtype of ");
-    mu_type_debug(b);
-    fprintf(stderr, "\n");
-
-    return 0;
-  }
-
-  for (size_t i = 0; i < induce->sub_length; i++) {
-    if (induce->sub_data[i].lower == a && induce->sub_data[i].upper == b)
-      return 1;
-  }
-  return -1;
-}
-
-static int type_restrict(
-    const mu_type_t *restrict a, const mu_type_t *restrict b,
-    induce_t *induce)
   __attribute__((nonnull));
 
 induce_t *induce_initialize(
@@ -157,157 +99,96 @@ const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
 
 static induce_t *restrict_type(
     induce_t *induce, const mu_type_t *a, const mu_type_t *b) {
-  assert(type_cursor(a)->anterior == NULL && type_cursor(a)->i == 0);
-  assert(type_cursor(b)->anterior == NULL && type_cursor(b)->i == 0);
-
   // If we don't have to continue into a or b, then just return
-  if (nominate(induce, a, b) >= 0)
+  for (size_t i = 0; i < induce->sub_length; i++) {
+    if (induce->sub_data[i].lower == a && induce->sub_data[i].upper == b)
+      return induce;
+  }
+
+  if (a->kind == MU_BOOLEAN_TYPE && b->kind == MU_BOOLEAN_TYPE) {
+    append(induce, a, b);
     return induce;
+  }
 
-  for (const mu_type_t *last_a = NULL, *last_b = NULL;;) {
-    int e;
+  if (a->kind == MU_INTEGER_TYPE && b->kind == MU_INTEGER_TYPE) {
+    append(induce, a, b);
+    return induce;
+  }
 
-    if (a->kind != MU_VARIABLE_TYPE && b->kind != MU_VARIABLE_TYPE) {
-      const mu_type_t *next_a, *next_b;
-      do {
-        if ((e = type_restrict(a, b, induce)) == RETURN)
+  if (a->kind == MU_LAMBDA_TYPE && b->kind == MU_LAMBDA_TYPE) {
+    const mu_lambda_type_t *ra = (const mu_lambda_type_t *) a;
+    const mu_lambda_type_t *rb = (const mu_lambda_type_t *) b;
+
+    if (restrict_type(induce, rb->argument, ra->argument) == NULL)
+      return NULL;
+    if (restrict_type(induce, ra->output, rb->output) == NULL)
+      return NULL;
+    append(induce, a, b);
+    return induce;
+  }
+
+  if (a->kind == MU_RECORD_TYPE && b->kind == MU_RECORD_TYPE) {
+    const mu_record_type_t *ra = (const mu_record_type_t *) a;
+    const mu_record_type_t *rb = (const mu_record_type_t *) b;
+
+    for (size_t j = 0; j < rb->argc; j++) {
+      for (size_t i = 0; i < ra->argc; i++) {
+        if (ra->argv[i].name == rb->argv[j].name) {
+          if (restrict_type(induce, ra->argv[i].type, rb->argv[j].type) == NULL)
+            return NULL;
           goto next;
-        if (e == PROBLEM)
-          goto except;
-        assert(e == TO_CONTINUE);
+        }
+      }
 
-        next_a = induce->next_a;
-        next_b = induce->next_b;
-      } while ((e = nominate(induce, next_a, next_b)) >= 0);
+      fprintf(stderr, "Type mismatch\n");
+      abort();
 
-      if (e == 0)
-        goto rollback;
-
-      a = type_continue(a, next_a);
-      b = type_continue(b, next_b);
-
-    } else if (a->kind == MU_VARIABLE_TYPE) {
-      // Before we restrict a variable type α to be a subtype of β, we must also
-      // restrict *each subtype of α* to be a subtype of β. That is:
-      //
-      //   α <: β   if and only if   ∀(τ | τ <: α) τ <: β
-      //
-      // Select the next τ that's an immediate subtype of α and isn't, already
-      // or trivially, a subtype of β. Then, resume the main loop with:
-      //
-      //   (a, b) = (τ, β)
-      //
-      // If some τ can't be made a subtype of β, just roll back as α <: β isn't
-      // true. Once we've exhausted all subtypes of α, register α <: β.
-      //
-      // Note that when we resume the main loop with (τ, β) from (α, β), we
-      // can't "push" another instance of β. That is, we can't do:
-      //
-      //   β = type_continue(β, β)
-      //
-      // Because the cursor in the type header of β is already in use by this
-      // iteration of the main loop. As a result, when we return from (τ, β),
-      // we'll return to (α, β') where β' is the type that preceded β. In this
-      // case, we need to "repush" β before we move on.
-
-      if (last_b != NULL)
-        b = type_continue(b, last_b);
-
-      const mu_type_t *next_a;
-      do {
-        if ((next_a = next_lower(induce, &type_cursor(a)->i, a)) == NULL)
-          goto append;
-      } while ((e = nominate(induce, next_a, b)) >= 0);
-
-      if (e == 0)
-        goto rollback;
-
-      a = type_continue(a, next_a);
-
-    } else if (b->kind == MU_VARIABLE_TYPE) {
-      // Before we restrict α to be a subtype of a variable type β, we must also
-      // restrict each α to be a subtype of *each supertype of β*. That is:
-      //
-      //   α <: β   if and only if   ∀(τ | β <: τ) a <: τ
-      //
-      // Select the next τ that's an immediate supertype of β and isn't, already
-      // or trivially, a supertype of α. Then, resume the main loop with:
-      //
-      //   (a, b) = (α, τ)
-      //
-      // If α can't be made a subtype of some τ, just roll back as α <: β isn't
-      // true. Once we've exhausted all supertypes of β, register α <: β.
-      //
-      // Note that when we resume the main loop with (α, τ) from (α, β), we
-      // can't "push" another instance of α. That is, we can't do:
-      //
-      //   α = type_continue(α, α)
-      //
-      // Because the cursor in the type header of α is already in use by this
-      // iteration of the main loop. As a result, when we return from (α, τ),
-      // we'll return to (α', β) where α' is the type that preceded α. In this
-      // case, we need to "repush" α before we move on.
-
-      if (last_a != NULL)
-        a = type_continue(a, last_a);
-
-      const mu_type_t *next_b;
-      do {
-        if ((next_b = next_upper(induce, &type_cursor(b)->i, b)) == NULL)
-          goto append;
-      } while ((e = nominate(induce, a, next_b)) >= 0);
-
-      if (e == 0)
-        goto rollback;
-
-      b = type_continue(b, next_b);
+    next:;
     }
 
-    last_a = last_b = NULL;
-    continue;
-
-  append:
-    if (append(induce, a, b) == NULL)
-      goto except;
-
-  next:
-    a = type_return(last_a = a);
-    b = type_return(last_b = b);
-    if (a == NULL && b == NULL)
-      break;
+    append(induce, a, b);
+    return induce;
   }
 
+  if (a->kind == MU_VECTOR_TYPE && b->kind == MU_VECTOR_TYPE) {
+    const mu_vector_type_t *ra = (const mu_vector_type_t *) a;
+    const mu_vector_type_t *rb = (const mu_vector_type_t *) b;
+
+    if (restrict_type(induce, ra->matter, rb->matter) == NULL)
+      return NULL;
+
+    append(induce, a, b);
+    return induce;
+  }
+
+  const mu_variable_type_t *va = mu_type_cast(a, va);
+  const mu_variable_type_t *vb = mu_type_cast(b, vb);
+
+  if (va == NULL && vb == NULL) {
+    fprintf(stderr, "Type mismatch\n");
+    abort();
+  }
+
+  if (va != NULL) {
+    for (size_t i = 0; i < induce->sub_length; i++) {
+      if (induce->sub_data[i].upper != &va->as_type)
+        continue;
+      if (restrict_type(induce, induce->sub_data[i].lower, &vb->as_type) == NULL)
+        return NULL;
+    }
+  }
+
+  if (vb != NULL) {
+    for (size_t j = 0; j < induce->sub_length; j++) {
+      if (induce->sub_data[j].lower != &vb->as_type)
+        continue;
+      if (restrict_type(induce, &va->as_type, induce->sub_data[j].upper) == NULL)
+        return NULL;
+    }
+  }
+
+  append(induce, a, b);
   return induce;
-
-rollback:
-  while ((a = type_return(a)) != NULL);
-  while ((b = type_return(b)) != NULL);
-  return induce;
-
-except:
-  while ((a = type_return(a)) != NULL);
-  while ((b = type_return(b)) != NULL);
-  return NULL;
-}
-
-static const mu_type_t *next_lower(
-    const induce_t *induce, size_t *index, const mu_type_t *upper) {
-  size_t i;
-  while ((i = (*index)++) < induce->sub_length) {
-    if (induce->sub_data[i].upper == upper)
-      return induce->sub_data[i].lower;
-  }
-  return NULL;
-}
-
-static const mu_type_t *next_upper(
-    const induce_t *induce, size_t *index, const mu_type_t *lower) {
-  size_t i;
-  while ((i = (*index)++) < induce->sub_length) {
-    if (induce->sub_data[i].lower == lower)
-      return induce->sub_data[i].upper;
-  }
-  return NULL;
 }
 
 static const mu_type_t *append(
@@ -552,69 +433,6 @@ __attribute__((nonnull)) static const mu_type_t *variable_view_induce(
   return &result->as_type;
 }
 
-// ---------------------------------- Type -------------------------------- {{{1
-
-__attribute__((nonnull)) static int boolean_type_restrict(
-    const mu_boolean_type_t *restrict a, const mu_type_t *restrict b,
-    induce_t *induce) {
-  return RETURN;
-}
-
-__attribute__((nonnull)) static int integer_type_restrict(
-    const mu_integer_type_t *restrict a, const mu_type_t *restrict b,
-    induce_t *induce) {
-  return RETURN;
-}
-
-__attribute__((nonnull)) static int lambda_type_restrict(
-    const mu_lambda_type_t *restrict a, const mu_type_t *restrict b,
-    induce_t *induce) {
-  assert(b->kind == MU_LAMBDA_TYPE);
-  const mu_lambda_type_t *restrict rb = (const mu_lambda_type_t *) b;
-
-  switch (type_cursor(&a->as_type)->i++) {
-    case 0: return continue_into(induce, rb->argument, a->argument);
-    case 1: return continue_into(induce, a->output, rb->output);
-    default: return RETURN;
-  }
-}
-
-__attribute__((nonnull)) static int record_type_restrict(
-    const mu_record_type_t *restrict a, const mu_type_t *restrict b,
-    induce_t *induce) {
-  assert(b->kind == MU_RECORD_TYPE);
-  const mu_record_type_t *restrict rb = (const mu_record_type_t *) b;
-
-  size_t j;
-
-  if ((j = type_cursor(&rb->as_type)->i++) >= rb->argc)
-    return RETURN;
-
-  for (size_t i = 0; i < a->argc; i++) {
-    if (a->argv[i].name == rb->argv[j].name)
-      return continue_into(induce, a->argv[i].type, rb->argv[j].type);
-  }
-
-  return PROBLEM;
-}
-
-__attribute__((nonnull)) static int variable_type_restrict(
-    const mu_variable_type_t *restrict a, const mu_type_t *restrict b,
-    induce_t *induce) {
-  __builtin_unreachable();
-}
-
-__attribute__((nonnull)) static int vector_type_restrict(
-    const mu_vector_type_t *restrict a, const mu_type_t *restrict b,
-    induce_t *induce) {
-  assert(b->kind == MU_VECTOR_TYPE);
-  const mu_vector_type_t *restrict rb = (const mu_vector_type_t *) b;
-
-  if (type_cursor(&a->as_type)->i++ == 1)
-    return RETURN;
-  return continue_into(induce, a->matter, rb->matter);
-}
-
 // -------------------------------- Abstract ------------------------------ {{{1
 
 static const mu_type_t *node_induce(const mu_node_t *node, induce_t *induce) {
@@ -623,20 +441,6 @@ static const mu_type_t *node_induce(const mu_node_t *node, induce_t *induce) {
     case MU_##upper##_NODE: \
       return lower##_induce((const mu_##lower##_t *) node, induce);
     MU_EACH_NODE_KIND(MU_EMIT)
-#undef MU_EMIT
-  }
-  __builtin_unreachable();
-}
-
-static int type_restrict(
-    const mu_type_t *restrict a,
-    const mu_type_t *restrict b,
-    induce_t *induce) {
-  switch (a->kind) {
-#define MU_EMIT(lower, upper, t) \
-    case MU_##upper##_TYPE: \
-      return lower##_type_restrict((const mu_##lower##_type_t *) a, b, induce);
-    MU_EACH_TYPE_KIND(MU_EMIT)
 #undef MU_EMIT
   }
   __builtin_unreachable();
