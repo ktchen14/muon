@@ -18,7 +18,7 @@ typedef struct {
 } syntax_t;
 }
 
-%define api.location.type { mu_node_source_t }
+%define api.location.type { mu_source_t }
 %define api.pure full
 %define api.push-pull push
 %define parse.error detailed
@@ -159,15 +159,15 @@ expr: '(' expr ')' { $$ = $2; } |
   vector_expr  { $$ = &$vector_expr->as_expr; }
 
 access_expr: expr '.' name {
-  $$ = mu_access_expr(syntax->engine, $name, $expr, &@$);
+  $$ = mu_access_expr(syntax->engine, $name, $expr);
 }
 
 boolean_expr: BOOLEAN_LITERAL {
-  $$ = mu_boolean_expr(syntax->engine, $1, &@$);
+  $$ = mu_boolean_expr(syntax->engine, $1);
 }
 
 integer_expr: INTEGER_LITERAL {
-  $$ = mu_integer_expr(syntax->engine, $1, &@$);
+  $$ = mu_integer_expr(syntax->engine, $1);
 }
 
 invoke_expr: expr[lambda] _ expr[matter] %prec INVOKE {
@@ -179,7 +179,7 @@ lambda_expr: "lambda" _ variable_view _ '=' _ expr %prec LAMBDA {
 }
 
 name_expr: name {
-  $$ = mu_name_expr(syntax->engine, $1, &@$);
+  $$ = mu_name_expr(syntax->engine, $1);
 }
 
 // --------------------------------- Record ------------------------------- {{{2
@@ -249,19 +249,19 @@ sign: '(' sign ')' { $$ = $2; } |
   vector_sign  { $$ = &$vector_sign->as_sign; }
 
 boolean_sign: "Boolean" {
-  $$ = mu_boolean_sign(syntax->engine, &@$);
+  $$ = mu_boolean_sign(syntax->engine);
 }
 
 integer_sign: "Integer" {
-  $$ = mu_integer_sign(syntax->engine, &@$);
+  $$ = mu_integer_sign(syntax->engine);
 }
 
 name_sign: name {
-  $$ = mu_name_sign(syntax->engine, $name, &@$);
+  $$ = mu_name_sign(syntax->engine, $name);
 }
 
 vector_sign: '[' sign ']' {
-  $$ = mu_vector_sign(syntax->engine, $sign, &@$);
+  $$ = mu_vector_sign(syntax->engine, $sign);
 }
 
 // ================================== Stmt ================================ {{{1
@@ -279,7 +279,7 @@ define_stmt: "define" _ name _ sign _ '=' _ expr '\n' {
 // ================================== View ================================ {{{1
 
 variable_view: name {
-  $$ = mu_variable_view(syntax->engine, &@$, $name);
+  $$ = mu_variable_view(syntax->engine, $name);
 }
 
 // ============================= Miscellaneous ============================ {{{1

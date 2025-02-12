@@ -9,7 +9,6 @@ const mu_memo_t memo = {0};
 
 const mu_memo_t *mu_memo(
     mu_status_t *status,
-    const mu_node_source_t *source,
     const char *restrict format,
     ...) {
   va_list variadic;

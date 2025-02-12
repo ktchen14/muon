@@ -8,7 +8,7 @@
 #include <stdio.h>
 
 const mu_vector_sign_t *mu_vector_sign(
-    mu_engine_t *engine, const mu_sign_t *matter, const mu_node_source_t *source) {
+    mu_engine_t *engine, const mu_sign_t *matter) {
   assert(matter->as_stator.engine == engine);
 
   size_t size = sizeof(mu_vector_sign_t);
@@ -19,9 +19,6 @@ const mu_vector_sign_t *mu_vector_sign(
   *result = (mu_vector_sign_t) {
     .as_sign.kind = MU_VECTOR_SIGN, .matter = matter,
   };
-
-  if (source != NULL)
-    result->as_node.source = *source;
 
   return assign_node(engine, result);
 }

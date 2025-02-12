@@ -14,10 +14,7 @@
 static void sign_member_debug(mu_sign_member_t member);
 
 const mu_record_sign_t *mu_record_sign(
-    mu_engine_t *engine,
-    size_t argc,
-    const mu_sign_member_t argv[argc],
-    const mu_node_source_t *source) {
+    mu_engine_t *engine, size_t argc, const mu_sign_member_t argv[argc]) {
   for (size_t i = 0; i < argc; i++) {
     const mu_name_t *member_name = argv[i].name;
     const mu_sign_t *member_sign = argv[i].sign;
@@ -37,9 +34,6 @@ const mu_record_sign_t *mu_record_sign(
     .as_sign.kind = MU_RECORD_SIGN, .argc = argc,
   };
   memcpy(&result->argv, argv, sizeof(const mu_sign_member_t[argc]));
-
-  if (source != NULL)
-    result->as_node.source = *source;
 
   return assign_node(engine, result);
 }

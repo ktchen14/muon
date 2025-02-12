@@ -6,8 +6,7 @@
 #include <stddef.h>
 #include <stdio.h>
 
-const mu_boolean_sign_t *mu_boolean_sign(
-    mu_engine_t *engine, const mu_node_source_t *source) {
+const mu_boolean_sign_t *mu_boolean_sign(mu_engine_t *engine) {
   size_t size = sizeof(mu_boolean_sign_t);
 
   mu_boolean_sign_t *result;
@@ -16,9 +15,6 @@ const mu_boolean_sign_t *mu_boolean_sign(
   *result = (mu_boolean_sign_t) {
     .as_sign.kind = MU_BOOLEAN_SIGN,
   };
-
-  if (source != NULL)
-    result->as_node.source = *source;
 
   return assign_node(engine, result);
 }

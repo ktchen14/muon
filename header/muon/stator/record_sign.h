@@ -20,10 +20,7 @@ typedef struct {
 } mu_record_sign_t;
 
 const mu_record_sign_t *mu_record_sign(
-    mu_engine_t *engine,
-    size_t argc,
-    const mu_sign_member_t argv[argc],
-    const mu_node_source_t *source)
+    mu_engine_t *engine, size_t argc, const mu_sign_member_t argv[argc])
   __attribute__((malloc, nonnull(1)));
 
 void mu_record_sign_debug(const mu_record_sign_t *sign)

@@ -9,10 +9,7 @@
 #include <stdio.h>
 
 const mu_access_expr_t *mu_access_expr(
-    mu_engine_t *engine,
-    const mu_name_t *name,
-    const mu_expr_t *matter,
-    const mu_node_source_t *source) {
+    mu_engine_t *engine, const mu_name_t *name, const mu_expr_t *matter) {
   assert(name->as_stator.engine == engine);
   assert(matter->as_stator.engine == engine);
 
@@ -24,9 +21,6 @@ const mu_access_expr_t *mu_access_expr(
   *result = (mu_access_expr_t) {
     .as_expr.kind = MU_ACCESS_EXPR, .name = name, .matter = matter,
   };
-
-  if (source != NULL)
-    result->as_node.source = *source;
 
   return assign_node(engine, result);
 }

@@ -9,7 +9,7 @@
 #include <stdio.h>
 
 const mu_name_expr_t *mu_name_expr(
-    mu_engine_t *engine, const mu_name_t *name, const mu_node_source_t *source) {
+    mu_engine_t *engine, const mu_name_t *name) {
   assert(name->as_stator.engine == engine);
 
   size_t size = sizeof(mu_name_expr_t);
@@ -20,9 +20,6 @@ const mu_name_expr_t *mu_name_expr(
   *result = (mu_name_expr_t) {
     .as_expr.kind = MU_NAME_EXPR, .name = name,
   };
-
-  if (source != NULL)
-    result->as_node.source = *source;
 
   return assign_node(engine, result);
 }

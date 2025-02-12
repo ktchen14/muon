@@ -6,9 +6,7 @@
 #include <stddef.h>
 #include <stdio.h>
 
-const mu_variable_sign_t *mu_variable_sign(
-    mu_engine_t *engine,
-    const mu_node_source_t *source) {
+const mu_variable_sign_t *mu_variable_sign(mu_engine_t *engine) {
   size_t size = sizeof(mu_variable_sign_t);
 
   mu_variable_sign_t *result;
@@ -17,9 +15,6 @@ const mu_variable_sign_t *mu_variable_sign(
   *result = (mu_variable_sign_t) {
     .as_sign.kind = MU_VARIABLE_SIGN,
   };
-
-  if (source != NULL)
-    result->as_node.source = *source;
 
   return assign_node(engine, result);
 }

@@ -8,8 +8,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-const mu_boolean_expr_t *mu_boolean_expr(
-    mu_engine_t *engine, _Bool data, const mu_node_source_t *source) {
+const mu_boolean_expr_t *mu_boolean_expr(mu_engine_t *engine, _Bool data) {
   size_t size = sizeof(mu_boolean_expr_t);
 
   mu_boolean_expr_t *result;
@@ -18,9 +17,6 @@ const mu_boolean_expr_t *mu_boolean_expr(
   *result = (mu_boolean_expr_t) {
     .as_expr.kind = MU_BOOLEAN_EXPR, .data = data,
   };
-
-  if (source != NULL)
-    result->as_node.source = *source;
 
   return assign_node(engine, result);
 }

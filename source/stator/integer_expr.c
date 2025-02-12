@@ -8,8 +8,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-const mu_integer_expr_t *mu_integer_expr(
-    mu_engine_t *engine, uint64_t data, const mu_node_source_t *source) {
+const mu_integer_expr_t *mu_integer_expr(mu_engine_t *engine, uint64_t data) {
   size_t size = sizeof(mu_integer_expr_t);
 
   mu_integer_expr_t *result;
@@ -18,9 +17,6 @@ const mu_integer_expr_t *mu_integer_expr(
   *result = (mu_integer_expr_t) {
     .as_expr.kind = MU_INTEGER_EXPR, .data = data,
   };
-
-  if (source != NULL)
-    result->as_node.source = *source;
 
   return assign_node(engine, result);
 }

@@ -108,7 +108,7 @@ static void cursor_next(const YYCTYPE *restrict buffer, cursor_t *cursor) {
 
 static void symbol_debug(
     FILE *stream, yytoken_kind_t kind, YYSTYPE *yylval, YYLTYPE *yylloc) {
-  printf("%s:%u:%u [%zu + %zu]: ",
+  printf("%s:%zu:%zu [%zu + %zu]: ",
       yylloc->name != NULL ? yylloc->name : "(none)",
       yylloc->line,
       yylloc->column,
