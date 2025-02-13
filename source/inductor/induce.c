@@ -105,7 +105,20 @@ void debug_type(const type_t *type) {
           fprintf(stderr, "%s", name);
       }
       break;
+
+    case SCHEME_TYPE:
+      fprintf(stderr, "∀ ");
+      debug_type(type->type);
+      break;
   }
+}
+
+const type_t *scheme_type(induce_t *induce, const type_t *type, const mu_node_t *scope) {
+  type_t *result;
+  if ((result = malloc(sizeof(type_t))) == NULL)
+    return NULL;
+  *result = (type_t) { .kind = SCHEME_TYPE, .type = type, .highest_scope = scope };
+  return result;
 }
 
 const type_t *boolean_type(induce_t *induce) {
@@ -300,6 +313,10 @@ induce_t *induce_initialize(
 void map_defines(induce_t *induce, const mu_node_t *root) {
   const mu_node_t *node = root;
 
+  for (size_t i = 0; i < induce->engine->node_number; i++)
+    induce->define_stmt_map[i] = root;
+  induce->define_stmt_map[root->as_stator.id] = NULL;
+
   do {
     const mu_node_t *next;
     while ((next = node_at(node, node_cursor(node)->i++)) != NULL)
@@ -330,7 +347,7 @@ const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
     return (const mu_type_t *) induce->node_to_type_actual[root->as_stator.id];
 
   map_defines(induce, root);
-  const mu_node_t *scope = 0;
+  const mu_node_t *scope = root;
 
   const mu_node_t *node = root, *next;
   do {
@@ -355,6 +372,8 @@ const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
 
 static induce_t *restrict_type(
     induce_t *induce, const type_t *a, const type_t *b) {
+  assert(a->kind != SCHEME_TYPE && b->kind != SCHEME_TYPE);
+
   if (a == b)
     return induce;
 
@@ -533,9 +552,16 @@ __attribute__((nonnull)) static const type_t *lambda_expr_induce(
 __attribute__((nonnull)) static const type_t *name_expr_induce(
     const mu_name_expr_t *expr, induce_t *induce, const mu_node_t *scope) {
   const mu_node_t *target;
-  if ((target = detect_evince(induce->detect, &expr->as_node)) != NULL)
-    return induce_reveal(induce, target);
-  return variable_type(induce, scope);
+  if ((target = detect_evince(induce->detect, &expr->as_node)) == NULL)
+    return variable_type(induce, scope);
+
+  const type_t *type = induce_reveal(induce, target);
+  if (type->kind != SCHEME_TYPE)
+    return type;
+
+  // Instantiate the polymorphic type
+  const type_t *root = type->type;
+  return root;
 }
 
 __attribute__((nonnull)) static const type_t *record_expr_induce(
@@ -634,7 +660,12 @@ __attribute__((nonnull)) static const type_t *vector_sign_induce(
 
 __attribute__((nonnull, pure)) static const type_t *define_stmt_induce(
     const mu_define_stmt_t *stmt, induce_t *induce, const mu_node_t *scope) {
-  return induce_reveal(induce, &stmt->expr->as_node);
+  const type_t *type = induce_reveal(induce, &stmt->expr->as_node);
+
+  const type_t *scheme;
+  if ((scheme = scheme_type(induce, type, &stmt->as_node)) == NULL)
+    return NULL;
+  return scheme;
 }
 
 __attribute__((nonnull)) static const type_t *type_stmt_induce(

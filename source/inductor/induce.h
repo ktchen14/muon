@@ -40,6 +40,7 @@ struct type_t {
     SIMPLE_TYPE,
     RECORD_TYPE,
     VARIABLE_TYPE,
+    SCHEME_TYPE,
   } kind;
 
   union {
@@ -79,13 +80,14 @@ struct type_t {
       // This is the node that "owns" this variable
       const mu_node_t *scope;
     };
+
+    // SCHEME_TYPE
+    struct {
+      const type_t *type;
+      const mu_node_t *highest_scope;
+    };
   };
 };
-
-typedef struct {
-  const type_t *type;
-  const mu_node_t *scope;
-} type_scheme_t;
 
 typedef struct {
   const type_t *lower;
