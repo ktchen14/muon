@@ -269,6 +269,13 @@ induce_t *induce_initialize(
   *vector_core = (mu_core_t) { .kind = MU_VECTOR_CORE, .argc = 1 };
   vector_core->variance[0] = MU_COVARIANCE;
 
+  size_t length = engine->node_number;
+  const mu_node_t **define_stmt_map;
+  if ((define_stmt_map = malloc(sizeof(const mu_node_t *[length]))) == NULL)
+    return NULL;
+  for (size_t i = 0; i < length; i++)
+    define_stmt_map[i] = NULL;
+
   *induce = (induce_t) {
     .engine = engine,
     .status = status,
@@ -283,8 +290,32 @@ induce_t *induce_initialize(
     .integer_core = integer_core,
     .lambda_core = lambda_core,
     .vector_core = vector_core,
+
+    .define_stmt_map = define_stmt_map,
   };
   return induce;
+}
+
+/// Make a map of each define stmt to its parent define stmt
+void map_defines(induce_t *induce, const mu_node_t *root) {
+  const mu_node_t *node = root;
+
+  do {
+    const mu_node_t *next;
+    while ((next = node_at(node, node_cursor(node)->i++)) != NULL)
+      node = node_continue(node, next);
+
+    if (node->kind != MU_DEFINE_STMT)
+      continue;
+
+    const mu_node_t *anterior = node;
+    while ((anterior = node_cursor(anterior)->anterior) != NULL) {
+      if (anterior->kind != MU_DEFINE_STMT)
+        continue;
+      induce->define_stmt_map[node->as_stator.id] = anterior;
+      break;
+    }
+  } while ((node = node_return(node)) != NULL);
 }
 
 const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
@@ -293,6 +324,7 @@ const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
   if (induce->node_to_type_actual[root->as_stator.id] != NULL)
     return (const mu_type_t *) induce->node_to_type_actual[root->as_stator.id];
 
+  map_defines(induce, root);
   size_t level = 0;
 
   const mu_node_t *node = root, *next;

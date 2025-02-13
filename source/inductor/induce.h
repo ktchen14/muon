@@ -109,6 +109,9 @@ typedef struct {
   const mu_core_t *integer_core;
   const mu_core_t *lambda_core;
   const mu_core_t *vector_core;
+
+  /* Map of each define stmt to its parent define stmt */
+  const mu_node_t **define_stmt_map;
 } induce_t;
 
 extern _Thread_local induce_t *debug_induce;
