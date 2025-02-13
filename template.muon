@@ -1,7 +1,7 @@
-define f = (lambda x = x)
+define f = (lambda x = x.foo)
 
-define a = 1
-define g = f a
+define a = (foo: 1)
+define g = (bar: a, baz: f a)
 
 define b = [2, true]
 define c = []

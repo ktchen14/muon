@@ -14,6 +14,8 @@
 _Thread_local induce_t *debug_induce;
 
 void debug_type(const type_t *type) {
+  extern _Thread_local _Bool debug_negate;
+
   switch (type->kind) {
     case SIMPLE_TYPE:
       switch (type->core->kind) {
@@ -24,10 +26,15 @@ void debug_type(const type_t *type) {
           fprintf(stderr, "Integer"); break;
 
         case MU_LAMBDA_CORE:
+        {
+          _Bool n = debug_negate;
+          debug_negate = !debug_negate;
           debug_type(type->argv[0]);
+          debug_negate = n;
           fprintf(stderr, " -> ");
           debug_type(type->argv[1]);
           break;
+        }
 
         case MU_VECTOR_CORE:
           fprintf(stderr, "[");
@@ -56,8 +63,6 @@ void debug_type(const type_t *type) {
         "α", "β", "γ", "δ", "ε", "ζ", "η", "θ", "ι", "κ", "μ", "ν", "ξ", "ο", "π",
         "ρ", "σ", "τ", "υ", "φ", "χ", "ψ", "ω" };
       static size_t alphabet_length = sizeof(alphabet) / sizeof(alphabet[0]);
-
-      extern _Thread_local _Bool debug_negate;
 
       // Assign the variable type a number
       if (type->number == 0)
@@ -273,6 +278,8 @@ const type_t *instantiate_single_type(
         const induce_sub_t sub = induce->sub_data[i];
         if (sub.lower == type)
           append(induce, newvar, instantiate_single_type(induce, sub.upper, scope, target_scope, cache, cache_i));
+        if (sub.upper == type)
+          append(induce, instantiate_single_type(induce, sub.lower, scope, target_scope, cache, cache_i), newvar);
       }
 
       return newvar;
