@@ -170,11 +170,11 @@ const type_t *simple_record_type_activate(type_t *type) {
   return type;
 }
 
-const type_t *variable_type(induce_t *induce, size_t level) {
+const type_t *variable_type(induce_t *induce, const mu_node_t *scope) {
   type_t *result;
   if ((result = malloc(sizeof(type_t))) == NULL)
     return NULL;
-  *result = (type_t) { .kind = VARIABLE_TYPE, .level = level };
+  *result = (type_t) { .kind = VARIABLE_TYPE, .scope = scope };
   return result;
 }
 
@@ -214,7 +214,7 @@ static induce_t *restrict_type(
   __attribute__((nonnull));
 
 /// Induce the type of the abstract @a node with the @a induce engine
-static const type_t *node_induce(const mu_node_t *node, induce_t *induce, size_t level)
+static const type_t *node_induce(const mu_node_t *node, induce_t *induce, const mu_node_t *scope)
   __attribute__((nonnull));
 
 induce_t *induce_initialize(
@@ -318,6 +318,11 @@ void map_defines(induce_t *induce, const mu_node_t *root) {
   } while ((node = node_return(node)) != NULL);
 }
 
+/// Get the parent define of a define stmt
+static inline const mu_node_t *get_parent_define(const induce_t *induce, const mu_node_t *node) {
+  return induce->define_stmt_map[node->as_stator.id];
+}
+
 const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
   assert(root->as_stator.id < induce->node_length);
 
@@ -325,7 +330,7 @@ const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
     return (const mu_type_t *) induce->node_to_type_actual[root->as_stator.id];
 
   map_defines(induce, root);
-  size_t level = 0;
+  const mu_node_t *scope = 0;
 
   const mu_node_t *node = root, *next;
   do {
@@ -340,7 +345,7 @@ const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
 
     // Induce the type of the node
     const type_t *type;
-    if ((type = node_induce(node, induce, level)) == NULL)
+    if ((type = node_induce(node, induce, scope)) == NULL)
       return NULL;
     induce->node_to_type_actual[node->as_stator.id] = type;
   } while ((node = node_return(node)) != NULL);
@@ -472,9 +477,9 @@ static const type_t *append(
 // ---------------------------------- Expr -------------------------------- {{{1
 
 __attribute__((nonnull)) static const type_t *access_expr_induce(
-    const mu_access_expr_t *expr, induce_t *induce, size_t level) {
+    const mu_access_expr_t *expr, induce_t *induce, const mu_node_t *scope) {
   const type_t *result;
-  if ((result = variable_type(induce, level)) == NULL)
+  if ((result = variable_type(induce, scope)) == NULL)
     return NULL;
 
   const type_t *record_ty;
@@ -491,22 +496,22 @@ __attribute__((nonnull)) static const type_t *access_expr_induce(
 }
 
 __attribute__((nonnull)) static const type_t *boolean_expr_induce(
-    const mu_boolean_expr_t *expr, induce_t *induce, size_t level) {
+    const mu_boolean_expr_t *expr, induce_t *induce, const mu_node_t *scope) {
   return boolean_type(induce);
 }
 
 __attribute__((nonnull)) static const type_t *integer_expr_induce(
-    const mu_integer_expr_t *expr, induce_t *induce, size_t level) {
+    const mu_integer_expr_t *expr, induce_t *induce, const mu_node_t *scope) {
   return integer_type(induce);
 }
 
 __attribute__((nonnull)) static const type_t *invoke_expr_induce(
-    const mu_invoke_expr_t *expr, induce_t *induce, size_t level) {
+    const mu_invoke_expr_t *expr, induce_t *induce, const mu_node_t *scope) {
   const type_t *lambda = induce_reveal(induce, &expr->lambda->as_node);
   const type_t *matter = induce_reveal(induce, &expr->matter->as_node);
 
   const type_t *result;
-  if ((result = variable_type(induce, level)) == NULL)
+  if ((result = variable_type(induce, scope)) == NULL)
     return NULL;
 
   const type_t *lambda_ty;
@@ -519,22 +524,22 @@ __attribute__((nonnull)) static const type_t *invoke_expr_induce(
 }
 
 __attribute__((nonnull)) static const type_t *lambda_expr_induce(
-    const mu_lambda_expr_t *expr, induce_t *induce, size_t level) {
+    const mu_lambda_expr_t *expr, induce_t *induce, const mu_node_t *scope) {
   const type_t *argument = induce_reveal(induce, &expr->argument->as_node);
   const type_t *output = induce_reveal(induce, &expr->matter->as_node);
   return lambda_type(induce, argument, output);
 }
 
 __attribute__((nonnull)) static const type_t *name_expr_induce(
-    const mu_name_expr_t *expr, induce_t *induce, size_t level) {
+    const mu_name_expr_t *expr, induce_t *induce, const mu_node_t *scope) {
   const mu_node_t *target;
   if ((target = detect_evince(induce->detect, &expr->as_node)) != NULL)
     return induce_reveal(induce, target);
-  return variable_type(induce, level);
+  return variable_type(induce, scope);
 }
 
 __attribute__((nonnull)) static const type_t *record_expr_induce(
-    const mu_record_expr_t *expr, induce_t *induce, size_t level) {
+    const mu_record_expr_t *expr, induce_t *induce, const mu_node_t *scope) {
   type_t *allocation;
   if ((allocation = simple_record_type_allocate(induce, expr->argc)) == NULL)
     return NULL;
@@ -557,14 +562,14 @@ __attribute__((nonnull)) static const type_t *record_expr_induce(
 }
 
 __attribute__((nonnull)) static const type_t *sequence_expr_induce(
-    const mu_sequence_expr_t *expr, induce_t *induce, size_t level) {
+    const mu_sequence_expr_t *expr, induce_t *induce, const mu_node_t *scope) {
   return induce_reveal(induce, &expr->output->as_node);
 }
 
 __attribute__((nonnull)) static const type_t *vector_expr_induce(
-    const mu_vector_expr_t *expr, induce_t *induce, size_t level) {
+    const mu_vector_expr_t *expr, induce_t *induce, const mu_node_t *scope) {
   const type_t *matter_type;
-  if ((matter_type = variable_type(induce, level)) == NULL)
+  if ((matter_type = variable_type(induce, scope)) == NULL)
     return NULL;
 
   for (size_t i = 0; i < expr->argc; i++) {
@@ -577,46 +582,46 @@ __attribute__((nonnull)) static const type_t *vector_expr_induce(
 }
 
 __attribute__((nonnull)) static const type_t *zero_expr_induce(
-    const mu_zero_expr_t *expr, induce_t *induce, size_t level) {
-  return variable_type(induce, level);
+    const mu_zero_expr_t *expr, induce_t *induce, const mu_node_t *scope) {
+  return variable_type(induce, scope);
 }
 
 // ---------------------------------- Sign -------------------------------- {{{1
 
 __attribute__((nonnull)) static const type_t *boolean_sign_induce(
-    const mu_boolean_sign_t *sign, induce_t *induce, size_t level) {
+    const mu_boolean_sign_t *sign, induce_t *induce, const mu_node_t *scope) {
   return boolean_type(induce);
 }
 
 __attribute__((nonnull)) static const type_t *integer_sign_induce(
-    const mu_integer_sign_t *sign, induce_t *induce, size_t level) {
+    const mu_integer_sign_t *sign, induce_t *induce, const mu_node_t *scope) {
   return integer_type(induce);
 }
 
 __attribute__((nonnull)) static const type_t *name_sign_induce(
-    const mu_name_sign_t *sign, induce_t *induce, size_t level) {
+    const mu_name_sign_t *sign, induce_t *induce, const mu_node_t *scope) {
   const mu_node_t *target;
   if ((target = detect_evince(induce->detect, &sign->as_node)) != NULL)
     return induce_reveal(induce, target);
 
   const type_t *result;
-  if ((result = variable_type(induce, level)) == NULL)
+  if ((result = variable_type(induce, scope)) == NULL)
     return NULL;
   return result;
 }
 
 __attribute__((nonnull)) static const type_t *record_sign_induce(
-    const mu_record_sign_t *sign, induce_t *induce, size_t level) {
+    const mu_record_sign_t *sign, induce_t *induce, const mu_node_t *scope) {
   assert(0);
 }
 
 __attribute__((nonnull)) static const type_t *variable_sign_induce(
-    const mu_variable_sign_t *sign, induce_t *induce, size_t level) {
+    const mu_variable_sign_t *sign, induce_t *induce, const mu_node_t *scope) {
   assert(0);
 }
 
 __attribute__((nonnull)) static const type_t *vector_sign_induce(
-    const mu_vector_sign_t *sign, induce_t *induce, size_t level) {
+    const mu_vector_sign_t *sign, induce_t *induce, const mu_node_t *scope) {
   const type_t *matter = induce_reveal(induce, &sign->matter->as_node);
 
   const type_t *result;
@@ -628,32 +633,32 @@ __attribute__((nonnull)) static const type_t *vector_sign_induce(
 // ---------------------------------- Stmt -------------------------------- {{{1
 
 __attribute__((nonnull, pure)) static const type_t *define_stmt_induce(
-    const mu_define_stmt_t *stmt, induce_t *induce, size_t level) {
+    const mu_define_stmt_t *stmt, induce_t *induce, const mu_node_t *scope) {
   return induce_reveal(induce, &stmt->expr->as_node);
 }
 
 __attribute__((nonnull)) static const type_t *type_stmt_induce(
-    const mu_type_stmt_t *stmt, induce_t *induce, size_t level) {
+    const mu_type_stmt_t *stmt, induce_t *induce, const mu_node_t *scope) {
   assert(0);
 }
 
 // ---------------------------------- View -------------------------------- {{{1
 
 __attribute__((nonnull)) static const type_t *variable_view_induce(
-    const mu_variable_view_t *view, induce_t *induce, size_t level) {
+    const mu_variable_view_t *view, induce_t *induce, const mu_node_t *scope) {
   const type_t *result;
-  if ((result = variable_type(induce, level)) == NULL)
+  if ((result = variable_type(induce, scope)) == NULL)
     return NULL;
   return result;
 }
 
 // -------------------------------- Abstract ------------------------------ {{{1
 
-static const type_t *node_induce(const mu_node_t *node, induce_t *induce, size_t level) {
+static const type_t *node_induce(const mu_node_t *node, induce_t *induce, const mu_node_t *scope) {
   switch (node->kind) {
 #define MU_EMIT(lower, upper, t) \
     case MU_##upper##_NODE: \
-      return lower##_induce((const mu_##lower##_t *) node, induce, level);
+      return lower##_induce((const mu_##lower##_t *) node, induce, scope);
     MU_EACH_NODE_KIND(MU_EMIT)
 #undef MU_EMIT
   }

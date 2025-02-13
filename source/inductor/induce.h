@@ -75,14 +75,16 @@ struct type_t {
       // Essentially, whenever we see a type variable with a higher level than the
       // current level, that type variable is "sealed". This means that the upper
       // and lower bounds of that type variable will never be modified again.
-      size_t level;
+
+      // This is the node that "owns" this variable
+      const mu_node_t *scope;
     };
   };
 };
 
 typedef struct {
   const type_t *type;
-  size_t level;
+  const mu_node_t *scope;
 } type_scheme_t;
 
 typedef struct {
