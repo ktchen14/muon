@@ -14,7 +14,7 @@ typedef enum {
   MU_INTEGER_HEAD,
   MU_LAMBDA_HEAD,
   MU_VECTOR_HEAD,
-} mu_head_kind_t;
+} mu_core_kind_t;
 
 typedef enum {
   MU_COVARIANCE,
@@ -23,10 +23,10 @@ typedef enum {
 } mu_variance_t;
 
 typedef struct {
-  mu_head_kind_t kind;
+  mu_core_kind_t kind;
   size_t argc;
   mu_variance_t variance[/* argc */];
-} mu_head_t;
+} mu_core_t;
 
 typedef struct type_t type_t;
 
@@ -42,11 +42,29 @@ struct type_t {
     VARIABLE_TYPE,
   } kind;
 
+  // In let polymorphism, the right hand side of each let declaration is
+  // evaluated within a separate type environment. The type environment consists
+  // of all bindings that are known from the scope outside of the let
+  // declaration.
+  //
+  // Since these type environments are nested, we can track the depth of them
+  // using this level.
+  //
+  // When we exit the right hand side of a let declaration, we "seal" the type
+  // of the rhs with the level of the type environment used at the time that it
+  // was type checked. This means that every type variable with a higher level,
+  // reachable from the output type, should be generalized.
+  //
+  // Essentially, whenever we see a type variable with a higher level than the
+  // current level, that type variable is "sealed". This means that the upper
+  // and lower bounds of that type variable will never be modified again.
+  size_t level;
+
   union {
     // SIMPLE_TYPE
     struct {
-      const mu_head_t *head;
-      const type_t *argv[/* head->argc */];
+      const mu_core_t *core;
+      const type_t *argv[/* core->argc */];
     };
 
     // RECORD_TYPE
@@ -54,9 +72,6 @@ struct type_t {
       size_t argc;
       type_member_t schema[];
     };
-
-    // VARIABLE_TYPE
-    size_t level;
   };
 };
 
@@ -86,10 +101,10 @@ typedef struct {
   const mu_type_t *next_a;
   const mu_type_t *next_b;
 
-  const mu_head_t *boolean_head;
-  const mu_head_t *integer_head;
-  const mu_head_t *lambda_head;
-  const mu_head_t *vector_head;
+  const mu_core_t *boolean_core;
+  const mu_core_t *integer_core;
+  const mu_core_t *lambda_core;
+  const mu_core_t *vector_core;
 } induce_t;
 
 extern _Thread_local induce_t *debug_induce;

@@ -12,12 +12,68 @@
 
 _Thread_local induce_t *debug_induce;
 
-const type_t *boolean_type(mu_engine_t *engine);
-const type_t *integer_type(mu_engine_t *engine);
-const type_t *lambda_type(mu_engine_t *engine, const type_t *argument, const type_t *output);
+const type_t *boolean_type(induce_t *induce) {
+  type_t *result;
+  if ((result = malloc(sizeof(type_t))) == NULL)
+    return NULL;
+  *result = (type_t) { .kind = SIMPLE_TYPE, .core = induce->boolean_core, .level = 0 };
+  return result;
+}
+
+const type_t *integer_type(induce_t *induce) {
+  type_t *result;
+  if ((result = malloc(sizeof(type_t))) == NULL)
+    return NULL;
+  *result = (type_t) { .kind = SIMPLE_TYPE, .core = induce->integer_core, .level = 0 };
+  return result;
+}
+
+const type_t *lambda_type(induce_t *induce, const type_t *argument, const type_t *output) {
+  size_t size = struct_size(type_t, argv, 2);
+  assert(induce->lambda_core->argc == 2);
+
+
+  type_t *result;
+  if ((result = malloc(size)) == NULL)
+    return NULL;
+  *result = (type_t) {
+    .kind = SIMPLE_TYPE,
+    .core = induce->lambda_core,
+    .level = argument->level > output->level ? argument->level : output->level,
+  };
+
+  result->argv[0] = argument;
+  result->argv[1] = output;
+
+  return result;
+}
+
 const type_t *record_type(mu_engine_t *engine, size_t argc, const type_member_t[static argc]);
-const type_t *variable_type(mu_engine_t *engine, size_t level);
-const type_t *vector_type(mu_engine_t *engine, const type_t *matter);
+
+const type_t *variable_type(mu_engine_t *engine, size_t level) {
+  type_t *result;
+  if ((result = malloc(sizeof(type_t))) == NULL)
+    return NULL;
+  *result = (type_t) { .kind = VARIABLE_TYPE, .level = level };
+  return result;
+}
+
+const type_t *vector_type(induce_t *induce, const type_t *matter) {
+  size_t size = struct_size(type_t, argv, 1);
+  assert(induce->vector_core->argc == 1);
+
+  type_t *result;
+  if ((result = malloc(size)) == NULL)
+    return NULL;
+  *result = (type_t) {
+    .kind = SIMPLE_TYPE,
+    .core = induce->vector_core,
+    .level = matter->level,
+  };
+  result->argv[0] = matter;
+
+  return result;
+}
 
 /// Register @a a <: @a b in the @a induce engine
 static const mu_type_t *append(
@@ -65,32 +121,32 @@ induce_t *induce_initialize(
     return NULL;
   for (size_t i = 0; i < sub_volume; sub_data[i++] = (induce_sub_t) {0});
 
-  mu_head_t *boolean_head;
-  if ((boolean_head = malloc(sizeof(mu_head_t))) == NULL)
+  mu_core_t *boolean_core;
+  if ((boolean_core = malloc(sizeof(mu_core_t))) == NULL)
     return NULL;
-  *boolean_head = (mu_head_t) { .kind = MU_BOOLEAN_HEAD };
+  *boolean_core = (mu_core_t) { .kind = MU_BOOLEAN_HEAD };
 
-  mu_head_t *integer_head;
-  if ((integer_head = malloc(sizeof(mu_head_t))) == NULL)
+  mu_core_t *integer_core;
+  if ((integer_core = malloc(sizeof(mu_core_t))) == NULL)
     return NULL;
-  *integer_head = (mu_head_t) { .kind = MU_INTEGER_HEAD };
+  *integer_core = (mu_core_t) { .kind = MU_INTEGER_HEAD };
 
   size_t size;
 
-  mu_head_t *lambda_head;
-  size = struct_size(mu_head_t, variance, 2);
-  if ((lambda_head = malloc(size)) == NULL)
+  mu_core_t *lambda_core;
+  size = struct_size(mu_core_t, variance, 2);
+  if ((lambda_core = malloc(size)) == NULL)
     return NULL;
-  *lambda_head = (mu_head_t) { .kind = MU_LAMBDA_HEAD, .argc = 2 };
-  lambda_head->variance[0] = MU_CONTRAVARIANCE;
-  lambda_head->variance[1] = MU_COVARIANCE;
+  *lambda_core = (mu_core_t) { .kind = MU_LAMBDA_HEAD, .argc = 2 };
+  lambda_core->variance[0] = MU_CONTRAVARIANCE;
+  lambda_core->variance[1] = MU_COVARIANCE;
 
-  mu_head_t *vector_head;
-  size = struct_size(mu_head_t, variance, 1);
-  if ((vector_head = malloc(size)) == NULL)
+  mu_core_t *vector_core;
+  size = struct_size(mu_core_t, variance, 1);
+  if ((vector_core = malloc(size)) == NULL)
     return NULL;
-  *vector_head = (mu_head_t) { .kind = MU_VECTOR_HEAD, .argc = 1 };
-  vector_head->variance[1] = MU_COVARIANCE;
+  *vector_core = (mu_core_t) { .kind = MU_VECTOR_HEAD, .argc = 1 };
+  vector_core->variance[1] = MU_COVARIANCE;
 
   *induce = (induce_t) {
     .engine = engine,
@@ -101,10 +157,10 @@ induce_t *induce_initialize(
     .sub_volume = sub_volume,
     .sub_data = sub_data,
 
-    .boolean_head = boolean_head,
-    .integer_head = integer_head,
-    .lambda_head = lambda_head,
-    .vector_head = vector_head,
+    .boolean_core = boolean_core,
+    .integer_core = integer_core,
+    .lambda_core = lambda_core,
+    .vector_core = vector_core,
   };
   return induce;
 }
