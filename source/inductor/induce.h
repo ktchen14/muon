@@ -83,8 +83,8 @@ typedef struct {
 } type_scheme_t;
 
 typedef struct {
-  const mu_type_t *lower;
-  const mu_type_t *upper;
+  const type_t *lower;
+  const type_t *upper;
 } induce_sub_t;
 
 typedef struct {
