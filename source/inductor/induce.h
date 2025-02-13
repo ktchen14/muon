@@ -10,10 +10,10 @@
 #include <stddef.h>
 
 typedef enum {
-  MU_BOOLEAN_HEAD,
-  MU_INTEGER_HEAD,
-  MU_LAMBDA_HEAD,
-  MU_VECTOR_HEAD,
+  MU_BOOLEAN_CORE,
+  MU_INTEGER_CORE,
+  MU_LAMBDA_CORE,
+  MU_VECTOR_CORE,
 } mu_core_kind_t;
 
 typedef enum {
@@ -42,24 +42,6 @@ struct type_t {
     VARIABLE_TYPE,
   } kind;
 
-  // In let polymorphism, the right hand side of each let declaration is
-  // evaluated within a separate type environment. The type environment consists
-  // of all bindings that are known from the scope outside of the let
-  // declaration.
-  //
-  // Since these type environments are nested, we can track the depth of them
-  // using this level.
-  //
-  // When we exit the right hand side of a let declaration, we "seal" the type
-  // of the rhs with the level of the type environment used at the time that it
-  // was type checked. This means that every type variable with a higher level,
-  // reachable from the output type, should be generalized.
-  //
-  // Essentially, whenever we see a type variable with a higher level than the
-  // current level, that type variable is "sealed". This means that the upper
-  // and lower bounds of that type variable will never be modified again.
-  size_t level;
-
   union {
     // SIMPLE_TYPE
     struct {
@@ -72,6 +54,26 @@ struct type_t {
       size_t argc;
       type_member_t schema[];
     };
+
+    // VARIABLE_TYPE
+
+    // In let polymorphism, the right hand side of each let declaration is
+    // evaluated within a separate type environment. The type environment consists
+    // of all bindings that are known from the scope outside of the let
+    // declaration.
+    //
+    // Since these type environments are nested, we can track the depth of them
+    // using this level.
+    //
+    // When we exit the right hand side of a let declaration, we "seal" the type
+    // of the rhs with the level of the type environment used at the time that it
+    // was type checked. This means that every type variable with a higher level,
+    // reachable from the output type, should be generalized.
+    //
+    // Essentially, whenever we see a type variable with a higher level than the
+    // current level, that type variable is "sealed". This means that the upper
+    // and lower bounds of that type variable will never be modified again.
+    size_t level;
   };
 };
 
@@ -94,12 +96,11 @@ typedef struct {
   size_t node_length;
   const mu_type_t **node_to_type;  /* const mu_type_t *[node_length] */
 
+  const type_t **node_to_type_actual; /* const type_t *[node_length] */
+
   size_t sub_volume;
   size_t sub_length;
   induce_sub_t *sub_data;
-
-  const mu_type_t *next_a;
-  const mu_type_t *next_b;
 
   const mu_core_t *boolean_core;
   const mu_core_t *integer_core;
@@ -133,6 +134,15 @@ static inline const mu_type_t *induce_evince(
     const induce_t *induce, const mu_node_t *node) {
   assert(node->as_stator.id < induce->node_length);
   const mu_type_t *type = induce->node_to_type[node->as_stator.id];
+  assert(type != NULL);
+  return type;
+}
+
+__attribute__((nonnull, pure, returns_nonnull))
+static inline const type_t *induce_reveal(
+    const induce_t *induce, const mu_node_t *node) {
+  assert(node->as_stator.id < induce->node_length);
+  const type_t *type = induce->node_to_type_actual[node->as_stator.id];
   assert(type != NULL);
   return type;
 }
