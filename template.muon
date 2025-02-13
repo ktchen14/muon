@@ -1,6 +1,6 @@
-define f = (lambda x = x.a)
+define f = (lambda x = x)
 
-define a = (a: 1)
+define a = 1
 define g = f a
 
 define b = [2, true]

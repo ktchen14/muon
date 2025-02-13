@@ -83,7 +83,7 @@ struct type_t {
 
     // SCHEME_TYPE
     struct {
-      const type_t *type;
+      const type_t *matter;
       const mu_node_t *highest_scope;
     };
   };

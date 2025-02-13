@@ -108,17 +108,9 @@ void debug_type(const type_t *type) {
 
     case SCHEME_TYPE:
       fprintf(stderr, "∀ ");
-      debug_type(type->type);
+      debug_type(type->matter);
       break;
   }
-}
-
-const type_t *scheme_type(induce_t *induce, const type_t *type, const mu_node_t *scope) {
-  type_t *result;
-  if ((result = malloc(sizeof(type_t))) == NULL)
-    return NULL;
-  *result = (type_t) { .kind = SCHEME_TYPE, .type = type, .highest_scope = scope };
-  return result;
 }
 
 const type_t *boolean_type(induce_t *induce) {
@@ -208,6 +200,106 @@ const type_t *vector_type(induce_t *induce, const type_t *matter) {
 static const type_t *append(
     induce_t *induce, const type_t *restrict a, const type_t *restrict b)
   __attribute__((nonnull));
+
+typedef struct {
+  const type_t *source;
+  const type_t *target;
+} cache_item;
+
+const type_t *instantiate_single_type(
+    induce_t *induce,
+    const type_t *type,
+    const mu_node_t *scope,
+    const mu_node_t *target_scope,
+    cache_item *cache,
+    size_t *cache_i
+) {
+  for (size_t i = 0; i < 100; i++) {
+    if (cache[i].source == type)
+      return cache[i].target;
+  }
+
+  switch (type->kind) {
+    case SIMPLE_TYPE:
+      switch (type->core->kind) {
+        case MU_BOOLEAN_CORE:
+        case MU_INTEGER_CORE:
+          cache[(*cache_i)++] = (cache_item) { type, type };
+          return type;
+
+        case MU_LAMBDA_CORE:
+        {
+          const type_t *argv_0 = instantiate_single_type(induce, type->argv[0], scope, target_scope, cache, cache_i);
+          const type_t *argv_1 = instantiate_single_type(induce, type->argv[1], scope, target_scope, cache, cache_i);
+          const type_t *result = lambda_type(induce, argv_0, argv_1);
+          cache[(*cache_i)++] = (cache_item) { type, result };
+          return result;
+        }
+
+        case MU_VECTOR_CORE:
+        {
+          const type_t *argv_0 = instantiate_single_type(induce, type->argv[0], scope, target_scope, cache, cache_i);
+          const type_t *result = vector_type(induce, argv_0);
+          cache[(*cache_i)++] = (cache_item) { type, result };
+          return result;
+        }
+      }
+      break;
+
+    case RECORD_TYPE:
+    {
+      type_t *mut;
+      if ((mut = simple_record_type_allocate(induce, type->argc)) == NULL)
+        return NULL;
+
+      for (size_t i = 0; i < type->argc; i++) {
+        mut->schema[i].name = type->schema[i].name;
+        mut->schema[i].type = instantiate_single_type(induce, type->schema[i].type, scope, target_scope, cache, cache_i);
+      }
+
+      const type_t *result = simple_record_type_activate(mut);
+      cache[(*cache_i)++] = (cache_item) { type, result };
+      return result;
+    }
+
+    case VARIABLE_TYPE:
+    {
+      const type_t *newvar;
+      if ((newvar = variable_type(induce, target_scope)) == NULL)
+        return NULL;
+      cache[(*cache_i)++] = (cache_item) { type, newvar };
+
+      for (size_t i = 0; i < induce->sub_length; i++) {
+        const induce_sub_t sub = induce->sub_data[i];
+        if (sub.lower == type)
+          append(induce, newvar, instantiate_single_type(induce, sub.upper, scope, target_scope, cache, cache_i));
+      }
+
+      return newvar;
+    }
+
+    case SCHEME_TYPE:
+      fprintf(stderr, "Unsupported higher rank polymorphism\n");
+      abort();
+  }
+}
+
+const type_t *instantiate_scheme(
+    induce_t *induce, const type_t *type, const mu_node_t *target_scope
+) {
+  assert(type->kind == SCHEME_TYPE);
+  cache_item cache[100] = {0};
+  size_t i = 0;
+  return instantiate_single_type(induce, type->matter, type->highest_scope, target_scope, cache, &i);
+}
+
+const type_t *scheme_type(induce_t *induce, const type_t *matter, const mu_node_t *scope) {
+  type_t *result;
+  if ((result = malloc(sizeof(type_t))) == NULL)
+    return NULL;
+  *result = (type_t) { .kind = SCHEME_TYPE, .matter = matter, .highest_scope = scope };
+  return result;
+}
 
 /**
  * @brief Restrict type @a a to be a subtype of @a b in the @a induce engine
@@ -560,8 +652,7 @@ __attribute__((nonnull)) static const type_t *name_expr_induce(
     return type;
 
   // Instantiate the polymorphic type
-  const type_t *root = type->type;
-  return root;
+  return instantiate_scheme(induce, type, scope);
 }
 
 __attribute__((nonnull)) static const type_t *record_expr_induce(
