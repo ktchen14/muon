@@ -56,24 +56,27 @@ struct type_t {
     };
 
     // VARIABLE_TYPE
+    struct {
+      size_t number;
 
-    // In let polymorphism, the right hand side of each let declaration is
-    // evaluated within a separate type environment. The type environment consists
-    // of all bindings that are known from the scope outside of the let
-    // declaration.
-    //
-    // Since these type environments are nested, we can track the depth of them
-    // using this level.
-    //
-    // When we exit the right hand side of a let declaration, we "seal" the type
-    // of the rhs with the level of the type environment used at the time that it
-    // was type checked. This means that every type variable with a higher level,
-    // reachable from the output type, should be generalized.
-    //
-    // Essentially, whenever we see a type variable with a higher level than the
-    // current level, that type variable is "sealed". This means that the upper
-    // and lower bounds of that type variable will never be modified again.
-    size_t level;
+      // In let polymorphism, the right hand side of each let declaration is
+      // evaluated within a separate type environment. The type environment consists
+      // of all bindings that are known from the scope outside of the let
+      // declaration.
+      //
+      // Since these type environments are nested, we can track the depth of them
+      // using this level.
+      //
+      // When we exit the right hand side of a let declaration, we "seal" the type
+      // of the rhs with the level of the type environment used at the time that it
+      // was type checked. This means that every type variable with a higher level,
+      // reachable from the output type, should be generalized.
+      //
+      // Essentially, whenever we see a type variable with a higher level than the
+      // current level, that type variable is "sealed". This means that the upper
+      // and lower bounds of that type variable will never be modified again.
+      size_t level;
+    };
   };
 };
 
@@ -155,5 +158,7 @@ static inline const type_t *induce_reveal(
  */
 const mu_type_t *induce_node(induce_t *inductor, const mu_node_t *node)
   __attribute__((nonnull));
+
+void debug_type(const type_t *type);
 
 #endif /* MU_INDUCTOR_INDUCE_I */

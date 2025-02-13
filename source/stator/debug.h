@@ -25,12 +25,12 @@ static inline void debug_node_type(const mu_node_t *node) {
   if (debug_induce == NULL)
     return;
 
-  const mu_type_t *type;
-  if ((type = induce_evince(debug_induce, node)) == NULL)
+  const type_t *type;
+  if ((type = induce_reveal(debug_induce, node)) == NULL)
     return;
 
   fprintf(stderr, " ∷ ");
-  mu_type_debug(type);
+  debug_type(type);
 }
 
 #endif /* MU_STATOR_DEBUG_I */

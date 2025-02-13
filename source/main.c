@@ -60,7 +60,7 @@ int main(int argc, char *argv[argc]) {
   if (induce_node(&induce, &sequence_expr->as_node) == NULL)
     assert(0);
 
-  /* debug_induce = &induce; */
+  debug_induce = &induce;
 
   mu_sequence_expr_debug(sequence_expr);
 

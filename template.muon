@@ -1,6 +1,8 @@
-define f = (lambda x = x.a.b)
+define f = (lambda x = x.a)
 
-define a = [1]
+define a = (a: 1)
+define g = f a
+
 define b = [2, true]
 define c = []
 define d = [a, b, c]

@@ -9,8 +9,104 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 _Thread_local induce_t *debug_induce;
+
+void debug_type(const type_t *type) {
+  switch (type->kind) {
+    case SIMPLE_TYPE:
+      switch (type->core->kind) {
+        case MU_BOOLEAN_CORE:
+          fprintf(stderr, "Boolean"); break;
+
+        case MU_INTEGER_CORE:
+          fprintf(stderr, "Integer"); break;
+
+        case MU_LAMBDA_CORE:
+          debug_type(type->argv[0]);
+          fprintf(stderr, " -> ");
+          debug_type(type->argv[1]);
+          break;
+
+        case MU_VECTOR_CORE:
+          fprintf(stderr, "[");
+          debug_type(type->argv[0]);
+          fprintf(stderr, "]");
+          break;
+      }
+      break;
+
+    case RECORD_TYPE:
+      fprintf(stderr, "(");
+      for (size_t i = 0; i < type->argc; i++) {
+        const type_member_t *member = &type->schema[i];
+        if (i > 0)
+          fprintf(stderr, ", ");
+        mu_name_debug(member->name);
+        fprintf(stderr, ": ");
+        debug_type(member->type);
+      }
+      fprintf(stderr, ")");
+      break;
+
+    case VARIABLE_TYPE:;
+      static _Atomic size_t next_number = 0;
+      static const char *alphabet[] = {
+        "α", "β", "γ", "δ", "ε", "ζ", "η", "θ", "ι", "κ", "μ", "ν", "ξ", "ο", "π",
+        "ρ", "σ", "τ", "υ", "φ", "χ", "ψ", "ω" };
+      static size_t alphabet_length = sizeof(alphabet) / sizeof(alphabet[0]);
+
+      extern _Thread_local _Bool debug_negate;
+
+      // Assign the variable type a number
+      if (type->number == 0)
+        ((type_t *) type)->number = ++next_number;
+
+      static _Thread_local char buffer[256];
+
+      // Generate a name
+      char *name = buffer + sizeof(buffer);
+      *--name = '\0';
+      for (size_t n = type->number; n-- != 0; n /= alphabet_length) {
+        const char *c = alphabet[n % alphabet_length];
+        memcpy(name -= strlen(c), c, strlen(c));
+      }
+
+      if (debug_induce == NULL)
+        return;
+
+      _Bool already_printed = 0;
+      if (debug_negate) {
+        for (size_t i = 0; i < debug_induce->sub_length; i++) {
+          induce_sub_t sub = debug_induce->sub_data[i];
+          if (sub.lower != type)
+            continue;
+          if (already_printed)
+            fprintf(stderr, " ⊓ ");
+          already_printed = 1;
+          debug_type(sub.upper);
+        }
+
+        if (!already_printed)
+          fprintf(stderr, "%s", name);
+      } else {
+        for (size_t i = 0; i < debug_induce->sub_length; i++) {
+          induce_sub_t sub = debug_induce->sub_data[i];
+          if (sub.upper != type)
+            continue;
+          if (already_printed > 0)
+            fprintf(stderr, " ⊔ ");
+          already_printed = 1;
+          debug_type(sub.lower);
+        }
+
+        if (!already_printed)
+          fprintf(stderr, "%s", name);
+      }
+      break;
+  }
+}
 
 const type_t *boolean_type(induce_t *induce) {
   type_t *result;
@@ -231,26 +327,38 @@ static induce_t *restrict_type(
       return induce;
   }
 
-  if (a->kind == MU_BOOLEAN_TYPE && b->kind == MU_BOOLEAN_TYPE) {
-    append(induce, a, b);
-    return induce;
+  if (a->kind == SIMPLE_TYPE && b->kind == SIMPLE_TYPE) {
+    if (a->core == induce->boolean_core && b->core == induce->boolean_core) {
+      append(induce, a, b);
+      return induce;
+    }
+
+    if (a->core == induce->integer_core && b->core == induce->integer_core) {
+      append(induce, a, b);
+      return induce;
+    }
+
+    if (a->core == induce->lambda_core && b->core == induce->lambda_core) {
+      if (restrict_type(induce, b->argv[0], a->argv[0]) == NULL)
+        return NULL;
+      if (restrict_type(induce, a->argv[1], b->argv[1]) == NULL)
+        return NULL;
+      append(induce, a, b);
+      return induce;
+    }
+
+    if (a->core == induce->vector_core && b->core == induce->vector_core) {
+      if (restrict_type(induce, b->argv[0], a->argv[0]) == NULL)
+        return NULL;
+      append(induce, a, b);
+      return induce;
+    }
+
+    fprintf(stderr, "Type mismatch\n");
+    abort();
   }
 
-  if (a->kind == MU_INTEGER_TYPE && b->kind == MU_INTEGER_TYPE) {
-    append(induce, a, b);
-    return induce;
-  }
-
-  if (a->kind == MU_LAMBDA_TYPE && b->kind == MU_LAMBDA_TYPE) {
-    if (restrict_type(induce, b->argv[0], a->argv[0]) == NULL)
-      return NULL;
-    if (restrict_type(induce, a->argv[1], b->argv[1]) == NULL)
-      return NULL;
-    append(induce, a, b);
-    return induce;
-  }
-
-  if (a->kind == MU_RECORD_TYPE && b->kind == MU_RECORD_TYPE) {
+  if (a->kind == RECORD_TYPE && b->kind == RECORD_TYPE) {
     for (size_t j = 0; j < b->argc; j++) {
       for (size_t i = 0; i < a->argc; i++) {
         if (a->schema[i].name == b->schema[j].name) {
@@ -265,14 +373,6 @@ static induce_t *restrict_type(
 
     next:;
     }
-
-    append(induce, a, b);
-    return induce;
-  }
-
-  if (a->kind == MU_VECTOR_TYPE && b->kind == MU_VECTOR_TYPE) {
-    if (restrict_type(induce, a->argv[0], b->argv[0]) == NULL)
-      return NULL;
 
     append(induce, a, b);
     return induce;
