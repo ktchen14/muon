@@ -793,5 +793,3 @@ static const type_t *node_induce(const mu_node_t *node, induce_t *induce, const 
   }
   __builtin_unreachable();
 }
-
-// vim: set foldmethod=marker:
