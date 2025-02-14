@@ -68,7 +68,7 @@ void debug_type(const type_t *type) {
       if (type->number == 0)
         ((type_t *) type)->number = ++next_number;
 
-      static _Thread_local char buffer[256];
+      char buffer[256];
 
       // Generate a name
       char *name = buffer + sizeof(buffer);
@@ -93,8 +93,10 @@ void debug_type(const type_t *type) {
           debug_type(sub.upper);
         }
 
-        if (!already_printed)
+        /* if (!already_printed) */
+            fprintf(stderr, " ⊓ ");
           fprintf(stderr, "%s", name);
+          /* fprintf(stderr, "%p", type); */
       } else {
         for (size_t i = 0; i < debug_induce->sub_length; i++) {
           induce_sub_t sub = debug_induce->sub_data[i];
@@ -106,8 +108,10 @@ void debug_type(const type_t *type) {
           debug_type(sub.lower);
         }
 
-        if (!already_printed)
+        /* if (!already_printed) */
+            fprintf(stderr, " ⊔ ");
           fprintf(stderr, "%s", name);
+          /* fprintf(stderr, "%p", type); */
       }
       break;
 
@@ -236,7 +240,10 @@ const type_t *instantiate_single_type(
         {
           const type_t *argv_0 = instantiate_single_type(induce, type->argv[0], scope, target_scope, cache, cache_i);
           const type_t *argv_1 = instantiate_single_type(induce, type->argv[1], scope, target_scope, cache, cache_i);
-          const type_t *result = lambda_type(induce, argv_0, argv_1);
+
+          const type_t *result = type;
+          if (argv_0 != type->argv[0] || argv_1 == type->argv[1])
+            result = lambda_type(induce, argv_0, argv_1);
           cache[(*cache_i)++] = (cache_item) { type, result };
           return result;
         }
@@ -244,7 +251,9 @@ const type_t *instantiate_single_type(
         case MU_VECTOR_CORE:
         {
           const type_t *argv_0 = instantiate_single_type(induce, type->argv[0], scope, target_scope, cache, cache_i);
-          const type_t *result = vector_type(induce, argv_0);
+          const type_t *result = type;
+          if (argv_0 != type->argv[0])
+            result = vector_type(induce, argv_0);
           cache[(*cache_i)++] = (cache_item) { type, result };
           return result;
         }
@@ -257,12 +266,17 @@ const type_t *instantiate_single_type(
       if ((mut = simple_record_type_allocate(induce, type->argc)) == NULL)
         return NULL;
 
+      _Bool is_same = 1;
       for (size_t i = 0; i < type->argc; i++) {
         mut->schema[i].name = type->schema[i].name;
         mut->schema[i].type = instantiate_single_type(induce, type->schema[i].type, scope, target_scope, cache, cache_i);
+        if (mut->schema[i].type != type->schema[i].type)
+          is_same = 0;
       }
 
-      const type_t *result = simple_record_type_activate(mut);
+      const type_t *result = type;
+      if (!is_same)
+        result = simple_record_type_activate(mut);
       cache[(*cache_i)++] = (cache_item) { type, result };
       return result;
     }
@@ -472,6 +486,7 @@ const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
 static induce_t *restrict_type(
     induce_t *induce, const type_t *a, const type_t *b) {
   assert(a->kind != SCHEME_TYPE && b->kind != SCHEME_TYPE);
+  fprintf(stderr, "restrict type %p(%i) to %p(%i)\n", a, a->kind, b, b->kind);
 
   if (a == b)
     return induce;
@@ -484,12 +499,10 @@ static induce_t *restrict_type(
 
   if (a->kind == SIMPLE_TYPE && b->kind == SIMPLE_TYPE) {
     if (a->core == induce->boolean_core && b->core == induce->boolean_core) {
-      append(induce, a, b);
       return induce;
     }
 
     if (a->core == induce->integer_core && b->core == induce->integer_core) {
-      append(induce, a, b);
       return induce;
     }
 
@@ -659,7 +672,8 @@ __attribute__((nonnull)) static const type_t *name_expr_induce(
     return type;
 
   // Instantiate the polymorphic type
-  return instantiate_scheme(induce, type, scope);
+  return type->matter;
+  /* return instantiate_scheme(induce, type, scope); */
 }
 
 __attribute__((nonnull)) static const type_t *record_expr_induce(

@@ -25,8 +25,9 @@ const mu_variable_view_t *mu_variable_view(
 
 void mu_variable_view_debug(const mu_variable_view_t *view) {
   fprintf(stderr, "%*s", debug_indent, "");
-  fprintf(stderr, "Variable View #%zu: name = ", view->as_stator.id);
+  fprintf(stderr, "VariableView#%zu(name = ", view->as_stator.id);
   mu_name_debug(view->name);
+  putc(')', stderr);
   debug_node_type(&view->as_node); 
   putc('\n', stderr);
 }
