@@ -56,7 +56,12 @@ const mu_name_t *mu_name(
 _Thread_local char conversion[MB_LEN_MAX];
 _Thread_local mbstate_t cs = {0};
 
+#include "debug.h"
+
 void mu_name_debug(const mu_name_t *name) {
+  if (debug_colorize)
+    fputs("\e[0;32m", stderr);
+
   for (size_t i = 0; i < name->length; i++) {
     mu_char8_t c = name->text[i];
 
@@ -67,6 +72,9 @@ void mu_name_debug(const mu_name_t *name) {
 
     fwrite(conversion, size, 1, stderr);
   }
+
+  if (debug_colorize)
+    fputs("\e[0m", stderr);
 
   assert(mbsinit(&cs));
 }

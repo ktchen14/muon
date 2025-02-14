@@ -27,7 +27,8 @@ const mu_name_expr_t *mu_name_expr(mu_engine_t *engine, const mu_name_t *name) {
 
 void mu_name_expr_debug(const mu_name_expr_t *expr) {
   fprintf(stderr, "%*s", debug_indent, "");
-  fprintf(stderr, "NameExpr#%zu(name = ", expr->as_stator.id);
+  fprintf(stderr, PRIsKIND "#" PRIuID "(name = ",
+      DEBUG_KIND("NameExpr"), DEBUG_ID(expr->as_stator.id));
   mu_name_debug(expr->name);
   putc(')', stderr);
   debug_node_type(&expr->as_node);

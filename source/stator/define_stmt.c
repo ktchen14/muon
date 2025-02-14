@@ -37,7 +37,8 @@ const mu_define_stmt_t *mu_define_stmt(
 
 void mu_define_stmt_debug(const mu_define_stmt_t *stmt) {
   fprintf(stderr, "%*s", debug_indent, "");
-  fprintf(stderr, "DefineStmt#%zu(name = ", stmt->as_stator.id);
+  fprintf(stderr, PRIsKIND "#" PRIuID "(name = ",
+      DEBUG_KIND("DefineStmt"), DEBUG_ID(stmt->as_stator.id));
   mu_name_debug(stmt->name);
   putc(')', stderr);
   debug_node_type(&stmt->as_node);

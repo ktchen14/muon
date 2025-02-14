@@ -28,7 +28,8 @@ const mu_lambda_expr_t *mu_lambda_expr(
 
 void mu_lambda_expr_debug(const mu_lambda_expr_t *expr) {
   fprintf(stderr, "%*s", debug_indent, "");
-  fprintf(stderr, "LambdaExpr#%zu", expr->as_stator.id);
+  fprintf(stderr, PRIsKIND "#" PRIuID,
+      DEBUG_KIND("LambdaExpr"), DEBUG_ID(expr->as_stator.id));
   debug_node_type(&expr->as_node);
   putc('\n', stderr);
 

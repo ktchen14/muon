@@ -25,8 +25,10 @@ const mu_boolean_expr_t *mu_boolean_expr(mu_engine_t *engine, _Bool data) {
 
 void mu_boolean_expr_debug(const mu_boolean_expr_t *expr) {
   fprintf(stderr, "%*s", debug_indent, "");
-  fprintf(stderr, "BooleanExpr#%zu(data = %s)",
-    expr->as_stator.id, expr->data ? "true" : "false");
+  fprintf(stderr, PRIsKIND "#" PRIuID "(data = %s)",
+      DEBUG_KIND("BooleanExpr"),
+      DEBUG_ID(expr->as_stator.id),
+      expr->data ? "true" : "false");
   debug_node_type(&expr->as_node);
   putc('\n', stderr);
 }

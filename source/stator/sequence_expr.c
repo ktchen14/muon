@@ -38,7 +38,8 @@ const mu_sequence_expr_t *mu_sequence_expr(
 
 void mu_sequence_expr_debug(const mu_sequence_expr_t *expr) {
   fprintf(stderr, "%*s", debug_indent, "");
-  fprintf(stderr, "Sequence Expr #%zu:", expr->as_stator.id);
+  fprintf(stderr, PRIsKIND "#" PRIuID,
+      DEBUG_KIND("SequenceExpr"), DEBUG_ID(expr->as_stator.id));
   debug_node_type(&expr->as_node);
   putc('\n', stderr);
 

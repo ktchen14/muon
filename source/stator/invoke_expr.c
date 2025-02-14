@@ -28,7 +28,8 @@ const mu_invoke_expr_t *mu_invoke_expr(
 
 void mu_invoke_expr_debug(const mu_invoke_expr_t *expr) {
   fprintf(stderr, "%*s", debug_indent, "");
-  fprintf(stderr, "InvokeExpr#%zu", expr->as_stator.id);
+  fprintf(stderr, PRIsKIND "#" PRIuID,
+      DEBUG_KIND("InvokeExpr"), DEBUG_ID(expr->as_stator.id));
   debug_node_type(&expr->as_node);
   putc('\n', stderr);
 
