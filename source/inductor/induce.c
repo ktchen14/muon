@@ -635,6 +635,19 @@ __attribute__((nonnull)) static const type_t *boolean_expr_induce(
   return boolean_type(induce);
 }
 
+__attribute__((nonnull)) static const type_t *coerce_expr_induce(
+    const mu_coerce_expr_t *expr, induce_t *induce, const mu_node_t *scope) {
+  const type_t *matter = induce_reveal(induce, &expr->matter->as_node);
+
+  const type_t *result;
+  if ((result = variable_type(induce, scope)) == NULL)
+    return NULL;
+
+  if (restrict_type(induce, matter, result) == NULL)
+    return NULL;
+  return result;
+}
+
 __attribute__((nonnull)) static const type_t *integer_expr_induce(
     const mu_integer_expr_t *expr, induce_t *induce, const mu_node_t *scope) {
   return integer_type(induce);

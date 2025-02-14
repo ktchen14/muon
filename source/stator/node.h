@@ -7,6 +7,7 @@
 
 #include "access_expr.h"       // IWYU pragma: export
 #include "boolean_expr.h"      // IWYU pragma: export
+#include "coerce_expr.h"       // IWYU pragma: export
 #include "integer_expr.h"      // IWYU pragma: export
 #include "invoke_expr.h"       // IWYU pragma: export
 #include "lambda_expr.h"       // IWYU pragma: export

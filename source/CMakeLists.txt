@@ -14,6 +14,7 @@ target_sources(muon PRIVATE
 
   stator/access_expr.c
   stator/boolean_expr.c
+  stator/coerce_expr.c
   stator/integer_expr.c
   stator/invoke_expr.c
   stator/lambda_expr.c

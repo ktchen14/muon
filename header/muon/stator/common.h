@@ -7,6 +7,7 @@
 #define MU_EACH_EXPR_KIND(emit, ...) \
   emit(access, ACCESS, Access, ##__VA_ARGS__) \
   emit(boolean, BOOLEAN, Boolean, ##__VA_ARGS__) \
+  emit(coerce, COERCE, Coerce, ##__VA_ARGS__) \
   emit(integer, INTEGER, Integer, ##__VA_ARGS__) \
   emit(invoke, INVOKE, Invoke, ##__VA_ARGS__) \
   emit(lambda, LAMBDA, Lambda, ##__VA_ARGS__) \
