@@ -90,7 +90,9 @@ void debug_type(const type_t *type) {
           if (already_printed)
             fprintf(stderr, " ⊓ ");
           already_printed = 1;
+          fprintf(stderr, "(");
           debug_type(sub.upper);
+          fprintf(stderr, ")");
         }
 
         /* if (!already_printed) */
@@ -105,7 +107,9 @@ void debug_type(const type_t *type) {
           if (already_printed > 0)
             fprintf(stderr, " ⊔ ");
           already_printed = 1;
+          fprintf(stderr, "(");
           debug_type(sub.lower);
+          fprintf(stderr, ")");
         }
 
         /* if (!already_printed) */
@@ -640,6 +644,12 @@ __attribute__((nonnull)) static const type_t *invoke_expr_induce(
     const mu_invoke_expr_t *expr, induce_t *induce, const mu_node_t *scope) {
   const type_t *lambda = induce_reveal(induce, &expr->lambda->as_node);
   const type_t *matter = induce_reveal(induce, &expr->matter->as_node);
+
+  /* if (lambda->kind == SIMPLE_TYPE && lambda->core == induce->lambda_core) { */
+  /*   if (restrict_type(induce, matter, lambda->argv[0]) == NULL) */
+  /*     return NULL; */
+  /*   return lambda->argv[1]; */
+  /* } */
 
   const type_t *result;
   if ((result = variable_type(induce, scope)) == NULL)
