@@ -129,6 +129,15 @@ typedef struct {
 } while (0)
 
 static void yyerror(YYLTYPE *yylloc, syntax_t *syntax, char const *s);
+
+static const mu_expr_t *coerce(mu_engine_t *engine, const mu_expr_t *expr)
+  __attribute__((nonnull));
+
+#define COERCE(engine, expr) ({ \
+  const mu_expr_t *result; \
+  if ((result = coerce((engine), (expr))) == NULL) \
+    YYNOMEM; \
+  result; })
 %}
 
 // ================================= Script =============================== {{{1
@@ -158,8 +167,9 @@ expr: '(' expr ')' { $$ = $2; } |
   record_expr  { $$ = &$record_expr->as_expr; } |
   vector_expr  { $$ = &$vector_expr->as_expr; }
 
-access_expr: expr '.' name {
-  $$ = mu_access_expr(syntax->engine, $name, $expr);
+access_expr: expr[matter] '.' name {
+  const mu_expr_t *matter = COERCE(syntax->engine, $matter);
+  $$ = mu_access_expr(syntax->engine, $name, matter);
 }
 
 boolean_expr: BOOLEAN_LITERAL {
@@ -171,11 +181,14 @@ integer_expr: INTEGER_LITERAL {
 }
 
 invoke_expr: expr[lambda] _ expr[matter] %prec INVOKE {
-  $$ = mu_invoke_expr(syntax->engine, $lambda, $matter);
+  const mu_expr_t *lambda = COERCE(syntax->engine, $lambda);
+  const mu_expr_t *matter = COERCE(syntax->engine, $matter);
+  $$ = mu_invoke_expr(syntax->engine, lambda, matter);
 }
 
 lambda_expr: "lambda" _ variable_view _ '=' _ expr %prec LAMBDA {
-  $$ = mu_lambda_expr(syntax->engine, $variable_view, $expr);
+  const mu_expr_t *expr = COERCE(syntax->engine, $expr);
+  $$ = mu_lambda_expr(syntax->engine, $variable_view, expr);
 }
 
 name_expr: name {
@@ -185,7 +198,8 @@ name_expr: name {
 // --------------------------------- Record ------------------------------- {{{2
 
 expr_member: name ':' _ expr {
-  $$ = (mu_expr_member_t) { .name = $name, .expr = $expr };
+  const mu_expr_t *expr = COERCE(syntax->engine, $expr);
+  $$ = (mu_expr_member_t) { .name = $name, .expr = expr };
 }
 
 record_expr: '(' record_argv ')' {
@@ -226,11 +240,13 @@ vector_expr: '[' vector_argv ']' {
 }
 
 vector_argv: expr {
-  syntax->expr[syntax->expr_i++] = $expr;
+  const mu_expr_t *expr = COERCE(syntax->engine, $expr);
+  syntax->expr[syntax->expr_i++] = expr;
   $$ = 1;
 
 } | vector_argv ',' _ expr {
-  syntax->expr[syntax->expr_i++] = $expr;
+  const mu_expr_t *expr = COERCE(syntax->engine, $expr);
+  syntax->expr[syntax->expr_i++] = expr;
   $$ = $1 + 1;
 }
 
@@ -290,6 +306,16 @@ _: ' '
 
 static void yyerror(YYLTYPE *yylloc, syntax_t *syntax, char const *s) {
   fprintf(stderr, "%s\n", s);
+}
+
+static const mu_expr_t *coerce(mu_engine_t *engine, const mu_expr_t *expr) {
+  if (expr->kind == MU_COERCE_EXPR)
+    return expr;
+
+  const mu_coerce_expr_t *result;
+  if ((result = mu_coerce_expr(engine, expr)) == NULL)
+    return NULL;
+  return &result->as_expr;
 }
 
 // vim: set foldlevel=1 foldmethod=marker:
