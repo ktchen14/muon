@@ -746,27 +746,23 @@ __attribute__((nonnull)) static const type_t *invoke_expr_induce(
   const type_t *lambda = induce_reveal(induce, &expr->lambda->as_node);
   const type_t *matter = induce_reveal(induce, &expr->matter->as_node);
 
-  if (restrict_type(induce, matter, lambda->argv[0]) == NULL)
+  if (lambda->kind == SIMPLE_TYPE && lambda->core == induce->lambda_core) {
+    if (restrict_type(induce, matter, lambda->argv[0]) == NULL)
+      return NULL;
+    return lambda->argv[1];
+  }
+
+  const type_t *result;
+  if ((result = variable_type(induce, scheme)) == NULL)
     return NULL;
-  return lambda->argv[1];
 
-  /* if (lambda->kind == SIMPLE_TYPE && lambda->core == induce->lambda_core) { */
-  /*   if (restrict_type(induce, matter, lambda->argv[0]) == NULL) */
-  /*     return NULL; */
-  /*   return lambda->argv[1]; */
-  /* } */
+  const type_t *lambda_ty;
+  if ((lambda_ty = lambda_type(induce, matter, result)) == NULL)
+    return NULL;
 
-  /* const type_t *result; */
-  /* if ((result = variable_type(induce, scheme)) == NULL) */
-  /*   return NULL; */
-
-  /* const type_t *lambda_ty; */
-  /* if ((lambda_ty = lambda_type(induce, matter, result)) == NULL) */
-  /*   return NULL; */
-
-  /* if (restrict_type(induce, lambda, lambda_ty) == NULL) */
-  /*   return NULL; */
-  /* return result; */
+  if (restrict_type(induce, lambda, lambda_ty) == NULL)
+    return NULL;
+  return result;
 }
 
 __attribute__((nonnull)) static const type_t *lambda_expr_induce(
