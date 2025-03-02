@@ -41,6 +41,7 @@ struct type_t {
     RECORD_TYPE,
     VARIABLE_TYPE,
     SCHEME_TYPE,
+    JOIN_TYPE,
   } kind;
 
   union {
@@ -75,6 +76,12 @@ struct type_t {
       const type_t *matter;
       size_t polymorphic_length;
       const type_t *polymorphic[];
+    };
+
+    // JOIN_TYPE
+    struct {
+      size_t join_argc;
+      const type_t *join_argv[];
     };
   };
 };

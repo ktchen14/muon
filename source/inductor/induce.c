@@ -155,6 +155,18 @@ void debug_type(const type_t *type) {
 
       debug_type(type->matter);
       break;
+
+    case JOIN_TYPE:
+      if (type->join_argc == 0) {
+        fprintf(stderr, "⊥");
+      } else {
+        for (size_t i = 0; i < type->join_argc; i++) {
+          if (i > 0)
+            fprintf(stderr, " ⊔ ");
+          debug_type(type->join_argv[i]);
+        }
+      }
+      break;
   }
 }
 
@@ -243,6 +255,36 @@ const type_t *vector_type(induce_t *induce, const type_t *matter) {
   result->argv[0] = matter;
 
   return result;
+}
+
+const type_t *join_type(induce_t *induce, size_t argc, const type_t *argv[]) {
+  size_t size;
+  if (rare((size = struct_size(type_t, join_argv, argc)) == 0))
+    return NULL;
+
+  type_t *result;
+  if ((result = malloc(size)) == NULL)
+    return NULL;
+  *result = (type_t) { .kind = JOIN_TYPE, .join_argc = argc };
+  for (size_t i = 0; i < argc; i++)
+    result->join_argv[i] = argv[i];
+  return result;
+}
+
+type_t *join_type_allocate(induce_t *induce, size_t argc) {
+  size_t size;
+  if (rare((size = struct_size(type_t, join_argv, argc)) == 0))
+    return NULL;
+
+  type_t *result;
+  if (rare((result = malloc(size)) == NULL))
+    return NULL;
+  *result = (type_t) { .kind = JOIN_TYPE, .argc = argc };
+  return result;
+}
+
+const type_t *join_type_activate(type_t *type) {
+  return type;
 }
 
 /// Register @a a <: @a b in the @a induce engine
@@ -345,6 +387,26 @@ const type_t *instantiate_single_type(
     case SCHEME_TYPE:
       fprintf(stderr, "Unsupported higher rank polymorphism\n");
       abort();
+
+    case JOIN_TYPE:
+    {
+      type_t *mut;
+      if ((mut = join_type_allocate(induce, type->join_argc)) == NULL)
+        return NULL;
+
+      _Bool is_same = 1;
+      for (size_t i = 0; i < type->argc; i++) {
+        mut->join_argv[i] = instantiate_single_type(induce, type->join_argv[i], scheme, target_scheme, cache, cache_i);
+        if (mut->join_argv[i] != type->join_argv[i])
+          is_same = 0;
+      }
+
+      const type_t *result = type;
+      if (!is_same)
+        result = join_type_activate(mut);
+      cache[(*cache_i)++] = (cache_item) { type, result };
+      return result;
+    }
   }
 }
 
@@ -407,6 +469,14 @@ void mark_type(induce_t *induce, const type_t *type, _Bool negative, size_t rank
 
     case SCHEME_TYPE:
       abort();
+
+    case JOIN_TYPE:
+      if (negative)
+        return;
+
+      for (size_t i = 0; i < type->join_argc; i++)
+        mark_type(induce, type->join_argv[i], negative, rank);
+      break;
   }
 }
 
