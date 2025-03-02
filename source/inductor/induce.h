@@ -43,8 +43,6 @@ struct type_t {
     SCHEME_TYPE,
   } kind;
 
-  const type_t *equi;
-
   union {
     // SIMPLE_TYPE
     struct {
