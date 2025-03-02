@@ -1,1 +1,5 @@
 define h = (lambda x = x) true
+
+define id = lambda x = x
+
+define x = 1

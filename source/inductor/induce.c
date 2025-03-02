@@ -57,7 +57,8 @@ void debug_type(const type_t *type) {
       fprintf(stderr, ")");
       break;
 
-    case VARIABLE_TYPE:;
+    case VARIABLE_TYPE:
+      ;
       static _Atomic size_t next_number = 0;
       static const char *alphabet[] = {
         "α", "β", "γ", "δ", "ε", "ζ", "η", "θ", "ι", "κ", "μ", "ν", "ξ", "ο", "π",
@@ -95,10 +96,11 @@ void debug_type(const type_t *type) {
           fprintf(stderr, ")");
         }
 
-        /* if (!already_printed) */
-            fprintf(stderr, " ⊓ ");
-          fprintf(stderr, "%s", name);
-          /* fprintf(stderr, "%p", type); */
+        if (already_printed)
+          fprintf(stderr, " ⊓ ");
+        fprintf(stderr, "%s", name);
+        if (type->polymorphic_to != NULL)
+          fprintf(stderr, "*");
       } else {
         for (size_t i = 0; i < debug_induce->sub_length; i++) {
           induce_sub_t sub = debug_induce->sub_data[i];
@@ -112,10 +114,11 @@ void debug_type(const type_t *type) {
           fprintf(stderr, ")");
         }
 
-        /* if (!already_printed) */
-            fprintf(stderr, " ⊔ ");
-          fprintf(stderr, "%s", name);
-          /* fprintf(stderr, "%p", type); */
+        if (already_printed)
+          fprintf(stderr, " ⊔ ");
+        fprintf(stderr, "%s", name);
+        if (type->polymorphic_to != NULL)
+          fprintf(stderr, "*");
       }
       break;
 
@@ -223,104 +226,107 @@ typedef struct {
   const type_t *target;
 } cache_item;
 
-/* const type_t *instantiate_single_type( */
-/*     induce_t *induce, */
-/*     const type_t *type, */
-/*     open_scheme_t *scheme, */
-/*     const mu_node_t *target_scheme, */
-/*     cache_item *cache, */
-/*     size_t *cache_i */
-/* ) { */
-/*   for (size_t i = 0; i < 100; i++) { */
-/*     if (cache[i].source == type) */
-/*       return cache[i].target; */
-/*   } */
+const type_t *instantiate_single_type(
+    induce_t *induce,
+    const type_t *type,
+    const type_t *scheme,
+    open_scheme_t *target_scheme,
+    cache_item *cache,
+    size_t *cache_i
+) {
+  for (size_t i = 0; i < 100; i++) {
+    if (cache[i].source == type)
+      return cache[i].target;
+  }
 
-/*   switch (type->kind) { */
-/*     case SIMPLE_TYPE: */
-/*       switch (type->core->kind) { */
-/*         case MU_BOOLEAN_CORE: */
-/*         case MU_INTEGER_CORE: */
-/*           cache[(*cache_i)++] = (cache_item) { type, type }; */
-/*           return type; */
+  switch (type->kind) {
+    case SIMPLE_TYPE:
+      switch (type->core->kind) {
+        case MU_BOOLEAN_CORE:
+        case MU_INTEGER_CORE:
+          cache[(*cache_i)++] = (cache_item) { type, type };
+          return type;
 
-/*         case MU_LAMBDA_CORE: */
-/*         { */
-/*           const type_t *argv_0 = instantiate_single_type(induce, type->argv[0], scheme, target_scheme, cache, cache_i); */
-/*           const type_t *argv_1 = instantiate_single_type(induce, type->argv[1], scheme, target_scheme, cache, cache_i); */
+        case MU_LAMBDA_CORE:
+        {
+          const type_t *argv_0 = instantiate_single_type(induce, type->argv[0], scheme, target_scheme, cache, cache_i);
+          const type_t *argv_1 = instantiate_single_type(induce, type->argv[1], scheme, target_scheme, cache, cache_i);
 
-/*           const type_t *result = type; */
-/*           if (argv_0 != type->argv[0] || argv_1 == type->argv[1]) */
-/*             result = lambda_type(induce, argv_0, argv_1); */
-/*           cache[(*cache_i)++] = (cache_item) { type, result }; */
-/*           return result; */
-/*         } */
+          const type_t *result = type;
+          if (argv_0 != type->argv[0] || argv_1 == type->argv[1])
+            result = lambda_type(induce, argv_0, argv_1);
+          cache[(*cache_i)++] = (cache_item) { type, result };
+          return result;
+        }
 
-/*         case MU_VECTOR_CORE: */
-/*         { */
-/*           const type_t *argv_0 = instantiate_single_type(induce, type->argv[0], scheme, target_scheme, cache, cache_i); */
-/*           const type_t *result = type; */
-/*           if (argv_0 != type->argv[0]) */
-/*             result = vector_type(induce, argv_0); */
-/*           cache[(*cache_i)++] = (cache_item) { type, result }; */
-/*           return result; */
-/*         } */
-/*       } */
-/*       break; */
+        case MU_VECTOR_CORE:
+        {
+          const type_t *argv_0 = instantiate_single_type(induce, type->argv[0], scheme, target_scheme, cache, cache_i);
+          const type_t *result = type;
+          if (argv_0 != type->argv[0])
+            result = vector_type(induce, argv_0);
+          cache[(*cache_i)++] = (cache_item) { type, result };
+          return result;
+        }
+      }
+      break;
 
-/*     case RECORD_TYPE: */
-/*     { */
-/*       type_t *mut; */
-/*       if ((mut = simple_record_type_allocate(induce, type->argc)) == NULL) */
-/*         return NULL; */
+    case RECORD_TYPE:
+    {
+      type_t *mut;
+      if ((mut = simple_record_type_allocate(induce, type->argc)) == NULL)
+        return NULL;
 
-/*       _Bool is_same = 1; */
-/*       for (size_t i = 0; i < type->argc; i++) { */
-/*         mut->schema[i].name = type->schema[i].name; */
-/*         mut->schema[i].type = instantiate_single_type(induce, type->schema[i].type, scheme, target_scheme, cache, cache_i); */
-/*         if (mut->schema[i].type != type->schema[i].type) */
-/*           is_same = 0; */
-/*       } */
+      _Bool is_same = 1;
+      for (size_t i = 0; i < type->argc; i++) {
+        mut->schema[i].name = type->schema[i].name;
+        mut->schema[i].type = instantiate_single_type(induce, type->schema[i].type, scheme, target_scheme, cache, cache_i);
+        if (mut->schema[i].type != type->schema[i].type)
+          is_same = 0;
+      }
 
-/*       const type_t *result = type; */
-/*       if (!is_same) */
-/*         result = simple_record_type_activate(mut); */
-/*       cache[(*cache_i)++] = (cache_item) { type, result }; */
-/*       return result; */
-/*     } */
+      const type_t *result = type;
+      if (!is_same)
+        result = simple_record_type_activate(mut);
+      cache[(*cache_i)++] = (cache_item) { type, result };
+      return result;
+    }
 
-/*     case VARIABLE_TYPE: */
-/*     { */
-/*       const type_t *newvar; */
-/*       if ((newvar = variable_type(induce, target_scheme)) == NULL) */
-/*         return NULL; */
-/*       cache[(*cache_i)++] = (cache_item) { type, newvar }; */
+    case VARIABLE_TYPE:
+    {
+      if (type->polymorphic_to != scheme)
+        return type;
 
-/*       for (size_t i = 0; i < induce->sub_length; i++) { */
-/*         const induce_sub_t sub = induce->sub_data[i]; */
-/*         if (sub.lower == type) */
-/*           append(induce, newvar, instantiate_single_type(induce, sub.upper, scheme, target_scheme, cache, cache_i)); */
-/*         if (sub.upper == type) */
-/*           append(induce, instantiate_single_type(induce, sub.lower, scheme, target_scheme, cache, cache_i), newvar); */
-/*       } */
+      const type_t *newvar;
+      if ((newvar = variable_type(induce, target_scheme)) == NULL)
+        return NULL;
+      cache[(*cache_i)++] = (cache_item) { type, newvar };
 
-/*       return newvar; */
-/*     } */
+      for (size_t i = 0; i < induce->sub_length; i++) {
+        const induce_sub_t sub = induce->sub_data[i];
+        if (sub.lower == type)
+          append(induce, newvar, instantiate_single_type(induce, sub.upper, scheme, target_scheme, cache, cache_i));
+        if (sub.upper == type)
+          append(induce, instantiate_single_type(induce, sub.lower, scheme, target_scheme, cache, cache_i), newvar);
+      }
 
-/*     case SCHEME_TYPE: */
-/*       fprintf(stderr, "Unsupported higher rank polymorphism\n"); */
-/*       abort(); */
-/*   } */
-/* } */
+      return newvar;
+    }
 
-/* const type_t *instantiate_scheme( */
-/*     induce_t *induce, const type_t *type, const mu_node_t *target_scheme */
-/* ) { */
-/*   assert(type->kind == SCHEME_TYPE); */
-/*   cache_item cache[100] = {0}; */
-/*   size_t i = 0; */
-/*   return instantiate_single_type(induce, type->matter, type->highest_scheme, target_scheme, cache, &i); */
-/* } */
+    case SCHEME_TYPE:
+      fprintf(stderr, "Unsupported higher rank polymorphism\n");
+      abort();
+  }
+}
+
+const type_t *instantiate_scheme(
+    induce_t *induce, const type_t *type, open_scheme_t *target_scheme
+) {
+  assert(type->kind == SCHEME_TYPE);
+  cache_item cache[100] = {0};
+  size_t i = 0;
+  return instantiate_single_type(induce, type->matter, type, target_scheme, cache, &i);
+}
 
 void mark_type(induce_t *induce, const type_t *type, _Bool negative, size_t rank) {
   switch (type->kind) {
@@ -389,7 +395,6 @@ const type_t *scheme_type(induce_t *induce, const type_t *matter, open_scheme_t 
   type_t *result;
   if ((result = malloc(sizeof(type_t))) == NULL)
     return NULL;
-  /* *result = (type_t) { .kind = SCHEME_TYPE, .matter = matter, .highest_scheme = scheme }; */
   *result = (type_t) { .kind = SCHEME_TYPE, .matter = matter, };
   return result;
 }
@@ -736,8 +741,8 @@ __attribute__((nonnull)) static const type_t *name_expr_induce(
     return type;
 
   // Instantiate the polymorphic type
-  return type->matter;
-  /* return instantiate_scheme(induce, type, scheme); */
+  /* return type->matter; */
+  return instantiate_scheme(induce, type, scheme);
 }
 
 __attribute__((nonnull)) static const type_t *record_expr_induce(
@@ -839,34 +844,39 @@ __attribute__((nonnull, pure)) static const type_t *define_stmt_induce(
   assert(scheme->node == &stmt->as_node);
 
   const type_t *expr_type = induce_reveal(induce, &stmt->expr->as_node);
+  const type_t *result;
+  if ((result = scheme_type(induce, expr_type, scheme)) == NULL)
+    return NULL;
 
   mark_type(induce, expr_type, 0, scheme->rank);
 
   const type_t *polymorphic = NULL;
-  const type_t *monomorphic = NULL;
 
   const type_t *type = scheme->link;
   while (type != NULL) {
+    assert(type->rank == scheme->rank);
+
     const type_t *next = type->next;
 
     /* Does a type have to be both positively reachable and negatively reachable
      * from the type of the defined expr to be polymorphic? */
     /* What is a polymorphic type polymorphic to? Just this type scheme? Or all
      * type schemes above this? Or all type scheme below this? */
-    if (type->positively_reachable && type->negatively_reachable) {
+    /* if (type->positively_reachable && type->negatively_reachable) { */
+    if (type->positively_reachable || type->negatively_reachable) {
       ((type_t *) type)->next = polymorphic;
       polymorphic = type;
+      ((type_t *) type)->polymorphic_to = result;
+      ((type_t *) type)->rank = 0;
     } else {
-      ((type_t *) type)->next = monomorphic;
-      monomorphic = type;
+      ((type_t *) type)->next = scheme->parent->link;
+      scheme->parent->link = type;
+      ((type_t *) type)->rank--;
     }
 
     type = next;
   }
 
-  const type_t *result;
-  if ((result = scheme_type(induce, expr_type, scheme)) == NULL)
-    return NULL;
   return result;
 }
 

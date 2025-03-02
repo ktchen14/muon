@@ -58,12 +58,13 @@ struct type_t {
 
     // VARIABLE_TYPE
     struct {
+      const type_t *next;
+
       // Used to generate a name
       size_t number;
 
       size_t rank;
-
-      const type_t *next;
+      const type_t *polymorphic_to;
 
       _Bool positively_reachable;
       _Bool negatively_reachable;
@@ -72,7 +73,6 @@ struct type_t {
     // SCHEME_TYPE
     struct {
       const type_t *matter;
-      const mu_node_t *highest_scope;
     };
   };
 };
