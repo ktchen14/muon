@@ -900,8 +900,8 @@ __attribute__((nonnull, pure)) static const type_t *define_stmt_induce(
      * from the type of the defined expr to be polymorphic? */
     /* What is a polymorphic type polymorphic to? Just this type scheme? Or all
      * type schemes above this? Or all type scheme below this? */
-    /* if (type->positively_reachable && type->negatively_reachable) { */
-    if (type->positively_reachable || type->negatively_reachable) {
+    if (type->positively_reachable && type->negatively_reachable) {
+    /* if (type->positively_reachable || type->negatively_reachable) { */
       ((type_t *) type)->next = polymorphic;
       polymorphic = type;
       ((type_t *) type)->rank = 0;
