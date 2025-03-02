@@ -553,7 +553,7 @@ const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
     while ((next = detect_at(detect, node, node_cursor(node)->i++)) != NULL) {
       node = node_continue(node, next);
 
-      if (node->kind != MU_DEFINE_STMT)
+      if (node->kind != MU_DEFINE_STMT_NODE)
         continue;
 
       scheme = open_scheme(scheme, node);
@@ -564,7 +564,7 @@ const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
     if ((type = node_induce(node, induce, scheme)) == NULL)
       return NULL;
 
-    if (node->kind == MU_DEFINE_STMT) {
+    if (node->kind == MU_DEFINE_STMT_NODE) {
       open_scheme_t *parent = scheme->parent;
       free(scheme);
       scheme = parent;

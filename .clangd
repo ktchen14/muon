@@ -4,7 +4,7 @@ CompileFlags:
 Diagnostics:
   Includes:
     IgnoreHeader: common\.h
-  MissingIncludes: Strict
+  # MissingIncludes: Strict
   UnusedIncludes: Strict
   Suppress:
   - unused-function
