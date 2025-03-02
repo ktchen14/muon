@@ -2,4 +2,5 @@ define h = (lambda x = x) true
 
 define id = lambda x = x
 
-define x = 1
+define x = id 1
+define y = id true

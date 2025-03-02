@@ -13,6 +13,32 @@
 
 _Thread_local induce_t *debug_induce;
 
+void debug_variable_type_name(const type_t *type) {
+  assert(type->kind == VARIABLE_TYPE);
+
+  static _Atomic size_t next_number = 0;
+  static const char *alphabet[] = {
+    "α", "β", "γ", "δ", "ε", "ζ", "η", "θ", "ι", "κ", "μ", "ν", "ξ", "ο", "π",
+    "ρ", "σ", "τ", "υ", "φ", "χ", "ψ", "ω" };
+  static size_t alphabet_length = sizeof(alphabet) / sizeof(alphabet[0]);
+
+  // Assign the variable type a number
+  if (type->number == 0)
+    ((type_t *) type)->number = ++next_number;
+
+  char buffer[256];
+
+  // Generate a name
+  char *name = buffer + sizeof(buffer);
+  *--name = '\0';
+  for (size_t n = type->number; n-- != 0; n /= alphabet_length) {
+    const char *c = alphabet[n % alphabet_length];
+    memcpy(name -= strlen(c), c, strlen(c));
+  }
+
+  fprintf(stderr, "%s", name);
+}
+
 void debug_type(const type_t *type) {
   extern _Thread_local _Bool debug_negate;
 
@@ -99,8 +125,6 @@ void debug_type(const type_t *type) {
         if (already_printed)
           fprintf(stderr, " ⊓ ");
         fprintf(stderr, "%s", name);
-        if (type->polymorphic_to != NULL)
-          fprintf(stderr, "*");
       } else {
         for (size_t i = 0; i < debug_induce->sub_length; i++) {
           induce_sub_t sub = debug_induce->sub_data[i];
@@ -117,13 +141,20 @@ void debug_type(const type_t *type) {
         if (already_printed)
           fprintf(stderr, " ⊔ ");
         fprintf(stderr, "%s", name);
-        if (type->polymorphic_to != NULL)
-          fprintf(stderr, "*");
       }
       break;
 
     case SCHEME_TYPE:
-      fprintf(stderr, "∀ ");
+      if (type->polymorphic_length > 0) {
+        fprintf(stderr, "∀ (");
+        for (size_t i = 0; i < type->polymorphic_length; i++) {
+          if (i > 0)
+            fprintf(stderr, ", ");
+          debug_variable_type_name(type->polymorphic[i]);
+        }
+        fprintf(stderr, ") ");
+      }
+
       debug_type(type->matter);
       break;
   }
@@ -391,11 +422,22 @@ open_scheme_t *open_scheme(open_scheme_t *parent, const mu_node_t *node) {
   return result;
 }
 
-const type_t *scheme_type(induce_t *induce, const type_t *matter, open_scheme_t *scheme) {
-  type_t *result;
-  if ((result = malloc(sizeof(type_t))) == NULL)
+const type_t *scheme_type(induce_t *induce, const type_t *matter, size_t polymorphic_length, const type_t *head) {
+  size_t size;
+  if (rare((size = struct_size(type_t, polymorphic, polymorphic_length)) == 0))
     return NULL;
-  *result = (type_t) { .kind = SCHEME_TYPE, .matter = matter, };
+
+  type_t *result;
+  if ((result = malloc(size)) == NULL)
+    return NULL;
+  *result = (type_t) {
+    .kind = SCHEME_TYPE, .matter = matter, .polymorphic_length = polymorphic_length
+  };
+
+  size_t i = 0;
+  for (const type_t *type = head; type != NULL; type = type->next)
+    result->polymorphic[i++] = type;
+
   return result;
 }
 
@@ -704,23 +746,27 @@ __attribute__((nonnull)) static const type_t *invoke_expr_induce(
   const type_t *lambda = induce_reveal(induce, &expr->lambda->as_node);
   const type_t *matter = induce_reveal(induce, &expr->matter->as_node);
 
+  if (restrict_type(induce, matter, lambda->argv[0]) == NULL)
+    return NULL;
+  return lambda->argv[1];
+
   /* if (lambda->kind == SIMPLE_TYPE && lambda->core == induce->lambda_core) { */
   /*   if (restrict_type(induce, matter, lambda->argv[0]) == NULL) */
   /*     return NULL; */
   /*   return lambda->argv[1]; */
   /* } */
 
-  const type_t *result;
-  if ((result = variable_type(induce, scheme)) == NULL)
-    return NULL;
+  /* const type_t *result; */
+  /* if ((result = variable_type(induce, scheme)) == NULL) */
+  /*   return NULL; */
 
-  const type_t *lambda_ty;
-  if ((lambda_ty = lambda_type(induce, matter, result)) == NULL)
-    return NULL;
+  /* const type_t *lambda_ty; */
+  /* if ((lambda_ty = lambda_type(induce, matter, result)) == NULL) */
+  /*   return NULL; */
 
-  if (restrict_type(induce, lambda, lambda_ty) == NULL)
-    return NULL;
-  return result;
+  /* if (restrict_type(induce, lambda, lambda_ty) == NULL) */
+  /*   return NULL; */
+  /* return result; */
 }
 
 __attribute__((nonnull)) static const type_t *lambda_expr_induce(
@@ -741,7 +787,6 @@ __attribute__((nonnull)) static const type_t *name_expr_induce(
     return type;
 
   // Instantiate the polymorphic type
-  /* return type->matter; */
   return instantiate_scheme(induce, type, scheme);
 }
 
@@ -844,12 +889,9 @@ __attribute__((nonnull, pure)) static const type_t *define_stmt_induce(
   assert(scheme->node == &stmt->as_node);
 
   const type_t *expr_type = induce_reveal(induce, &stmt->expr->as_node);
-  const type_t *result;
-  if ((result = scheme_type(induce, expr_type, scheme)) == NULL)
-    return NULL;
-
   mark_type(induce, expr_type, 0, scheme->rank);
 
+  size_t polymorphic_length = 0;
   const type_t *polymorphic = NULL;
 
   const type_t *type = scheme->link;
@@ -866,8 +908,8 @@ __attribute__((nonnull, pure)) static const type_t *define_stmt_induce(
     if (type->positively_reachable || type->negatively_reachable) {
       ((type_t *) type)->next = polymorphic;
       polymorphic = type;
-      ((type_t *) type)->polymorphic_to = result;
       ((type_t *) type)->rank = 0;
+      polymorphic_length++;
     } else {
       ((type_t *) type)->next = scheme->parent->link;
       scheme->parent->link = type;
@@ -876,6 +918,13 @@ __attribute__((nonnull, pure)) static const type_t *define_stmt_induce(
 
     type = next;
   }
+
+  const type_t *result;
+  if ((result = scheme_type(induce, expr_type, polymorphic_length, polymorphic)) == NULL)
+    return NULL;
+
+  for (const type_t *type = polymorphic; type != NULL; type = type->next)
+    ((type_t *) type)->polymorphic_to = result;
 
   return result;
 }

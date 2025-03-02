@@ -73,6 +73,8 @@ struct type_t {
     // SCHEME_TYPE
     struct {
       const type_t *matter;
+      size_t polymorphic_length;
+      const type_t *polymorphic[];
     };
   };
 };

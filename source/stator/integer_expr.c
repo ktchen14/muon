@@ -25,6 +25,10 @@ const mu_integer_expr_t *mu_integer_expr(mu_engine_t *engine, uint64_t data) {
 
 void mu_integer_expr_debug(const mu_integer_expr_t *expr) {
   fprintf(stderr, "%*s", debug_indent, "");
-  fprintf(stderr, PRIsKIND "#" PRIuID "(data = %" PRIu64 ")\n",
-    DEBUG_KIND("IntegerExpr"), DEBUG_ID(expr->as_stator.id), expr->data);
+  fprintf(stderr, PRIsKIND "#" PRIuID "(data = %" PRIu64 ")",
+    DEBUG_KIND("IntegerExpr"),
+    DEBUG_ID(expr->as_stator.id),
+    expr->data);
+  debug_node_type(&expr->as_node);
+  putc('\n', stderr);
 }
