@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <uchar.h>
+/* #include <uchar.h> */
 #include <wchar.h>
 
 size_t c8rtomb(char *restrict s, mu_char8_t c8, mbstate_t *restrict ps);
@@ -62,16 +62,18 @@ void mu_name_debug(const mu_name_t *name) {
   if (debug_colorize)
     fputs("\e[0;32m", stderr);
 
-  for (size_t i = 0; i < name->length; i++) {
-    mu_char8_t c = name->text[i];
+  fprintf(stderr, "%s", name->text);
 
-    size_t size;
-    if ((size = c8rtomb(conversion, c, &cs)) == 0)
-      continue;
-    assert(size != (size_t) -1);
+  /* for (size_t i = 0; i < name->length; i++) { */
+  /*   mu_char8_t c = name->text[i]; */
 
-    fwrite(conversion, size, 1, stderr);
-  }
+  /*   size_t size; */
+  /*   if ((size = c8rtomb(conversion, c, &cs)) == 0) */
+  /*     continue; */
+  /*   assert(size != (size_t) -1); */
+
+  /*   fwrite(conversion, size, 1, stderr); */
+  /* } */
 
   if (debug_colorize)
     fputs("\e[0m", stderr);
