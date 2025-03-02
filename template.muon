@@ -1,6 +1,6 @@
-define h = (lambda x = x) true
-
 define id = lambda x = x
+
+define h = (foo: id 1, bar: true).bar
 
 define x = id 1
 define y = id true

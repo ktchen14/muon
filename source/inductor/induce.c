@@ -968,8 +968,27 @@ __attribute__((nonnull, pure)) static const type_t *define_stmt_induce(
      * from the type of the defined expr to be polymorphic? */
     /* What is a polymorphic type polymorphic to? Just this type scheme? Or all
      * type schemes above this? Or all type scheme below this? */
-    /* if (type->positively_reachable && type->negatively_reachable) { */
-    if (type->positively_reachable || type->negatively_reachable) {
+
+    /*
+     * Not sure if this is true, but here are some thoughts:
+     *
+     * A variable type must be constrained somehow to be polymorphically useful.
+     * If we have:
+     *   foo :: a
+     * Then, while theoretically foo is polymorphic, it's not any more useful
+     * than:
+     *   foo :: ⊥
+     *
+     * Similarly, this function:
+     *   bar :: a -> ()
+     * While theoretically polymorphic, is no more useful than:
+     *   bar :: ⊤ -> ()
+     *
+     * A variable can be constrained by either appearing both positively and
+     * negatively, being constrained by bounds, or (in the future) being
+     * constrained by kind. For now, just do this:
+     */
+    if (type->positively_reachable && type->negatively_reachable) {
       ((type_t *) type)->next = polymorphic;
       polymorphic = type;
       ((type_t *) type)->rank = 0;
