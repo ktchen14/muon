@@ -343,6 +343,10 @@ static induce_t *restrict_type(
     induce_t *induce, const type_t *a, const type_t *b)
   __attribute__((nonnull));
 
+static induce_t *equate_type(
+    induce_t *induce, const type_t *a, const type_t *b)
+  __attribute__((nonnull));
+
 /// Induce the type of the abstract @a node with the @a induce engine
 static const type_t *node_induce(const mu_node_t *node, induce_t *induce, const mu_node_t *scope)
   __attribute__((nonnull));
@@ -490,7 +494,6 @@ const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
 static induce_t *restrict_type(
     induce_t *induce, const type_t *a, const type_t *b) {
   assert(a->kind != SCHEME_TYPE && b->kind != SCHEME_TYPE);
-  fprintf(stderr, "restrict type %p(%i) to %p(%i)\n", a, a->kind, b, b->kind);
 
   if (a == b)
     return induce;
@@ -575,6 +578,83 @@ static induce_t *restrict_type(
 
   append(induce, a, b);
   return induce;
+}
+
+static induce_t *equate_type(
+    induce_t *induce, const type_t *a, const type_t *b) {
+  assert(a->kind != SCHEME_TYPE && b->kind != SCHEME_TYPE);
+
+  for (; a->equi != NULL; a = a->equi);
+  for (; b->equi != NULL; b = b->equi);
+
+  if (a == b)
+    return induce;
+
+  if (a->kind == SIMPLE_TYPE && b->kind == SIMPLE_TYPE) {
+    if (a->core == induce->boolean_core && b->core == induce->boolean_core) {
+      ((type_t *) a)->equi = b;
+      return induce;
+    }
+
+    if (a->core == induce->integer_core && b->core == induce->integer_core) {
+      ((type_t *) a)->equi = b;
+      return induce;
+    }
+
+    if (a->core == induce->lambda_core && b->core == induce->lambda_core) {
+      if (equate_type(induce, b->argv[0], a->argv[0]) == NULL)
+        return NULL;
+      if (equate_type(induce, a->argv[1], b->argv[1]) == NULL)
+        return NULL;
+      ((type_t *) a)->equi = b;
+      return induce;
+    }
+
+    if (a->core == induce->vector_core && b->core == induce->vector_core) {
+      if (equate_type(induce, b->argv[0], a->argv[0]) == NULL)
+        return NULL;
+      ((type_t *) a)->equi = b;
+      return induce;
+    }
+
+    fprintf(stderr, "Type mismatch\n");
+    abort();
+  }
+
+  if (a->kind == RECORD_TYPE && b->kind == RECORD_TYPE) {
+    if (a->argc != b->argc) {
+      fprintf(stderr, "Type mismatch between record types\n");
+      abort();
+    }
+
+    for (size_t i = 0; i < a->argc; i++) {
+      if (a->schema[i].name != b->schema[i].name) {
+        fprintf(stderr, "Type mismatch between record types\n");
+        abort();
+      }
+
+      if (equate_type(induce, a->schema[i].type, b->schema[i].type) == NULL)
+        return NULL;
+
+      ((type_t *) a)->equi = b;
+      return induce;
+    }
+  }
+
+  if (a->kind != VARIABLE_TYPE && b->kind != VARIABLE_TYPE) {
+    fprintf(stderr, "Type mismatch\n");
+    abort();
+  }
+
+  // Make sure that a concrete type is b. Note that a must be a variable type
+  // after this.
+  if (a->kind != VARIABLE_TYPE) {
+    const type_t *c = a;
+    a = b;
+    b = c;
+  }
+
+  ((type_t *) a)->equi = b;
 }
 
 static const type_t *append(
