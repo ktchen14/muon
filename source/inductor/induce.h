@@ -79,6 +79,7 @@ struct type_t {
 
       // This is the node that "owns" this variable
       const mu_node_t *scope;
+      size_t rank;
     };
 
     // SCHEME_TYPE
@@ -117,6 +118,14 @@ typedef struct {
   /* Map of each define stmt to its parent define stmt */
   const mu_node_t **define_stmt_map;
 } induce_t;
+
+typedef struct open_scheme_t open_scheme_t;
+struct open_scheme_t {
+  induce_t *induce;
+  open_scheme_t *parent;
+  size_t rank;
+  const type_t *link;
+};
 
 extern _Thread_local induce_t *debug_induce;
 

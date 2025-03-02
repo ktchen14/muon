@@ -318,6 +318,16 @@ const type_t *instantiate_scheme(
   return instantiate_single_type(induce, type->matter, type->highest_scope, target_scope, cache, &i);
 }
 
+open_scheme_t *open_scheme(open_scheme_t *parent) {
+  open_scheme_t *result;
+  if ((result = malloc(sizeof(open_scheme_t))) == NULL)
+    return NULL;
+  *result = (open_scheme_t) {
+    .induce = parent->induce, .parent = parent, .rank = parent->rank + 1,
+  };
+  return result;
+}
+
 const type_t *scheme_type(induce_t *induce, const type_t *matter, const mu_node_t *scope) {
   type_t *result;
   if ((result = malloc(sizeof(type_t))) == NULL)
@@ -340,10 +350,6 @@ const type_t *scheme_type(induce_t *induce, const type_t *matter, const mu_node_
  * @param b the type to restrict to a supertype of @a a
  */
 static induce_t *restrict_type(
-    induce_t *induce, const type_t *a, const type_t *b)
-  __attribute__((nonnull));
-
-static induce_t *equate_type(
     induce_t *induce, const type_t *a, const type_t *b)
   __attribute__((nonnull));
 
@@ -430,54 +436,15 @@ induce_t *induce_initialize(
   return induce;
 }
 
-/// Make a map of each define stmt to its parent define stmt
-void map_defines(induce_t *induce, const mu_node_t *root) {
-  const mu_node_t *node = root;
-
-  for (size_t i = 0; i < induce->engine->node_number; i++)
-    induce->define_stmt_map[i] = root;
-  induce->define_stmt_map[root->as_stator.id] = NULL;
-
-  do {
-    const mu_node_t *next;
-    while ((next = node_at(node, node_cursor(node)->i++)) != NULL)
-      node = node_continue(node, next);
-
-    if (node->kind != MU_DEFINE_STMT)
-      continue;
-
-    const mu_node_t *anterior = node;
-    while ((anterior = node_cursor(anterior)->anterior) != NULL) {
-      if (anterior->kind != MU_DEFINE_STMT)
-        continue;
-      induce->define_stmt_map[node->as_stator.id] = anterior;
-      break;
-    }
-  } while ((node = node_return(node)) != NULL);
-}
-
-/// Get the parent define of a define stmt
-static inline const mu_node_t *get_parent_define(const induce_t *induce, const mu_node_t *node) {
-  return induce->define_stmt_map[node->as_stator.id];
-}
-
 const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
   assert(root->as_stator.id < induce->node_length);
 
-  if (induce->node_to_type_actual[root->as_stator.id] != NULL)
-    return (const mu_type_t *) induce->node_to_type_actual[root->as_stator.id];
-
-  map_defines(induce, root);
   const mu_node_t *scope = root;
 
   const mu_node_t *node = root, *next;
   do {
     const detect_result_t *detect = induce->detect;
     while ((next = detect_at(detect, node, node_cursor(node)->i++)) != NULL) {
-      assert(next->as_stator.id < induce->node_length);
-
-      if (induce->node_to_type_actual[next->as_stator.id] != NULL)
-        continue;
       node = node_continue(node, next);
     }
 
