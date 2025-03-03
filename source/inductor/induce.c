@@ -527,15 +527,7 @@ __attribute__((nonnull)) static const type_t *boolean_expr_induce(
 
 __attribute__((nonnull)) static const type_t *coerce_expr_induce(
     const mu_coerce_expr_t *expr, induce_t *induce, open_scheme_t *scheme) {
-  const type_t *matter = induce_reveal(induce, &expr->matter->as_node);
-
-  const type_t *result;
-  if ((result = variable_type(induce, scheme)) == NULL)
-    return NULL;
-
-  if (restrict_type(induce, matter, result) == NULL)
-    return NULL;
-  return result;
+  assert(0);
 }
 
 __attribute__((nonnull)) static const type_t *integer_expr_induce(
