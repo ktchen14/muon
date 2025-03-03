@@ -29,7 +29,8 @@ const mu_access_expr_t *mu_access_expr(
 
 void mu_access_expr_debug(const mu_access_expr_t *expr) {
   fprintf(stderr, "%*s", debug_indent, "");
-  fprintf(stderr, "AccessExpr#%zu(name = ", expr->as_stator.id);
+  fprintf(stderr, PRIsKIND "#" PRIuID "(name = ",
+      DEBUG_KIND("AccessExpr"), DEBUG_ID(expr->as_stator.id));
   mu_name_debug(expr->name);
   putc(')', stderr);
   debug_node_type(&expr->as_node);

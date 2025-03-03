@@ -56,7 +56,8 @@ const mu_record_expr_t *record_expr_activate(mu_record_expr_t *expr) {
 
 void mu_record_expr_debug(const mu_record_expr_t *expr) {
   fprintf(stderr, "%*s", debug_indent, "");
-  fprintf(stderr, "Record Expr #%zu:", expr->as_stator.id);
+  fprintf(stderr, PRIsKIND "#" PRIuID,
+      DEBUG_KIND("RecordExpr"), DEBUG_ID(expr->as_stator.id));
   debug_node_type(&expr->as_node);
   putc('\n', stderr);
 
