@@ -70,4 +70,25 @@ struct type_t {
   };
 };
 
+typedef struct induce_t induce_t;
+
+const type_t *boolean_type(induce_t *induce);
+const type_t *integer_type(induce_t *induce);
+
+const type_t *lambda_type(induce_t *induce, const type_t *argument, const type_t *output);
+
+const type_t *record_type(
+    induce_t *induce, size_t argc, const type_member_t argv[static argc]);
+
+type_t *record_type_allocate(induce_t *induce, size_t argc);
+
+const type_t *record_type_activate(type_t *type);
+
+const type_t *vector_type(induce_t *induce, const type_t *matter);
+const type_t *join_type(induce_t *induce, size_t argc, const type_t *argv[]);
+type_t *join_type_allocate(induce_t *induce, size_t argc);
+const type_t *join_type_activate(type_t *type);
+
+void debug_type(const type_t *type);
+
 #endif /* MU_INDUCTOR_TYPE_I */

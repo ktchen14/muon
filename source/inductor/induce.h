@@ -18,7 +18,8 @@ typedef struct {
   const type_t *upper;
 } induce_sub_t;
 
-typedef struct {
+typedef struct induce_t induce_t;
+struct induce_t {
   mu_engine_t *engine;
   mu_status_t *status;
 
@@ -40,7 +41,7 @@ typedef struct {
 
   /* Map of each define stmt to its parent define stmt */
   const mu_node_t **define_stmt_map;
-} induce_t;
+};
 
 typedef struct open_scheme_t open_scheme_t;
 struct open_scheme_t {
