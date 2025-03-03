@@ -218,6 +218,67 @@ void mark_type(induce_t *induce, const type_t *type, _Bool negative, size_t rank
   }
 }
 
+void mark_type_from_anywhere(induce_t *induce, const type_t *type, _Bool negative, size_t rank) {
+  switch (type->kind) {
+    case SIMPLE_TYPE:
+      switch (type->core->kind) {
+        case MU_BOOLEAN_CORE: break;
+        case MU_INTEGER_CORE: break;
+
+        case MU_LAMBDA_CORE:
+          mark_type_from_anywhere(induce, type->argv[0], !negative, rank);
+          mark_type_from_anywhere(induce, type->argv[1], negative, rank);
+          break;
+
+        case MU_VECTOR_CORE:
+          mark_type_from_anywhere(induce, type->argv[0], negative, rank);
+          break;
+      }
+      break;
+
+    case RECORD_TYPE:
+      for (size_t i = 0; i < type->argc; i++)
+        mark_type_from_anywhere(induce, type->schema[i].type, negative, rank);
+      break;
+
+    case VARIABLE_TYPE:
+      if (type->rank < rank)
+        return;
+
+      if (!negative) {
+        ((type_t *) type)->positively_reachable_from_anywhere = 1;
+
+        for (size_t i = 0; i < induce->sub_length; i++) {
+          induce_sub_t sub = induce->sub_data[i];
+          if (sub.upper != type)
+            continue;
+          mark_type_from_anywhere(induce, sub.lower, negative, rank);
+        }
+      } else {
+        ((type_t *) type)->negatively_reachable_from_anywhere = 1;
+
+        for (size_t i = 0; i < induce->sub_length; i++) {
+          induce_sub_t sub = induce->sub_data[i];
+          if (sub.lower != type)
+            continue;
+          mark_type_from_anywhere(induce, sub.upper, negative, rank);
+        }
+      }
+      break;
+
+    case SCHEME_TYPE:
+      abort();
+
+    case JOIN_TYPE:
+      if (negative)
+        return;
+
+      for (size_t i = 0; i < type->join_argc; i++)
+        mark_type_from_anywhere(induce, type->join_argv[i], negative, rank);
+      break;
+  }
+}
+
 open_scheme_t *open_scheme(open_scheme_t *parent, const mu_node_t *node) {
   open_scheme_t *result;
   if ((result = malloc(sizeof(open_scheme_t))) == NULL)
@@ -517,6 +578,8 @@ __attribute__((nonnull)) static const type_t *access_expr_induce(
   const type_t *matter_type = induce_reveal(induce, &expr->matter->as_node);
   if (restrict_type(induce, matter_type, record_ty) == NULL)
     return NULL;
+
+  mark_type_from_anywhere(induce, result, 0, scheme->rank);
   return result;
 }
 
@@ -556,6 +619,8 @@ __attribute__((nonnull)) static const type_t *invoke_expr_induce(
 
   if (restrict_type(induce, lambda, lambda_ty) == NULL)
     return NULL;
+
+  mark_type_from_anywhere(induce, result, 0, scheme->rank);
   return result;
 }
 
@@ -563,21 +628,31 @@ __attribute__((nonnull)) static const type_t *lambda_expr_induce(
     const mu_lambda_expr_t *expr, induce_t *induce, open_scheme_t *scheme) {
   const type_t *argument = induce_reveal(induce, &expr->argument->as_node);
   const type_t *output = induce_reveal(induce, &expr->matter->as_node);
-  return lambda_type(induce, argument, output);
+
+  const type_t *result = lambda_type(induce, argument, output);
+  mark_type_from_anywhere(induce, result, 0, scheme->rank);
+  return result;
 }
 
 __attribute__((nonnull)) static const type_t *name_expr_induce(
     const mu_name_expr_t *expr, induce_t *induce, open_scheme_t *scheme) {
   const mu_node_t *target;
-  if ((target = detect_evince(induce->detect, &expr->as_node)) == NULL)
-    return variable_type(induce, scheme);
+  if ((target = detect_evince(induce->detect, &expr->as_node)) == NULL) {
+    const type_t *result = variable_type(induce, scheme);
+    mark_type_from_anywhere(induce, result, 0, scheme->rank);
+    return result;
+  }
 
-  const type_t *type = induce_reveal(induce, target);
-  if (type->kind != SCHEME_TYPE)
-    return type;
+  const type_t *result = induce_reveal(induce, target);
+  if (result->kind != SCHEME_TYPE) {
+    mark_type_from_anywhere(induce, result, 0, scheme->rank);
+    return result;
+  }
 
   // Instantiate the polymorphic type
-  return instantiate_scheme(induce, type, scheme);
+  result = instantiate_scheme(induce, result, scheme);
+  mark_type_from_anywhere(induce, result, 0, scheme->rank);
+  return result;
 }
 
 __attribute__((nonnull)) static const type_t *record_expr_induce(
@@ -600,12 +675,17 @@ __attribute__((nonnull)) static const type_t *record_expr_induce(
   qsort(&allocation->argv[j], expr->argc - j, sizeof(mu_expr_member_t),
       type_member_cmp);
   // TODO: check for duplicates
-  return record_type_activate(allocation);
+
+  const type_t *result = record_type_activate(allocation);
+  mark_type_from_anywhere(induce, result, 0, scheme->rank);
+  return result;
 }
 
 __attribute__((nonnull)) static const type_t *sequence_expr_induce(
     const mu_sequence_expr_t *expr, induce_t *induce, open_scheme_t *scheme) {
-  return induce_reveal(induce, &expr->output->as_node);
+  const type_t *result = induce_reveal(induce, &expr->output->as_node);
+  mark_type_from_anywhere(induce, result, 0, scheme->rank);
+  return result;
 }
 
 __attribute__((nonnull)) static const type_t *vector_expr_induce(
@@ -620,12 +700,16 @@ __attribute__((nonnull)) static const type_t *vector_expr_induce(
       return NULL;
   }
 
-  return vector_type(induce, matter_type);
+  const type_t *result = vector_type(induce, matter_type);
+  mark_type_from_anywhere(induce, result, 0, scheme->rank);
+  return result;
 }
 
 __attribute__((nonnull)) static const type_t *zero_expr_induce(
     const mu_zero_expr_t *expr, induce_t *induce, open_scheme_t *scheme) {
-  return variable_type(induce, scheme);
+  const type_t *result = variable_type(induce, scheme);
+  mark_type_from_anywhere(induce, result, 0, scheme->rank);
+  return result;
 }
 
 // ---------------------------------- Sign -------------------------------- {{{1
