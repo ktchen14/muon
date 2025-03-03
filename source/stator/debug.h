@@ -2,7 +2,6 @@
 #define MU_STATOR_DEBUG_I
 
 #include "node.h"
-#include "type.h"
 
 #include "../inductor/induce.h"
 

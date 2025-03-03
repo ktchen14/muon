@@ -10,7 +10,6 @@ target_sources(muon PRIVATE
   stator/debug.c
   stator/name.c
   stator/node.c
-  stator/type.c
 
   stator/access_expr.c
   stator/boolean_expr.c
@@ -35,13 +34,6 @@ target_sources(muon PRIVATE
   stator/type_stmt.c
 
   stator/variable_view.c
-
-  stator/boolean_type.c
-  stator/integer_type.c
-  stator/lambda_type.c
-  stator/record_type.c
-  stator/variable_type.c
-  stator/vector_type.c
 
   $<TARGET_OBJECTS:reader>
 )

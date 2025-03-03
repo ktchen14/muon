@@ -4,9 +4,7 @@
 #include <muon/stator/access_expr.h>  // IWYU pragma: export
 
 #include "abstract_node.h"
-#include "abstract_type.h"
 
-#include <assert.h>
 #include <stddef.h>
 
 __attribute__((nonnull, pure))

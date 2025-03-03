@@ -8,6 +8,7 @@
 
 #include <assert.h>
 #include <stddef.h>
+#include <string.h>
 
 typedef enum {
   MU_BOOLEAN_CORE,
@@ -34,6 +35,14 @@ typedef struct {
   const mu_name_t *name;
   const type_t *type;
 } type_member_t;
+
+/// Compare the type member @a a to the type member @a b
+__attribute__((nonnull, pure))
+static inline int type_member_cmp(const void *a, const void *b) {
+  const type_member_t *ra = a, *rb = b;
+  assert(ra->name != NULL && rb->name != NULL);
+  return name_cmp(ra->name, rb->name);
+}
 
 struct type_t {
   enum {

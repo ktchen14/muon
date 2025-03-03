@@ -4,8 +4,6 @@
 #include <muon/stator/zero_expr.h>  // IWYU pragma: export
 
 #include "abstract_node.h"
-#include "abstract_type.h"
-#include "variable_type.h"
 
 #include <stddef.h>
 
