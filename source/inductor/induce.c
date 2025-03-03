@@ -396,32 +396,28 @@ static induce_t *restrict_type(
   }
 
   if (a->kind == SIMPLE_TYPE && b->kind == SIMPLE_TYPE) {
-    if (a->core == induce->boolean_core && b->core == induce->boolean_core) {
-      return induce;
+    if (a->core != b->core) {
+      fprintf(stderr, "Type mismatch\n");
+      abort();
     }
 
-    if (a->core == induce->integer_core && b->core == induce->integer_core) {
-      return induce;
-    }
+    const mu_core_t *core = a->core;
 
-    if (a->core == induce->lambda_core && b->core == induce->lambda_core) {
-      if (restrict_type(induce, b->argv[0], a->argv[0]) == NULL)
+    for (size_t i = 0; i < core->argc; i++) {
+      const type_t *lower = a->argv[i], *upper = b->argv[i];
+
+      mu_variance_t variance = core->variance[i];
+      assert(variance != MU_INVARIANCE);
+      if (variance == MU_CONTRAVARIANCE) {
+        const type_t *t = lower; lower = upper; upper = t;
+      }
+
+      if (restrict_type(induce, lower, upper) == NULL)
         return NULL;
-      if (restrict_type(induce, a->argv[1], b->argv[1]) == NULL)
-        return NULL;
-      append(induce, a, b);
-      return induce;
     }
 
-    if (a->core == induce->vector_core && b->core == induce->vector_core) {
-      if (restrict_type(induce, b->argv[0], a->argv[0]) == NULL)
-        return NULL;
-      append(induce, a, b);
-      return induce;
-    }
-
-    fprintf(stderr, "Type mismatch\n");
-    abort();
+    append(induce, a, b);
+    return induce;
   }
 
   if (a->kind == RECORD_TYPE && b->kind == RECORD_TYPE) {
