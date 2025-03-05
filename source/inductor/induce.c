@@ -242,9 +242,6 @@ void mark_type_from_anywhere(induce_t *induce, const type_t *type, _Bool negativ
       break;
 
     case VARIABLE_TYPE:
-      if (type->rank < rank)
-        return;
-
       if (!negative) {
         ((type_t *) type)->positively_reachable_from_anywhere = 1;
 
@@ -277,6 +274,16 @@ void mark_type_from_anywhere(induce_t *induce, const type_t *type, _Bool negativ
         mark_type_from_anywhere(induce, type->join_argv[i], negative, rank);
       break;
   }
+}
+
+void walk_node_mark_type_from_anywhere(induce_t *induce, const mu_node_t *root) {
+  const type_t *type = induce_reveal(induce, root);
+  mark_type_from_anywhere(induce, type, 0, 0);
+
+  const mu_node_t *node;
+  size_t i = 0;
+  while ((node = node_at(root, i++)) != NULL)
+    walk_node_mark_type_from_anywhere(induce, node);
 }
 
 open_scheme_t *open_scheme(open_scheme_t *parent, const mu_node_t *node) {
@@ -578,8 +585,6 @@ __attribute__((nonnull)) static const type_t *access_expr_induce(
   const type_t *matter_type = induce_reveal(induce, &expr->matter->as_node);
   if (restrict_type(induce, matter_type, record_ty) == NULL)
     return NULL;
-
-  mark_type_from_anywhere(induce, result, 0, scheme->rank);
   return result;
 }
 
@@ -619,8 +624,6 @@ __attribute__((nonnull)) static const type_t *invoke_expr_induce(
 
   if (restrict_type(induce, lambda, lambda_ty) == NULL)
     return NULL;
-
-  mark_type_from_anywhere(induce, result, 0, scheme->rank);
   return result;
 }
 
@@ -630,7 +633,6 @@ __attribute__((nonnull)) static const type_t *lambda_expr_induce(
   const type_t *output = induce_reveal(induce, &expr->matter->as_node);
 
   const type_t *result = lambda_type(induce, argument, output);
-  mark_type_from_anywhere(induce, result, 0, scheme->rank);
   return result;
 }
 
@@ -639,19 +641,16 @@ __attribute__((nonnull)) static const type_t *name_expr_induce(
   const mu_node_t *target;
   if ((target = detect_evince(induce->detect, &expr->as_node)) == NULL) {
     const type_t *result = variable_type(induce, scheme);
-    mark_type_from_anywhere(induce, result, 0, scheme->rank);
     return result;
   }
 
   const type_t *result = induce_reveal(induce, target);
   if (result->kind != SCHEME_TYPE) {
-    mark_type_from_anywhere(induce, result, 0, scheme->rank);
     return result;
   }
 
   // Instantiate the polymorphic type
   result = instantiate_scheme(induce, result, scheme);
-  mark_type_from_anywhere(induce, result, 0, scheme->rank);
   return result;
 }
 
@@ -677,14 +676,12 @@ __attribute__((nonnull)) static const type_t *record_expr_induce(
   // TODO: check for duplicates
 
   const type_t *result = record_type_activate(allocation);
-  mark_type_from_anywhere(induce, result, 0, scheme->rank);
   return result;
 }
 
 __attribute__((nonnull)) static const type_t *sequence_expr_induce(
     const mu_sequence_expr_t *expr, induce_t *induce, open_scheme_t *scheme) {
   const type_t *result = induce_reveal(induce, &expr->output->as_node);
-  mark_type_from_anywhere(induce, result, 0, scheme->rank);
   return result;
 }
 
@@ -701,14 +698,12 @@ __attribute__((nonnull)) static const type_t *vector_expr_induce(
   }
 
   const type_t *result = vector_type(induce, matter_type);
-  mark_type_from_anywhere(induce, result, 0, scheme->rank);
   return result;
 }
 
 __attribute__((nonnull)) static const type_t *zero_expr_induce(
     const mu_zero_expr_t *expr, induce_t *induce, open_scheme_t *scheme) {
   const type_t *result = variable_type(induce, scheme);
-  mark_type_from_anywhere(induce, result, 0, scheme->rank);
   return result;
 }
 
@@ -764,6 +759,7 @@ __attribute__((nonnull, pure)) static const type_t *define_stmt_induce(
 
   const type_t *expr_type = induce_reveal(induce, &stmt->expr->as_node);
   mark_type(induce, expr_type, 0, scheme->rank);
+  walk_node_mark_type_from_anywhere(induce, &stmt->expr->as_node);
 
   size_t polymorphic_length = 0;
   const type_t *polymorphic = NULL;

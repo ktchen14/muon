@@ -179,10 +179,6 @@ void debug_type(const type_t *type) {
         if (already_printed)
           fprintf(stderr, " ⊓ ");
         debug_variable_type_name(type);
-        /* if (type->positively_reachable_from_anywhere) */
-        /*   fprintf(stderr, "+"); */
-        /* if (type->negatively_reachable_from_anywhere) */
-        /*   fprintf(stderr, "-"); */
       } else {
         for (size_t i = 0; i < debug_induce->sub_length; i++) {
           induce_sub_t sub = debug_induce->sub_data[i];
@@ -203,10 +199,6 @@ void debug_type(const type_t *type) {
         if (already_printed)
           fprintf(stderr, " ⊔ ");
         debug_variable_type_name(type);
-        /* if (type->positively_reachable_from_anywhere) */
-        /*   fprintf(stderr, "+"); */
-        /* if (type->negatively_reachable_from_anywhere) */
-        /*   fprintf(stderr, "-"); */
       }
       break;
 
@@ -261,6 +253,10 @@ static void debug_variable_type_name(const type_t *type) {
   }
 
   fprintf(stderr, "%s", name);
+  if (type->positively_reachable_from_anywhere)
+    fprintf(stderr, "+");
+  if (type->negatively_reachable_from_anywhere)
+    fprintf(stderr, "-");
 }
 
 void debug_just_type(const type_t *type) {
