@@ -166,13 +166,11 @@ void debug_type(const type_t *type) {
           if (sub.lower != type)
             continue;
           if (sub.upper->kind == VARIABLE_TYPE) {
-            if (sub.upper->positively_entered_from == sub.upper && sub.upper->negatively_entered_from == sub.upper) {
-              if (already_printed)
-                fprintf(stderr, " ⊓ ");
-              already_printed = 1;
+            if (already_printed)
+              fprintf(stderr, " ⊓ ");
+            already_printed = 1;
 
-              debug_variable_type_name_with_marker(sub.upper);
-            }
+            debug_variable_type_name_with_marker(sub.upper);
           } else {
             if (already_printed)
               fprintf(stderr, " ⊓ ");
@@ -184,24 +182,20 @@ void debug_type(const type_t *type) {
           }
         }
 
-        if (type->positively_entered_from == type && type->negatively_entered_from == type) {
-          if (already_printed)
-            fprintf(stderr, " ⊓ ");
-          debug_variable_type_name_with_marker(type);
-        }
+        if (already_printed)
+          fprintf(stderr, " ⊓ ");
+        debug_variable_type_name_with_marker(type);
       } else {
         for (size_t i = 0; i < debug_induce->sub_length; i++) {
           induce_sub_t sub = debug_induce->sub_data[i];
           if (sub.upper != type)
             continue;
           if (sub.lower->kind == VARIABLE_TYPE) {
-            if (sub.lower->positively_entered_from == sub.lower && sub.lower->negatively_entered_from == sub.lower) {
-              if (already_printed > 0)
-                fprintf(stderr, " ⊔ ");
-              already_printed = 1;
+            if (already_printed > 0)
+              fprintf(stderr, " ⊔ ");
+            already_printed = 1;
 
-              debug_variable_type_name_with_marker(sub.lower);
-            }
+            debug_variable_type_name_with_marker(sub.lower);
           } else {
             if (already_printed > 0)
               fprintf(stderr, " ⊔ ");
@@ -213,11 +207,9 @@ void debug_type(const type_t *type) {
           }
         }
 
-        if (type->positively_entered_from == type && type->negatively_entered_from == type) {
-          if (already_printed)
-            fprintf(stderr, " ⊔ ");
-          debug_variable_type_name_with_marker(type);
-        }
+        if (already_printed)
+          fprintf(stderr, " ⊔ ");
+        debug_variable_type_name_with_marker(type);
       }
       break;
 

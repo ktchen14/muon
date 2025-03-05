@@ -245,25 +245,6 @@ void mark_type_from_anywhere(induce_t *induce, const type_t *type, _Bool negativ
       if (!negative) {
         ((type_t *) type)->positively_reachable_from_anywhere = 1;
 
-        if (origin == NULL) {
-          fprintf(stderr, "Marked ");
-          debug_just_type(type);
-          fprintf(stderr, " as positively reachable from itself\n");
-          ((type_t *) type)->positively_entered_from = type;
-        } else if (origin->kind != VARIABLE_TYPE) {
-          fprintf(stderr, "Marked ");
-          debug_just_type(type);
-          fprintf(stderr, " as positively reachable from itself\n");
-          ((type_t *) type)->positively_entered_from = type;
-        } else if (type->positively_entered_from == NULL) {
-          fprintf(stderr, "Marked ");
-          debug_just_type(type);
-          fprintf(stderr, " as positively reachable from ");
-          debug_just_type(origin);
-          fprintf(stderr, "\n");
-          ((type_t *) type)->positively_entered_from = origin;
-        }
-
         for (size_t i = 0; i < induce->sub_length; i++) {
           induce_sub_t sub = induce->sub_data[i];
           if (sub.upper != type)
@@ -272,25 +253,6 @@ void mark_type_from_anywhere(induce_t *induce, const type_t *type, _Bool negativ
         }
       } else {
         ((type_t *) type)->negatively_reachable_from_anywhere = 1;
-
-        if (origin == NULL) {
-          fprintf(stderr, "Marked ");
-          debug_just_type(type);
-          fprintf(stderr, " as negatively reachable from itself\n");
-          ((type_t *) type)->negatively_entered_from = type;
-        } else if (origin->kind != VARIABLE_TYPE) {
-          fprintf(stderr, "Marked ");
-          debug_just_type(type);
-          fprintf(stderr, " as negatively reachable from itself\n");
-          ((type_t *) type)->negatively_entered_from = type;
-        } else if (type->negatively_entered_from == NULL) {
-          fprintf(stderr, "Marked ");
-          debug_just_type(type);
-          fprintf(stderr, " as negatively reachable from ");
-          debug_just_type(origin);
-          fprintf(stderr, "\n");
-          ((type_t *) type)->negatively_entered_from = origin;
-        }
 
         for (size_t i = 0; i < induce->sub_length; i++) {
           induce_sub_t sub = induce->sub_data[i];
@@ -315,7 +277,6 @@ void mark_type_from_anywhere(induce_t *induce, const type_t *type, _Bool negativ
 }
 
 void walk_node_mark_type_from_anywhere(induce_t *induce, const mu_node_t *root) {
-  fprintf(stderr, "Handling node %zu\n", root->as_stator.id);
   const type_t *type = induce_reveal(induce, root);
   mark_type_from_anywhere(induce, type, 0, 0);
 
