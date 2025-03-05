@@ -95,7 +95,7 @@ type_t *join_type_allocate(induce_t *induce, size_t argc);
 const type_t *join_type_activate(type_t *type);
 
 void debug_type(const type_t *type);
-
+void debug_variable_type_name(const type_t *type);
 void debug_just_type(const type_t *type);
 
 #endif /* MU_INDUCTOR_TYPE_I */
