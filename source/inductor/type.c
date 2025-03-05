@@ -110,6 +110,8 @@ const type_t *join_type_activate(type_t *type) {
   return type;
 }
 
+#include "../stator/debug.h"
+
 void debug_type(const type_t *type) {
   extern _Thread_local _Bool debug_negate;
 
@@ -124,10 +126,7 @@ void debug_type(const type_t *type) {
 
         case MU_LAMBDA_CORE:
         {
-          _Bool n = debug_negate;
-          debug_negate = !debug_negate;
-          debug_type(type->argv[0]);
-          debug_negate = n;
+          WITH_DEBUG_NEGATE() { debug_type(type->argv[0]); }
           fprintf(stderr, " -> ");
           debug_type(type->argv[1]);
           break;
@@ -156,26 +155,6 @@ void debug_type(const type_t *type) {
 
     case VARIABLE_TYPE:
       ;
-      static _Atomic size_t next_number = 0;
-      static const char *alphabet[] = {
-        "α", "β", "γ", "δ", "ε", "ζ", "η", "θ", "ι", "κ", "μ", "ν", "ξ", "ο", "π",
-        "ρ", "σ", "τ", "υ", "φ", "χ", "ψ", "ω" };
-      static size_t alphabet_length = sizeof(alphabet) / sizeof(alphabet[0]);
-
-      // Assign the variable type a number
-      if (type->number == 0)
-        ((type_t *) type)->number = ++next_number;
-
-      char buffer[256];
-
-      // Generate a name
-      char *name = buffer + sizeof(buffer);
-      *--name = '\0';
-      for (size_t n = type->number; n-- != 0; n /= alphabet_length) {
-        const char *c = alphabet[n % alphabet_length];
-        memcpy(name -= strlen(c), c, strlen(c));
-      }
-
       if (debug_induce == NULL)
         return;
 
@@ -195,7 +174,7 @@ void debug_type(const type_t *type) {
 
         if (already_printed)
           fprintf(stderr, " ⊓ ");
-        fprintf(stderr, "%s", name);
+        debug_variable_type_name(type);
         if (type->positively_reachable_from_anywhere)
           fprintf(stderr, "+");
         if (type->negatively_reachable_from_anywhere)
@@ -215,7 +194,7 @@ void debug_type(const type_t *type) {
 
         if (already_printed)
           fprintf(stderr, " ⊔ ");
-        fprintf(stderr, "%s", name);
+        debug_variable_type_name(type);
         if (type->positively_reachable_from_anywhere)
           fprintf(stderr, "+");
         if (type->negatively_reachable_from_anywhere)
@@ -238,12 +217,13 @@ void debug_type(const type_t *type) {
     case JOIN_TYPE:
       if (type->join_argc == 0) {
         fprintf(stderr, "⊥");
-      } else {
-        for (size_t i = 0; i < type->join_argc; i++) {
-          if (i > 0)
-            fprintf(stderr, " ⊔ ");
-          debug_type(type->join_argv[i]);
-        }
+        break;
+      }
+
+      for (size_t i = 0; i < type->join_argc; i++) {
+        if (i > 0)
+          fprintf(stderr, " ⊔ ");
+        debug_type(type->join_argv[i]);
       }
       break;
   }
@@ -273,4 +253,76 @@ static void debug_variable_type_name(const type_t *type) {
   }
 
   fprintf(stderr, "%s", name);
+}
+
+void debug_just_type(const type_t *type) {
+  extern _Thread_local _Bool debug_negate;
+
+  switch (type->kind) {
+    case SIMPLE_TYPE:
+      switch (type->core->kind) {
+        case MU_BOOLEAN_CORE:
+          fprintf(stderr, "Boolean"); break;
+
+        case MU_INTEGER_CORE:
+          fprintf(stderr, "Integer"); break;
+
+        case MU_LAMBDA_CORE:
+        {
+          WITH_DEBUG_NEGATE() { debug_just_type(type->argv[0]); }
+          fprintf(stderr, " -> ");
+          debug_just_type(type->argv[1]);
+          break;
+        }
+
+        case MU_VECTOR_CORE:
+          fprintf(stderr, "[");
+          debug_just_type(type->argv[0]);
+          fprintf(stderr, "]");
+          break;
+      }
+      break;
+
+    case RECORD_TYPE:
+      fprintf(stderr, "(");
+      for (size_t i = 0; i < type->argc; i++) {
+        const type_member_t *member = &type->schema[i];
+        if (i > 0)
+          fprintf(stderr, ", ");
+        mu_name_debug(member->name);
+        fprintf(stderr, ": ");
+        debug_just_type(member->type);
+      }
+      fprintf(stderr, ")");
+      break;
+
+    case VARIABLE_TYPE:
+      debug_variable_type_name(type);
+      break;
+
+    case SCHEME_TYPE:
+      fprintf(stderr, "∀ (");
+      for (size_t i = 0; i < type->polymorphic_length; i++) {
+        if (i > 0)
+          fprintf(stderr, ", ");
+        debug_variable_type_name(type->polymorphic[i]);
+      }
+      fprintf(stderr, ") ");
+
+      debug_type(type->matter);
+      break;
+
+    case JOIN_TYPE:
+      if (type->join_argc == 0) {
+        fprintf(stderr, "⊥");
+        break;
+      }
+
+      for (size_t i = 0; i < type->join_argc; i++) {
+        if (i > 0)
+          fprintf(stderr, " ⊔ ");
+        debug_type(type->join_argv[i]);
+      }
+      break;
+  }
 }
