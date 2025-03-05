@@ -218,7 +218,7 @@ void mark_type(induce_t *induce, const type_t *type, _Bool negative, size_t rank
   }
 }
 
-void mark_type_from_anywhere(induce_t *induce, const type_t *type, _Bool negative, const type_t *origin) {
+void mark_type_from_anywhere(induce_t *induce, const type_t *type, _Bool negative, const type_t *origin, type_link_t *link) {
   switch (type->kind) {
     case SIMPLE_TYPE:
       switch (type->core->kind) {
@@ -226,44 +226,124 @@ void mark_type_from_anywhere(induce_t *induce, const type_t *type, _Bool negativ
         case MU_INTEGER_CORE: break;
 
         case MU_LAMBDA_CORE:
-          mark_type_from_anywhere(induce, type->argv[0], !negative, type);
-          mark_type_from_anywhere(induce, type->argv[1], negative, type);
+          mark_type_from_anywhere(induce, type->argv[0], !negative, type, link);
+          mark_type_from_anywhere(induce, type->argv[1], negative, type, link);
           break;
 
         case MU_VECTOR_CORE:
-          mark_type_from_anywhere(induce, type->argv[0], negative, type);
+          mark_type_from_anywhere(induce, type->argv[0], negative, type, link);
           break;
       }
       break;
 
     case RECORD_TYPE:
       for (size_t i = 0; i < type->argc; i++)
-        mark_type_from_anywhere(induce, type->schema[i].type, negative, type);
+        mark_type_from_anywhere(induce, type->schema[i].type, negative, type, link);
       break;
 
     case VARIABLE_TYPE:
+      if (origin->kind != VARIABLE_TYPE)
+        origin = type;
+
+      // Add the variable to the link unless it's already there
+      if (type->debug_next == NULL) {
+        ((type_t *) type)->debug_next = link->next;
+        link->next = type;
+      }
+
       if (!negative) {
-        ((type_t *) type)->positively_reachable_from_anywhere = 1;
+        // If we've never entered type this, then just use the origin
+        if (type->positively_entered_from == NULL) {
+          ((type_t *) type)->positively_entered_from = origin;
+
+        // We can't override an earlier origin of itself
+        } else if (type->positively_entered_from == type) {
+
+        // If the variable is already positively multihomed, do nothing
+        } else if (type->positively_multihomed) {
+
+        // If we entered this type before, then we need to establish how that
+        // earlier entrance relates to this origin
+        } else {
+          const type_t *earlier_origin = type->positively_entered_from;
+
+          for (size_t i = 0; i < induce->sub_length; i++) {
+            induce_sub_t sub = induce->sub_data[i];
+
+            // If this origin is a subtype of the earlier origin, then use this
+            // origin instead
+            if (sub.lower == origin && sub.upper == earlier_origin) {
+              ((type_t *) type)->positively_entered_from = origin;
+              goto found_positive;
+
+            // If this origin is a supertype of the earlier origin, then keep
+            // the earlier origin
+            } else if (sub.lower == earlier_origin && sub.upper == origin) {
+              goto found_positive;
+            }
+          }
+
+          // If we found no relationship, then mark the variable as multihomed
+          ((type_t *) type)->positively_multihomed = 1;
+
+          found_positive:;
+        }
 
         for (size_t i = 0; i < induce->sub_length; i++) {
           induce_sub_t sub = induce->sub_data[i];
           if (sub.upper != type)
             continue;
-          mark_type_from_anywhere(induce, sub.lower, negative, type);
+          mark_type_from_anywhere(induce, sub.lower, negative, type, link);
         }
       } else {
-        ((type_t *) type)->negatively_reachable_from_anywhere = 1;
+        // If we've never entered type this, then just use the origin
+        if (type->negatively_entered_from == NULL) {
+          ((type_t *) type)->negatively_entered_from = origin;
+
+        // We can't override an earlier origin of itself
+        } else if (type->negatively_entered_from == type) {
+
+        // If the variable is already negatively multihomed, do nothing
+        } else if (type->negatively_multihomed) {
+
+        // If we entered this type before, then we need to establish how that
+        // earlier entrance relates to this origin
+        } else {
+          const type_t *earlier_origin = type->negatively_entered_from;
+
+          for (size_t i = 0; i < induce->sub_length; i++) {
+            induce_sub_t sub = induce->sub_data[i];
+
+            // If this origin is a supertype of the earlier origin, then use this
+            // origin instead
+            if (sub.lower == earlier_origin && sub.upper == origin) {
+              ((type_t *) type)->negatively_entered_from = origin;
+              goto found_negative;
+
+            // If this origin is a subtype of the earlier origin, then keep
+            // the earlier origin
+            } else if (sub.lower == origin && sub.upper == earlier_origin) {
+              goto found_negative;
+            }
+          }
+
+          // If we found no relationship, then mark the variable as multihomed
+          ((type_t *) type)->negatively_multihomed = 1;
+
+          found_negative:;
+        }
 
         for (size_t i = 0; i < induce->sub_length; i++) {
           induce_sub_t sub = induce->sub_data[i];
           if (sub.lower != type)
             continue;
-          mark_type_from_anywhere(induce, sub.upper, negative, type);
+          mark_type_from_anywhere(induce, sub.upper, negative, type, link);
         }
       }
       break;
 
     case SCHEME_TYPE:
+      return;
       abort();
 
     case JOIN_TYPE:
@@ -271,19 +351,13 @@ void mark_type_from_anywhere(induce_t *induce, const type_t *type, _Bool negativ
         return;
 
       for (size_t i = 0; i < type->join_argc; i++)
-        mark_type_from_anywhere(induce, type->join_argv[i], negative, type);
+        mark_type_from_anywhere(induce, type->join_argv[i], negative, type, link);
       break;
   }
 }
 
-void walk_node_mark_type_from_anywhere(induce_t *induce, const mu_node_t *root) {
-  const type_t *type = induce_reveal(induce, root);
-  mark_type_from_anywhere(induce, type, 0, 0);
-
-  const mu_node_t *node;
-  size_t i = 0;
-  while ((node = node_at(root, i++)) != NULL)
-    walk_node_mark_type_from_anywhere(induce, node);
+void mark_type_from_anywhere_first(induce_t *induce, const type_t *root, type_link_t *link) {
+  mark_type_from_anywhere(induce, root, 0, root, link);
 }
 
 open_scheme_t *open_scheme(open_scheme_t *parent, const mu_node_t *node) {
@@ -759,7 +833,6 @@ __attribute__((nonnull, pure)) static const type_t *define_stmt_induce(
 
   const type_t *expr_type = induce_reveal(induce, &stmt->expr->as_node);
   mark_type(induce, expr_type, 0, scheme->rank);
-  walk_node_mark_type_from_anywhere(induce, &stmt->expr->as_node);
 
   size_t polymorphic_length = 0;
   const type_t *polymorphic = NULL;

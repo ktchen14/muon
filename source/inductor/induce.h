@@ -82,4 +82,6 @@ const mu_type_t *induce_node(induce_t *inductor, const mu_node_t *node)
 
 void debug_type(const type_t *type);
 
+void mark_type_from_anywhere_first(induce_t *induce, const type_t *root, type_link_t *link);
+
 #endif /* MU_INDUCTOR_INDUCE_I */

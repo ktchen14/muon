@@ -40,6 +40,36 @@ static inline void debug_node_type(const mu_node_t *node) {
     return;
 
   fprintf(stderr, " ∷ ");
+
+  type_t sentinel;
+  type_link_t link = { .next = &sentinel };
+  mark_type_from_anywhere_first(debug_induce, type, &link);
+
+  if (link.next != &sentinel) {
+    fprintf(stderr, "∃(");
+
+    size_t i = 0;
+    for (const type_t *type = link.next; type != &sentinel; type = type->debug_next) {
+      if (i++ > 0)
+        fprintf(stderr, ", ");
+      debug_variable_type_name(type);
+    }
+
+    fprintf(stderr, ") ");
+  }
+
+  const type_t *next = link.next;
+  while (next != &sentinel) {
+    ((type_t *) next)->negatively_entered_from = NULL;
+    ((type_t *) next)->negatively_multihomed = 0;
+    ((type_t *) next)->positively_entered_from = NULL;
+    ((type_t *) next)->positively_multihomed = 0;
+
+    const type_t *real_next = next->debug_next;
+    ((type_t *) next)->debug_next = NULL;
+    next = real_next;
+  }
+
   debug_type(type);
 }
 

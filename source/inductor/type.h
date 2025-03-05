@@ -45,6 +45,8 @@ struct type_t {
     struct {
       const type_t *next;
 
+      const type_t *debug_next;
+
       // Used to generate a name
       size_t number;
 
@@ -54,10 +56,10 @@ struct type_t {
       _Bool positively_reachable;
       _Bool negatively_reachable;
 
-      _Bool positively_reachable_from_anywhere;
       const type_t *positively_entered_from;
-      _Bool negatively_reachable_from_anywhere;
+      _Bool positively_multihomed;
       const type_t *negatively_entered_from;
+      _Bool negatively_multihomed;
     };
 
     // SCHEME_TYPE
@@ -74,6 +76,10 @@ struct type_t {
     };
   };
 };
+
+typedef struct {
+  const type_t *next;
+} type_link_t;
 
 typedef struct induce_t induce_t;
 
