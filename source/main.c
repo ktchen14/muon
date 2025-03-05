@@ -61,26 +61,26 @@ int main(int argc, char *argv[argc]) {
     assert(0);
 
   extern _Thread_local _Bool debug_colorize;
-  /* debug_colorize = 1; */
+  debug_colorize = 1;
   debug_induce = &induce;
 
-  /* mu_sequence_expr_debug(sequence_expr); */
+  mu_sequence_expr_debug(sequence_expr);
 
-  fprintf(stderr, "digraph muon {\n");
-  for (size_t i = 0; i < debug_induce->sub_length; i++) {
-    induce_sub_t sub = debug_induce->sub_data[i];
+  /* fprintf(stderr, "digraph muon {\n"); */
+  /* for (size_t i = 0; i < debug_induce->sub_length; i++) { */
+  /*   induce_sub_t sub = debug_induce->sub_data[i]; */
 
-    if (sub.lower->kind != VARIABLE_TYPE && sub.upper->kind != VARIABLE_TYPE)
-      continue;
+  /*   /1* if (sub.lower->kind != VARIABLE_TYPE && sub.upper->kind != VARIABLE_TYPE) *1/ */
+  /*   /1*   continue; *1/ */
 
-    fprintf(stderr, "%*s", 2, "");
-    fprintf(stderr, "\"");
-    debug_just_type(sub.upper);
-    fprintf(stderr, "\" -> \"");
-    debug_just_type(sub.lower);
-    fprintf(stderr, "\";\n");
-  }
-  fprintf(stderr, "}\n");
+  /*   fprintf(stderr, "%*s", 2, ""); */
+  /*   fprintf(stderr, "\""); */
+  /*   debug_just_type(sub.upper); */
+  /*   fprintf(stderr, "\" -> \""); */
+  /*   debug_just_type(sub.lower); */
+  /*   fprintf(stderr, "\";\n"); */
+  /* } */
+  /* fprintf(stderr, "}\n"); */
 
   return EXIT_SUCCESS;
 

@@ -167,18 +167,22 @@ void debug_type(const type_t *type) {
           if (already_printed)
             fprintf(stderr, " ⊓ ");
           already_printed = 1;
-          fprintf(stderr, "(");
-          debug_type(sub.upper);
-          fprintf(stderr, ")");
+          if (sub.upper->kind == VARIABLE_TYPE)
+            debug_variable_type_name(sub.upper);
+          else {
+            fprintf(stderr, "(");
+            debug_type(sub.upper);
+            fprintf(stderr, ")");
+          }
         }
 
         if (already_printed)
           fprintf(stderr, " ⊓ ");
         debug_variable_type_name(type);
-        if (type->positively_reachable_from_anywhere)
-          fprintf(stderr, "+");
-        if (type->negatively_reachable_from_anywhere)
-          fprintf(stderr, "-");
+        /* if (type->positively_reachable_from_anywhere) */
+        /*   fprintf(stderr, "+"); */
+        /* if (type->negatively_reachable_from_anywhere) */
+        /*   fprintf(stderr, "-"); */
       } else {
         for (size_t i = 0; i < debug_induce->sub_length; i++) {
           induce_sub_t sub = debug_induce->sub_data[i];
@@ -187,18 +191,22 @@ void debug_type(const type_t *type) {
           if (already_printed > 0)
             fprintf(stderr, " ⊔ ");
           already_printed = 1;
-          fprintf(stderr, "(");
-          debug_type(sub.lower);
-          fprintf(stderr, ")");
+          if (sub.lower->kind == VARIABLE_TYPE)
+            debug_variable_type_name(sub.lower);
+          else {
+            fprintf(stderr, "(");
+            debug_type(sub.lower);
+            fprintf(stderr, ")");
+          }
         }
 
         if (already_printed)
           fprintf(stderr, " ⊔ ");
         debug_variable_type_name(type);
-        if (type->positively_reachable_from_anywhere)
-          fprintf(stderr, "+");
-        if (type->negatively_reachable_from_anywhere)
-          fprintf(stderr, "-");
+        /* if (type->positively_reachable_from_anywhere) */
+        /*   fprintf(stderr, "+"); */
+        /* if (type->negatively_reachable_from_anywhere) */
+        /*   fprintf(stderr, "-"); */
       }
       break;
 
