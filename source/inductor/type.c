@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 
+static void debug_variable_type_name_with_marker(const type_t *type);
 static void debug_variable_type_name(const type_t *type);
 
 const type_t *boolean_type(induce_t *induce) {
@@ -168,7 +169,7 @@ void debug_type(const type_t *type) {
             fprintf(stderr, " ⊓ ");
           already_printed = 1;
           if (sub.upper->kind == VARIABLE_TYPE)
-            debug_variable_type_name(sub.upper);
+            debug_variable_type_name_with_marker(sub.upper);
           else {
             fprintf(stderr, "(");
             debug_type(sub.upper);
@@ -178,7 +179,7 @@ void debug_type(const type_t *type) {
 
         if (already_printed)
           fprintf(stderr, " ⊓ ");
-        debug_variable_type_name(type);
+        debug_variable_type_name_with_marker(type);
       } else {
         for (size_t i = 0; i < debug_induce->sub_length; i++) {
           induce_sub_t sub = debug_induce->sub_data[i];
@@ -188,7 +189,7 @@ void debug_type(const type_t *type) {
             fprintf(stderr, " ⊔ ");
           already_printed = 1;
           if (sub.lower->kind == VARIABLE_TYPE)
-            debug_variable_type_name(sub.lower);
+            debug_variable_type_name_with_marker(sub.lower);
           else {
             fprintf(stderr, "(");
             debug_type(sub.lower);
@@ -198,7 +199,7 @@ void debug_type(const type_t *type) {
 
         if (already_printed)
           fprintf(stderr, " ⊔ ");
-        debug_variable_type_name(type);
+        debug_variable_type_name_with_marker(type);
       }
       break;
 
@@ -207,7 +208,7 @@ void debug_type(const type_t *type) {
       for (size_t i = 0; i < type->polymorphic_length; i++) {
         if (i > 0)
           fprintf(stderr, ", ");
-        debug_variable_type_name(type->polymorphic[i]);
+        debug_variable_type_name_with_marker(type->polymorphic[i]);
       }
       fprintf(stderr, ") ");
 
@@ -253,10 +254,20 @@ static void debug_variable_type_name(const type_t *type) {
   }
 
   fprintf(stderr, "%s", name);
-  if (type->positively_reachable_from_anywhere)
+}
+
+static void debug_variable_type_name_with_marker(const type_t *type) {
+  debug_variable_type_name(type);
+  if (type->positively_reachable_from_anywhere) {
     fprintf(stderr, "+");
-  if (type->negatively_reachable_from_anywhere)
+    if (type->positively_entered_from != type)
+      debug_variable_type_name(type->positively_entered_from);
+  }
+  if (type->negatively_reachable_from_anywhere) {
     fprintf(stderr, "-");
+    if (type->negatively_entered_from != type)
+      debug_variable_type_name(type->negatively_entered_from);
+  }
 }
 
 void debug_just_type(const type_t *type) {

@@ -55,7 +55,9 @@ struct type_t {
       _Bool negatively_reachable;
 
       _Bool positively_reachable_from_anywhere;
+      const type_t *positively_entered_from;
       _Bool negatively_reachable_from_anywhere;
+      const type_t *negatively_entered_from;
     };
 
     // SCHEME_TYPE

@@ -218,7 +218,7 @@ void mark_type(induce_t *induce, const type_t *type, _Bool negative, size_t rank
   }
 }
 
-void mark_type_from_anywhere(induce_t *induce, const type_t *type, _Bool negative, size_t rank) {
+void mark_type_from_anywhere(induce_t *induce, const type_t *type, _Bool negative, const type_t *origin) {
   switch (type->kind) {
     case SIMPLE_TYPE:
       switch (type->core->kind) {
@@ -226,39 +226,59 @@ void mark_type_from_anywhere(induce_t *induce, const type_t *type, _Bool negativ
         case MU_INTEGER_CORE: break;
 
         case MU_LAMBDA_CORE:
-          mark_type_from_anywhere(induce, type->argv[0], !negative, rank);
-          mark_type_from_anywhere(induce, type->argv[1], negative, rank);
+          mark_type_from_anywhere(induce, type->argv[0], !negative, type);
+          mark_type_from_anywhere(induce, type->argv[1], negative, type);
           break;
 
         case MU_VECTOR_CORE:
-          mark_type_from_anywhere(induce, type->argv[0], negative, rank);
+          mark_type_from_anywhere(induce, type->argv[0], negative, type);
           break;
       }
       break;
 
     case RECORD_TYPE:
       for (size_t i = 0; i < type->argc; i++)
-        mark_type_from_anywhere(induce, type->schema[i].type, negative, rank);
+        mark_type_from_anywhere(induce, type->schema[i].type, negative, type);
       break;
 
     case VARIABLE_TYPE:
       if (!negative) {
         ((type_t *) type)->positively_reachable_from_anywhere = 1;
+        if (origin == NULL)
+          ((type_t *) type)->positively_entered_from = type;
+        else if (origin->kind != VARIABLE_TYPE)
+          ((type_t *) type)->positively_entered_from = type;
+        else if (type->positively_entered_from == NULL)
+          ((type_t *) type)->positively_entered_from = origin;
+        else if (type->positively_entered_from == type)
+          ;
+        else
+          ((type_t *) type)->positively_entered_from = origin;
 
         for (size_t i = 0; i < induce->sub_length; i++) {
           induce_sub_t sub = induce->sub_data[i];
           if (sub.upper != type)
             continue;
-          mark_type_from_anywhere(induce, sub.lower, negative, rank);
+          mark_type_from_anywhere(induce, sub.lower, negative, type);
         }
       } else {
         ((type_t *) type)->negatively_reachable_from_anywhere = 1;
+        if (origin == NULL)
+          ((type_t *) type)->negatively_entered_from = type;
+        else if (origin->kind != VARIABLE_TYPE)
+          ((type_t *) type)->negatively_entered_from = type;
+        else if (type->negatively_entered_from == NULL)
+          ((type_t *) type)->negatively_entered_from = origin;
+        else if (type->negatively_entered_from == type)
+          ;
+        else
+          ((type_t *) type)->negatively_entered_from = origin;
 
         for (size_t i = 0; i < induce->sub_length; i++) {
           induce_sub_t sub = induce->sub_data[i];
           if (sub.lower != type)
             continue;
-          mark_type_from_anywhere(induce, sub.upper, negative, rank);
+          mark_type_from_anywhere(induce, sub.upper, negative, type);
         }
       }
       break;
@@ -271,7 +291,7 @@ void mark_type_from_anywhere(induce_t *induce, const type_t *type, _Bool negativ
         return;
 
       for (size_t i = 0; i < type->join_argc; i++)
-        mark_type_from_anywhere(induce, type->join_argv[i], negative, rank);
+        mark_type_from_anywhere(induce, type->join_argv[i], negative, type);
       break;
   }
 }
