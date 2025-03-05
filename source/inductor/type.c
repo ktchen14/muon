@@ -165,11 +165,13 @@ void debug_type(const type_t *type) {
           if (sub.lower != type)
             continue;
           if (sub.upper->kind == VARIABLE_TYPE) {
-            if (already_printed)
-              fprintf(stderr, " ⊓ ");
-            already_printed = 1;
+            if (is_significant(sub.upper)) {
+              if (already_printed)
+                fprintf(stderr, " ⊓ ");
+              already_printed = 1;
 
-            debug_variable_type_name(sub.upper);
+              debug_variable_type_name(sub.upper);
+            }
           } else {
             if (already_printed)
               fprintf(stderr, " ⊓ ");
@@ -181,20 +183,26 @@ void debug_type(const type_t *type) {
           }
         }
 
-        if (already_printed)
-          fprintf(stderr, " ⊓ ");
-        debug_variable_type_name(type);
+        if (is_significant(type)) {
+          if (already_printed)
+            fprintf(stderr, " ⊓ ");
+          debug_variable_type_name(type);
+        } else if (!already_printed) {
+          fprintf(stderr, "⊤");
+        }
       } else {
         for (size_t i = 0; i < debug_induce->sub_length; i++) {
           induce_sub_t sub = debug_induce->sub_data[i];
           if (sub.upper != type)
             continue;
           if (sub.lower->kind == VARIABLE_TYPE) {
-            if (already_printed > 0)
-              fprintf(stderr, " ⊔ ");
-            already_printed = 1;
+            if (is_significant(sub.lower)) {
+              if (already_printed > 0)
+                fprintf(stderr, " ⊔ ");
+              already_printed = 1;
 
-            debug_variable_type_name(sub.lower);
+              debug_variable_type_name(sub.lower);
+            }
           } else {
             if (already_printed > 0)
               fprintf(stderr, " ⊔ ");
@@ -206,14 +214,18 @@ void debug_type(const type_t *type) {
           }
         }
 
-        if (already_printed)
-          fprintf(stderr, " ⊔ ");
-        debug_variable_type_name(type);
+        if (is_significant(type)) {
+          if (already_printed)
+            fprintf(stderr, " ⊔ ");
+          debug_variable_type_name(type);
+        } else if (!already_printed) {
+          fprintf(stderr, "⊥");
+        }
       }
       break;
 
     case SCHEME_TYPE:
-      fprintf(stderr, "∀ (");
+      fprintf(stderr, "∀(");
       for (size_t i = 0; i < type->polymorphic_length; i++) {
         if (i > 0)
           fprintf(stderr, ", ");

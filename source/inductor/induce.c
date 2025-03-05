@@ -498,7 +498,7 @@ const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
   const mu_node_t *node = root, *next;
   do {
     const detect_result_t *detect = induce->detect;
-    while ((next = detect_at(detect, node, node_cursor(node)->i++)) != NULL) {
+    while ((next = node_at(node, node_cursor(node)->i++)) != NULL) {
       node = node_continue(node, next);
 
       if (node->kind != MU_DEFINE_STMT_NODE)
@@ -714,6 +714,7 @@ __attribute__((nonnull)) static const type_t *name_expr_induce(
     const mu_name_expr_t *expr, induce_t *induce, open_scheme_t *scheme) {
   const mu_node_t *target;
   if ((target = detect_evince(induce->detect, &expr->as_node)) == NULL) {
+    abort();
     const type_t *result = variable_type(induce, scheme);
     return result;
   }

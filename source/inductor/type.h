@@ -104,4 +104,12 @@ void debug_type(const type_t *type);
 void debug_variable_type_name(const type_t *type);
 void debug_just_type(const type_t *type);
 
+static inline _Bool is_significant(const type_t *type) {
+  assert(type->kind == VARIABLE_TYPE);
+  return (
+    (type->positively_entered_from == type || type->positively_multihomed) &&
+    (type->negatively_entered_from == type || type->negatively_multihomed)
+  ) || type->polymorphic_to != NULL;
+}
+
 #endif /* MU_INDUCTOR_TYPE_I */

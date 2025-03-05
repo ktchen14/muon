@@ -46,17 +46,29 @@ static inline void debug_node_type(const mu_node_t *node) {
   mark_type_from_anywhere_first(debug_induce, type, &link);
 
   if (link.next != &sentinel) {
-    fprintf(stderr, "∃(");
-
-    size_t i = 0;
+    size_t number = 0;
     for (const type_t *type = link.next; type != &sentinel; type = type->debug_next) {
-      if (i++ > 0)
-        fprintf(stderr, ", ");
-      debug_variable_type_name(type);
+      if (is_significant(type))
+        number++;
     }
 
-    fprintf(stderr, ") ");
+    if (number > 0) {
+      fprintf(stderr, "∃(");
+
+      size_t i = 0;
+      for (const type_t *type = link.next; type != &sentinel; type = type->debug_next) {
+        if (is_significant(type)) {
+          if (i++ > 0)
+            fprintf(stderr, ", ");
+          debug_variable_type_name(type);
+        }
+      }
+
+      fprintf(stderr, ") ");
+    }
   }
+
+  debug_type(type);
 
   const type_t *next = link.next;
   while (next != &sentinel) {
@@ -69,8 +81,6 @@ static inline void debug_node_type(const mu_node_t *node) {
     ((type_t *) next)->debug_next = NULL;
     next = real_next;
   }
-
-  debug_type(type);
 }
 
 #endif /* MU_STATOR_DEBUG_I */

@@ -1,3 +1,2 @@
 define id = lambda x = x
-
-define x = (answer: id (id 1), idFunc: id)
+define access = lambda x = x.foo x.bar
