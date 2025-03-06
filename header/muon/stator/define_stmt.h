@@ -3,6 +3,7 @@
 
 #include "abstract_node.h"
 
+#include "expr.h"
 #include "name.h"
 
 typedef struct {
