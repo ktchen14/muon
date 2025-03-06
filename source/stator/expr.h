@@ -3,8 +3,6 @@
 
 #include <muon/stator/expr.h>  // IWYU pragma: export
 
-#include "abstract_node.h"
-
 #include <stddef.h>
 
 /// Return the <em>i</em>th node in the access @a expr

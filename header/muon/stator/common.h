@@ -23,7 +23,6 @@
   emit(integer, INTEGER, Integer, ##__VA_ARGS__) \
   emit(name, NAME, Name, ##__VA_ARGS__) \
   emit(record, RECORD, Record, ##__VA_ARGS__) \
-  emit(variable, VARIABLE, Variable, ##__VA_ARGS__) \
   emit(vector, VECTOR, Vector, ##__VA_ARGS__)
 
 /// Expands to emit(lower, upper, title, ...) for each kind of stmt

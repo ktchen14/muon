@@ -14,13 +14,7 @@ target_sources(muon PRIVATE
   stator/node.c
 
   stator/expr.c
-
-  stator/boolean_sign.c
-  stator/integer_sign.c
-  stator/name_sign.c
-  stator/record_sign.c
-  stator/variable_sign.c
-  stator/vector_sign.c
+  stator/sign.c
 
   stator/define_stmt.c
   stator/type_stmt.c

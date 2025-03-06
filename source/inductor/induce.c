@@ -832,11 +832,6 @@ __attribute__((nonnull)) static const mu_type_t *record_sign_induce(
   assert(0);
 }
 
-__attribute__((nonnull)) static const mu_type_t *variable_sign_induce(
-    const mu_variable_sign_t *sign, induce_t *induce, open_scheme_t *scheme) {
-  assert(0);
-}
-
 __attribute__((nonnull)) static const mu_type_t *vector_sign_induce(
     const mu_vector_sign_t *sign, induce_t *induce, open_scheme_t *scheme) {
   const mu_type_t *matter = induce_reveal(induce, &sign->matter->as_node);

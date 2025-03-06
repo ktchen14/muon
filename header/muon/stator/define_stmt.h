@@ -5,6 +5,7 @@
 
 #include "expr.h"
 #include "name.h"
+#include "sign.h"
 
 typedef struct {
   MU_STMT_HEADER;

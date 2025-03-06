@@ -34,24 +34,6 @@ typedef enum {
 } mu_node_kind_t;
 
 /**
- * @brief An enumeration over each kind of sign
- *
- * This will define:
- *
- * @verbatim
- *   MU_BOOLEAN_SIGN = MU_BOOLEAN_SIGN_NODE,
- *   MU_INTEGER_SIGN = MU_INTEGER_SIGN_NODE,
- *   ...
- *   MU_VECTOR_SIGN = MU_VECTOR_SIGN_NODE,
- * @endverbatim
- */
-typedef enum {
-#define MU_EMIT(l, upper, t) MU_##upper##_SIGN = MU_##upper##_SIGN_NODE,
-  MU_EACH_SIGN_KIND(MU_EMIT)
-#undef MU_EMIT
-} mu_sign_kind_t;
-
-/**
  * @brief An enumeration over each kind of stmt
  *
  * This will define:
@@ -90,15 +72,6 @@ typedef struct mu_node_t {
   };
 } mu_node_t;
 
-/// An abstract sign
-typedef struct {
-  union {
-    mu_sign_kind_t kind;
-    mu_node_t as_node;
-    mu_stator_t as_stator;
-  };
-} mu_sign_t;
-
 /// An abstract stmt
 typedef struct {
   union {
@@ -119,13 +92,6 @@ typedef struct {
 
 /// The header that each concrete node must have
 #define MU_NODE_HEADER union { \
-  mu_node_t as_node; \
-  mu_stator_t as_stator; \
-}
-
-/// The header that each concrete sign must have
-#define MU_SIGN_HEADER union { \
-  mu_sign_t as_sign; \
   mu_node_t as_node; \
   mu_stator_t as_stator; \
 }

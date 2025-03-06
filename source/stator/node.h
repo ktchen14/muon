@@ -6,13 +6,7 @@
 #include "abstract_node.h"     // IWYU pragma: export
 
 #include "expr.h"              // IWYU pragma: export
-
-#include "boolean_sign.h"      // IWYU pragma: export
-#include "integer_sign.h"      // IWYU pragma: export
-#include "name_sign.h"         // IWYU pragma: export
-#include "record_sign.h"       // IWYU pragma: export
-#include "variable_sign.h"     // IWYU pragma: export
-#include "vector_sign.h"       // IWYU pragma: export
+#include "sign.h"              // IWYU pragma: export
 
 #include "define_stmt.h"       // IWYU pragma: export
 #include "type_stmt.h"         // IWYU pragma: export
