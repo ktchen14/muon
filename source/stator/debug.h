@@ -35,19 +35,19 @@ static inline void debug_node_type(const mu_node_t *node) {
   if (debug_induce == NULL)
     return;
 
-  const type_t *type;
+  const mu_type_t *type;
   if ((type = induce_reveal(debug_induce, node)) == NULL)
     return;
 
   fprintf(stderr, " ∷ ");
 
-  type_t sentinel;
+  mu_variable_type_t sentinel;
   type_link_t link = { .next = &sentinel };
   mark_type_from_anywhere_first(debug_induce, type, &link);
 
   if (link.next != &sentinel) {
     size_t number = 0;
-    for (const type_t *type = link.next; type != &sentinel; type = type->debug_next) {
+    for (const mu_variable_type_t *type = link.next; type != &sentinel; type = type->debug_next) {
       if (is_significant(type))
         number++;
     }
@@ -56,7 +56,7 @@ static inline void debug_node_type(const mu_node_t *node) {
       fprintf(stderr, "∃(");
 
       size_t i = 0;
-      for (const type_t *type = link.next; type != &sentinel; type = type->debug_next) {
+      for (const mu_variable_type_t *type = link.next; type != &sentinel; type = type->debug_next) {
         if (is_significant(type)) {
           if (i++ > 0)
             fprintf(stderr, ", ");
@@ -70,13 +70,13 @@ static inline void debug_node_type(const mu_node_t *node) {
 
   debug_type(type);
 
-  const type_t *next = link.next;
+  const mu_variable_type_t *next = link.next;
   while (next != &sentinel) {
-    ((type_t *) next)->negatively_entered_from = NULL;
-    ((type_t *) next)->positively_entered_from = NULL;
+    ((mu_variable_type_t *) next)->negatively_entered_from = NULL;
+    ((mu_variable_type_t *) next)->positively_entered_from = NULL;
 
-    const type_t *real_next = next->debug_next;
-    ((type_t *) next)->debug_next = NULL;
+    const mu_variable_type_t *real_next = next->debug_next;
+    ((mu_variable_type_t *) next)->debug_next = NULL;
     next = real_next;
   }
 }

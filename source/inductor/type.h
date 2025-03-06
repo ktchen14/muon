@@ -20,9 +20,12 @@ typedef enum {
 #undef MU_EMIT
 } mu_type_kind_t;
 
+typedef struct induce_t induce_t;
+
 /// An abstract type
 typedef struct {
   mu_type_kind_t kind;
+  induce_t *induce;
 } mu_type_t;
 
 /// The header that each concrete type must have
@@ -44,139 +47,149 @@ typedef struct {
 
 /// A record type
 typedef struct {
+  MU_TYPE_HEADER;
+
   size_t argc;
   mu_type_member_t argv[/* argc */];
 } mu_record_type_t;
 
-/// A variable type
+typedef struct mu_scheme_type_t mu_scheme_type_t;
 typedef struct mu_variable_type_t mu_variable_type_t;
+
+/// A variable type
 struct mu_variable_type_t {
+  MU_TYPE_HEADER;
+
   mu_variable_type_t *scheme_next;
+  const mu_variable_type_t *debug_next;
 
   size_t number; ///< Used to generate a name
 
   size_t rank;
-  const mu_type_t *polymorphic_to;
+  const mu_scheme_type_t *polymorphic_to;
 
   _Bool positively_reachable;
   _Bool negatively_reachable;
 
-  const mu_type_t *debug_next;
-  const mu_type_t *positively_entered_from;
-  const mu_type_t *negatively_entered_from;
+  const mu_variable_type_t *positively_entered_from;
+  const mu_variable_type_t *negatively_entered_from;
 };
 
 /// A scheme type
-typedef struct {
+struct mu_scheme_type_t {
+  MU_TYPE_HEADER;
+
   const mu_type_t *matter;
 
   /// Length of list of polymorphic variables
   size_t argc;
-  const mu_type_t *argv[/* argc */];
-} mu_scheme_type_t;
-
-typedef struct type_t type_t;
-
-typedef struct {
-  const mu_name_t *name;
-  const type_t *type;
-} type_member_t;
-
-struct type_t {
-  enum {
-    SIMPLE_TYPE,
-    RECORD_TYPE,
-    VARIABLE_TYPE,
-    SCHEME_TYPE,
-    JOIN_TYPE,
-  } kind;
-
-  union {
-    // SIMPLE_TYPE
-    struct {
-      const mu_core_t *core;
-      const type_t *argv[/* core->argc */];
-    };
-
-    // RECORD_TYPE
-    struct {
-      size_t argc;
-      type_member_t schema[];
-    };
-
-    // VARIABLE_TYPE
-    struct {
-      type_t *next;
-
-      // Used to generate a name
-      size_t number;
-
-      size_t rank;
-      const type_t *polymorphic_to;
-
-      _Bool positively_reachable;
-      _Bool negatively_reachable;
-
-      const type_t *debug_next;
-      const type_t *positively_entered_from;
-      const type_t *negatively_entered_from;
-    };
-
-    // SCHEME_TYPE
-    struct {
-      const type_t *matter;
-      size_t polymorphic_length;
-      const type_t *polymorphic[];
-    };
-
-    // JOIN_TYPE
-    struct {
-      size_t join_argc;
-      const type_t *join_argv[];
-    };
-  };
+  const mu_variable_type_t *argv[/* argc */];
 };
 
+/// @internal Used to emit each branch in mu_type_cast()
+#define MU_TYPE_CAST_EMIT(lower, upper, t) \
+  , const mu_##lower##_type_t *: _kind == MU_##upper##_TYPE
+
+/**
+ * @brief Downcast the @a abstract type to the <tt>typeof(concrete)</tt>
+ *
+ * @a abstract should have type <tt>const mu_type_t *</tt>. @a concrete should
+ * be, or have, the type of a pointer to a const qualified concrete type. Then
+ * if @a abstract is an instance of that type, it will be cast to that type and
+ * returned. Otherwise, this will return @c NULL.
+ *
+ * @par Example:
+ * @code{.c}
+ *   mu_type_t *abstract_type = ...;
+ *
+ *   mu_simple_type_t *type;
+ *   if ((type = mu_type_cast(abstract_type, type)) == NULL)
+ *     return ...;
+ * @endcode
+ *
+ * The behavior is undefined if:
+ * - @a abstract is @c NULL
+ * - @a abstract doesn't have type <tt>const mu_type_t *</tt>
+ * - @a concrete isn't, or doesn't have, the type of a const qualified pointer
+ *   to a concrete type
+ */
+#define mu_type_cast(abstract, concrete) ({ \
+    const mu_type_t *_abstract = (abstract); \
+    typeof(concrete) _concrete; \
+    \
+    mu_type_kind_t _kind = _abstract->kind; \
+    int _castable = _Generic(_concrete MU_EACH_TYPE_KIND(MU_TYPE_CAST_EMIT)); \
+    _castable ? (typeof(_concrete)) _abstract : NULL; \
+  })
+
 typedef struct {
-  const type_t *next;
+  const mu_variable_type_t *next;
 } type_link_t;
 
-typedef struct induce_t induce_t;
+const mu_simple_type_t *mu_boolean_type(induce_t *induce)
+  __attribute__((malloc, nonnull));
 
-const type_t *boolean_type(induce_t *induce);
-const type_t *integer_type(induce_t *induce);
+const mu_simple_type_t *mu_integer_type(induce_t *induce)
+  __attribute__((malloc, nonnull));
 
-const type_t *lambda_type(induce_t *induce, const type_t *argument, const type_t *output);
+const mu_simple_type_t *mu_lambda_type(
+    induce_t *induce, const mu_type_t *argument, const mu_type_t *output)
+  __attribute__((malloc, nonnull));
 
-const type_t *record_type(
-    induce_t *induce, size_t argc, const type_member_t argv[static argc]);
+mu_record_type_t *record_type_allocate(induce_t *induce, size_t argc)
+  __attribute__((malloc, nonnull));
 
-type_t *record_type_allocate(induce_t *induce, size_t argc);
+const mu_record_type_t *record_type_activate(mu_record_type_t *type)
+  __attribute__((nonnull));
 
-const type_t *record_type_activate(type_t *type);
+const mu_record_type_t *mu_record_type(
+    induce_t *induce, size_t argc, const mu_type_member_t argv[argc])
+  __attribute__((malloc, nonnull(1)));
 
-const type_t *vector_type(induce_t *induce, const type_t *matter);
-const type_t *join_type(induce_t *induce, size_t argc, const type_t *argv[]);
-type_t *join_type_allocate(induce_t *induce, size_t argc);
-const type_t *join_type_activate(type_t *type);
+const mu_simple_type_t *mu_vector_type(
+    induce_t *induce, const mu_type_t *matter)
+  __attribute__((malloc, nonnull));
 
-void debug_type(const type_t *type);
-void debug_variable_type_name(const type_t *type);
-void debug_just_type(const type_t *type);
+mu_scheme_type_t *scheme_type_allocate(induce_t *induce, size_t argc)
+  __attribute__((malloc, nonnull));
+
+const mu_scheme_type_t *scheme_type_activate(
+    mu_scheme_type_t *type, const mu_type_t *matter)
+  __attribute__((nonnull));
+
+const mu_scheme_type_t *mu_scheme_type(
+    induce_t *induce,
+    const mu_type_t *matter,
+    size_t argc,
+    const mu_variable_type_t *argv[argc])
+  __attribute__((malloc, nonnull(1, 2)));
+
+void debug_type(const mu_type_t *type);
+void debug_variable_type_name(const mu_variable_type_t *type);
+void debug_just_type(const mu_type_t *type);
 
 /// Compare the type member @a a to the type member @a b
 __attribute__((nonnull, pure))
 static inline int type_member_cmp(const void *a, const void *b) {
-  const type_member_t *ra = a, *rb = b;
+  const mu_type_member_t *ra = a, *rb = b;
   assert(ra->name != NULL && rb->name != NULL);
   return name_cmp(ra->name, rb->name);
 }
 
-static inline _Bool is_significant(const type_t *type) {
+static inline _Bool is_significant(const mu_variable_type_t *type) {
   return 1;
-  assert(type->kind == VARIABLE_TYPE);
   return type->positively_entered_from == type && type->negatively_entered_from == type
     || type->polymorphic_to != NULL;
 }
+
+/* /1* // JOIN_TYPE *1/ */
+/* /1* struct { *1/ */
+/* /1*   size_t join_argc; *1/ */
+/* /1*   const type_t *join_argv[]; *1/ */
+/* /1* }; *1/ */
+
+/* const type_t *join_type(induce_t *induce, size_t argc, const type_t *argv[]); */
+/* type_t *join_type_allocate(induce_t *induce, size_t argc); */
+/* const type_t *join_type_activate(type_t *type); */
 
 #endif /* MU_INDUCTOR_TYPE_I */

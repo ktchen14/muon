@@ -3,32 +3,51 @@
 
 #include <stdio.h>
 
-void debug_variable_type_name(const type_t *type);
-
-const type_t *boolean_type(induce_t *induce) {
-  type_t *result;
-  if ((result = malloc(sizeof(type_t))) == NULL)
+const mu_simple_type_t *mu_boolean_type(induce_t *induce) {
+  mu_simple_type_t *result;
+  if ((result = malloc(sizeof(mu_simple_type_t))) == NULL)
     return NULL;
-  *result = (type_t) { .kind = SIMPLE_TYPE, .core = induce->boolean_core };
+  *result = (mu_simple_type_t) {
+    .as_type.kind = MU_SIMPLE_TYPE,
+    .as_type.induce = induce,
+    .core = induce->boolean_core,
+  };
   return result;
 }
 
-const type_t *integer_type(induce_t *induce) {
-  type_t *result;
-  if ((result = malloc(sizeof(type_t))) == NULL)
+const mu_simple_type_t *mu_integer_type(induce_t *induce) {
+  mu_simple_type_t *result;
+  if ((result = malloc(sizeof(mu_simple_type_t))) == NULL)
     return NULL;
-  *result = (type_t) { .kind = SIMPLE_TYPE, .core = induce->integer_core };
+  *result = (mu_simple_type_t) {
+    .as_type.kind = MU_SIMPLE_TYPE,
+    .as_type.induce = induce,
+    .core = induce->integer_core,
+  };
   return result;
 }
 
-const type_t *lambda_type(induce_t *induce, const type_t *argument, const type_t *output) {
-  size_t size = struct_size(type_t, argv, 2);
-  assert(induce->lambda_core->argc == 2);
+const mu_simple_type_t *mu_lambda_type(
+    induce_t *induce, const mu_type_t *argument, const mu_type_t *output) {
+  assert(argument->induce == induce);
+  assert(argument->kind != MU_SCHEME_TYPE);
 
-  type_t *result;
+  assert(output->induce == induce);
+  assert(output->kind != MU_SCHEME_TYPE);
+
+  size_t size;
+  if (rare((size = struct_size(mu_simple_type_t, argv, 2)) == 0))
+    return errno = ENOMEM, NULL;
+
+  mu_simple_type_t *result;
   if ((result = malloc(size)) == NULL)
     return NULL;
-  *result = (type_t) { .kind = SIMPLE_TYPE, .core = induce->lambda_core };
+
+  *result = (mu_simple_type_t) {
+    .as_type.kind = MU_SIMPLE_TYPE,
+    .as_type.induce = induce,
+    .core = induce->lambda_core,
+  };
 
   result->argv[0] = argument;
   result->argv[1] = output;
@@ -36,222 +55,90 @@ const type_t *lambda_type(induce_t *induce, const type_t *argument, const type_t
   return result;
 }
 
-const type_t *record_type(
-    induce_t *induce, size_t argc, const type_member_t argv[static argc]) {
+mu_record_type_t *record_type_allocate(induce_t *induce, size_t argc) {
   size_t size;
-  if (rare((size = struct_size(type_t, schema, argc)) == 0))
+  if (rare((size = struct_size(mu_record_type_t, argv, argc)) == 0))
     return NULL;
 
-  type_t *result;
-  if (rare((result = malloc(size)) == NULL))
+  mu_record_type_t *result;
+  if ((result = malloc(size)) == NULL)
     return NULL;
-  *result = (type_t) { .kind = RECORD_TYPE, .argc = argc };
-  for (size_t i = 0; i < argc; i++)
-    result->schema[i] = argv[i];
-  return result;
-};
-
-type_t *record_type_allocate(induce_t *induce, size_t argc) {
-  size_t size;
-  if (rare((size = struct_size(type_t, schema, argc)) == 0))
-    return NULL;
-
-  type_t *result;
-  if (rare((result = malloc(size)) == NULL))
-    return NULL;
-  *result = (type_t) { .kind = RECORD_TYPE, .argc = argc };
+  *result = (mu_record_type_t) {
+    .as_type.kind = MU_RECORD_TYPE, .as_type.induce = induce, .argc = argc,
+  };
   return result;
 }
 
-const type_t *record_type_activate(type_t *type) {
+const mu_record_type_t *record_type_activate(mu_record_type_t *type) {
+  for (size_t i = 0; i < type->argc; i++) {
+    const mu_type_member_t *member = &type->argv[i];
+
+    assert(member->type->induce == type->as_type.induce);
+    assert(member->type->kind != MU_SCHEME_TYPE);
+  }
   return type;
 }
 
-const type_t *vector_type(induce_t *induce, const type_t *matter) {
-  size_t size = struct_size(type_t, argv, 1);
-  assert(induce->vector_core->argc == 1);
+const mu_record_type_t *mu_record_type(
+    induce_t *induce, size_t argc, const mu_type_member_t argv[argc]) {
+  mu_record_type_t *result;
+  if ((result = record_type_allocate(induce, argc)) == NULL)
+    return NULL;
 
-  type_t *result;
+  for (size_t i = 0; i < argc; i++)
+    result->argv[i] = argv[i];
+
+  return record_type_activate(result);
+};
+
+const mu_simple_type_t *mu_vector_type(
+    induce_t *induce, const mu_type_t *matter) {
+  assert(matter->induce == induce);
+  assert(matter->kind != MU_SCHEME_TYPE);
+
+  size_t size;
+  if (rare((size = struct_size(mu_simple_type_t, argv, 1)) == 0))
+    return errno = ENOMEM, NULL;
+
+  mu_simple_type_t *result;
   if ((result = malloc(size)) == NULL)
     return NULL;
-  *result = (type_t) { .kind = SIMPLE_TYPE, .core = induce->vector_core };
+  *result = (mu_simple_type_t) {
+    .as_type.kind = MU_SIMPLE_TYPE,
+    .as_type.induce = induce,
+    .core = induce->vector_core,
+  };
+
   result->argv[0] = matter;
 
   return result;
 }
 
-const type_t *join_type(induce_t *induce, size_t argc, const type_t *argv[]) {
+mu_scheme_type_t *scheme_type_allocate(induce_t *induce, size_t argc) {
   size_t size;
-  if (rare((size = struct_size(type_t, join_argv, argc)) == 0))
+  if (rare((size = struct_size(mu_scheme_type_t, argv, argc)) == 0))
     return NULL;
 
-  type_t *result;
+  mu_scheme_type_t *result;
   if ((result = malloc(size)) == NULL)
     return NULL;
-  *result = (type_t) { .kind = JOIN_TYPE, .join_argc = argc };
-  for (size_t i = 0; i < argc; i++)
-    result->join_argv[i] = argv[i];
+  *result = (mu_scheme_type_t) {
+    .as_type.kind = MU_SCHEME_TYPE, .as_type.induce = induce, .argc = argc,
+  };
   return result;
 }
 
-type_t *join_type_allocate(induce_t *induce, size_t argc) {
-  size_t size;
-  if (rare((size = struct_size(type_t, join_argv, argc)) == 0))
-    return NULL;
-
-  type_t *result;
-  if (rare((result = malloc(size)) == NULL))
-    return NULL;
-  *result = (type_t) { .kind = JOIN_TYPE, .argc = argc };
-  return result;
-}
-
-const type_t *join_type_activate(type_t *type) {
+const mu_scheme_type_t *scheme_type_activate(
+    mu_scheme_type_t *type, const mu_type_t *matter) {
+  for (size_t i = 0; i < type->argc; i++) {
+    assert(type->argv[i]->as_type.induce == type->as_type.induce);
+    assert(type->argv[i]->as_type.kind != MU_SCHEME_TYPE);
+  }
+  type->matter = matter;
   return type;
 }
 
-#include "../stator/debug.h"
-
-void debug_type(const type_t *type) {
-  extern _Thread_local _Bool debug_negate;
-
-  switch (type->kind) {
-    case SIMPLE_TYPE:
-      switch (type->core->kind) {
-        case MU_BOOLEAN_CORE:
-          fprintf(stderr, "Boolean"); break;
-
-        case MU_INTEGER_CORE:
-          fprintf(stderr, "Integer"); break;
-
-        case MU_LAMBDA_CORE:
-        {
-          fprintf(stderr, "(");
-          WITH_DEBUG_NEGATE() { debug_type(type->argv[0]); }
-          fprintf(stderr, " -> ");
-          debug_type(type->argv[1]);
-          fprintf(stderr, ")");
-          break;
-        }
-
-        case MU_VECTOR_CORE:
-          fprintf(stderr, "[");
-          debug_type(type->argv[0]);
-          fprintf(stderr, "]");
-          break;
-      }
-      break;
-
-    case RECORD_TYPE:
-      fprintf(stderr, "(");
-      for (size_t i = 0; i < type->argc; i++) {
-        const type_member_t *member = &type->schema[i];
-        if (i > 0)
-          fprintf(stderr, ", ");
-        mu_name_debug(member->name);
-        fprintf(stderr, ": ");
-        debug_type(member->type);
-      }
-      fprintf(stderr, ")");
-      break;
-
-    case VARIABLE_TYPE:
-      ;
-      if (debug_induce == NULL)
-        return;
-
-      _Bool already_printed = 0;
-      if (debug_negate) {
-        for (size_t i = 0; i < debug_induce->sub_length; i++) {
-          induce_sub_t sub = debug_induce->sub_data[i];
-          if (sub.lower != type)
-            continue;
-          if (sub.upper->kind == VARIABLE_TYPE) {
-            if (is_significant(sub.upper)) {
-              if (already_printed)
-                fprintf(stderr, " ⊓ ");
-              already_printed = 1;
-
-              debug_variable_type_name(sub.upper);
-            }
-          } else {
-            if (already_printed)
-              fprintf(stderr, " ⊓ ");
-            already_printed = 1;
-
-            debug_type(sub.upper);
-          }
-        }
-
-        if (is_significant(type)) {
-          if (already_printed)
-            fprintf(stderr, " ⊓ ");
-          debug_variable_type_name(type);
-        } else if (!already_printed) {
-          fprintf(stderr, "⊤");
-        }
-      } else {
-        for (size_t i = 0; i < debug_induce->sub_length; i++) {
-          induce_sub_t sub = debug_induce->sub_data[i];
-          if (sub.upper != type)
-            continue;
-          if (sub.lower->kind == VARIABLE_TYPE) {
-            if (is_significant(sub.lower)) {
-              if (already_printed > 0)
-                fprintf(stderr, " ⊔ ");
-              already_printed = 1;
-
-              debug_variable_type_name(sub.lower);
-            }
-          } else {
-            if (already_printed > 0)
-              fprintf(stderr, " ⊔ ");
-            already_printed = 1;
-
-            debug_type(sub.lower);
-          }
-        }
-
-        if (is_significant(type)) {
-          if (already_printed)
-            fprintf(stderr, " ⊔ ");
-          debug_variable_type_name(type);
-        } else if (!already_printed) {
-          fprintf(stderr, "⊥");
-        }
-      }
-      break;
-
-    case SCHEME_TYPE:
-      fprintf(stderr, "∀(");
-      for (size_t i = 0; i < type->polymorphic_length; i++) {
-        if (i > 0)
-          fprintf(stderr, ", ");
-        debug_variable_type_name(type->polymorphic[i]);
-      }
-      fprintf(stderr, ") ");
-
-      debug_type(type->matter);
-      break;
-
-    case JOIN_TYPE:
-      if (type->join_argc == 0) {
-        fprintf(stderr, "⊥");
-        break;
-      }
-
-      for (size_t i = 0; i < type->join_argc; i++) {
-        if (i > 0)
-          fprintf(stderr, " ⊔ ");
-        debug_type(type->join_argv[i]);
-      }
-      break;
-  }
-}
-
-void debug_variable_type_name(const type_t *type) {
-  assert(type->kind == VARIABLE_TYPE);
-
+void debug_variable_type_name(const mu_variable_type_t *type) {
   static _Atomic size_t next_number = 0;
   static const char *alphabet[] = {
     "α", "β", "γ", "δ", "ε", "ζ", "η", "θ", "ι", "κ", "μ", "ν", "ξ", "ο", "π",
@@ -260,7 +147,7 @@ void debug_variable_type_name(const type_t *type) {
 
   // Assign the variable type a number
   if (type->number == 0)
-    ((type_t *) type)->number = ++next_number;
+    ((mu_variable_type_t *) type)->number = ++next_number;
 
   char buffer[256];
 
@@ -275,12 +162,16 @@ void debug_variable_type_name(const type_t *type) {
   fprintf(stderr, "%s", name);
 }
 
-void debug_just_type(const type_t *type) {
+#include "../stator/debug.h"
+
+void debug_type(const mu_type_t *type) {
   extern _Thread_local _Bool debug_negate;
 
   switch (type->kind) {
-    case SIMPLE_TYPE:
-      switch (type->core->kind) {
+    case MU_SIMPLE_TYPE: {
+      const mu_simple_type_t *simple_type = (const mu_simple_type_t *) type;
+
+      switch (simple_type->core->kind) {
         case MU_BOOLEAN_CORE:
           fprintf(stderr, "Boolean"); break;
 
@@ -289,24 +180,181 @@ void debug_just_type(const type_t *type) {
 
         case MU_LAMBDA_CORE:
         {
-          WITH_DEBUG_NEGATE() { debug_just_type(type->argv[0]); }
+          fprintf(stderr, "(");
+          WITH_DEBUG_NEGATE() { debug_type(simple_type->argv[0]); }
           fprintf(stderr, " -> ");
-          debug_just_type(type->argv[1]);
+          debug_type(simple_type->argv[1]);
+          fprintf(stderr, ")");
           break;
         }
 
         case MU_VECTOR_CORE:
           fprintf(stderr, "[");
-          debug_just_type(type->argv[0]);
+          debug_type(simple_type->argv[0]);
           fprintf(stderr, "]");
           break;
       }
       break;
+    }
 
-    case RECORD_TYPE:
+    case MU_RECORD_TYPE: {
+      const mu_record_type_t *record_type = (const mu_record_type_t *) type;
+
       fprintf(stderr, "(");
-      for (size_t i = 0; i < type->argc; i++) {
-        const type_member_t *member = &type->schema[i];
+      for (size_t i = 0; i < record_type->argc; i++) {
+        const mu_type_member_t *member = &record_type->argv[i];
+        if (i > 0)
+          fprintf(stderr, ", ");
+        mu_name_debug(member->name);
+        fprintf(stderr, ": ");
+        debug_type(member->type);
+      }
+      fprintf(stderr, ")");
+      break;
+    }
+
+    case MU_VARIABLE_TYPE: {
+      const mu_variable_type_t *variable_type = (const mu_variable_type_t *) type;
+
+      if (debug_induce == NULL)
+        return;
+
+      _Bool already_printed = 0;
+      if (debug_negate) {
+        for (size_t i = 0; i < debug_induce->sub_length; i++) {
+          induce_sub_t sub = debug_induce->sub_data[i];
+          if (sub.lower != type)
+            continue;
+
+          const mu_variable_type_t *upper_variable_type;
+          if ((upper_variable_type = mu_type_cast(sub.upper, upper_variable_type)) != NULL) {
+            if (is_significant(upper_variable_type)) {
+              if (already_printed)
+                fprintf(stderr, " ⊓ ");
+              already_printed = 1;
+
+              debug_variable_type_name(upper_variable_type);
+            }
+          } else {
+            if (already_printed)
+              fprintf(stderr, " ⊓ ");
+            already_printed = 1;
+
+            debug_type(sub.upper);
+          }
+        }
+
+        if (is_significant(variable_type)) {
+          if (already_printed)
+            fprintf(stderr, " ⊓ ");
+          debug_variable_type_name(variable_type);
+        } else if (!already_printed) {
+          fprintf(stderr, "⊤");
+        }
+      } else {
+        for (size_t i = 0; i < debug_induce->sub_length; i++) {
+          induce_sub_t sub = debug_induce->sub_data[i];
+          if (sub.upper != type)
+            continue;
+
+          const mu_variable_type_t *lower_variable_type;
+          if ((lower_variable_type = mu_type_cast(sub.lower, lower_variable_type)) != NULL) {
+            if (is_significant(lower_variable_type)) {
+              if (already_printed > 0)
+                fprintf(stderr, " ⊔ ");
+              already_printed = 1;
+
+              debug_variable_type_name(lower_variable_type);
+            }
+          } else {
+            if (already_printed > 0)
+              fprintf(stderr, " ⊔ ");
+            already_printed = 1;
+
+            debug_type(sub.lower);
+          }
+        }
+
+        if (is_significant(variable_type)) {
+          if (already_printed)
+            fprintf(stderr, " ⊔ ");
+          debug_variable_type_name(variable_type);
+        } else if (!already_printed) {
+          fprintf(stderr, "⊥");
+        }
+      }
+      break;
+    }
+
+    case MU_SCHEME_TYPE: {
+      const mu_scheme_type_t *scheme_type = (const mu_scheme_type_t *) type;
+
+      fprintf(stderr, "∀(");
+      for (size_t i = 0; i < scheme_type->argc; i++) {
+        if (i > 0)
+          fprintf(stderr, ", ");
+        debug_variable_type_name(scheme_type->argv[i]);
+      }
+      fprintf(stderr, ") ");
+
+      debug_type(scheme_type->matter);
+      break;
+    }
+
+/*     case JOIN_TYPE: */
+/*       if (type->join_argc == 0) { */
+/*         fprintf(stderr, "⊥"); */
+/*         break; */
+/*       } */
+
+/*       for (size_t i = 0; i < type->join_argc; i++) { */
+/*         if (i > 0) */
+/*           fprintf(stderr, " ⊔ "); */
+/*         debug_type(type->join_argv[i]); */
+/*       } */
+/*       break; */
+  }
+}
+
+void debug_just_type(const mu_type_t *type) {
+  extern _Thread_local _Bool debug_negate;
+
+  switch (type->kind) {
+    case MU_SIMPLE_TYPE: {
+      const mu_simple_type_t *simple_type = (const mu_simple_type_t *) type;
+
+      switch (simple_type->core->kind) {
+        case MU_BOOLEAN_CORE:
+          fprintf(stderr, "Boolean"); break;
+
+        case MU_INTEGER_CORE:
+          fprintf(stderr, "Integer"); break;
+
+        case MU_LAMBDA_CORE:
+        {
+          fprintf(stderr, "(");
+          WITH_DEBUG_NEGATE() { debug_just_type(simple_type->argv[0]); }
+          fprintf(stderr, " -> ");
+          debug_just_type(simple_type->argv[1]);
+          fprintf(stderr, ")");
+          break;
+        }
+
+        case MU_VECTOR_CORE:
+          fprintf(stderr, "[");
+          debug_just_type(simple_type->argv[0]);
+          fprintf(stderr, "]");
+          break;
+      }
+      break;
+    }
+
+    case MU_RECORD_TYPE: {
+      const mu_record_type_t *record_type = (const mu_record_type_t *) type;
+
+      fprintf(stderr, "(");
+      for (size_t i = 0; i < record_type->argc; i++) {
+        const mu_type_member_t *member = &record_type->argv[i];
         if (i > 0)
           fprintf(stderr, ", ");
         mu_name_debug(member->name);
@@ -315,34 +363,71 @@ void debug_just_type(const type_t *type) {
       }
       fprintf(stderr, ")");
       break;
+    }
 
-    case VARIABLE_TYPE:
-      debug_variable_type_name(type);
+    case MU_VARIABLE_TYPE: {
+      const mu_variable_type_t *variable_type = (const mu_variable_type_t *) type;
+
+      debug_variable_type_name(variable_type);
       break;
+    }
 
-    case SCHEME_TYPE:
-      fprintf(stderr, "∀ (");
-      for (size_t i = 0; i < type->polymorphic_length; i++) {
+    case MU_SCHEME_TYPE: {
+      const mu_scheme_type_t *scheme_type = (const mu_scheme_type_t *) type;
+
+      fprintf(stderr, "∀(");
+      for (size_t i = 0; i < scheme_type->argc; i++) {
         if (i > 0)
           fprintf(stderr, ", ");
-        debug_variable_type_name(type->polymorphic[i]);
+        debug_variable_type_name(scheme_type->argv[i]);
       }
       fprintf(stderr, ") ");
 
-      debug_type(type->matter);
+      debug_just_type(scheme_type->matter);
       break;
+    }
 
-    case JOIN_TYPE:
-      if (type->join_argc == 0) {
-        fprintf(stderr, "⊥");
-        break;
-      }
+    /* case JOIN_TYPE: */
+    /*   if (type->join_argc == 0) { */
+    /*     fprintf(stderr, "⊥"); */
+    /*     break; */
+    /*   } */
 
-      for (size_t i = 0; i < type->join_argc; i++) {
-        if (i > 0)
-          fprintf(stderr, " ⊔ ");
-        debug_type(type->join_argv[i]);
-      }
-      break;
+    /*   for (size_t i = 0; i < type->join_argc; i++) { */
+    /*     if (i > 0) */
+    /*       fprintf(stderr, " ⊔ "); */
+    /*     debug_type(type->join_argv[i]); */
+    /*   } */
+    /*   break; */
   }
 }
+
+/* const type_t *join_type(induce_t *induce, size_t argc, const type_t *argv[]) { */
+/*   size_t size; */
+/*   if (rare((size = struct_size(type_t, join_argv, argc)) == 0)) */
+/*     return NULL; */
+
+/*   type_t *result; */
+/*   if ((result = malloc(size)) == NULL) */
+/*     return NULL; */
+/*   *result = (type_t) { .kind = JOIN_TYPE, .join_argc = argc }; */
+/*   for (size_t i = 0; i < argc; i++) */
+/*     result->join_argv[i] = argv[i]; */
+/*   return result; */
+/* } */
+
+/* type_t *join_type_allocate(induce_t *induce, size_t argc) { */
+/*   size_t size; */
+/*   if (rare((size = struct_size(type_t, join_argv, argc)) == 0)) */
+/*     return NULL; */
+
+/*   type_t *result; */
+/*   if (rare((result = malloc(size)) == NULL)) */
+/*     return NULL; */
+/*   *result = (type_t) { .kind = JOIN_TYPE, .argc = argc }; */
+/*   return result; */
+/* } */
+
+/* const type_t *join_type_activate(type_t *type) { */
+/*   return type; */
+/* } */

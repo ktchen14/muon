@@ -14,8 +14,8 @@
 #include <string.h>
 
 typedef struct {
-  const type_t *lower;
-  const type_t *upper;
+  const mu_type_t *lower;
+  const mu_type_t *upper;
 } induce_sub_t;
 
 typedef struct induce_t induce_t;
@@ -26,9 +26,8 @@ struct induce_t {
   const detect_result_t *detect;
 
   size_t node_length;
-  const mu_type_t **node_to_type;  /* const mu_type_t *[node_length] */
 
-  const type_t **node_to_type_actual; /* const type_t *[node_length] */
+  const mu_type_t **node_to_type; /* const type_t *[node_length] */
 
   size_t sub_volume;
   size_t sub_length;
@@ -49,7 +48,7 @@ struct open_scheme_t {
   const mu_node_t *node;
   open_scheme_t *parent;
   size_t rank;
-  type_t *link;
+  mu_variable_type_t *link;
 };
 
 extern _Thread_local induce_t *debug_induce;
@@ -63,10 +62,10 @@ induce_t *induce_initialize(
   __attribute__((nonnull));
 
 __attribute__((nonnull, pure, returns_nonnull))
-static inline const type_t *induce_reveal(
+static inline const mu_type_t *induce_reveal(
     const induce_t *induce, const mu_node_t *node) {
   assert(node->as_stator.id < induce->node_length);
-  const type_t *type = induce->node_to_type_actual[node->as_stator.id];
+  const mu_type_t *type = induce->node_to_type[node->as_stator.id];
   assert(type != NULL);
   return type;
 }
@@ -80,8 +79,6 @@ static inline const type_t *induce_reveal(
 const mu_type_t *induce_node(induce_t *inductor, const mu_node_t *node)
   __attribute__((nonnull));
 
-void debug_type(const type_t *type);
-
-void mark_type_from_anywhere_first(induce_t *induce, const type_t *root, type_link_t *link);
+void mark_type_from_anywhere_first(induce_t *induce, const mu_type_t *root, type_link_t *link);
 
 #endif /* MU_INDUCTOR_INDUCE_I */

@@ -13,347 +13,372 @@
 
 _Thread_local induce_t *debug_induce;
 
-const type_t *variable_type(induce_t *induce, open_scheme_t *scheme) {
-  type_t *result;
-  if ((result = malloc(sizeof(type_t))) == NULL)
+const mu_variable_type_t *variable_type(induce_t *induce, open_scheme_t *scheme) {
+  mu_variable_type_t *result;
+  if ((result = malloc(sizeof(mu_variable_type_t))) == NULL)
     return NULL;
 
-  *result = (type_t) {
-    .kind = VARIABLE_TYPE, .rank = scheme->rank, .next = scheme->link,
+  *result = (mu_variable_type_t) {
+    .as_type.kind = MU_VARIABLE_TYPE,
+    .as_type.induce = induce,
+    .scheme_next = scheme->link,
+    .rank = scheme->rank,
   };
-  scheme->link = result;
-  return result;
+  return scheme->link = result;
 }
 
 /// Register @a a <: @a b in the @a induce engine
-static const type_t *append(
-    induce_t *induce, const type_t *restrict a, const type_t *restrict b)
+static const mu_type_t *append(
+    induce_t *induce, const mu_type_t *restrict a, const mu_type_t *restrict b)
   __attribute__((nonnull));
 
 typedef struct {
-  const type_t *source;
-  const type_t *target;
+  const mu_type_t *source;
+  const mu_type_t *target;
 } cache_item;
 
-const type_t *instantiate_single_type(
-    induce_t *induce,
-    const type_t *type,
-    const type_t *scheme,
-    open_scheme_t *target_scheme,
-    cache_item *cache,
-    size_t *cache_i
-) {
-  for (size_t i = 0; i < 100; i++) {
-    if (cache[i].source == type)
-      return cache[i].target;
-  }
+/* const type_t *instantiate_single_type( */
+/*     induce_t *induce, */
+/*     const type_t *type, */
+/*     const type_t *scheme, */
+/*     open_scheme_t *target_scheme, */
+/*     cache_item *cache, */
+/*     size_t *cache_i */
+/* ) { */
+/*   for (size_t i = 0; i < 100; i++) { */
+/*     if (cache[i].source == type) */
+/*       return cache[i].target; */
+/*   } */
 
+/*   switch (type->kind) { */
+/*     case SIMPLE_TYPE: */
+/*       switch (type->core->kind) { */
+/*         case MU_BOOLEAN_CORE: */
+/*         case MU_INTEGER_CORE: */
+/*           cache[(*cache_i)++] = (cache_item) { type, type }; */
+/*           return type; */
+
+/*         case MU_LAMBDA_CORE: */
+/*         { */
+/*           const type_t *argv_0 = instantiate_single_type(induce, type->argv[0], scheme, target_scheme, cache, cache_i); */
+/*           const type_t *argv_1 = instantiate_single_type(induce, type->argv[1], scheme, target_scheme, cache, cache_i); */
+
+/*           const type_t *result = type; */
+/*           if (argv_0 != type->argv[0] || argv_1 == type->argv[1]) */
+/*             result = lambda_type(induce, argv_0, argv_1); */
+/*           cache[(*cache_i)++] = (cache_item) { type, result }; */
+/*           return result; */
+/*         } */
+
+/*         case MU_VECTOR_CORE: */
+/*         { */
+/*           const type_t *argv_0 = instantiate_single_type(induce, type->argv[0], scheme, target_scheme, cache, cache_i); */
+/*           const type_t *result = type; */
+/*           if (argv_0 != type->argv[0]) */
+/*             result = vector_type(induce, argv_0); */
+/*           cache[(*cache_i)++] = (cache_item) { type, result }; */
+/*           return result; */
+/*         } */
+/*       } */
+/*       break; */
+
+/*     case RECORD_TYPE: */
+/*     { */
+/*       type_t *mut; */
+/*       if ((mut = record_type_allocate(induce, type->argc)) == NULL) */
+/*         return NULL; */
+
+/*       _Bool is_same = 1; */
+/*       for (size_t i = 0; i < type->argc; i++) { */
+/*         mut->schema[i].name = type->schema[i].name; */
+/*         mut->schema[i].type = instantiate_single_type(induce, type->schema[i].type, scheme, target_scheme, cache, cache_i); */
+/*         if (mut->schema[i].type != type->schema[i].type) */
+/*           is_same = 0; */
+/*       } */
+
+/*       const type_t *result = type; */
+/*       if (!is_same) */
+/*         result = record_type_activate(mut); */
+/*       cache[(*cache_i)++] = (cache_item) { type, result }; */
+/*       return result; */
+/*     } */
+
+/*     case VARIABLE_TYPE: */
+/*     { */
+/*       if (type->polymorphic_to != scheme) */
+/*         return type; */
+
+/*       const type_t *newvar; */
+/*       if ((newvar = variable_type(induce, target_scheme)) == NULL) */
+/*         return NULL; */
+/*       cache[(*cache_i)++] = (cache_item) { type, newvar }; */
+
+/*       for (size_t i = 0; i < induce->sub_length; i++) { */
+/*         const induce_sub_t sub = induce->sub_data[i]; */
+/*         if (sub.lower == type) */
+/*           append(induce, newvar, instantiate_single_type(induce, sub.upper, scheme, target_scheme, cache, cache_i)); */
+/*         if (sub.upper == type) */
+/*           append(induce, instantiate_single_type(induce, sub.lower, scheme, target_scheme, cache, cache_i), newvar); */
+/*       } */
+
+/*       return newvar; */
+/*     } */
+
+/*     case SCHEME_TYPE: */
+/*       fprintf(stderr, "Unsupported higher rank polymorphism\n"); */
+/*       abort(); */
+
+/*     case JOIN_TYPE: */
+/*     { */
+/*       type_t *mut; */
+/*       if ((mut = join_type_allocate(induce, type->join_argc)) == NULL) */
+/*         return NULL; */
+
+/*       _Bool is_same = 1; */
+/*       for (size_t i = 0; i < type->argc; i++) { */
+/*         mut->join_argv[i] = instantiate_single_type(induce, type->join_argv[i], scheme, target_scheme, cache, cache_i); */
+/*         if (mut->join_argv[i] != type->join_argv[i]) */
+/*           is_same = 0; */
+/*       } */
+
+/*       const type_t *result = type; */
+/*       if (!is_same) */
+/*         result = join_type_activate(mut); */
+/*       cache[(*cache_i)++] = (cache_item) { type, result }; */
+/*       return result; */
+/*     } */
+/*   } */
+/* } */
+
+/* const type_t *instantiate_scheme( */
+/*     induce_t *induce, const type_t *type, open_scheme_t *target_scheme */
+/* ) { */
+/*   assert(type->kind == SCHEME_TYPE); */
+/*   cache_item cache[100] = {0}; */
+/*   size_t i = 0; */
+/*   return instantiate_single_type(induce, type->matter, type, target_scheme, cache, &i); */
+/* } */
+
+void mark_type(induce_t *induce, const mu_type_t *type, _Bool negative, size_t rank) {
   switch (type->kind) {
-    case SIMPLE_TYPE:
-      switch (type->core->kind) {
-        case MU_BOOLEAN_CORE:
-        case MU_INTEGER_CORE:
-          cache[(*cache_i)++] = (cache_item) { type, type };
-          return type;
+    case MU_SIMPLE_TYPE: {
+      const mu_simple_type_t *simple_type = (const mu_simple_type_t *) type;
 
-        case MU_LAMBDA_CORE:
-        {
-          const type_t *argv_0 = instantiate_single_type(induce, type->argv[0], scheme, target_scheme, cache, cache_i);
-          const type_t *argv_1 = instantiate_single_type(induce, type->argv[1], scheme, target_scheme, cache, cache_i);
-
-          const type_t *result = type;
-          if (argv_0 != type->argv[0] || argv_1 == type->argv[1])
-            result = lambda_type(induce, argv_0, argv_1);
-          cache[(*cache_i)++] = (cache_item) { type, result };
-          return result;
-        }
-
-        case MU_VECTOR_CORE:
-        {
-          const type_t *argv_0 = instantiate_single_type(induce, type->argv[0], scheme, target_scheme, cache, cache_i);
-          const type_t *result = type;
-          if (argv_0 != type->argv[0])
-            result = vector_type(induce, argv_0);
-          cache[(*cache_i)++] = (cache_item) { type, result };
-          return result;
-        }
-      }
-      break;
-
-    case RECORD_TYPE:
-    {
-      type_t *mut;
-      if ((mut = record_type_allocate(induce, type->argc)) == NULL)
-        return NULL;
-
-      _Bool is_same = 1;
-      for (size_t i = 0; i < type->argc; i++) {
-        mut->schema[i].name = type->schema[i].name;
-        mut->schema[i].type = instantiate_single_type(induce, type->schema[i].type, scheme, target_scheme, cache, cache_i);
-        if (mut->schema[i].type != type->schema[i].type)
-          is_same = 0;
-      }
-
-      const type_t *result = type;
-      if (!is_same)
-        result = record_type_activate(mut);
-      cache[(*cache_i)++] = (cache_item) { type, result };
-      return result;
-    }
-
-    case VARIABLE_TYPE:
-    {
-      if (type->polymorphic_to != scheme)
-        return type;
-
-      const type_t *newvar;
-      if ((newvar = variable_type(induce, target_scheme)) == NULL)
-        return NULL;
-      cache[(*cache_i)++] = (cache_item) { type, newvar };
-
-      for (size_t i = 0; i < induce->sub_length; i++) {
-        const induce_sub_t sub = induce->sub_data[i];
-        if (sub.lower == type)
-          append(induce, newvar, instantiate_single_type(induce, sub.upper, scheme, target_scheme, cache, cache_i));
-        if (sub.upper == type)
-          append(induce, instantiate_single_type(induce, sub.lower, scheme, target_scheme, cache, cache_i), newvar);
-      }
-
-      return newvar;
-    }
-
-    case SCHEME_TYPE:
-      fprintf(stderr, "Unsupported higher rank polymorphism\n");
-      abort();
-
-    case JOIN_TYPE:
-    {
-      type_t *mut;
-      if ((mut = join_type_allocate(induce, type->join_argc)) == NULL)
-        return NULL;
-
-      _Bool is_same = 1;
-      for (size_t i = 0; i < type->argc; i++) {
-        mut->join_argv[i] = instantiate_single_type(induce, type->join_argv[i], scheme, target_scheme, cache, cache_i);
-        if (mut->join_argv[i] != type->join_argv[i])
-          is_same = 0;
-      }
-
-      const type_t *result = type;
-      if (!is_same)
-        result = join_type_activate(mut);
-      cache[(*cache_i)++] = (cache_item) { type, result };
-      return result;
-    }
-  }
-}
-
-const type_t *instantiate_scheme(
-    induce_t *induce, const type_t *type, open_scheme_t *target_scheme
-) {
-  assert(type->kind == SCHEME_TYPE);
-  cache_item cache[100] = {0};
-  size_t i = 0;
-  return instantiate_single_type(induce, type->matter, type, target_scheme, cache, &i);
-}
-
-void mark_type(induce_t *induce, const type_t *type, _Bool negative, size_t rank) {
-  switch (type->kind) {
-    case SIMPLE_TYPE:
-      switch (type->core->kind) {
+      switch (simple_type->core->kind) {
         case MU_BOOLEAN_CORE: break;
         case MU_INTEGER_CORE: break;
 
         case MU_LAMBDA_CORE:
-          mark_type(induce, type->argv[0], !negative, rank);
-          mark_type(induce, type->argv[1], negative, rank);
+          mark_type(induce, simple_type->argv[0], !negative, rank);
+          mark_type(induce, simple_type->argv[1], negative, rank);
           break;
 
         case MU_VECTOR_CORE:
-          mark_type(induce, type->argv[0], negative, rank);
+          mark_type(induce, simple_type->argv[0], negative, rank);
           break;
       }
       break;
+    }
 
-    case RECORD_TYPE:
-      for (size_t i = 0; i < type->argc; i++)
-        mark_type(induce, type->schema[i].type, negative, rank);
+    case MU_RECORD_TYPE: {
+      const mu_record_type_t *record_type = (const mu_record_type_t *) type;
+
+      for (size_t i = 0; i < record_type->argc; i++)
+        mark_type(induce, record_type->argv[i].type, negative, rank);
       break;
+    }
 
-    case VARIABLE_TYPE:
-      if (type->rank < rank)
+    case MU_VARIABLE_TYPE: {
+      const mu_variable_type_t *variable_type = (const mu_variable_type_t *) type;
+
+      if (variable_type->rank < rank)
         return;
 
       if (!negative) {
-        ((type_t *) type)->positively_reachable = 1;
+        ((mu_variable_type_t *) variable_type)->positively_reachable = 1;
 
         for (size_t i = 0; i < induce->sub_length; i++) {
           induce_sub_t sub = induce->sub_data[i];
-          if (sub.upper != type)
+          if (sub.upper != &variable_type->as_type)
             continue;
           mark_type(induce, sub.lower, negative, rank);
         }
       } else {
-        ((type_t *) type)->negatively_reachable = 1;
+        ((mu_variable_type_t *) variable_type)->negatively_reachable = 1;
 
         for (size_t i = 0; i < induce->sub_length; i++) {
           induce_sub_t sub = induce->sub_data[i];
-          if (sub.lower != type)
+          if (sub.lower != &variable_type->as_type)
             continue;
           mark_type(induce, sub.upper, negative, rank);
         }
       }
       break;
+    }
 
-    case SCHEME_TYPE:
+    case MU_SCHEME_TYPE:
       abort();
 
-    case JOIN_TYPE:
-      if (negative)
-        return;
+    /* case JOIN_TYPE: */
+    /*   if (negative) */
+    /*     return; */
 
-      for (size_t i = 0; i < type->join_argc; i++)
-        mark_type(induce, type->join_argv[i], negative, rank);
-      break;
+    /*   for (size_t i = 0; i < type->join_argc; i++) */
+    /*     mark_type(induce, type->join_argv[i], negative, rank); */
+    /*   break; */
   }
 }
 
-void mark_type_from_anywhere(induce_t *induce, const type_t *type, _Bool negative, const type_t *origin, type_link_t *link) {
+void mark_type_from_anywhere(
+    induce_t *induce,
+    const mu_type_t *type,
+    _Bool negative,
+    const mu_variable_type_t *origin,
+    type_link_t *link) {
   switch (type->kind) {
-    case SIMPLE_TYPE:
-      switch (type->core->kind) {
+    case MU_SIMPLE_TYPE: {
+      const mu_simple_type_t *simple_type = (const mu_simple_type_t *) type;
+
+      switch (simple_type->core->kind) {
         case MU_BOOLEAN_CORE: break;
         case MU_INTEGER_CORE: break;
 
         case MU_LAMBDA_CORE:
-          mark_type_from_anywhere(induce, type->argv[0], !negative, type, link);
-          mark_type_from_anywhere(induce, type->argv[1], negative, type, link);
+          mark_type_from_anywhere(induce, simple_type->argv[0], !negative, NULL, link);
+          mark_type_from_anywhere(induce, simple_type->argv[1], negative, NULL, link);
           break;
 
         case MU_VECTOR_CORE:
-          mark_type_from_anywhere(induce, type->argv[0], negative, type, link);
+          mark_type_from_anywhere(induce, simple_type->argv[0], negative, NULL, link);
           break;
       }
       break;
+    }
 
-    case RECORD_TYPE:
-      for (size_t i = 0; i < type->argc; i++)
-        mark_type_from_anywhere(induce, type->schema[i].type, negative, type, link);
+    case MU_RECORD_TYPE: {
+      const mu_record_type_t *record_type = (const mu_record_type_t *) type;
+
+      for (size_t i = 0; i < record_type->argc; i++)
+        mark_type_from_anywhere(induce, record_type->argv[i].type, negative, NULL, link);
       break;
+    }
 
-    case VARIABLE_TYPE:
-      if (origin->kind != VARIABLE_TYPE)
-        origin = type;
+    case MU_VARIABLE_TYPE: {
+      const mu_variable_type_t *variable_type = (const mu_variable_type_t *) type;
+
+      if (origin == NULL)
+        origin = variable_type;
 
       // Add the variable to the link unless it's already there
-      if (type->debug_next == NULL) {
-        ((type_t *) type)->debug_next = link->next;
-        link->next = type;
+      if (variable_type->debug_next == NULL) {
+        ((mu_variable_type_t *) variable_type)->debug_next = link->next;
+        link->next = variable_type;
       }
 
       if (!negative) {
         // If we've never entered type this, then just use the origin
-        if (type->positively_entered_from == NULL) {
-          ((type_t *) type)->positively_entered_from = origin;
+        if (variable_type->positively_entered_from == NULL) {
+          ((mu_variable_type_t *) variable_type)->positively_entered_from = origin;
 
         // We can't override an earlier origin of itself
-        } else if (type->positively_entered_from == type) {
+        } else if (variable_type->positively_entered_from == variable_type) {
 
         // If we entered this type before, then we need to establish how that
         // earlier entrance relates to this origin
         } else {
-          const type_t *earlier_origin = type->positively_entered_from;
+          const mu_variable_type_t *earlier_origin = variable_type->positively_entered_from;
 
           for (size_t i = 0; i < induce->sub_length; i++) {
             induce_sub_t sub = induce->sub_data[i];
 
             // If this origin is a subtype of the earlier origin, then use this
             // origin instead
-            if (sub.lower == origin && sub.upper == earlier_origin) {
-              ((type_t *) type)->positively_entered_from = origin;
+            if (sub.lower == &origin->as_type && sub.upper == &earlier_origin->as_type) {
+              ((mu_variable_type_t *) variable_type)->positively_entered_from = origin;
               goto found_positive;
 
             // If this origin is a supertype of the earlier origin, then keep
             // the earlier origin
-            } else if (sub.lower == earlier_origin && sub.upper == origin) {
+            } else if (sub.lower == &earlier_origin->as_type && sub.upper == &origin->as_type) {
               goto found_positive;
             }
           }
 
           // If we found no relationship, then mark the variable as multihomed
           // by marking it as its own "entered from"
-          ((type_t *) type)->positively_entered_from = type;
+          ((mu_variable_type_t *) variable_type)->positively_entered_from = variable_type;
 
           found_positive:;
         }
 
         for (size_t i = 0; i < induce->sub_length; i++) {
           induce_sub_t sub = induce->sub_data[i];
-          if (sub.upper != type)
+          if (sub.upper != &variable_type->as_type)
             continue;
-          mark_type_from_anywhere(induce, sub.lower, negative, type, link);
+          mark_type_from_anywhere(induce, sub.lower, negative, variable_type, link);
         }
       } else {
         // If we've never entered type this, then just use the origin
-        if (type->negatively_entered_from == NULL) {
-          ((type_t *) type)->negatively_entered_from = origin;
+        if (variable_type->negatively_entered_from == NULL) {
+          ((mu_variable_type_t *) variable_type)->negatively_entered_from = origin;
 
         // We can't override an earlier origin of itself
-        } else if (type->negatively_entered_from == type) {
+        } else if (variable_type->negatively_entered_from == variable_type) {
 
         // If we entered this type before, then we need to establish how that
         // earlier entrance relates to this origin
         } else {
-          const type_t *earlier_origin = type->negatively_entered_from;
+          const mu_variable_type_t *earlier_origin = variable_type->negatively_entered_from;
 
           for (size_t i = 0; i < induce->sub_length; i++) {
             induce_sub_t sub = induce->sub_data[i];
 
             // If this origin is a supertype of the earlier origin, then use this
             // origin instead
-            if (sub.lower == earlier_origin && sub.upper == origin) {
-              ((type_t *) type)->negatively_entered_from = origin;
+            if (sub.lower == &earlier_origin->as_type && sub.upper == &origin->as_type) {
+              ((mu_variable_type_t *) variable_type)->negatively_entered_from = origin;
               goto found_negative;
 
             // If this origin is a subtype of the earlier origin, then keep
             // the earlier origin
-            } else if (sub.lower == origin && sub.upper == earlier_origin) {
+            } else if (sub.lower == &origin->as_type && sub.upper == &earlier_origin->as_type) {
               goto found_negative;
             }
           }
 
           // If we found no relationship, then mark the variable as multihomed
           // by marking it as its own "entered from"
-          ((type_t *) type)->negatively_entered_from = type;
+          ((mu_variable_type_t *) variable_type)->negatively_entered_from = variable_type;
 
           found_negative:;
         }
 
         for (size_t i = 0; i < induce->sub_length; i++) {
           induce_sub_t sub = induce->sub_data[i];
-          if (sub.lower != type)
+          if (sub.lower != &variable_type->as_type)
             continue;
-          mark_type_from_anywhere(induce, sub.upper, negative, type, link);
+          mark_type_from_anywhere(induce, sub.upper, negative, variable_type, link);
         }
       }
       break;
+    }
 
-    case SCHEME_TYPE:
+    case MU_SCHEME_TYPE:
       return;
       abort();
 
-    case JOIN_TYPE:
-      if (negative)
-        return;
+    /* case JOIN_TYPE: */
+    /*   if (negative) */
+    /*     return; */
 
-      for (size_t i = 0; i < type->join_argc; i++)
-        mark_type_from_anywhere(induce, type->join_argv[i], negative, type, link);
-      break;
+    /*   for (size_t i = 0; i < type->join_argc; i++) */
+    /*     mark_type_from_anywhere(induce, type->join_argv[i], negative, type, link); */
+    /*   break; */
   }
 }
 
-void mark_type_from_anywhere_first(induce_t *induce, const type_t *root, type_link_t *link) {
-  mark_type_from_anywhere(induce, root, 0, root, link);
+void mark_type_from_anywhere_first(induce_t *induce, const mu_type_t *root, type_link_t *link) {
+  mark_type_from_anywhere(induce, root, 0, NULL, link);
 }
 
 open_scheme_t *open_scheme(open_scheme_t *parent, const mu_node_t *node) {
@@ -363,25 +388,6 @@ open_scheme_t *open_scheme(open_scheme_t *parent, const mu_node_t *node) {
   *result = (open_scheme_t) {
     .induce = parent->induce, .node = node, .parent = parent, .rank = parent->rank + 1,
   };
-  return result;
-}
-
-const type_t *scheme_type(induce_t *induce, const type_t *matter, size_t polymorphic_length, const type_t *head) {
-  size_t size;
-  if (rare((size = struct_size(type_t, polymorphic, polymorphic_length)) == 0))
-    return NULL;
-
-  type_t *result;
-  if ((result = malloc(size)) == NULL)
-    return NULL;
-  *result = (type_t) {
-    .kind = SCHEME_TYPE, .matter = matter, .polymorphic_length = polymorphic_length
-  };
-
-  size_t i = 0;
-  for (const type_t *type = head; type != NULL; type = type->next)
-    result->polymorphic[i++] = type;
-
   return result;
 }
 
@@ -399,11 +405,11 @@ const type_t *scheme_type(induce_t *induce, const type_t *matter, size_t polymor
  * @param b the type to restrict to a supertype of @a a
  */
 static induce_t *restrict_type(
-    induce_t *induce, const type_t *a, const type_t *b)
+    induce_t *induce, const mu_type_t *a, const mu_type_t *b)
   __attribute__((nonnull));
 
 /// Induce the type of the abstract @a node with the @a induce engine
-static const type_t *node_induce(const mu_node_t *node, induce_t *induce, open_scheme_t *scheme)
+static const mu_type_t *node_induce(const mu_node_t *node, induce_t *induce, open_scheme_t *scheme)
   __attribute__((nonnull));
 
 induce_t *induce_initialize(
@@ -419,11 +425,6 @@ induce_t *induce_initialize(
   if ((node_to_type = malloc(sizeof(const mu_type_t *[node_length]))) == NULL)
     return NULL;
   for (size_t i = 0; i < node_length; node_to_type[i++] = NULL);
-
-  const type_t **node_to_type_actual;
-  if ((node_to_type_actual = malloc(sizeof(const mu_type_t *[node_length]))) == NULL)
-    return NULL;
-  for (size_t i = 0; i < node_length; node_to_type_actual[i++] = NULL);
 
   size_t sub_volume = 1;
   induce_sub_t *sub_data;
@@ -471,7 +472,6 @@ induce_t *induce_initialize(
     .detect = detect_result(detect),
     .node_length = node_length,
     .node_to_type = node_to_type,
-    .node_to_type_actual = node_to_type_actual,
     .sub_volume = sub_volume,
     .sub_data = sub_data,
 
@@ -504,7 +504,7 @@ const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
     }
 
     // Induce the type of the node
-    const type_t *type;
+    const mu_type_t *type;
     if ((type = node_induce(node, induce, scheme)) == NULL)
       return NULL;
 
@@ -514,15 +514,15 @@ const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
       scheme = parent;
     }
 
-    induce->node_to_type_actual[node->as_stator.id] = type;
+    induce->node_to_type[node->as_stator.id] = type;
   } while ((node = node_return(node)) != NULL);
 
   return (const mu_type_t *) induce_reveal(induce, root);
 }
 
 static induce_t *restrict_type(
-    induce_t *induce, const type_t *a, const type_t *b) {
-  assert(a->kind != SCHEME_TYPE && b->kind != SCHEME_TYPE);
+    induce_t *induce, const mu_type_t *a, const mu_type_t *b) {
+  assert(a->kind != MU_SCHEME_TYPE && b->kind != MU_SCHEME_TYPE);
 
   if (a == b)
     return induce;
@@ -533,36 +533,42 @@ static induce_t *restrict_type(
       return induce;
   }
 
-  if (a->kind == SIMPLE_TYPE && b->kind == SIMPLE_TYPE) {
-    if (a->core != b->core) {
+  if (a->kind == MU_SIMPLE_TYPE && b->kind == MU_SIMPLE_TYPE) {
+    const mu_simple_type_t *simple_a = (const mu_simple_type_t *) a;
+    const mu_simple_type_t *simple_b = (const mu_simple_type_t *) b;
+
+    if (simple_a->core != simple_b->core) {
       fprintf(stderr, "Type mismatch\n");
       abort();
     }
 
-    const mu_core_t *core = a->core;
+    const mu_core_t *core = simple_a->core;
 
     for (size_t i = 0; i < core->argc; i++) {
-      const type_t *lower = a->argv[i], *upper = b->argv[i];
+      const mu_type_t *lower = simple_a->argv[i], *upper = simple_b->argv[i];
 
       mu_variance_t variance = core->variance[i];
       assert(variance != MU_INVARIANCE);
       if (variance == MU_CONTRAVARIANCE) {
-        const type_t *t = lower; lower = upper; upper = t;
+        const mu_type_t *t = lower; lower = upper; upper = t;
       }
 
       if (restrict_type(induce, lower, upper) == NULL)
         return NULL;
     }
 
-    append(induce, a, b);
+    append(induce, &simple_a->as_type, &simple_b->as_type);
     return induce;
   }
 
-  if (a->kind == RECORD_TYPE && b->kind == RECORD_TYPE) {
-    for (size_t j = 0; j < b->argc; j++) {
-      for (size_t i = 0; i < a->argc; i++) {
-        if (a->schema[i].name == b->schema[j].name) {
-          if (restrict_type(induce, a->schema[i].type, b->schema[j].type) == NULL)
+  if (a->kind == MU_RECORD_TYPE && b->kind == MU_RECORD_TYPE) {
+    const mu_record_type_t *record_a = (const mu_record_type_t *) a;
+    const mu_record_type_t *record_b = (const mu_record_type_t *) b;
+
+    for (size_t j = 0; j < record_b->argc; j++) {
+      for (size_t i = 0; i < record_a->argc; i++) {
+        if (record_a->argv[i].name == record_b->argv[j].name) {
+          if (restrict_type(induce, record_a->argv[i].type, record_b->argv[j].type) == NULL)
             return NULL;
           goto next;
         }
@@ -574,27 +580,29 @@ static induce_t *restrict_type(
     next:;
     }
 
-    append(induce, a, b);
+    append(induce, &record_a->as_type, &record_b->as_type);
     return induce;
   }
 
-  if (a->kind != VARIABLE_TYPE && b->kind != VARIABLE_TYPE) {
+  if (a->kind != MU_VARIABLE_TYPE && b->kind != MU_VARIABLE_TYPE) {
     fprintf(stderr, "Type mismatch\n");
     abort();
   }
 
-  if (a->kind == VARIABLE_TYPE) {
+  const mu_variable_type_t *variable_a;
+  if ((variable_a = mu_type_cast(a, variable_a)) != NULL) {
     for (size_t i = 0; i < induce->sub_length; i++) {
-      if (induce->sub_data[i].upper != a)
+      if (induce->sub_data[i].upper != &variable_a->as_type)
         continue;
       if (restrict_type(induce, induce->sub_data[i].lower, b) == NULL)
         return NULL;
     }
   }
 
-  if (b->kind == VARIABLE_TYPE) {
+  const mu_variable_type_t *variable_b;
+  if ((variable_b = mu_type_cast(b, variable_b)) != NULL) {
     for (size_t j = 0; j < induce->sub_length; j++) {
-      if (induce->sub_data[j].lower != b)
+      if (induce->sub_data[j].lower != &variable_b->as_type)
         continue;
       if (restrict_type(induce, a, induce->sub_data[j].upper) == NULL)
         return NULL;
@@ -605,8 +613,8 @@ static induce_t *restrict_type(
   return induce;
 }
 
-static const type_t *append(
-    induce_t *induce, const type_t *restrict a, const type_t *restrict b) {
+static const mu_type_t *append(
+    induce_t *induce, const mu_type_t *restrict a, const mu_type_t *restrict b) {
   for (size_t i = 0; i < induce->sub_length; i++) {
     induce_sub_t sub = induce->sub_data[i];
     if (sub.lower == a && sub.upper == b)
@@ -639,95 +647,98 @@ static const type_t *append(
 
 // ---------------------------------- Expr -------------------------------- {{{1
 
-__attribute__((nonnull)) static const type_t *access_expr_induce(
+__attribute__((nonnull)) static const mu_type_t *access_expr_induce(
     const mu_access_expr_t *expr, induce_t *induce, open_scheme_t *scheme) {
-  const type_t *result;
+  const mu_variable_type_t *result;
   if ((result = variable_type(induce, scheme)) == NULL)
     return NULL;
 
-  const type_t *record_ty;
-  const type_member_t argv[] = {
-    { .name = expr->name, .type = result }
+  const mu_record_type_t *record_type;
+  const mu_type_member_t argv[] = {
+    { .name = expr->name, .type = &result->as_type }
   };
-  if ((record_ty = record_type(induce, 1, argv)) == NULL)
+  if ((record_type = mu_record_type(induce, 1, argv)) == NULL)
     return NULL;
 
-  const type_t *matter_type = induce_reveal(induce, &expr->matter->as_node);
-  if (restrict_type(induce, matter_type, record_ty) == NULL)
+  const mu_type_t *matter_type = induce_reveal(induce, &expr->matter->as_node);
+  if (restrict_type(induce, matter_type, &record_type->as_type) == NULL)
     return NULL;
-  return result;
+  return &result->as_type;
 }
 
-__attribute__((nonnull)) static const type_t *boolean_expr_induce(
+__attribute__((nonnull)) static const mu_type_t *boolean_expr_induce(
     const mu_boolean_expr_t *expr, induce_t *induce, open_scheme_t *scheme) {
-  return boolean_type(induce);
+  const mu_simple_type_t *result;
+  if ((result = mu_boolean_type(induce)) == NULL)
+    return NULL;
+  return &result->as_type;
 }
 
-__attribute__((nonnull)) static const type_t *coerce_expr_induce(
+__attribute__((nonnull)) static const mu_type_t *coerce_expr_induce(
     const mu_coerce_expr_t *expr, induce_t *induce, open_scheme_t *scheme) {
   assert(0);
 }
 
-__attribute__((nonnull)) static const type_t *integer_expr_induce(
+__attribute__((nonnull)) static const mu_type_t *integer_expr_induce(
     const mu_integer_expr_t *expr, induce_t *induce, open_scheme_t *scheme) {
-  return integer_type(induce);
+  const mu_simple_type_t *result;
+  if ((result = mu_integer_type(induce)) == NULL)
+    return NULL;
+  return &result->as_type;
 }
 
-__attribute__((nonnull)) static const type_t *invoke_expr_induce(
+__attribute__((nonnull)) static const mu_type_t *invoke_expr_induce(
     const mu_invoke_expr_t *expr, induce_t *induce, open_scheme_t *scheme) {
-  const type_t *lambda = induce_reveal(induce, &expr->lambda->as_node);
-  const type_t *matter = induce_reveal(induce, &expr->matter->as_node);
+  const mu_type_t *lambda = induce_reveal(induce, &expr->lambda->as_node);
+  const mu_type_t *matter = induce_reveal(induce, &expr->matter->as_node);
 
-  /* if (lambda->kind == SIMPLE_TYPE && lambda->core == induce->lambda_core) { */
-  /*   if (restrict_type(induce, matter, lambda->argv[0]) == NULL) */
-  /*     return NULL; */
-  /*   return lambda->argv[1]; */
-  /* } */
-
-  const type_t *result;
+  const mu_variable_type_t *result;
   if ((result = variable_type(induce, scheme)) == NULL)
     return NULL;
 
-  const type_t *lambda_ty;
-  if ((lambda_ty = lambda_type(induce, matter, result)) == NULL)
+  const mu_simple_type_t *lambda_type;
+  if ((lambda_type = mu_lambda_type(induce, matter, &result->as_type)) == NULL)
     return NULL;
 
-  if (restrict_type(induce, lambda, lambda_ty) == NULL)
+  if (restrict_type(induce, lambda, &lambda_type->as_type) == NULL)
     return NULL;
-  return result;
+  return &result->as_type;
 }
 
-__attribute__((nonnull)) static const type_t *lambda_expr_induce(
+__attribute__((nonnull)) static const mu_type_t *lambda_expr_induce(
     const mu_lambda_expr_t *expr, induce_t *induce, open_scheme_t *scheme) {
-  const type_t *argument = induce_reveal(induce, &expr->argument->as_node);
-  const type_t *output = induce_reveal(induce, &expr->matter->as_node);
+  const mu_type_t *argument = induce_reveal(induce, &expr->argument->as_node);
+  const mu_type_t *output = induce_reveal(induce, &expr->matter->as_node);
 
-  const type_t *result = lambda_type(induce, argument, output);
-  return result;
+  const mu_simple_type_t *result;
+  if ((result = mu_lambda_type(induce, argument, output)) == NULL)
+    return NULL;
+  return &result->as_type;
 }
 
-__attribute__((nonnull)) static const type_t *name_expr_induce(
+__attribute__((nonnull)) static const mu_type_t *name_expr_induce(
     const mu_name_expr_t *expr, induce_t *induce, open_scheme_t *scheme) {
   const mu_node_t *target;
   if ((target = detect_evince(induce->detect, &expr->as_node)) == NULL) {
     abort();
-    const type_t *result = variable_type(induce, scheme);
-    return result;
+    const mu_variable_type_t *result;
+    if ((result = variable_type(induce, scheme)) == NULL)
+      return NULL;
+    return &result->as_type;
   }
 
-  const type_t *result = induce_reveal(induce, target);
-  if (result->kind != SCHEME_TYPE) {
+  const mu_type_t *result = induce_reveal(induce, target);
+  if (result->kind != MU_SCHEME_TYPE)
     return result;
-  }
 
   // Instantiate the polymorphic type
-  result = instantiate_scheme(induce, result, scheme);
+  /* result = instantiate_scheme(induce, result, scheme); */
   return result;
 }
 
-__attribute__((nonnull)) static const type_t *record_expr_induce(
+__attribute__((nonnull)) static const mu_type_t *record_expr_induce(
     const mu_record_expr_t *expr, induce_t *induce, open_scheme_t *scheme) {
-  type_t *allocation;
+  mu_record_type_t *allocation;
   if ((allocation = record_type_allocate(induce, expr->argc)) == NULL)
     return NULL;
 
@@ -736,109 +747,121 @@ __attribute__((nonnull)) static const type_t *record_expr_induce(
     const mu_name_t *member_name = expr->argv[k].name;
     const mu_expr_t *member_expr = expr->argv[k].expr;
 
-    type_member_t member = {
+    mu_type_member_t member = {
       .name = member_name, .type = induce_reveal(induce, &member_expr->as_node),
     };
-    allocation->schema[member.name == NULL ? i++ : --j] = member;
+    allocation->argv[member.name == NULL ? i++ : --j] = member;
   }
   assert(i == j);
   qsort(&allocation->argv[j], expr->argc - j, sizeof(mu_expr_member_t),
       type_member_cmp);
   // TODO: check for duplicates
 
-  const type_t *result = record_type_activate(allocation);
-  return result;
+  const mu_record_type_t *result;
+  if (rare((result = record_type_activate(allocation)) == NULL))
+    return NULL;
+  return &result->as_type;
 }
 
-__attribute__((nonnull)) static const type_t *sequence_expr_induce(
+__attribute__((nonnull)) static const mu_type_t *sequence_expr_induce(
     const mu_sequence_expr_t *expr, induce_t *induce, open_scheme_t *scheme) {
-  const type_t *result = induce_reveal(induce, &expr->output->as_node);
+  const mu_type_t *result = induce_reveal(induce, &expr->output->as_node);
   return result;
 }
 
-__attribute__((nonnull)) static const type_t *vector_expr_induce(
+__attribute__((nonnull)) static const mu_type_t *vector_expr_induce(
     const mu_vector_expr_t *expr, induce_t *induce, open_scheme_t *scheme) {
-  const type_t *matter_type;
+  const mu_variable_type_t *matter_type;
   if ((matter_type = variable_type(induce, scheme)) == NULL)
     return NULL;
 
   for (size_t i = 0; i < expr->argc; i++) {
-    const type_t *type = induce_reveal(induce, &expr->argv[i]->as_node);
-    if (restrict_type(induce, type, matter_type) == NULL)
+    const mu_type_t *type = induce_reveal(induce, &expr->argv[i]->as_node);
+    if (restrict_type(induce, type, &matter_type->as_type) == NULL)
       return NULL;
   }
 
-  const type_t *result = vector_type(induce, matter_type);
-  return result;
+  const mu_simple_type_t *result;
+  if ((result = mu_vector_type(induce, &matter_type->as_type)) == NULL)
+    return NULL;
+  return &result->as_type;
 }
 
-__attribute__((nonnull)) static const type_t *zero_expr_induce(
+__attribute__((nonnull)) static const mu_type_t *zero_expr_induce(
     const mu_zero_expr_t *expr, induce_t *induce, open_scheme_t *scheme) {
-  const type_t *result = variable_type(induce, scheme);
-  return result;
+  const mu_variable_type_t *result;
+  if ((result = variable_type(induce, scheme)) == NULL)
+    return NULL;
+  return &result->as_type;
 }
 
 // ---------------------------------- Sign -------------------------------- {{{1
 
-__attribute__((nonnull)) static const type_t *boolean_sign_induce(
+__attribute__((nonnull)) static const mu_type_t *boolean_sign_induce(
     const mu_boolean_sign_t *sign, induce_t *induce, open_scheme_t *scheme) {
-  return boolean_type(induce);
+  const mu_simple_type_t *result;
+  if ((result = mu_boolean_type(induce)) == NULL)
+    return NULL;
+  return &result->as_type;
 }
 
-__attribute__((nonnull)) static const type_t *integer_sign_induce(
+__attribute__((nonnull)) static const mu_type_t *integer_sign_induce(
     const mu_integer_sign_t *sign, induce_t *induce, open_scheme_t *scheme) {
-  return integer_type(induce);
+  const mu_simple_type_t *result;
+  if ((result = mu_integer_type(induce)) == NULL)
+    return NULL;
+  return &result->as_type;
 }
 
-__attribute__((nonnull)) static const type_t *name_sign_induce(
+__attribute__((nonnull)) static const mu_type_t *name_sign_induce(
     const mu_name_sign_t *sign, induce_t *induce, open_scheme_t *scheme) {
   const mu_node_t *target;
   if ((target = detect_evince(induce->detect, &sign->as_node)) != NULL)
     return induce_reveal(induce, target);
 
-  const type_t *result;
+  const mu_variable_type_t *result;
   if ((result = variable_type(induce, scheme)) == NULL)
     return NULL;
-  return result;
+  return &result->as_type;
 }
 
-__attribute__((nonnull)) static const type_t *record_sign_induce(
+__attribute__((nonnull)) static const mu_type_t *record_sign_induce(
     const mu_record_sign_t *sign, induce_t *induce, open_scheme_t *scheme) {
   assert(0);
 }
 
-__attribute__((nonnull)) static const type_t *variable_sign_induce(
+__attribute__((nonnull)) static const mu_type_t *variable_sign_induce(
     const mu_variable_sign_t *sign, induce_t *induce, open_scheme_t *scheme) {
   assert(0);
 }
 
-__attribute__((nonnull)) static const type_t *vector_sign_induce(
+__attribute__((nonnull)) static const mu_type_t *vector_sign_induce(
     const mu_vector_sign_t *sign, induce_t *induce, open_scheme_t *scheme) {
-  const type_t *matter = induce_reveal(induce, &sign->matter->as_node);
+  const mu_type_t *matter = induce_reveal(induce, &sign->matter->as_node);
 
-  const type_t *result;
-  if ((result = vector_type(induce, matter)) == NULL)
+  const mu_simple_type_t *result;
+  if ((result = mu_vector_type(induce, matter)) == NULL)
     return NULL;
-  return result;
+  return &result->as_type;
 }
 
 // ---------------------------------- Stmt -------------------------------- {{{1
 
-__attribute__((nonnull, pure)) static const type_t *define_stmt_induce(
+__attribute__((nonnull, pure)) static const mu_type_t *define_stmt_induce(
     const mu_define_stmt_t *stmt, induce_t *induce, open_scheme_t *scheme) {
   assert(scheme->node == &stmt->as_node);
 
-  const type_t *expr_type = induce_reveal(induce, &stmt->expr->as_node);
+  const mu_type_t *expr_type = induce_reveal(induce, &stmt->expr->as_node);
   mark_type(induce, expr_type, 0, scheme->rank);
 
   size_t polymorphic_length = 0;
-  type_t *polymorphic = NULL;
+  mu_variable_type_t *polymorphic = NULL;
 
-  type_t *type = scheme->link;
+  mu_variable_type_t *type = scheme->link;
   while (type != NULL) {
     assert(type->rank == scheme->rank);
 
-    type_t *next = type->next;
+    mu_variable_type_t *next = type->scheme_next;
 
     /* Does a type have to be both positively reachable and negatively reachable
      * from the type of the defined expr to be polymorphic? */
@@ -865,12 +888,12 @@ __attribute__((nonnull, pure)) static const type_t *define_stmt_induce(
      * constrained by kind. For now, just do this:
      */
     if (type->positively_reachable && type->negatively_reachable) {
-      type->next = polymorphic;
+      type->scheme_next = polymorphic;
       polymorphic = type;
       type->rank = 0;
       polymorphic_length++;
     } else {
-      type->next = scheme->parent->link;
+      type->scheme_next = scheme->parent->link;
       scheme->parent->link = type;
       type->rank--;
     }
@@ -881,34 +904,40 @@ __attribute__((nonnull, pure)) static const type_t *define_stmt_induce(
   if (polymorphic_length == 0)
     return expr_type;
 
-  const type_t *result;
-  if ((result = scheme_type(induce, expr_type, polymorphic_length, polymorphic)) == NULL)
+  mu_scheme_type_t *allocation;
+  if ((allocation = scheme_type_allocate(induce, polymorphic_length)) == NULL)
     return NULL;
 
-  for (type_t *type = polymorphic; type != NULL; type = type->next)
-    type->polymorphic_to = result;
+  size_t i = 0;
+  for (mu_variable_type_t *type = polymorphic; type != NULL; type = type->scheme_next) {
+    allocation->argv[i++] = type;
+    type->polymorphic_to = allocation;
+  }
 
-  return result;
+  const mu_scheme_type_t *result;
+  if (rare((result = scheme_type_activate(allocation, expr_type)) == NULL))
+    return NULL;
+  return &result->as_type;
 }
 
-__attribute__((nonnull)) static const type_t *type_stmt_induce(
+__attribute__((nonnull)) static const mu_type_t *type_stmt_induce(
     const mu_type_stmt_t *stmt, induce_t *induce, open_scheme_t *scheme) {
   assert(0);
 }
 
 // ---------------------------------- View -------------------------------- {{{1
 
-__attribute__((nonnull)) static const type_t *variable_view_induce(
+__attribute__((nonnull)) static const mu_type_t *variable_view_induce(
     const mu_variable_view_t *view, induce_t *induce, open_scheme_t *scheme) {
-  const type_t *result;
+  const mu_variable_type_t *result;
   if ((result = variable_type(induce, scheme)) == NULL)
     return NULL;
-  return result;
+  return &result->as_type;
 }
 
 // -------------------------------- Abstract ------------------------------ {{{1
 
-static const type_t *node_induce(const mu_node_t *node, induce_t *induce, open_scheme_t *scheme) {
+static const mu_type_t *node_induce(const mu_node_t *node, induce_t *induce, open_scheme_t *scheme) {
   switch (node->kind) {
 #define MU_EMIT(lower, upper, t) \
     case MU_##upper##_NODE: \
