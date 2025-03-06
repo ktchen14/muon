@@ -222,7 +222,7 @@ const mu_sequence_expr_t *sequence_expr_activate(mu_sequence_expr_t *expr) {
   }
 
   mu_sequence_expr_t source = {
-    .as_expr.kind = MU_RECORD_EXPR, .argc = expr->argc
+    .as_expr.kind = MU_SEQUENCE_EXPR, .argc = expr->argc
   };
   memcpy(expr, &source, offsetof(mu_sequence_expr_t, argv));
   return assign_node(engine, expr);
