@@ -219,7 +219,7 @@
     typeof(concrete) _concrete; \
     \
     mu_view_kind_t _kind = _abstract->kind; \
-    int _castable = _Generic(_concrete MU_EACH_STMT_KIND(MU_STMT_CAST_EMIT)); \
+    int _castable = _Generic(_concrete MU_EACH_STMT_KIND(MU_VIEW_CAST_EMIT)); \
     _castable ? (typeof(_concrete)) _abstract : NULL; \
   })
 
