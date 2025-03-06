@@ -43,9 +43,7 @@ struct type_t {
 
     // VARIABLE_TYPE
     struct {
-      const type_t *next;
-
-      const type_t *debug_next;
+      type_t *next;
 
       // Used to generate a name
       size_t number;
@@ -56,6 +54,7 @@ struct type_t {
       _Bool positively_reachable;
       _Bool negatively_reachable;
 
+      const type_t *debug_next;
       const type_t *positively_entered_from;
       const type_t *negatively_entered_from;
     };

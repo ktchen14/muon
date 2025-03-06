@@ -832,13 +832,13 @@ __attribute__((nonnull, pure)) static const type_t *define_stmt_induce(
   mark_type(induce, expr_type, 0, scheme->rank);
 
   size_t polymorphic_length = 0;
-  const type_t *polymorphic = NULL;
+  type_t *polymorphic = NULL;
 
-  const type_t *type = scheme->link;
+  type_t *type = scheme->link;
   while (type != NULL) {
     assert(type->rank == scheme->rank);
 
-    const type_t *next = type->next;
+    type_t *next = type->next;
 
     /* Does a type have to be both positively reachable and negatively reachable
      * from the type of the defined expr to be polymorphic? */
@@ -865,14 +865,14 @@ __attribute__((nonnull, pure)) static const type_t *define_stmt_induce(
      * constrained by kind. For now, just do this:
      */
     if (type->positively_reachable && type->negatively_reachable) {
-      ((type_t *) type)->next = polymorphic;
+      type->next = polymorphic;
       polymorphic = type;
-      ((type_t *) type)->rank = 0;
+      type->rank = 0;
       polymorphic_length++;
     } else {
-      ((type_t *) type)->next = scheme->parent->link;
+      type->next = scheme->parent->link;
       scheme->parent->link = type;
-      ((type_t *) type)->rank--;
+      type->rank--;
     }
 
     type = next;
@@ -885,8 +885,8 @@ __attribute__((nonnull, pure)) static const type_t *define_stmt_induce(
   if ((result = scheme_type(induce, expr_type, polymorphic_length, polymorphic)) == NULL)
     return NULL;
 
-  for (const type_t *type = polymorphic; type != NULL; type = type->next)
-    ((type_t *) type)->polymorphic_to = result;
+  for (type_t *type = polymorphic; type != NULL; type = type->next)
+    type->polymorphic_to = result;
 
   return result;
 }

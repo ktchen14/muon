@@ -49,7 +49,7 @@ struct open_scheme_t {
   const mu_node_t *node;
   open_scheme_t *parent;
   size_t rank;
-  const type_t *link;
+  type_t *link;
 };
 
 extern _Thread_local induce_t *debug_induce;
