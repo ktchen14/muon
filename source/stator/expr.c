@@ -96,6 +96,19 @@ const mu_name_expr_t *mu_name_expr(mu_engine_t *engine, const mu_name_t *name) {
   return assign_node(engine, result);
 }
 
+const mu_native_expr_t *mu_native_expr(mu_engine_t *engine, const mu_name_t *name) {
+  assert(name->as_stator.engine == engine);
+
+  mu_native_expr_t *result;
+  if ((result = node_allocate(engine, sizeof(mu_native_expr_t))) == NULL)
+    return NULL;
+  *result = (mu_native_expr_t) {
+    .as_expr.kind = MU_NATIVE_EXPR, .name = name,
+  };
+  return assign_node(engine, result);
+}
+
+
 const mu_record_expr_t *mu_record_expr(
     mu_engine_t *engine, size_t argc, const mu_expr_member_t argv[]) {
   assert(argc == 0 && argv == NULL || argc != 0 && argv != NULL);
