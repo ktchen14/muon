@@ -727,6 +727,18 @@ __attribute__((nonnull)) static const mu_type_t *name_expr_induce(
   return result;
 }
 
+__attribute__((nonnull)) static const mu_type_t *native_expr_induce(
+    const mu_native_expr_t *expr, induce_t *induce, open_scheme_t *scheme) {
+  const mu_simple_type_t *matter_type;
+  if ((matter_type = mu_integer_type(induce)) == NULL)
+    return NULL;
+
+  const mu_simple_type_t *result;
+  if ((result = mu_vector_type(induce, &matter_type->as_type)) == NULL)
+    return NULL;
+  return &result->as_type;
+}
+
 __attribute__((nonnull)) static const mu_type_t *record_expr_induce(
     const mu_record_expr_t *expr, induce_t *induce, open_scheme_t *scheme) {
   mu_record_type_t *allocation;
