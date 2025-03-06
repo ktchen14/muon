@@ -81,6 +81,11 @@ typedef struct {
 } mu_name_expr_t;
 
 typedef struct {
+  MU_EXPR_HEADER;
+  const mu_name_t *name;
+} mu_native_expr_t;
+
+typedef struct {
   const mu_name_t *name; // optional
   const mu_expr_t *expr;
 } mu_expr_member_t;
@@ -132,6 +137,9 @@ const mu_lambda_expr_t *mu_lambda_expr(
 const mu_name_expr_t *mu_name_expr(mu_engine_t *engine, const mu_name_t *name)
   __attribute__((malloc, nonnull));
 
+const mu_native_expr_t *mu_native_expr(mu_engine_t *engine, const mu_name_t *name)
+  __attribute__((malloc, nonnull));
+
 const mu_record_expr_t *mu_record_expr(
     mu_engine_t *engine, size_t argc, const mu_expr_member_t argv[/* argc */])
   __attribute__((malloc, nonnull(1)));
@@ -173,6 +181,10 @@ void mu_lambda_expr_debug(const mu_lambda_expr_t *expr)
 
 /// Emit debugging information on the name @a expr to the debug stream
 void mu_name_expr_debug(const mu_name_expr_t *expr)
+  __attribute__((nonnull));
+
+/// Emit debugging information on the native @a expr to the debug stream
+void mu_native_expr_debug(const mu_native_expr_t *expr)
   __attribute__((nonnull));
 
 /// Emit debugging information on the record @a expr to the debug stream

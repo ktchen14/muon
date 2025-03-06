@@ -56,9 +56,16 @@ static inline const mu_node_t *lambda_expr_at(
 }
 
 /// Return the <em>i</em>th node in the name @a expr
-__attribute__((nonnull, pure))
+__attribute__((const, nonnull))
 static inline const mu_node_t *name_expr_at(
     const mu_name_expr_t *expr, size_t i) {
+  return NULL;
+}
+
+/// Return the <em>i</em>th node in the native @a expr
+__attribute__((const, nonnull))
+static inline const mu_node_t *native_expr_at(
+    const mu_native_expr_t *expr, size_t i) {
   return NULL;
 }
 

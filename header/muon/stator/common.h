@@ -12,6 +12,7 @@
   emit(invoke, INVOKE, Invoke, ##__VA_ARGS__) \
   emit(lambda, LAMBDA, Lambda, ##__VA_ARGS__) \
   emit(name, NAME, Name, ##__VA_ARGS__) \
+  emit(native, NATIVE, Native, ##__VA_ARGS__) \
   emit(record, RECORD, Record, ##__VA_ARGS__) \
   emit(sequence, SEQUENCE, Sequence, ##__VA_ARGS__) \
   emit(vector, VECTOR, Vector, ##__VA_ARGS__) \
