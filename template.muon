@@ -1,2 +1,2 @@
-define id = lambda x = x
-define access = lambda x = x.foo x.bar
+define list = [1]
+define x = handle_list list

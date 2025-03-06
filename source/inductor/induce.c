@@ -729,12 +729,18 @@ __attribute__((nonnull)) static const mu_type_t *name_expr_induce(
 
 __attribute__((nonnull)) static const mu_type_t *native_expr_induce(
     const mu_native_expr_t *expr, induce_t *induce, open_scheme_t *scheme) {
-  const mu_simple_type_t *matter_type;
-  if ((matter_type = mu_integer_type(induce)) == NULL)
+  const mu_simple_type_t *integer_type;
+  if ((integer_type = mu_integer_type(induce)) == NULL)
     return NULL;
 
+  const mu_simple_type_t *vector_type;
+  if ((vector_type = mu_vector_type(induce, &integer_type->as_type)) == NULL)
+    return NULL;
+
+  const mu_type_t *argument_type = &vector_type->as_type;
+  const mu_type_t *output_type = &integer_type->as_type;
   const mu_simple_type_t *result;
-  if ((result = mu_vector_type(induce, &matter_type->as_type)) == NULL)
+  if ((result = mu_lambda_type(induce, argument_type, output_type)) == NULL)
     return NULL;
   return &result->as_type;
 }
