@@ -20,7 +20,7 @@ target_include_directories(muon PUBLIC
 set_property(TARGET muon PROPERTY VERSION "${Muon_VERSION}")
 
 add_executable(main)
-target_compile_options(main PRIVATE -Wall -Wextra -Wno-unused-parameter)
+target_compile_options(main PRIVATE -Wall -Wextra -Wno-unused-parameter "-Wno-logical-op-parentheses")
 target_link_libraries(main PRIVATE muon)
 
 add_compile_options(-Werror -Wall -Wextra -Wno-unused-parameter)

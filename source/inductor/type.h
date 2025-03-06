@@ -57,9 +57,7 @@ struct type_t {
       _Bool negatively_reachable;
 
       const type_t *positively_entered_from;
-      _Bool positively_multihomed;
       const type_t *negatively_entered_from;
-      _Bool negatively_multihomed;
     };
 
     // SCHEME_TYPE
@@ -107,10 +105,8 @@ void debug_just_type(const type_t *type);
 static inline _Bool is_significant(const type_t *type) {
   return 1;
   assert(type->kind == VARIABLE_TYPE);
-  return (
-    (type->positively_entered_from == type || type->positively_multihomed) &&
-    (type->negatively_entered_from == type || type->negatively_multihomed)
-  ) || type->polymorphic_to != NULL;
+  return type->positively_entered_from == type && type->negatively_entered_from == type
+    || type->polymorphic_to != NULL;
 }
 
 #endif /* MU_INDUCTOR_TYPE_I */

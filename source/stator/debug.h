@@ -73,9 +73,7 @@ static inline void debug_node_type(const mu_node_t *node) {
   const type_t *next = link.next;
   while (next != &sentinel) {
     ((type_t *) next)->negatively_entered_from = NULL;
-    ((type_t *) next)->negatively_multihomed = 0;
     ((type_t *) next)->positively_entered_from = NULL;
-    ((type_t *) next)->positively_multihomed = 0;
 
     const type_t *real_next = next->debug_next;
     ((type_t *) next)->debug_next = NULL;

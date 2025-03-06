@@ -7,6 +7,7 @@ Diagnostics:
   # MissingIncludes: Strict
   UnusedIncludes: Strict
   Suppress:
+  - logical-op-parentheses
   - unused-function
   - unused-variable
 

@@ -259,9 +259,6 @@ void mark_type_from_anywhere(induce_t *induce, const type_t *type, _Bool negativ
         // We can't override an earlier origin of itself
         } else if (type->positively_entered_from == type) {
 
-        // If the variable is already positively multihomed, do nothing
-        } else if (type->positively_multihomed) {
-
         // If we entered this type before, then we need to establish how that
         // earlier entrance relates to this origin
         } else {
@@ -284,7 +281,8 @@ void mark_type_from_anywhere(induce_t *induce, const type_t *type, _Bool negativ
           }
 
           // If we found no relationship, then mark the variable as multihomed
-          ((type_t *) type)->positively_multihomed = 1;
+          // by marking it as its own "entered from"
+          ((type_t *) type)->positively_entered_from = type;
 
           found_positive:;
         }
@@ -302,9 +300,6 @@ void mark_type_from_anywhere(induce_t *induce, const type_t *type, _Bool negativ
 
         // We can't override an earlier origin of itself
         } else if (type->negatively_entered_from == type) {
-
-        // If the variable is already negatively multihomed, do nothing
-        } else if (type->negatively_multihomed) {
 
         // If we entered this type before, then we need to establish how that
         // earlier entrance relates to this origin
@@ -328,7 +323,8 @@ void mark_type_from_anywhere(induce_t *induce, const type_t *type, _Bool negativ
           }
 
           // If we found no relationship, then mark the variable as multihomed
-          ((type_t *) type)->negatively_multihomed = 1;
+          // by marking it as its own "entered from"
+          ((type_t *) type)->negatively_entered_from = type;
 
           found_negative:;
         }
