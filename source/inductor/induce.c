@@ -765,8 +765,10 @@ __attribute__((nonnull)) static const mu_type_t *record_expr_induce(
 
 __attribute__((nonnull)) static const mu_type_t *sequence_expr_induce(
     const mu_sequence_expr_t *expr, induce_t *induce, open_scheme_t *scheme) {
-  const mu_type_t *result = induce_reveal(induce, &expr->output->as_node);
-  return result;
+  const mu_variable_type_t *result;
+  if ((result = variable_type(induce, scheme)) == NULL)
+    return NULL;
+  return &result->as_type;
 }
 
 __attribute__((nonnull)) static const mu_type_t *vector_expr_induce(

@@ -2,18 +2,7 @@
 #define MU_STATOR_NODE_H
 
 #include "abstract_node.h"  // IWYU pragma: export
-
-#include "access_expr.h"    // IWYU pragma: export
-#include "boolean_expr.h"   // IWYU pragma: export
-#include "coerce_expr.h"    // IWYU pragma: export
-#include "integer_expr.h"   // IWYU pragma: export
-#include "invoke_expr.h"    // IWYU pragma: export
-#include "lambda_expr.h"    // IWYU pragma: export
-#include "name_expr.h"      // IWYU pragma: export
-#include "record_expr.h"    // IWYU pragma: export
-#include "sequence_expr.h"  // IWYU pragma: export
-#include "vector_expr.h"    // IWYU pragma: export
-#include "zero_expr.h"      // IWYU pragma: export
+#include "expr.h"           // IWYU pragma: export
 
 #include "boolean_sign.h"   // IWYU pragma: export
 #include "integer_sign.h"   // IWYU pragma: export
