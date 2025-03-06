@@ -2,7 +2,78 @@
 #define MU_INDUCTOR_TYPE_I
 
 #include "core.h"
-#include "../stator.h"
+#include "../stator/name.h"
+
+#include <assert.h>
+
+/// Expands to emit(lower, upper, title, ...) for each kind of type
+#define MU_EACH_TYPE_KIND(emit, ...) \
+  emit(simple, SIMPLE, Simple, ##__VA_ARGS__) \
+  emit(record, RECORD, Record, ##__VA_ARGS__) \
+  emit(variable, VARIABLE, Variable, ##__VA_ARGS__) \
+  emit(scheme, SCHEME, Scheme, ##__VA_ARGS__)
+
+/// An enumeration over each kind of type
+typedef enum {
+#define MU_EMIT(l, upper, t) MU_##upper##_TYPE,
+  MU_EACH_TYPE_KIND(MU_EMIT)
+#undef MU_EMIT
+} mu_type_kind_t;
+
+/// An abstract type
+typedef struct {
+  mu_type_kind_t kind;
+} mu_type_t;
+
+/// The header that each concrete type must have
+#define MU_TYPE_HEADER mu_type_t as_type
+
+/// A simple type
+typedef struct {
+  MU_TYPE_HEADER;
+
+  const mu_core_t *core;
+  const mu_type_t *argv[/* core->argc */];
+} mu_simple_type_t;
+
+/// A record type member
+typedef struct {
+  const mu_name_t *name;
+  const mu_type_t *type;
+} mu_type_member_t;
+
+/// A record type
+typedef struct {
+  size_t argc;
+  mu_type_member_t argv[/* argc */];
+} mu_record_type_t;
+
+/// A variable type
+typedef struct mu_variable_type_t mu_variable_type_t;
+struct mu_variable_type_t {
+  mu_variable_type_t *scheme_next;
+
+  size_t number; ///< Used to generate a name
+
+  size_t rank;
+  const mu_type_t *polymorphic_to;
+
+  _Bool positively_reachable;
+  _Bool negatively_reachable;
+
+  const mu_type_t *debug_next;
+  const mu_type_t *positively_entered_from;
+  const mu_type_t *negatively_entered_from;
+};
+
+/// A scheme type
+typedef struct {
+  const mu_type_t *matter;
+
+  /// Length of list of polymorphic variables
+  size_t argc;
+  const mu_type_t *argv[/* argc */];
+} mu_scheme_type_t;
 
 typedef struct type_t type_t;
 
@@ -10,14 +81,6 @@ typedef struct {
   const mu_name_t *name;
   const type_t *type;
 } type_member_t;
-
-/// Compare the type member @a a to the type member @a b
-__attribute__((nonnull, pure))
-static inline int type_member_cmp(const void *a, const void *b) {
-  const type_member_t *ra = a, *rb = b;
-  assert(ra->name != NULL && rb->name != NULL);
-  return name_cmp(ra->name, rb->name);
-}
 
 struct type_t {
   enum {
@@ -100,6 +163,14 @@ const type_t *join_type_activate(type_t *type);
 void debug_type(const type_t *type);
 void debug_variable_type_name(const type_t *type);
 void debug_just_type(const type_t *type);
+
+/// Compare the type member @a a to the type member @a b
+__attribute__((nonnull, pure))
+static inline int type_member_cmp(const void *a, const void *b) {
+  const type_member_t *ra = a, *rb = b;
+  assert(ra->name != NULL && rb->name != NULL);
+  return name_cmp(ra->name, rb->name);
+}
 
 static inline _Bool is_significant(const type_t *type) {
   return 1;
