@@ -278,6 +278,16 @@ void mu_name_expr_debug(const mu_name_expr_t *expr) {
   putc('\n', stderr);
 }
 
+void mu_native_expr_debug(const mu_native_expr_t *expr) {
+  fprintf(stderr, "%*s", debug_indent, "");
+  fprintf(stderr, PRIsKIND "#" PRIuID "(name = ",
+      DEBUG_KIND("NativeExpr"), DEBUG_ID(expr->as_stator.id));
+  mu_name_debug(expr->name);
+  putc(')', stderr);
+  debug_node_type(&expr->as_node);
+  putc('\n', stderr);
+}
+
 /// Emit debugging information on the expr @a member to the debug stream
 static void expr_member_debug(mu_expr_member_t member);
 
