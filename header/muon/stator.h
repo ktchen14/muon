@@ -20,12 +20,10 @@
       const mu_sign_t *: 0 MU_EACH_SIGN_KIND(MU_CAST_EMIT, _SIGN_STATOR), \
       const mu_stmt_t *: 0 MU_EACH_STMT_KIND(MU_CAST_EMIT, _STMT_STATOR), \
       const mu_view_t *: 0 MU_EACH_VIEW_KIND(MU_CAST_EMIT, _VIEW_STATOR), \
-      const mu_type_t *: 0 MU_EACH_TYPE_KIND(MU_CAST_EMIT, _TYPE_STATOR) \
       MU_EACH_EXPR_KIND(MU_EXPR_CAST_EMIT, _STATOR) \
       MU_EACH_SIGN_KIND(MU_SIGN_CAST_EMIT, _STATOR) \
       MU_EACH_STMT_KIND(MU_STMT_CAST_EMIT, _STATOR) \
       MU_EACH_VIEW_KIND(MU_VIEW_CAST_EMIT, _STATOR) \
-      MU_EACH_TYPE_KIND(MU_TYPE_CAST_EMIT, _STATOR)); \
     _castable ? (typeof(_concrete)) _abstract : NULL; \
   })
 

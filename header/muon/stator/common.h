@@ -35,15 +35,6 @@
 #define MU_EACH_VIEW_KIND(emit, ...) \
   emit(variable, VARIABLE, Variable, ##__VA_ARGS__)
 
-/// Expands to emit(lower, upper, title, ...) for each kind of type
-#define MU_EACH_TYPE_KIND(emit, ...) \
-  emit(boolean, BOOLEAN, Boolean, ##__VA_ARGS__) \
-  emit(integer, INTEGER, Integer, ##__VA_ARGS__) \
-  emit(lambda, LAMBDA, Lambda, ##__VA_ARGS__) \
-  emit(record, RECORD, Record, ##__VA_ARGS__) \
-  emit(variable, VARIABLE, Variable, ##__VA_ARGS__) \
-  emit(vector, VECTOR, Vector, ##__VA_ARGS__)
-
 /// @internal Used to emit each abstract branch in a cast
 #define MU_CAST_EMIT(l, upper, t, ...) || _kind == MU_##upper##__VA_ARGS__
 
@@ -58,7 +49,6 @@ typedef enum {
   MU_EACH_SIGN_KIND(MU_EMIT, SIGN)
   MU_EACH_STMT_KIND(MU_EMIT, STMT)
   MU_EACH_VIEW_KIND(MU_EMIT, VIEW)
-  MU_EACH_TYPE_KIND(MU_EMIT, TYPE)
 #undef MU_EMIT
 } mu_stator_kind_t;
 
