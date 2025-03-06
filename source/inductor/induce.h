@@ -37,9 +37,6 @@ struct induce_t {
   const mu_core_t *integer_core;
   const mu_core_t *lambda_core;
   const mu_core_t *vector_core;
-
-  /* Map of each define stmt to its parent define stmt */
-  const mu_node_t **define_stmt_map;
 };
 
 typedef struct open_scheme_t open_scheme_t;
