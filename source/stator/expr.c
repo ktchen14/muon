@@ -110,6 +110,54 @@ const mu_record_expr_t *mu_record_expr(
   return record_expr_activate(result);
 }
 
+const mu_sequence_expr_t *mu_sequence_expr(
+    mu_engine_t *engine, size_t argc, const mu_stmt_t *const argv[]) {
+  assert(argc == 0 && argv == NULL || argc != 0 && argv != NULL);
+
+  mu_sequence_expr_t *result;
+  if ((result = sequence_expr_allocate(engine, argc)) == NULL)
+    return NULL;
+
+  if (argc > 0)
+    memcpy(&result->argv, argv, sizeof(const mu_stmt_t *[argc]));
+
+  return sequence_expr_activate(result);
+}
+
+const mu_vector_expr_t *mu_vector_expr(
+    mu_engine_t *engine, size_t argc, const mu_expr_t *const argv[]) {
+  assert(argc == 0 && argv == NULL || argc != 0 && argv != NULL);
+
+  for (size_t i = 0; i < argc; i++) {
+    assert(argv[i] != NULL);
+    assert(argv[i]->as_stator.engine == engine);
+  }
+
+  size_t size;
+  if (rare((size = struct_size(mu_vector_expr_t, argv, argc)) == 0))
+    return errno = ENOMEM, NULL;
+
+  mu_vector_expr_t *result;
+  if ((result = node_allocate(engine, size)) == NULL)
+    return NULL;
+  *result = (mu_vector_expr_t) {
+    .as_expr.kind = MU_VECTOR_EXPR, .argc = argc,
+  };
+
+  if (argc > 0)
+    memcpy(&result->argv, argv, sizeof(const mu_expr_t *[argc]));
+
+  return assign_node(engine, result);
+}
+
+const mu_zero_expr_t *mu_zero_expr(mu_engine_t *engine) {
+  mu_zero_expr_t *result;
+  if ((result = node_allocate(engine, sizeof(mu_zero_expr_t))) == NULL)
+    return NULL;
+  *result = (mu_zero_expr_t) { .as_expr.kind = MU_ZERO_EXPR };
+  return assign_node(engine, result);
+}
+
 mu_record_expr_t *record_expr_allocate(mu_engine_t *engine, size_t argc) {
   size_t size;
   if (rare((size = struct_size(mu_record_expr_t, argv, argc)) == 0))
@@ -140,13 +188,7 @@ const mu_record_expr_t *record_expr_activate(mu_record_expr_t *expr) {
   return assign_node(engine, expr);
 }
 
-const mu_sequence_expr_t *mu_sequence_expr(
-    mu_engine_t *engine, size_t argc, const mu_stmt_t *const argv[]) {
-  assert(argc == 0 && argv == NULL || argc != 0 && argv != NULL);
-
-  for (size_t i = 0; i < argc; i++)
-    assert(argv[i]->as_stator.engine == engine);
-
+mu_sequence_expr_t *sequence_expr_allocate(mu_engine_t *engine, size_t argc) {
   size_t size;
   if (rare((size = struct_size(mu_sequence_expr_t, argv, argc)) == 0))
     return errno = ENOMEM, NULL;
@@ -154,46 +196,23 @@ const mu_sequence_expr_t *mu_sequence_expr(
   mu_sequence_expr_t *result;
   if ((result = node_allocate(engine, size)) == NULL)
     return NULL;
-  *result = (mu_sequence_expr_t) {
-    .as_expr.kind = MU_SEQUENCE_EXPR, .argc = argc,
-  };
-
-  if (argc > 0)
-    memcpy(&result->argv, argv, sizeof(const mu_expr_t *[argc]));
-
-  return assign_node(engine, result);
+  *result = (mu_sequence_expr_t) { .as_stator.engine = engine, .argc = argc };
+  return result;
 }
 
-const mu_vector_expr_t *mu_vector_expr(
-    mu_engine_t *engine, size_t argc, const mu_expr_t *const argv[]) {
-  assert(argc == 0 && argv == NULL || argc != 0 && argv != NULL);
+const mu_sequence_expr_t *sequence_expr_activate(mu_sequence_expr_t *expr) {
+  mu_engine_t *engine = (mu_engine_t *) expr->as_stator.engine;
 
-  for (size_t i = 0; i < argc; i++)
-    assert(argv[i]->as_stator.engine == engine);
+  for (size_t i = 0; i < expr->argc; i++) {
+    assert(expr->argv[i] != NULL);
+    assert(expr->argv[i]->as_stator.engine == engine);
+  }
 
-  size_t size;
-  if (rare((size = struct_size(mu_vector_expr_t, argv, argc)) == 0))
-    return errno = ENOMEM, NULL;
-
-  mu_vector_expr_t *result;
-  if ((result = node_allocate(engine, size)) == NULL)
-    return NULL;
-  *result = (mu_vector_expr_t) {
-    .as_expr.kind = MU_VECTOR_EXPR, .argc = argc,
+  mu_sequence_expr_t source = {
+    .as_expr.kind = MU_RECORD_EXPR, .argc = expr->argc
   };
-
-  if (argc > 0)
-    memcpy(&result->argv, argv, sizeof(const mu_expr_t *[argc]));
-
-  return assign_node(engine, result);
-}
-
-const mu_zero_expr_t *mu_zero_expr(mu_engine_t *engine) {
-  mu_zero_expr_t *result;
-  if ((result = node_allocate(engine, sizeof(mu_zero_expr_t))) == NULL)
-    return NULL;
-  *result = (mu_zero_expr_t) { .as_expr.kind = MU_ZERO_EXPR };
-  return assign_node(engine, result);
+  memcpy(expr, &source, offsetof(mu_sequence_expr_t, argv));
+  return assign_node(engine, expr);
 }
 
 #include "debug.h"
