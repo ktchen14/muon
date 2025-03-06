@@ -126,9 +126,11 @@ void debug_type(const type_t *type) {
 
         case MU_LAMBDA_CORE:
         {
+          fprintf(stderr, "(");
           WITH_DEBUG_NEGATE() { debug_type(type->argv[0]); }
           fprintf(stderr, " -> ");
           debug_type(type->argv[1]);
+          fprintf(stderr, ")");
           break;
         }
 
@@ -177,9 +179,7 @@ void debug_type(const type_t *type) {
               fprintf(stderr, " ⊓ ");
             already_printed = 1;
 
-            fprintf(stderr, "(");
             debug_type(sub.upper);
-            fprintf(stderr, ")");
           }
         }
 
@@ -208,9 +208,7 @@ void debug_type(const type_t *type) {
               fprintf(stderr, " ⊔ ");
             already_printed = 1;
 
-            fprintf(stderr, "(");
             debug_type(sub.lower);
-            fprintf(stderr, ")");
           }
         }
 
