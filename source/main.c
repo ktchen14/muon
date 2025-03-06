@@ -66,21 +66,20 @@ int main(int argc, char *argv[argc]) {
 
   mu_sequence_expr_debug(sequence_expr);
 
-  /* fprintf(stderr, "digraph muon {\n"); */
-  /* for (size_t i = 0; i < debug_induce->sub_length; i++) { */
-  /*   induce_sub_t sub = debug_induce->sub_data[i]; */
+  if (getenv("DOT") != NULL) {
+    fprintf(stderr, "digraph muon {\n");
+    for (size_t i = 0; i < debug_induce->sub_length; i++) {
+      induce_sub_t sub = debug_induce->sub_data[i];
 
-  /*   /1* if (sub.lower->kind != VARIABLE_TYPE && sub.upper->kind != VARIABLE_TYPE) *1/ */
-  /*   /1*   continue; *1/ */
-
-  /*   fprintf(stderr, "%*s", 2, ""); */
-  /*   fprintf(stderr, "\""); */
-  /*   debug_just_type(sub.upper); */
-  /*   fprintf(stderr, "\" -> \""); */
-  /*   debug_just_type(sub.lower); */
-  /*   fprintf(stderr, "\";\n"); */
-  /* } */
-  /* fprintf(stderr, "}\n"); */
+      fprintf(stderr, "%*s", 2, "");
+      fprintf(stderr, "\"");
+      debug_just_type(sub.upper);
+      fprintf(stderr, "\" -> \"");
+      debug_just_type(sub.lower);
+      fprintf(stderr, "\";\n");
+    }
+    fprintf(stderr, "}\n");
+  }
 
   return EXIT_SUCCESS;
 
