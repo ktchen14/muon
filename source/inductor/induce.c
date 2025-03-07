@@ -528,6 +528,22 @@ const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
   return induce_reveal(induce, root);
 }
 
+const mu_type_t *handle_node_coercion(induce_t *induce, const mu_node_t *root) {
+  assert(root->as_stator.id < induce->node_length);
+
+  const mu_node_t *node = root, *next;
+  do {
+    while ((next = node_at(node, node_cursor(node)->i++)) != NULL)
+      node = node_continue(node, next);
+
+    const mu_expr_t *expr;
+    if ((expr = mu_node_cast(node, expr)) != NULL)
+      expr_coerce(expr, induce);
+  } while ((node = node_return(node)) != NULL);
+
+  return induce_reveal(induce, root);
+}
+
 static coercion_t restrict_type_internal(
     induce_t *induce, const mu_type_t *a, const mu_type_t *b) {
   assert(a->kind != MU_SCHEME_TYPE && b->kind != MU_SCHEME_TYPE);
@@ -714,7 +730,7 @@ __attribute__((nonnull)) static const mu_type_t *invoke_expr_induce(
     return NULL;
 
   const mu_simple_type_t *lambda_type;
-  if ((lambda_type = mu_lambda_type(induce, operator_type, &result->as_type)) == NULL)
+  if ((lambda_type = mu_lambda_type(induce, argument_type, &result->as_type)) == NULL)
     return NULL;
   induce->aux[expr->as_stator.id] = &lambda_type->as_type;
 

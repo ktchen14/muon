@@ -82,7 +82,7 @@ __attribute__((nonnull)) static void vector_expr_coerce(
 __attribute__((nonnull)) static void zero_expr_coerce(
     const mu_zero_expr_t *expr, induce_t *induce) {}
 
-__attribute__((nonnull)) static void expr_coerce(
+__attribute__((nonnull)) void expr_coerce(
     const mu_expr_t *expr, induce_t *induce) {
   switch (expr->kind) {
 #define MU_EMIT(lower, upper, t) \

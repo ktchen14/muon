@@ -1,2 +1,4 @@
-define list = [1]
+define x = 1
+define y = 2
+define list = [x, y, 3, 4]
 define x = handle_list list
