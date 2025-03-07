@@ -21,12 +21,6 @@ typedef struct {
   coercion_t coercion;
 } induce_edge_t;
 
-typedef struct {
-  const mu_node_t *node;
-  size_t i;
-  const induce_edge_t *edge;
-} edge_assignment_t;
-
 typedef struct induce_t induce_t;
 struct induce_t {
   mu_engine_t *engine;
@@ -48,9 +42,6 @@ struct induce_t {
   const mu_core_t *integer_core;
   const mu_core_t *lambda_core;
   const mu_core_t *vector_core;
-
-  size_t edge_assignment_i;
-  edge_assignment_t edge_assignment[2000];
 };
 
 typedef struct open_scheme_t open_scheme_t;
