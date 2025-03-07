@@ -81,8 +81,8 @@ int main(int argc, char *argv[argc]) {
 
   if (getenv("DOT") != NULL) {
     fprintf(stderr, "digraph muon {\n");
-    for (size_t i = 0; i < debug_induce->sub_length; i++) {
-      induce_edge_t sub = debug_induce->sub_data[i];
+    for (size_t i = 0; i < debug_induce->edge_length; i++) {
+      induce_edge_t sub = debug_induce->edge[i];
 
       fprintf(stderr, "%*s", 2, "");
       fprintf(stderr, "\"");

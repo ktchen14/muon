@@ -221,13 +221,13 @@ void debug_type(const mu_type_t *type) {
 
       _Bool already_printed = 0;
       if (debug_negate) {
-        for (size_t i = 0; i < debug_induce->sub_length; i++) {
-          induce_edge_t sub = debug_induce->sub_data[i];
-          if (sub.lower != type)
+        for (size_t i = 0; i < debug_induce->edge_length; i++) {
+          induce_edge_t edge = debug_induce->edge[i];
+          if (edge.lower != type)
             continue;
 
           const mu_variable_type_t *upper_variable_type;
-          if ((upper_variable_type = mu_type_cast(sub.upper, upper_variable_type)) != NULL) {
+          if ((upper_variable_type = mu_type_cast(edge.upper, upper_variable_type)) != NULL) {
             if (is_significant(upper_variable_type)) {
               if (already_printed)
                 fprintf(stderr, " ⊓ ");
@@ -240,7 +240,7 @@ void debug_type(const mu_type_t *type) {
               fprintf(stderr, " ⊓ ");
             already_printed = 1;
 
-            debug_type(sub.upper);
+            debug_type(edge.upper);
           }
         }
 
@@ -252,13 +252,13 @@ void debug_type(const mu_type_t *type) {
           fprintf(stderr, "⊤");
         }
       } else {
-        for (size_t i = 0; i < debug_induce->sub_length; i++) {
-          induce_edge_t sub = debug_induce->sub_data[i];
-          if (sub.upper != type)
+        for (size_t i = 0; i < debug_induce->edge_length; i++) {
+          induce_edge_t edge = debug_induce->edge[i];
+          if (edge.upper != type)
             continue;
 
           const mu_variable_type_t *lower_variable_type;
-          if ((lower_variable_type = mu_type_cast(sub.lower, lower_variable_type)) != NULL) {
+          if ((lower_variable_type = mu_type_cast(edge.lower, lower_variable_type)) != NULL) {
             if (is_significant(lower_variable_type)) {
               if (already_printed > 0)
                 fprintf(stderr, " ⊔ ");
@@ -271,7 +271,7 @@ void debug_type(const mu_type_t *type) {
               fprintf(stderr, " ⊔ ");
             already_printed = 1;
 
-            debug_type(sub.lower);
+            debug_type(edge.lower);
           }
         }
 

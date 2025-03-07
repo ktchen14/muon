@@ -29,9 +29,9 @@ struct induce_t {
 
   const mu_type_t **node_to_type; /* const type_t *[node_length] */
 
-  size_t sub_volume;
-  size_t sub_length;
-  induce_edge_t *sub_data;
+  size_t edge_volume;
+  size_t edge_length;
+  induce_edge_t *edge;
 
   const mu_core_t *boolean_core;
   const mu_core_t *integer_core;
