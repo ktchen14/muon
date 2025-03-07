@@ -79,6 +79,10 @@ static inline void debug_node_type(const mu_node_t *node) {
     ((mu_variable_type_t *) next)->debug_next = NULL;
     next = real_next;
   }
+
+  coercion_t coercion;
+  if ((coercion = debug_induce->coercion[node->as_stator.id]) != NULL)
+    fprintf(stderr, " ∷ %s", coercion);
 }
 
 #endif /* MU_STATOR_DEBUG_I */

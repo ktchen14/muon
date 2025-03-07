@@ -1,5 +1,7 @@
 #include "induce.h"
 
+#include <assert.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #define evince induce_reveal
@@ -8,7 +10,7 @@ const mu_type_t *coerce_to_lower(induce_t *induce, const mu_variable_type_t *typ
   size_t length = 0;
   for (size_t i = 0; i < induce->edge_length; i++) {
     induce_edge_t edge = induce->edge[i];
-    if (edge.upper == &type->as_type && edge.upper->kind != MU_VARIABLE_TYPE)
+    if (edge.upper == &type->as_type && edge.lower->kind != MU_VARIABLE_TYPE)
       length++;
   }
 
@@ -19,7 +21,7 @@ const mu_type_t *coerce_to_lower(induce_t *induce, const mu_variable_type_t *typ
   size_t j = 0;
   for (size_t i = 0; i < induce->edge_length; i++) {
     induce_edge_t edge = induce->edge[i];
-    if (edge.upper == &type->as_type && edge.upper->kind != MU_VARIABLE_TYPE)
+    if (edge.upper == &type->as_type && edge.lower->kind != MU_VARIABLE_TYPE)
       allocation->argv[j++] = edge.lower;
   }
   assert(j == length);
@@ -30,7 +32,7 @@ const mu_type_t *coerce_to_lower(induce_t *induce, const mu_variable_type_t *typ
 
   for (size_t i = 0; i < induce->edge_length; i++) {
     induce_edge_t edge = induce->edge[i];
-    if (edge.upper == &type->as_type && edge.upper->kind != MU_VARIABLE_TYPE) {
+    if (edge.upper == &type->as_type && edge.lower->kind != MU_VARIABLE_TYPE) {
       if (append_edge(induce, edge.lower, &result->as_type, edge.coercion) == NULL)
         return NULL;
     }
