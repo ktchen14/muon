@@ -36,6 +36,11 @@ __attribute__((nonnull)) static void invoke_expr_coerce(
   assert(type != NULL);
 
   const mu_type_t *operator_type = evince(induce, &expr->operator->as_node);
+
+  const induce_edge_t *edge = search_edge(induce, operator_type, type);
+  assert(edge != NULL);
+
+  induce->coercion[expr->operator->as_stator.id] = edge->coercion;
 }
 
 __attribute__((nonnull)) static void lambda_expr_coerce(
