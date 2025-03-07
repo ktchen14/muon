@@ -28,7 +28,7 @@ const mu_variable_type_t *variable_type(induce_t *induce, open_scheme_t *scheme)
 }
 
 /// Register @a a <: @a b in the @a induce engine
-static const mu_type_t *append(
+static const induce_edge_t *append(
     induce_t *induce, const mu_type_t *restrict a, const mu_type_t *restrict b)
   __attribute__((nonnull));
 
@@ -398,13 +398,14 @@ open_scheme_t *open_scheme(open_scheme_t *parent, const mu_node_t *node) {
  * fail otherwise. The behavior is undefined if:
  *
  * - @a induce, @a a, or @a b is @c NULL
- * - @a a or @a b isn't in the same zone as that of the @a induce engine
+ *
+ * This returns &SELF if @a a and @a b are identical.
  *
  * @param induce the induce engine to restrict @a a and @a b within
  * @param a the type to restrict to a subtype of @a b
  * @param b the type to restrict to a supertype of @a a
  */
-static induce_t *restrict_type(
+static const induce_edge_t *restrict_type(
     induce_t *induce, const mu_type_t *a, const mu_type_t *b)
   __attribute__((nonnull));
 
@@ -511,18 +512,9 @@ const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
   return (const mu_type_t *) induce_reveal(induce, root);
 }
 
-static induce_t *restrict_type(
+static induce_t *restrict_type_internal(
     induce_t *induce, const mu_type_t *a, const mu_type_t *b) {
   assert(a->kind != MU_SCHEME_TYPE && b->kind != MU_SCHEME_TYPE);
-
-  if (a == b)
-    return induce;
-
-  // If we don't have to continue into a or b, then just return
-  for (size_t i = 0; i < induce->edge_length; i++) {
-    if (induce->edge[i].lower == a && induce->edge[i].upper == b)
-      return induce;
-  }
 
   if (a->kind == MU_SIMPLE_TYPE && b->kind == MU_SIMPLE_TYPE) {
     const mu_simple_type_t *simple_a = (const mu_simple_type_t *) a;
@@ -548,7 +540,6 @@ static induce_t *restrict_type(
         return NULL;
     }
 
-    append(induce, &simple_a->as_type, &simple_b->as_type);
     return induce;
   }
 
@@ -571,7 +562,6 @@ static induce_t *restrict_type(
     next:;
     }
 
-    append(induce, &record_a->as_type, &record_b->as_type);
     return induce;
   }
 
@@ -600,18 +590,31 @@ static induce_t *restrict_type(
     }
   }
 
-  append(induce, a, b);
   return induce;
 }
 
-static const mu_type_t *append(
-    induce_t *induce, const mu_type_t *restrict a, const mu_type_t *restrict b) {
+const induce_edge_t SELF = {0};
+
+static const induce_edge_t *restrict_type(
+    induce_t *induce, const mu_type_t *a, const mu_type_t *b) {
+  if (a == b)
+    return &SELF;
+
+  // If we don't have to continue into a or b, then just return
   for (size_t i = 0; i < induce->edge_length; i++) {
-    induce_edge_t sub = induce->edge[i];
-    if (sub.lower == a && sub.upper == b)
-      return a;
+    induce_edge_t *edge = &induce->edge[i];
+    if (edge->lower == a && edge->upper == b)
+      return edge;
   }
 
+  if (restrict_type_internal(induce, a, b) == NULL)
+    return NULL;
+
+  return append(induce, a, b);
+}
+
+static const induce_edge_t *append(
+    induce_t *induce, const mu_type_t *restrict a, const mu_type_t *restrict b) {
   if (induce->edge_length >= induce->edge_volume) {
     size_t volume = induce->edge_volume;
     if (rare(__builtin_mul_overflow(volume, 2, &volume)))
@@ -631,9 +634,11 @@ static const mu_type_t *append(
     induce->edge = sub_data;
   }
 
-  induce->edge[induce->edge_length++] = (induce_edge_t) {
-    .lower = a, .upper = b };
-  return b;
+  induce_edge_t edge = { .lower = a, .upper = b };
+  induce->edge[induce->edge_length] = edge;
+  induce_edge_t *result = &induce->edge[induce->edge_length];
+  induce->edge_length++;
+  return result;
 }
 
 // ---------------------------------- Expr -------------------------------- {{{1
