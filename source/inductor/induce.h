@@ -16,7 +16,7 @@
 typedef struct {
   const mu_type_t *lower;
   const mu_type_t *upper;
-} induce_sub_t;
+} induce_edge_t;
 
 typedef struct induce_t induce_t;
 struct induce_t {
@@ -31,7 +31,7 @@ struct induce_t {
 
   size_t sub_volume;
   size_t sub_length;
-  induce_sub_t *sub_data;
+  induce_edge_t *sub_data;
 
   const mu_core_t *boolean_core;
   const mu_core_t *integer_core;

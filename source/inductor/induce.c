@@ -198,7 +198,7 @@ void mark_type(induce_t *induce, const mu_type_t *type, _Bool negative, size_t r
         ((mu_variable_type_t *) variable_type)->positively_reachable = 1;
 
         for (size_t i = 0; i < induce->sub_length; i++) {
-          induce_sub_t sub = induce->sub_data[i];
+          induce_edge_t sub = induce->sub_data[i];
           if (sub.upper != &variable_type->as_type)
             continue;
           mark_type(induce, sub.lower, negative, rank);
@@ -207,7 +207,7 @@ void mark_type(induce_t *induce, const mu_type_t *type, _Bool negative, size_t r
         ((mu_variable_type_t *) variable_type)->negatively_reachable = 1;
 
         for (size_t i = 0; i < induce->sub_length; i++) {
-          induce_sub_t sub = induce->sub_data[i];
+          induce_edge_t sub = induce->sub_data[i];
           if (sub.lower != &variable_type->as_type)
             continue;
           mark_type(induce, sub.upper, negative, rank);
@@ -289,7 +289,7 @@ void mark_type_from_anywhere(
           const mu_variable_type_t *earlier_origin = variable_type->positively_entered_from;
 
           for (size_t i = 0; i < induce->sub_length; i++) {
-            induce_sub_t sub = induce->sub_data[i];
+            induce_edge_t sub = induce->sub_data[i];
 
             // If this origin is a subtype of the earlier origin, then use this
             // origin instead
@@ -312,7 +312,7 @@ void mark_type_from_anywhere(
         }
 
         for (size_t i = 0; i < induce->sub_length; i++) {
-          induce_sub_t sub = induce->sub_data[i];
+          induce_edge_t sub = induce->sub_data[i];
           if (sub.upper != &variable_type->as_type)
             continue;
           mark_type_from_anywhere(induce, sub.lower, negative, variable_type, link);
@@ -331,7 +331,7 @@ void mark_type_from_anywhere(
           const mu_variable_type_t *earlier_origin = variable_type->negatively_entered_from;
 
           for (size_t i = 0; i < induce->sub_length; i++) {
-            induce_sub_t sub = induce->sub_data[i];
+            induce_edge_t sub = induce->sub_data[i];
 
             // If this origin is a supertype of the earlier origin, then use this
             // origin instead
@@ -354,7 +354,7 @@ void mark_type_from_anywhere(
         }
 
         for (size_t i = 0; i < induce->sub_length; i++) {
-          induce_sub_t sub = induce->sub_data[i];
+          induce_edge_t sub = induce->sub_data[i];
           if (sub.lower != &variable_type->as_type)
             continue;
           mark_type_from_anywhere(induce, sub.upper, negative, variable_type, link);
@@ -427,10 +427,10 @@ induce_t *induce_initialize(
   for (size_t i = 0; i < node_length; node_to_type[i++] = NULL);
 
   size_t sub_volume = 1;
-  induce_sub_t *sub_data;
-  if ((sub_data = malloc(sizeof(induce_sub_t[sub_volume]))) == NULL)
+  induce_edge_t *sub_data;
+  if ((sub_data = malloc(sizeof(induce_edge_t[sub_volume]))) == NULL)
     return NULL;
-  for (size_t i = 0; i < sub_volume; sub_data[i++] = (induce_sub_t) {0});
+  for (size_t i = 0; i < sub_volume; sub_data[i++] = (induce_edge_t) {0});
 
   mu_core_t *boolean_core;
   if ((boolean_core = malloc(sizeof(mu_core_t))) == NULL)
@@ -607,7 +607,7 @@ static induce_t *restrict_type(
 static const mu_type_t *append(
     induce_t *induce, const mu_type_t *restrict a, const mu_type_t *restrict b) {
   for (size_t i = 0; i < induce->sub_length; i++) {
-    induce_sub_t sub = induce->sub_data[i];
+    induce_edge_t sub = induce->sub_data[i];
     if (sub.lower == a && sub.upper == b)
       return a;
   }
@@ -618,20 +618,20 @@ static const mu_type_t *append(
       return errno = ENOMEM, NULL;
 
     size_t size;
-    if (rare(__builtin_mul_overflow(volume, sizeof(induce_sub_t), &size)))
+    if (rare(__builtin_mul_overflow(volume, sizeof(induce_edge_t), &size)))
       return errno = ENOMEM, NULL;
 
-    induce_sub_t *sub_data = induce->sub_data;
+    induce_edge_t *sub_data = induce->sub_data;
     if ((sub_data = realloc(sub_data, size)) == NULL)
       return NULL;
     for (size_t i = induce->sub_volume; i < volume; i++)
-      sub_data[i] = (induce_sub_t) {0};
+      sub_data[i] = (induce_edge_t) {0};
 
     induce->sub_volume = volume;
     induce->sub_data = sub_data;
   }
 
-  induce->sub_data[induce->sub_length++] = (induce_sub_t) {
+  induce->sub_data[induce->sub_length++] = (induce_edge_t) {
     .lower = a, .upper = b };
   return b;
 }

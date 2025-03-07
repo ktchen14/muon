@@ -222,7 +222,7 @@ void debug_type(const mu_type_t *type) {
       _Bool already_printed = 0;
       if (debug_negate) {
         for (size_t i = 0; i < debug_induce->sub_length; i++) {
-          induce_sub_t sub = debug_induce->sub_data[i];
+          induce_edge_t sub = debug_induce->sub_data[i];
           if (sub.lower != type)
             continue;
 
@@ -253,7 +253,7 @@ void debug_type(const mu_type_t *type) {
         }
       } else {
         for (size_t i = 0; i < debug_induce->sub_length; i++) {
-          induce_sub_t sub = debug_induce->sub_data[i];
+          induce_edge_t sub = debug_induce->sub_data[i];
           if (sub.upper != type)
             continue;
 
