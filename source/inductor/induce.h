@@ -13,9 +13,12 @@
 #include <stddef.h>
 #include <string.h>
 
+typedef const char *coercion_t;
+
 typedef struct {
   const mu_type_t *lower;
   const mu_type_t *upper;
+  coercion_t coercion;
 } induce_edge_t;
 
 typedef struct induce_t induce_t;

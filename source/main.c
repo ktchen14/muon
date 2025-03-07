@@ -89,7 +89,11 @@ int main(int argc, char *argv[argc]) {
       debug_just_type(sub.upper);
       fprintf(stderr, "\" -> \"");
       debug_just_type(sub.lower);
-      fprintf(stderr, "\";\n");
+      fprintf(stderr, "\"");
+
+      if (sub.coercion != NULL && strlen(sub.coercion) != 0)
+        fprintf(stderr, " [label=\"%s\"]", sub.coercion);
+      fprintf(stderr, ";\n");
     }
     fprintf(stderr, "}\n");
   }

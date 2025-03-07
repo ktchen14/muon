@@ -29,7 +29,10 @@ const mu_variable_type_t *variable_type(induce_t *induce, open_scheme_t *scheme)
 
 /// Register @a a <: @a b in the @a induce engine
 static const induce_edge_t *append(
-    induce_t *induce, const mu_type_t *restrict a, const mu_type_t *restrict b)
+    induce_t *induce,
+    const mu_type_t *restrict a,
+    const mu_type_t *restrict b,
+    coercion_t coercion)
   __attribute__((nonnull));
 
 typedef struct {
@@ -512,7 +515,7 @@ const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
   return (const mu_type_t *) induce_reveal(induce, root);
 }
 
-static induce_t *restrict_type_internal(
+static coercion_t restrict_type_internal(
     induce_t *induce, const mu_type_t *a, const mu_type_t *b) {
   assert(a->kind != MU_SCHEME_TYPE && b->kind != MU_SCHEME_TYPE);
 
@@ -540,7 +543,7 @@ static induce_t *restrict_type_internal(
         return NULL;
     }
 
-    return induce;
+    return "simple";
   }
 
   if (a->kind == MU_RECORD_TYPE && b->kind == MU_RECORD_TYPE) {
@@ -562,7 +565,7 @@ static induce_t *restrict_type_internal(
     next:;
     }
 
-    return induce;
+    return "record";
   }
 
   if (a->kind != MU_VARIABLE_TYPE && b->kind != MU_VARIABLE_TYPE) {
@@ -590,7 +593,7 @@ static induce_t *restrict_type_internal(
     }
   }
 
-  return induce;
+  return "";
 }
 
 const induce_edge_t SELF = {0};
@@ -607,14 +610,18 @@ static const induce_edge_t *restrict_type(
       return edge;
   }
 
-  if (restrict_type_internal(induce, a, b) == NULL)
+  coercion_t coercion;
+  if ((coercion = restrict_type_internal(induce, a, b)) == NULL)
     return NULL;
 
-  return append(induce, a, b);
+  return append(induce, a, b, coercion);
 }
 
 static const induce_edge_t *append(
-    induce_t *induce, const mu_type_t *restrict a, const mu_type_t *restrict b) {
+    induce_t *induce,
+    const mu_type_t *restrict a,
+    const mu_type_t *restrict b,
+    coercion_t coercion) {
   if (induce->edge_length >= induce->edge_volume) {
     size_t volume = induce->edge_volume;
     if (rare(__builtin_mul_overflow(volume, 2, &volume)))
@@ -634,7 +641,7 @@ static const induce_edge_t *append(
     induce->edge = sub_data;
   }
 
-  induce_edge_t edge = { .lower = a, .upper = b };
+  induce_edge_t edge = { .lower = a, .upper = b, .coercion = coercion };
   induce->edge[induce->edge_length] = edge;
   induce_edge_t *result = &induce->edge[induce->edge_length];
   induce->edge_length++;
