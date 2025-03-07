@@ -75,6 +75,8 @@ struct mu_variable_type_t {
 
   const mu_variable_type_t *positively_entered_from;
   const mu_variable_type_t *negatively_entered_from;
+
+  const mu_type_t *assignment;
 };
 
 /// A scheme type

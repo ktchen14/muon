@@ -7,6 +7,9 @@
 #define evince induce_reveal
 
 const mu_type_t *coerce_to_lower(induce_t *induce, const mu_variable_type_t *type) {
+  assert(type->assignment == NULL);
+
+  // Determine the length of the join type
   size_t length = 0;
   for (size_t i = 0; i < induce->edge_length; i++) {
     induce_edge_t edge = induce->edge[i];
@@ -14,10 +17,12 @@ const mu_type_t *coerce_to_lower(induce_t *induce, const mu_variable_type_t *typ
       length++;
   }
 
+  // Allocate the join type
   mu_join_type_t *allocation;
   if ((allocation = join_type_allocate(induce, length)) == NULL)
     return NULL;
 
+  // Add each type as an argument
   size_t j = 0;
   for (size_t i = 0; i < induce->edge_length; i++) {
     induce_edge_t edge = induce->edge[i];
@@ -26,17 +31,34 @@ const mu_type_t *coerce_to_lower(induce_t *induce, const mu_variable_type_t *typ
   }
   assert(j == length);
 
+  // Activate the join type
   const mu_join_type_t *result;
   if (rare((result = join_type_activate(allocation)) == NULL))
     return NULL;
 
+  // Add an edge for each constituent type to record the coercion to the join
+  // type.
   for (size_t i = 0; i < induce->edge_length; i++) {
     induce_edge_t edge = induce->edge[i];
     if (edge.upper == &type->as_type && edge.lower->kind != MU_VARIABLE_TYPE) {
-      if (append_edge(induce, edge.lower, &result->as_type, edge.coercion) == NULL)
+      if (append_edge(induce, edge.lower, &result->as_type, "join") == NULL)
         return NULL;
     }
   }
+
+  for (size_t j = 0; j < result->argc; j++) {
+    const mu_type_t *argument = result->argv[j];
+
+    for (size_t i = 0; i < induce->edge_length; i++) {
+      induce_edge_t edge = induce->edge[i];
+      if (edge.lower == argument && edge.upper != &result->as_type && edge.upper->kind != MU_VARIABLE_TYPE) {
+        if (append_edge(induce, &result->as_type, edge.upper, edge.coercion) == NULL)
+          return NULL;
+      }
+    }
+  }
+
+  ((mu_variable_type_t *) type)->assignment = &result->as_type;
 
   return &result->as_type;
 }

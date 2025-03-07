@@ -245,6 +245,11 @@ void debug_type(const mu_type_t *type) {
     case MU_VARIABLE_TYPE: {
       const mu_variable_type_t *variable_type = (const mu_variable_type_t *) type;
 
+      if (variable_type->assignment != NULL) {
+        debug_type(variable_type->assignment);
+        break;
+      }
+
       if (debug_induce == NULL)
         return;
 
