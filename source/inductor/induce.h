@@ -28,6 +28,8 @@ struct induce_t {
 
   const detect_result_t *detect;
 
+  size_t type_number;
+
   size_t node_length;
 
   const mu_type_t **node_to_type; /* const type_t *[node_length] */

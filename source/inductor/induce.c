@@ -21,6 +21,7 @@ const mu_variable_type_t *variable_type(induce_t *induce, open_scheme_t *scheme)
   *result = (mu_variable_type_t) {
     .as_type.kind = MU_VARIABLE_TYPE,
     .as_type.induce = induce,
+    .as_type.id = induce->type_number++,
     .scheme_next = scheme->link,
     .rank = scheme->rank,
   };

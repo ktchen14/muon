@@ -85,10 +85,15 @@ int main(int argc, char *argv[argc]) {
       induce_edge_t sub = debug_induce->edge[i];
 
       fprintf(stderr, "%*s", 2, "");
+
       fprintf(stderr, "\"");
       debug_just_type(sub.upper);
+      fprintf(stderr, " (%zu)", sub.upper->id);
+
       fprintf(stderr, "\" -> \"");
+
       debug_just_type(sub.lower);
+      fprintf(stderr, " (%zu)", sub.lower->id);
       fprintf(stderr, "\"");
 
       if (sub.coercion != NULL && strlen(sub.coercion) != 0)

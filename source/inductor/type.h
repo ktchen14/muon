@@ -26,6 +26,7 @@ typedef struct induce_t induce_t;
 typedef struct {
   mu_type_kind_t kind;
   induce_t *induce;
+  size_t id;
 } mu_type_t;
 
 /// The header that each concrete type must have

@@ -3,16 +3,26 @@
 
 #include <stdio.h>
 
+/// @internal Assign the abstract @a type to the @a induce instance
+__attribute__((nonnull, returns_nonnull))
+static inline mu_type_t *assign_type(induce_t *induce, mu_type_t *type) {
+  type->induce = induce;
+  type->id = induce->type_number++;
+  return type;
+}
+
+/// @internal Assign the concrete @a type to the @a induce instance
+#define assign_type(induce, type) \
+  ((typeof((type))) (assign_type)((induce), &(type)->as_type))
+
 const mu_simple_type_t *mu_boolean_type(induce_t *induce) {
   mu_simple_type_t *result;
   if ((result = malloc(sizeof(mu_simple_type_t))) == NULL)
     return NULL;
   *result = (mu_simple_type_t) {
-    .as_type.kind = MU_SIMPLE_TYPE,
-    .as_type.induce = induce,
-    .core = induce->boolean_core,
+    .as_type.kind = MU_SIMPLE_TYPE, .core = induce->boolean_core,
   };
-  return result;
+  return assign_type(induce, result);
 }
 
 const mu_simple_type_t *mu_integer_type(induce_t *induce) {
@@ -20,11 +30,9 @@ const mu_simple_type_t *mu_integer_type(induce_t *induce) {
   if ((result = malloc(sizeof(mu_simple_type_t))) == NULL)
     return NULL;
   *result = (mu_simple_type_t) {
-    .as_type.kind = MU_SIMPLE_TYPE,
-    .as_type.induce = induce,
-    .core = induce->integer_core,
+    .as_type.kind = MU_SIMPLE_TYPE, .core = induce->integer_core,
   };
-  return result;
+  return assign_type(induce, result);
 }
 
 const mu_simple_type_t *mu_lambda_type(
@@ -35,6 +43,7 @@ const mu_simple_type_t *mu_lambda_type(
   assert(output->induce == induce);
   assert(output->kind != MU_SCHEME_TYPE);
 
+  // TODO: this can't overflow
   size_t size;
   if (rare((size = struct_size(mu_simple_type_t, argv, 2)) == 0))
     return errno = ENOMEM, NULL;
@@ -44,15 +53,13 @@ const mu_simple_type_t *mu_lambda_type(
     return NULL;
 
   *result = (mu_simple_type_t) {
-    .as_type.kind = MU_SIMPLE_TYPE,
-    .as_type.induce = induce,
-    .core = induce->lambda_core,
+    .as_type.kind = MU_SIMPLE_TYPE, .core = induce->lambda_core,
   };
 
   result->argv[0] = argument;
   result->argv[1] = output;
 
-  return result;
+  return assign_type(induce, result);
 }
 
 mu_record_type_t *record_type_allocate(induce_t *induce, size_t argc) {
@@ -76,7 +83,7 @@ const mu_record_type_t *record_type_activate(mu_record_type_t *type) {
     assert(member->type->induce == type->as_type.induce);
     assert(member->type->kind != MU_SCHEME_TYPE);
   }
-  return type;
+  return assign_type(type->as_type.induce, type);
 }
 
 const mu_record_type_t *mu_record_type(
@@ -96,6 +103,7 @@ const mu_simple_type_t *mu_vector_type(
   assert(matter->induce == induce);
   assert(matter->kind != MU_SCHEME_TYPE);
 
+  // TODO: this can't overflow
   size_t size;
   if (rare((size = struct_size(mu_simple_type_t, argv, 1)) == 0))
     return errno = ENOMEM, NULL;
@@ -104,14 +112,12 @@ const mu_simple_type_t *mu_vector_type(
   if ((result = malloc(size)) == NULL)
     return NULL;
   *result = (mu_simple_type_t) {
-    .as_type.kind = MU_SIMPLE_TYPE,
-    .as_type.induce = induce,
-    .core = induce->vector_core,
+    .as_type.kind = MU_SIMPLE_TYPE, .core = induce->vector_core,
   };
 
   result->argv[0] = matter;
 
-  return result;
+  return assign_type(induce, result);
 }
 
 mu_scheme_type_t *scheme_type_allocate(induce_t *induce, size_t argc) {
@@ -135,7 +141,7 @@ const mu_scheme_type_t *scheme_type_activate(
     assert(type->argv[i]->as_type.kind != MU_SCHEME_TYPE);
   }
   type->matter = matter;
-  return type;
+  return assign_type(type->as_type.induce, type);
 }
 
 void debug_variable_type_name(const mu_variable_type_t *type) {
