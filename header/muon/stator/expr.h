@@ -65,8 +65,8 @@ typedef struct {
 
 typedef struct {
   MU_EXPR_HEADER;
-  const mu_expr_t *lambda;
-  const mu_expr_t *matter;
+  const mu_expr_t *operator;
+  const mu_expr_t *argument;
 } mu_invoke_expr_t;
 
 typedef struct {
@@ -127,7 +127,7 @@ const mu_integer_expr_t *mu_integer_expr(mu_engine_t *engine, uint64_t data)
   __attribute__((malloc, nonnull));
 
 const mu_invoke_expr_t *mu_invoke_expr(
-    mu_engine_t *engine, const mu_expr_t *lambda, const mu_expr_t *matter)
+    mu_engine_t *engine, const mu_expr_t *operator, const mu_expr_t *argument)
   __attribute__((malloc, nonnull));
 
 const mu_lambda_expr_t *mu_lambda_expr(

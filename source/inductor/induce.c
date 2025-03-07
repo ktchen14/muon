@@ -11,6 +11,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define evince induce_reveal
+
 _Thread_local induce_t *debug_induce;
 
 const induce_edge_t *search_edge(
@@ -523,7 +525,7 @@ const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
     induce->node_to_type[node->as_stator.id] = type;
   } while ((node = node_return(node)) != NULL);
 
-  return (const mu_type_t *) induce_reveal(induce, root);
+  return induce_reveal(induce, root);
 }
 
 static coercion_t restrict_type_internal(
@@ -704,30 +706,30 @@ __attribute__((nonnull)) static const mu_type_t *integer_expr_induce(
 
 __attribute__((nonnull)) static const mu_type_t *invoke_expr_induce(
     const mu_invoke_expr_t *expr, induce_t *induce, open_scheme_t *scheme) {
-  const mu_type_t *lambda = induce_reveal(induce, &expr->lambda->as_node);
-  const mu_type_t *matter = induce_reveal(induce, &expr->matter->as_node);
+  const mu_type_t *operator_type = evince(induce, &expr->operator->as_node);
+  const mu_type_t *argument_type = evince(induce, &expr->argument->as_node);
 
   const mu_variable_type_t *result;
   if ((result = variable_type(induce, scheme)) == NULL)
     return NULL;
 
   const mu_simple_type_t *lambda_type;
-  if ((lambda_type = mu_lambda_type(induce, matter, &result->as_type)) == NULL)
+  if ((lambda_type = mu_lambda_type(induce, operator_type, &result->as_type)) == NULL)
     return NULL;
   induce->aux[expr->as_stator.id] = &lambda_type->as_type;
 
-  if (restrict_type(induce, lambda, &lambda_type->as_type) == NULL)
+  if (restrict_type(induce, operator_type, &lambda_type->as_type) == NULL)
     return NULL;
   return &result->as_type;
 }
 
 __attribute__((nonnull)) static const mu_type_t *lambda_expr_induce(
     const mu_lambda_expr_t *expr, induce_t *induce, open_scheme_t *scheme) {
-  const mu_type_t *argument = induce_reveal(induce, &expr->argument->as_node);
-  const mu_type_t *output = induce_reveal(induce, &expr->matter->as_node);
+  const mu_type_t *argument_type = evince(induce, &expr->argument->as_node);
+  const mu_type_t *output_type = evince(induce, &expr->matter->as_node);
 
   const mu_simple_type_t *result;
-  if ((result = mu_lambda_type(induce, argument, output)) == NULL)
+  if ((result = mu_lambda_type(induce, argument_type, output_type)) == NULL)
     return NULL;
   return &result->as_type;
 }

@@ -57,15 +57,15 @@ const mu_integer_expr_t *mu_integer_expr(mu_engine_t *engine, uint64_t data) {
 }
 
 const mu_invoke_expr_t *mu_invoke_expr(
-    mu_engine_t *engine, const mu_expr_t *lambda, const mu_expr_t *matter) {
-  assert(lambda->as_stator.engine == engine);
-  assert(matter->as_stator.engine == engine);
+    mu_engine_t *engine, const mu_expr_t *operator, const mu_expr_t *argument) {
+  assert(operator->as_stator.engine == engine);
+  assert(argument->as_stator.engine == engine);
 
   mu_invoke_expr_t *result;
   if ((result = node_allocate(engine, sizeof(mu_invoke_expr_t))) == NULL)
     return NULL;
   *result = (mu_invoke_expr_t) {
-    .as_expr.kind = MU_INVOKE_EXPR, .lambda = lambda, .matter = matter,
+    .as_expr.kind = MU_INVOKE_EXPR, .operator = operator, .argument = argument,
   };
   return assign_node(engine, result);
 }
@@ -280,8 +280,8 @@ void mu_invoke_expr_debug(const mu_invoke_expr_t *expr) {
   putc('\n', stderr);
 
   WITH_DEBUG_INDENT() {
-    mu_expr_debug(expr->lambda);
-    mu_expr_debug(expr->matter);
+    mu_expr_debug(expr->operator);
+    mu_expr_debug(expr->argument);
   }
 }
 

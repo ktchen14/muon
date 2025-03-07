@@ -38,8 +38,8 @@ __attribute__((nonnull, pure))
 static inline const mu_node_t *invoke_expr_at(
     const mu_invoke_expr_t *expr, size_t i) {
   switch (i) {
-    case 0: return &expr->lambda->as_node;
-    case 1: return &expr->matter->as_node;
+    case 0: return &expr->operator->as_node;
+    case 1: return &expr->argument->as_node;
     default: return NULL;
   }
 }

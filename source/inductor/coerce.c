@@ -2,6 +2,8 @@
 
 #include <stdlib.h>
 
+#define evince induce_reveal
+
 const mu_type_t *coerce_to_lower(induce_t *induce, const mu_variable_type_t *type);
 
 __attribute__((nonnull)) static void access_expr_coerce(
@@ -32,6 +34,8 @@ __attribute__((nonnull)) static void invoke_expr_coerce(
     const mu_invoke_expr_t *expr, induce_t *induce) {
   const mu_type_t *type = induce->aux[expr->as_stator.id];
   assert(type != NULL);
+
+  const mu_type_t *operator_type = evince(induce, &expr->operator->as_node);
 }
 
 __attribute__((nonnull)) static void lambda_expr_coerce(
