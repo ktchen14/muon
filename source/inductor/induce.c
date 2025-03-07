@@ -13,6 +13,16 @@
 
 _Thread_local induce_t *debug_induce;
 
+const induce_edge_t *search_edge(
+    const induce_t *induce, const mu_type_t *a, const mu_type_t *b) {
+  for (size_t i = 0; i < induce->edge_length; i++) {
+    const induce_edge_t *edge = &induce->edge[i];
+    if (edge->lower == a && edge->upper == b)
+      return edge;
+  }
+  return NULL;
+}
+
 const mu_variable_type_t *variable_type(induce_t *induce, open_scheme_t *scheme) {
   mu_variable_type_t *result;
   if ((result = malloc(sizeof(mu_variable_type_t))) == NULL)
@@ -663,6 +673,7 @@ __attribute__((nonnull)) static const mu_type_t *access_expr_induce(
   };
   if ((record_type = mu_record_type(induce, 1, argv)) == NULL)
     return NULL;
+  induce->aux[expr->as_stator.id] = &record_type->as_type;
 
   const mu_type_t *matter_type = induce_reveal(induce, &expr->matter->as_node);
   if (restrict_type(induce, matter_type, &record_type->as_type) == NULL)
@@ -703,6 +714,7 @@ __attribute__((nonnull)) static const mu_type_t *invoke_expr_induce(
   const mu_simple_type_t *lambda_type;
   if ((lambda_type = mu_lambda_type(induce, matter, &result->as_type)) == NULL)
     return NULL;
+  induce->aux[expr->as_stator.id] = &lambda_type->as_type;
 
   if (restrict_type(induce, lambda, &lambda_type->as_type) == NULL)
     return NULL;

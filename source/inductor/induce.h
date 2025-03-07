@@ -42,6 +42,9 @@ struct induce_t {
   const mu_core_t *integer_core;
   const mu_core_t *lambda_core;
   const mu_core_t *vector_core;
+
+  const mu_type_t *aux[2000];
+  coercion_t coercion[2000];
 };
 
 typedef struct open_scheme_t open_scheme_t;
@@ -82,5 +85,8 @@ const mu_type_t *induce_node(induce_t *inductor, const mu_node_t *node)
   __attribute__((nonnull));
 
 void mark_type_from_anywhere_first(induce_t *induce, const mu_type_t *root, type_link_t *link);
+
+const induce_edge_t *search_edge(
+    const induce_t *induce, const mu_type_t *a, const mu_type_t *b);
 
 #endif /* MU_INDUCTOR_INDUCE_I */
