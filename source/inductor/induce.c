@@ -481,6 +481,27 @@ induce_t *induce_initialize(
   return induce;
 }
 
+static const edge_assignment_t *record_edge_assignment(
+    induce_t *induce,
+    const mu_node_t *node,
+    size_t i,
+    const induce_edge_t *edge) {
+  edge_assignment_t assignment = { .node = node, .i = i, .edge = edge };
+  induce->edge_assignment[induce->edge_assignment_i++] = assignment;
+  return &induce->edge_assignment[induce->edge_assignment_i - 1];
+}
+
+static const induce_edge_t *assigned_edge(
+    const induce_t *induce, const mu_node_t *node, size_t i) {
+  for (size_t j = 0; j < induce->edge_assignment_i; j++) {
+    edge_assignment_t assignment = induce->edge_assignment[j];
+    if (assignment.node == node && assignment.i == i)
+      return assignment.edge;
+  }
+
+  return NULL;
+}
+
 const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
   assert(root->as_stator.id < induce->node_length);
 
