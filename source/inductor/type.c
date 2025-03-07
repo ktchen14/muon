@@ -62,30 +62,6 @@ const mu_simple_type_t *mu_lambda_type(
   return assign_type(induce, result);
 }
 
-mu_record_type_t *record_type_allocate(induce_t *induce, size_t argc) {
-  size_t size;
-  if (rare((size = struct_size(mu_record_type_t, argv, argc)) == 0))
-    return NULL;
-
-  mu_record_type_t *result;
-  if ((result = malloc(size)) == NULL)
-    return NULL;
-  *result = (mu_record_type_t) {
-    .as_type.kind = MU_RECORD_TYPE, .as_type.induce = induce, .argc = argc,
-  };
-  return result;
-}
-
-const mu_record_type_t *record_type_activate(mu_record_type_t *type) {
-  for (size_t i = 0; i < type->argc; i++) {
-    const mu_type_member_t *member = &type->argv[i];
-
-    assert(member->type->induce == type->as_type.induce);
-    assert(member->type->kind != MU_SCHEME_TYPE);
-  }
-  return assign_type(type->as_type.induce, type);
-}
-
 const mu_record_type_t *mu_record_type(
     induce_t *induce, size_t argc, const mu_type_member_t argv[argc]) {
   mu_record_type_t *result;
@@ -120,6 +96,30 @@ const mu_simple_type_t *mu_vector_type(
   return assign_type(induce, result);
 }
 
+mu_record_type_t *record_type_allocate(induce_t *induce, size_t argc) {
+  size_t size;
+  if (rare((size = struct_size(mu_record_type_t, argv, argc)) == 0))
+    return NULL;
+
+  mu_record_type_t *result;
+  if ((result = malloc(size)) == NULL)
+    return NULL;
+  *result = (mu_record_type_t) {
+    .as_type.kind = MU_RECORD_TYPE, .as_type.induce = induce, .argc = argc,
+  };
+  return result;
+}
+
+const mu_record_type_t *record_type_activate(mu_record_type_t *type) {
+  for (size_t i = 0; i < type->argc; i++) {
+    const mu_type_member_t *member = &type->argv[i];
+
+    assert(member->type->induce == type->as_type.induce);
+    assert(member->type->kind != MU_SCHEME_TYPE);
+  }
+  return assign_type(type->as_type.induce, type);
+}
+
 mu_scheme_type_t *scheme_type_allocate(induce_t *induce, size_t argc) {
   size_t size;
   if (rare((size = struct_size(mu_scheme_type_t, argv, argc)) == 0))
@@ -141,6 +141,29 @@ const mu_scheme_type_t *scheme_type_activate(
     assert(type->argv[i]->as_type.kind != MU_SCHEME_TYPE);
   }
   type->matter = matter;
+  return assign_type(type->as_type.induce, type);
+}
+
+mu_join_type_t *join_type_allocate(induce_t *induce, size_t argc) {
+  size_t size;
+  if (rare((size = struct_size(mu_join_type_t, argv, argc)) == 0))
+    return NULL;
+
+  mu_join_type_t *result;
+  if (rare((result = malloc(size)) == NULL))
+    return NULL;
+  *result = (mu_join_type_t) {
+    .as_type.kind = MU_JOIN_TYPE, .as_type.induce = induce, .argc = argc,
+  };
+  return result;
+}
+
+const mu_join_type_t *join_type_activate(mu_join_type_t *type) {
+  for (size_t i = 0; i < type->argc; i++) {
+    assert(type->argv[i] != NULL);
+    assert(type->argv[i]->induce == type->as_type.induce);
+    assert(type->argv[i]->kind != MU_SCHEME_TYPE);
+  }
   return assign_type(type->as_type.induce, type);
 }
 
@@ -307,18 +330,20 @@ void debug_type(const mu_type_t *type) {
       break;
     }
 
-/*     case JOIN_TYPE: */
-/*       if (type->join_argc == 0) { */
-/*         fprintf(stderr, "⊥"); */
-/*         break; */
-/*       } */
+    case MU_JOIN_TYPE: {
+      const mu_join_type_t *join_type = (const mu_join_type_t *) type;
 
-/*       for (size_t i = 0; i < type->join_argc; i++) { */
-/*         if (i > 0) */
-/*           fprintf(stderr, " ⊔ "); */
-/*         debug_type(type->join_argv[i]); */
-/*       } */
-/*       break; */
+      for (size_t i = 0; i < join_type->argc; i++) {
+        if (i > 0)
+          fprintf(stderr, " ⊔ ");
+        debug_type(join_type->argv[i]);
+      }
+
+      if (join_type->argc == 0)
+        fprintf(stderr, "⊥");
+
+      break;
+    }
   }
 }
 
@@ -393,18 +418,20 @@ void debug_just_type(const mu_type_t *type) {
       break;
     }
 
-    /* case JOIN_TYPE: */
-    /*   if (type->join_argc == 0) { */
-    /*     fprintf(stderr, "⊥"); */
-    /*     break; */
-    /*   } */
+    case MU_JOIN_TYPE: {
+      const mu_join_type_t *join_type = (const mu_join_type_t *) type;
 
-    /*   for (size_t i = 0; i < type->join_argc; i++) { */
-    /*     if (i > 0) */
-    /*       fprintf(stderr, " ⊔ "); */
-    /*     debug_type(type->join_argv[i]); */
-    /*   } */
-    /*   break; */
+      for (size_t i = 0; i < join_type->argc; i++) {
+        if (i > 0)
+          fprintf(stderr, " ⊔ ");
+        debug_just_type(join_type->argv[i]);
+      }
+
+      if (join_type->argc == 0)
+        fprintf(stderr, "⊥");
+
+      break;
+    }
   }
 }
 
@@ -420,20 +447,4 @@ void debug_just_type(const mu_type_t *type) {
 /*   for (size_t i = 0; i < argc; i++) */
 /*     result->join_argv[i] = argv[i]; */
 /*   return result; */
-/* } */
-
-/* type_t *join_type_allocate(induce_t *induce, size_t argc) { */
-/*   size_t size; */
-/*   if (rare((size = struct_size(type_t, join_argv, argc)) == 0)) */
-/*     return NULL; */
-
-/*   type_t *result; */
-/*   if (rare((result = malloc(size)) == NULL)) */
-/*     return NULL; */
-/*   *result = (type_t) { .kind = JOIN_TYPE, .argc = argc }; */
-/*   return result; */
-/* } */
-
-/* const type_t *join_type_activate(type_t *type) { */
-/*   return type; */
 /* } */

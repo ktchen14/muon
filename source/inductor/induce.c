@@ -48,6 +48,15 @@ static const induce_edge_t *append(
     coercion_t coercion)
   __attribute__((nonnull));
 
+/// Register @a a <: @a b in the @a induce engine
+const induce_edge_t *append_edge(
+    induce_t *induce,
+    const mu_type_t *restrict a,
+    const mu_type_t *restrict b,
+    coercion_t coercion) {
+  return append(induce, a, b, coercion);
+}
+
 typedef struct {
   const mu_type_t *source;
   const mu_type_t *target;
@@ -235,13 +244,17 @@ void mark_type(induce_t *induce, const mu_type_t *type, _Bool negative, size_t r
     case MU_SCHEME_TYPE:
       abort();
 
-    /* case JOIN_TYPE: */
-    /*   if (negative) */
-    /*     return; */
+    case MU_JOIN_TYPE: {
+      const mu_join_type_t *join_type = (const mu_join_type_t *) type;
 
-    /*   for (size_t i = 0; i < type->join_argc; i++) */
-    /*     mark_type(induce, type->join_argv[i], negative, rank); */
-    /*   break; */
+      if (negative)
+        return;
+
+      for (size_t i = 0; i < join_type->argc; i++)
+        mark_type(induce, join_type->argv[i], negative, rank);
+
+      break;
+    }
   }
 }
 
@@ -383,13 +396,18 @@ void mark_type_from_anywhere(
       return;
       abort();
 
-    /* case JOIN_TYPE: */
-    /*   if (negative) */
-    /*     return; */
+    case MU_JOIN_TYPE: {
+      const mu_join_type_t *join_type = (const mu_join_type_t *) type;
 
-    /*   for (size_t i = 0; i < type->join_argc; i++) */
-    /*     mark_type_from_anywhere(induce, type->join_argv[i], negative, type, link); */
-    /*   break; */
+      if (negative)
+        return;
+
+      // TODO: the join type itself should be the next origin. But we declared
+      // origin as a variable type, so do an ugly cast.
+      for (size_t i = 0; i < join_type->argc; i++)
+        mark_type_from_anywhere(induce, join_type->argv[i], negative, (const mu_variable_type_t *) join_type, link);
+      break;
+    }
   }
 }
 
@@ -501,7 +519,6 @@ const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
 
   const mu_node_t *node = root, *next;
   do {
-    const detect_result_t *detect = induce->detect;
     while ((next = node_at(node, node_cursor(node)->i++)) != NULL) {
       node = node_continue(node, next);
 

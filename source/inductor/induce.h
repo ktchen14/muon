@@ -92,4 +92,10 @@ void mark_type_from_anywhere_first(induce_t *induce, const mu_type_t *root, type
 const induce_edge_t *search_edge(
     const induce_t *induce, const mu_type_t *a, const mu_type_t *b);
 
+const induce_edge_t *append_edge(
+    induce_t *induce,
+    const mu_type_t *restrict a,
+    const mu_type_t *restrict b,
+    coercion_t coercion);
+
 #endif /* MU_INDUCTOR_INDUCE_I */

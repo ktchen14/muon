@@ -4,7 +4,40 @@
 
 #define evince induce_reveal
 
-const mu_type_t *coerce_to_lower(induce_t *induce, const mu_variable_type_t *type);
+const mu_type_t *coerce_to_lower(induce_t *induce, const mu_variable_type_t *type) {
+  size_t length = 0;
+  for (size_t i = 0; i < induce->edge_length; i++) {
+    induce_edge_t edge = induce->edge[i];
+    if (edge.upper == &type->as_type && edge.upper->kind != MU_VARIABLE_TYPE)
+      length++;
+  }
+
+  mu_join_type_t *allocation;
+  if ((allocation = join_type_allocate(induce, length)) == NULL)
+    return NULL;
+
+  size_t j = 0;
+  for (size_t i = 0; i < induce->edge_length; i++) {
+    induce_edge_t edge = induce->edge[i];
+    if (edge.upper == &type->as_type && edge.upper->kind != MU_VARIABLE_TYPE)
+      allocation->argv[j++] = edge.lower;
+  }
+  assert(j == length);
+
+  const mu_join_type_t *result;
+  if (rare((result = join_type_activate(allocation)) == NULL))
+    return NULL;
+
+  for (size_t i = 0; i < induce->edge_length; i++) {
+    induce_edge_t edge = induce->edge[i];
+    if (edge.upper == &type->as_type && edge.upper->kind != MU_VARIABLE_TYPE) {
+      if (append_edge(induce, edge.lower, &result->as_type, edge.coercion) == NULL)
+        return NULL;
+    }
+  }
+
+  return &result->as_type;
+}
 
 __attribute__((nonnull)) static void access_expr_coerce(
     const mu_access_expr_t *expr, induce_t *induce) {
@@ -88,7 +121,7 @@ __attribute__((nonnull)) void expr_coerce(
 #define MU_EMIT(lower, upper, t) \
     case MU_##upper##_EXPR: \
       lower##_expr_coerce((const mu_##lower##_expr_t *) expr, induce); \
-      break;
+      return;
     MU_EACH_EXPR_KIND(MU_EMIT)
 #undef MU_EMIT
   }

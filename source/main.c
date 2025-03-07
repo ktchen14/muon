@@ -73,6 +73,8 @@ int main(int argc, char *argv[argc]) {
   if (induce_node(&induce, &sequence_expr->as_node) == NULL)
     assert(0);
 
+  expr_coerce(&sequence_expr->as_expr, &induce);
+
   extern _Thread_local _Bool debug_colorize;
   debug_colorize = 1;
   debug_induce = &induce;

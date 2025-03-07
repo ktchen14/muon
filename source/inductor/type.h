@@ -11,7 +11,8 @@
   emit(simple, SIMPLE, Simple, ##__VA_ARGS__) \
   emit(record, RECORD, Record, ##__VA_ARGS__) \
   emit(variable, VARIABLE, Variable, ##__VA_ARGS__) \
-  emit(scheme, SCHEME, Scheme, ##__VA_ARGS__)
+  emit(scheme, SCHEME, Scheme, ##__VA_ARGS__) \
+  emit(join, JOIN, Join, ##__VA_ARGS__)
 
 /// An enumeration over each kind of type
 typedef enum {
@@ -87,6 +88,14 @@ struct mu_scheme_type_t {
   const mu_variable_type_t *argv[/* argc */];
 };
 
+// A join type (⊔ or ⊥)
+typedef struct {
+  MU_TYPE_HEADER;
+
+  size_t argc;
+  const mu_type_t *argv[/* argc */];
+} mu_join_type_t;
+
 /// @internal Used to emit each branch in mu_type_cast()
 #define MU_TYPE_CAST_EMIT(lower, upper, t) \
   , const mu_##lower##_type_t *: _kind == MU_##upper##_TYPE
@@ -133,15 +142,13 @@ const mu_simple_type_t *mu_boolean_type(induce_t *induce)
 const mu_simple_type_t *mu_integer_type(induce_t *induce)
   __attribute__((malloc, nonnull));
 
+const mu_join_type_t *join_type(
+    induce_t *induce, size_t argc, const mu_type_t *argv[/* argc */])
+  __attribute__((malloc, nonnull));
+
 const mu_simple_type_t *mu_lambda_type(
     induce_t *induce, const mu_type_t *argument, const mu_type_t *output)
   __attribute__((malloc, nonnull));
-
-mu_record_type_t *record_type_allocate(induce_t *induce, size_t argc)
-  __attribute__((malloc, nonnull));
-
-const mu_record_type_t *record_type_activate(mu_record_type_t *type)
-  __attribute__((nonnull));
 
 const mu_record_type_t *mu_record_type(
     induce_t *induce, size_t argc, const mu_type_member_t argv[argc])
@@ -151,6 +158,19 @@ const mu_simple_type_t *mu_vector_type(
     induce_t *induce, const mu_type_t *matter)
   __attribute__((malloc, nonnull));
 
+const mu_scheme_type_t *mu_scheme_type(
+    induce_t *induce,
+    const mu_type_t *matter,
+    size_t argc,
+    const mu_variable_type_t *argv[argc])
+  __attribute__((malloc, nonnull(1, 2)));
+
+mu_record_type_t *record_type_allocate(induce_t *induce, size_t argc)
+  __attribute__((malloc, nonnull));
+
+const mu_record_type_t *record_type_activate(mu_record_type_t *type)
+  __attribute__((nonnull));
+
 mu_scheme_type_t *scheme_type_allocate(induce_t *induce, size_t argc)
   __attribute__((malloc, nonnull));
 
@@ -158,12 +178,11 @@ const mu_scheme_type_t *scheme_type_activate(
     mu_scheme_type_t *type, const mu_type_t *matter)
   __attribute__((nonnull));
 
-const mu_scheme_type_t *mu_scheme_type(
-    induce_t *induce,
-    const mu_type_t *matter,
-    size_t argc,
-    const mu_variable_type_t *argv[argc])
-  __attribute__((malloc, nonnull(1, 2)));
+mu_join_type_t *join_type_allocate(induce_t *induce, size_t argc)
+  __attribute__((malloc, nonnull));
+
+const mu_join_type_t *join_type_activate(mu_join_type_t *type)
+  __attribute__((nonnull));
 
 void debug_type(const mu_type_t *type);
 void debug_variable_type_name(const mu_variable_type_t *type);
@@ -182,15 +201,5 @@ static inline _Bool is_significant(const mu_variable_type_t *type) {
   return type->positively_entered_from == type && type->negatively_entered_from == type
     || type->polymorphic_to != NULL;
 }
-
-/* /1* // JOIN_TYPE *1/ */
-/* /1* struct { *1/ */
-/* /1*   size_t join_argc; *1/ */
-/* /1*   const type_t *join_argv[]; *1/ */
-/* /1* }; *1/ */
-
-/* const type_t *join_type(induce_t *induce, size_t argc, const type_t *argv[]); */
-/* type_t *join_type_allocate(induce_t *induce, size_t argc); */
-/* const type_t *join_type_activate(type_t *type); */
 
 #endif /* MU_INDUCTOR_TYPE_I */
