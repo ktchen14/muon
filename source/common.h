@@ -11,12 +11,12 @@
 
 /// Return the minimum of @a a and @a b (as defined by the @c < operator)
 #define minimum(a, b) ({ \
-    typeof((a)) _a = (a); typeof((b)) _b = (b); _a < b ? _a : _b; \
+    typeof((a)) _a = (a); typeof((b)) _b = (b); _a < _b ? _a : _b; \
   })
 
 /// Return the maximum of @a a and @a b (as defined by the @c > operator)
 #define maximum(a, b) ({ \
-    typeof((a)) _a = (a); typeof((b)) _b = (b); _a > b ? _a : _b; \
+    typeof((a)) _a = (a); typeof((b)) _b = (b); _a > _b ? _a : _b; \
   })
 
 /**
