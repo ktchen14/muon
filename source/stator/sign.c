@@ -24,7 +24,7 @@ const mu_integer_sign_t *mu_integer_sign(mu_engine_t *engine) {
 }
 
 const mu_name_sign_t *mu_name_sign(mu_engine_t *engine, const mu_name_t *name) {
-  assert(name->as_stator.engine == engine);
+  assert(name->engine == engine);
 
   mu_name_sign_t *result;
   if ((result = node_allocate(engine, sizeof(mu_name_sign_t))) == NULL)
@@ -40,7 +40,7 @@ const mu_record_sign_t *mu_record_sign(
   for (size_t i = 0; i < argc; i++) {
     const mu_name_t *member_name = argv[i].name;
     const mu_sign_t *member_sign = argv[i].sign;
-    assert(member_name == NULL || member_name->as_stator.engine == engine);
+    assert(member_name == NULL || member_name->engine == engine);
     assert(member_sign != NULL);
     assert(member_sign->as_stator.engine == engine);
   }

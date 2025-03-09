@@ -11,7 +11,7 @@
 
 const mu_access_expr_t *mu_access_expr(
     mu_engine_t *engine, const mu_name_t *name, const mu_expr_t *matter) {
-  assert(name->as_stator.engine == engine);
+  assert(name->engine == engine);
   assert(matter->as_stator.engine == engine);
 
   mu_access_expr_t *result;
@@ -72,7 +72,7 @@ const mu_lambda_expr_t *mu_lambda_expr(
 }
 
 const mu_name_expr_t *mu_name_expr(mu_engine_t *engine, const mu_name_t *name) {
-  assert(name->as_stator.engine == engine);
+  assert(name->engine == engine);
 
   mu_name_expr_t *result;
   if ((result = node_allocate(engine, sizeof(mu_name_expr_t))) == NULL)
@@ -84,7 +84,7 @@ const mu_name_expr_t *mu_name_expr(mu_engine_t *engine, const mu_name_t *name) {
 }
 
 const mu_native_expr_t *mu_native_expr(mu_engine_t *engine, const mu_name_t *name) {
-  assert(name->as_stator.engine == engine);
+  assert(name->engine == engine);
 
   mu_native_expr_t *result;
   if ((result = node_allocate(engine, sizeof(mu_native_expr_t))) == NULL)
@@ -176,7 +176,7 @@ const mu_record_expr_t *record_expr_activate(mu_record_expr_t *expr) {
   for (size_t i = 0; i < expr->argc; i++) {
     const mu_name_t *member_name = expr->argv[i].name;
     const mu_expr_t *member_expr = expr->argv[i].expr;
-    assert(member_name == NULL || member_name->as_stator.engine == engine);
+    assert(member_name == NULL || member_name->engine == engine);
     assert(member_expr != NULL);
     assert(member_expr->as_stator.engine == engine);
   }

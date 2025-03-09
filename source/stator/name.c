@@ -47,9 +47,8 @@ const mu_name_t *mu_name(
     return already;
   }
 
-  name->as_stator.engine = engine;
-  name->as_stator.id = engine->name_number++;
-  engine->name[name->as_stator.id] = name;
+  name->engine = engine;
+  engine->name[engine->name_number++] = name;
   return name;
 }
 

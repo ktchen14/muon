@@ -14,7 +14,7 @@ const mu_define_stmt_t *mu_define_stmt(
     const mu_name_t *name,
     const mu_expr_t *expr,
     const mu_sign_t *sign) {
-  assert(name->as_stator.engine == engine);
+  assert(name->engine == engine);
   assert(expr->as_stator.engine == engine);
   assert(sign == NULL || sign->as_stator.engine == engine);
 
@@ -29,7 +29,7 @@ const mu_define_stmt_t *mu_define_stmt(
 
 const mu_type_stmt_t *mu_type_stmt(
     mu_engine_t *engine, const mu_name_t *name, const mu_sign_t *sign) {
-  assert(name->as_stator.engine == engine);
+  assert(name->engine == engine);
   assert(sign->as_stator.engine == engine);
 
   mu_type_stmt_t *result;

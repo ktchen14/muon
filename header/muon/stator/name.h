@@ -11,10 +11,7 @@ typedef unsigned char mu_char8_t;
 /// A symbol in Muon
 typedef struct mu_name_t mu_name_t;
 struct mu_name_t {
-  MU_STATOR_HEADER;
-
-  /// If the name has a prefix, e.g. a.b
-  const mu_name_t *prefix;
+  const mu_engine_t *engine;
 
   /// The length of the name (not counting the null terminator)
   size_t length;

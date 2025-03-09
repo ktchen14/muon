@@ -41,8 +41,6 @@
  * @brief An enumeration of each kind of stator
  */
 typedef enum {
-  MU_NAME_STATOR,
-
 #define MU_EMIT(l, upper, t, kind) MU_##upper##_##kind##_STATOR,
   MU_EACH_EXPR_KIND(MU_EMIT, EXPR)
   MU_EACH_SIGN_KIND(MU_EMIT, SIGN)
