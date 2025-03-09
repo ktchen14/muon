@@ -3,8 +3,4 @@
 
 #include <muon/stator/common.h>  // IWYU pragma: export
 
-typedef struct mu_engine_t mu_engine_t;
-typedef struct mu_name_t mu_name_t;
-typedef struct mu_node_t mu_node_t;
-
 #endif /* MU_STATOR_COMMON_I */
