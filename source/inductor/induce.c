@@ -41,20 +41,35 @@ const mu_variable_type_t *variable_type(induce_t *induce, open_scheme_t *scheme)
 }
 
 /// Register @a a <: @a b in the @a induce engine
-static const induce_edge_t *append(
-    induce_t *induce,
-    const mu_type_t *restrict a,
-    const mu_type_t *restrict b,
-    coercion_t coercion)
-  __attribute__((nonnull));
-
-/// Register @a a <: @a b in the @a induce engine
 const induce_edge_t *append_edge(
     induce_t *induce,
     const mu_type_t *restrict a,
     const mu_type_t *restrict b,
     coercion_t coercion) {
-  return append(induce, a, b, coercion);
+  if (induce->edge_length >= induce->edge_volume) {
+    size_t volume = induce->edge_volume;
+    if (rare(__builtin_mul_overflow(volume, 2, &volume)))
+      return errno = ENOMEM, NULL;
+
+    size_t size;
+    if (rare(__builtin_mul_overflow(volume, sizeof(induce_edge_t), &size)))
+      return errno = ENOMEM, NULL;
+
+    induce_edge_t *sub_data = induce->edge;
+    if ((sub_data = realloc(sub_data, size)) == NULL)
+      return NULL;
+    for (size_t i = induce->edge_volume; i < volume; i++)
+      sub_data[i] = (induce_edge_t) {0};
+
+    induce->edge_volume = volume;
+    induce->edge = sub_data;
+  }
+
+  induce_edge_t edge = { .lower = a, .upper = b, .coercion = coercion };
+  induce->edge[induce->edge_length] = edge;
+  induce_edge_t *result = &induce->edge[induce->edge_length];
+  induce->edge_length++;
+  return result;
 }
 
 typedef struct {
@@ -660,38 +675,7 @@ static const induce_edge_t *restrict_type(
   if ((coercion = restrict_type_internal(induce, a, b)) == NULL)
     return NULL;
 
-  return append(induce, a, b, coercion);
-}
-
-static const induce_edge_t *append(
-    induce_t *induce,
-    const mu_type_t *restrict a,
-    const mu_type_t *restrict b,
-    coercion_t coercion) {
-  if (induce->edge_length >= induce->edge_volume) {
-    size_t volume = induce->edge_volume;
-    if (rare(__builtin_mul_overflow(volume, 2, &volume)))
-      return errno = ENOMEM, NULL;
-
-    size_t size;
-    if (rare(__builtin_mul_overflow(volume, sizeof(induce_edge_t), &size)))
-      return errno = ENOMEM, NULL;
-
-    induce_edge_t *sub_data = induce->edge;
-    if ((sub_data = realloc(sub_data, size)) == NULL)
-      return NULL;
-    for (size_t i = induce->edge_volume; i < volume; i++)
-      sub_data[i] = (induce_edge_t) {0};
-
-    induce->edge_volume = volume;
-    induce->edge = sub_data;
-  }
-
-  induce_edge_t edge = { .lower = a, .upper = b, .coercion = coercion };
-  induce->edge[induce->edge_length] = edge;
-  induce_edge_t *result = &induce->edge[induce->edge_length];
-  induce->edge_length++;
-  return result;
+  return append_edge(induce, a, b, coercion);
 }
 
 // ---------------------------------- Expr -------------------------------- {{{1
