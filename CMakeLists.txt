@@ -9,21 +9,20 @@ project(Muon VERSION "${PROJECT_VERSION}"
   LANGUAGES C
 )
 
-set(CMAKE_C_FLAGS "-g -fsanitize=address -fsanitize=undefined -Wno-parentheses")
+set(CMAKE_C_FLAGS "-g -fsanitize=address -fsanitize=undefined")
 
 add_library(muon)
 target_compile_features(muon PUBLIC c_std_11)
-target_compile_options(muon PRIVATE -Wall -Wextra -Wno-unused-parameter)
+target_compile_options(muon PRIVATE -Wall -Wextra -Wno-unused-parameter -Wno-logical-op-parentheses)
 target_include_directories(muon PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/header>"
   "$<INSTALL_INTERFACE:include>")
 set_property(TARGET muon PROPERTY VERSION "${Muon_VERSION}")
 
 add_executable(main)
-target_compile_options(main PRIVATE -Wall -Wextra -Wno-unused-parameter "-Wno-logical-op-parentheses")
+target_compile_options(main PRIVATE -Wall -Wextra -Wno-unused-parameter -Wno-logical-op-parentheses)
 target_link_libraries(main PRIVATE muon)
 
-add_compile_options(-Werror -Wall -Wextra -Wno-unused-parameter)
 add_subdirectory(source)
 
 if(PROJECT_IS_TOP_LEVEL)
