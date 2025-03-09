@@ -19,19 +19,13 @@ const mu_name_t *mu_name(
     mu_engine_t *engine,
     size_t length,
     const mu_char8_t text[restrict static length]) {
-  // Calculate the size of the name_header_t
-  size_t size = offsetof(name_header_t, name.text) + 1;
-  if (rare(__builtin_add_overflow(size, length, &size)))
+  size_t size;
+  if (rare((size = struct_size(mu_name_t, text, length + 1)) == 0))
     return errno = ENOMEM, NULL;
-  size = maximum(size, sizeof(name_header_t));
 
-  // Allocate and zero the header
-  name_header_t *header;
-  if ((header = engine_allocate(engine, size)) == NULL)
+  mu_name_t *name;
+  if ((name = engine_allocate(engine, size)) == NULL)
     return NULL;
-  *header = (name_header_t) {0};
-
-  mu_name_t *name = &header->name;
   *name = (mu_name_t) { .length = length };
   memcpy(name->text, text, length);
   name->text[length] = '\0';
@@ -43,7 +37,7 @@ const mu_name_t *mu_name(
     if (memcmp(name->text, already->text, name->length))
       continue;
 
-    free(name_cursor(name));
+    free(name);
     return already;
   }
 
