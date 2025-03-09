@@ -97,11 +97,4 @@ typedef struct {
   mu_stator_t as_stator; \
 }
 
-/// The header that each concrete view must have
-#define MU_VIEW_HEADER union { \
-  mu_view_t as_view; \
-  mu_node_t as_node; \
-  mu_stator_t as_stator; \
-}
-
 #endif /* MU_STATOR_ABSTRACT_NODE_H */

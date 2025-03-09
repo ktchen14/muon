@@ -5,6 +5,8 @@
 
 #include "name.h"
 
+#include <stddef.h>
+
 /**
  * @brief An enumeration over each kind of sign
  *

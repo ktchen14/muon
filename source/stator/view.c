@@ -1,4 +1,4 @@
-#include "variable_view.h"
+#include "view.h"
 
 #include "engine.h"
 #include "name.h"
@@ -9,15 +9,12 @@
 
 const mu_variable_view_t *mu_variable_view(
     mu_engine_t *engine, const mu_name_t *name) {
-  size_t size = sizeof(mu_variable_view_t);
-
   mu_variable_view_t *result;
-  if ((result = node_allocate(engine, size)) == NULL)
+  if ((result = node_allocate(engine, sizeof(mu_variable_view_t))) == NULL)
     return NULL;
   *result = (mu_variable_view_t) {
     .as_view.kind = MU_VARIABLE_VIEW, .name = name,
   };
-
   return assign_node(engine, result);
 }
 

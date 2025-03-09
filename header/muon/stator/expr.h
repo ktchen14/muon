@@ -7,7 +7,7 @@
 typedef struct mu_stmt_t mu_stmt_t;
 
 #include "name.h"
-#include "variable_view.h"
+#include "view.h"
 
 #include <stddef.h>
 #include <stdint.h>
