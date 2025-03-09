@@ -58,7 +58,7 @@ const mu_invoke_expr_t *mu_invoke_expr(
 }
 
 const mu_lambda_expr_t *mu_lambda_expr(
-    mu_engine_t *engine, const mu_variable_view_t *argument, const mu_expr_t *matter) {
+    mu_engine_t *engine, const mu_view_t *argument, const mu_expr_t *matter) {
   assert(argument->as_node.engine == engine);
   assert(matter->as_node.engine == engine);
 
@@ -270,9 +270,7 @@ void mu_lambda_expr_debug(const mu_lambda_expr_t *expr) {
   putc('\n', stderr);
 
   WITH_DEBUG_INDENT() {
-    WITH_DEBUG_NEGATE() {
-      mu_view_debug(&expr->argument->as_view);
-    }
+    WITH_DEBUG_NEGATE() { mu_view_debug(expr->argument); }
     mu_expr_debug(expr->matter);
   }
 }

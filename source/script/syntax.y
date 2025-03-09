@@ -61,6 +61,7 @@ typedef struct {
   const mu_stmt_t *stmt;
   const mu_define_stmt_t *define_stmt;
 
+  const mu_view_t *view;
   const mu_variable_view_t *variable_view;
 }
 
@@ -80,6 +81,7 @@ typedef struct {
 %type <expr> expr
 %type <sign> sign
 %type <stmt> stmt
+%type <view> view
 
 %type <expr_member> expr_member
 %type <access_expr> access_expr
@@ -174,8 +176,8 @@ invoke_expr: expr[lambda] _ expr[matter] %prec INVOKE {
   $$ = mu_invoke_expr(syntax->engine, $lambda, $matter);
 }
 
-lambda_expr: "lambda" _ variable_view _ '=' _ expr %prec LAMBDA {
-  $$ = mu_lambda_expr(syntax->engine, $variable_view, $expr);
+lambda_expr: "lambda" _ view _ '=' _ expr %prec LAMBDA {
+  $$ = mu_lambda_expr(syntax->engine, $view, $expr);
 }
 
 name_expr: name {
@@ -277,6 +279,9 @@ define_stmt: "define" _ name _ sign _ '=' _ expr '\n' {
 }
 
 // ================================== View ================================ {{{1
+
+view:
+  variable_view { $$ = &$variable_view->as_view; }
 
 variable_view: name {
   $$ = mu_variable_view(syntax->engine, $name);

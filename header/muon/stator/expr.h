@@ -4,7 +4,6 @@
 #include "common.h"
 
 #include "name.h"
-#include "view.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -36,7 +35,7 @@ typedef struct {
 
 typedef struct {
   MU_EXPR_HEADER;
-  const mu_variable_view_t *argument;
+  const mu_view_t *argument;
   const mu_expr_t *matter;
 } mu_lambda_expr_t;
 
@@ -92,7 +91,7 @@ const mu_invoke_expr_t *mu_invoke_expr(
   __attribute__((malloc, nonnull));
 
 const mu_lambda_expr_t *mu_lambda_expr(
-    mu_engine_t *engine, const mu_variable_view_t *argument, const mu_expr_t *matter)
+    mu_engine_t *engine, const mu_view_t *argument, const mu_expr_t *matter)
   __attribute__((malloc, nonnull));
 
 const mu_name_expr_t *mu_name_expr(mu_engine_t *engine, const mu_name_t *name)
