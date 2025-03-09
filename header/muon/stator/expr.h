@@ -3,9 +3,13 @@
 
 #include "abstract_node.h"
 
+// TODO
+typedef struct mu_stmt_t mu_stmt_t;
+
 #include "name.h"
 #include "variable_view.h"
 
+#include <stddef.h>
 #include <stdint.h>
 
 /**
@@ -128,7 +132,8 @@ const mu_lambda_expr_t *mu_lambda_expr(
 const mu_name_expr_t *mu_name_expr(mu_engine_t *engine, const mu_name_t *name)
   __attribute__((malloc, nonnull));
 
-const mu_native_expr_t *mu_native_expr(mu_engine_t *engine, const mu_name_t *name)
+const mu_native_expr_t *mu_native_expr(
+    mu_engine_t *engine, const mu_name_t *name)
   __attribute__((malloc, nonnull));
 
 const mu_record_expr_t *mu_record_expr(

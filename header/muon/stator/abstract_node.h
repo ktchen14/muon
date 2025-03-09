@@ -73,13 +73,14 @@ typedef struct mu_node_t {
 } mu_node_t;
 
 /// An abstract stmt
-typedef struct {
+typedef struct mu_stmt_t mu_stmt_t;
+struct mu_stmt_t {
   union {
     mu_stmt_kind_t kind;
     mu_node_t as_node;
     mu_stator_t as_stator;
   };
-} mu_stmt_t;
+};
 
 /// An abstract view
 typedef struct {
@@ -92,13 +93,6 @@ typedef struct {
 
 /// The header that each concrete node must have
 #define MU_NODE_HEADER union { \
-  mu_node_t as_node; \
-  mu_stator_t as_stator; \
-}
-
-/// The header that each concrete stmt must have
-#define MU_STMT_HEADER union { \
-  mu_stmt_t as_stmt; \
   mu_node_t as_node; \
   mu_stator_t as_stator; \
 }

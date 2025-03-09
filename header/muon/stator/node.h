@@ -4,9 +4,7 @@
 #include "abstract_node.h"  // IWYU pragma: export
 #include "expr.h"           // IWYU pragma: export
 #include "sign.h"           // IWYU pragma: export
-
-#include "define_stmt.h"    // IWYU pragma: export
-#include "type_stmt.h"      // IWYU pragma: export
+#include "stmt.h"           // IWYU pragma: export
 
 #include "variable_view.h"  // IWYU pragma: export
 
