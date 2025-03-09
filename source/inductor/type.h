@@ -50,7 +50,6 @@ typedef struct {
 /// A record type
 typedef struct {
   MU_TYPE_HEADER;
-
   size_t argc;
   mu_type_member_t argv[/* argc */];
 } mu_record_type_t;
@@ -93,7 +92,6 @@ struct mu_scheme_type_t {
 // A join type (⊔ or ⊥)
 typedef struct {
   MU_TYPE_HEADER;
-
   size_t argc;
   const mu_type_t *argv[/* argc */];
 } mu_join_type_t;
