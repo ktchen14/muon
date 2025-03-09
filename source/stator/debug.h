@@ -81,7 +81,7 @@ static inline void debug_node_type(const mu_node_t *node) {
   }
 
   coercion_t coercion;
-  if ((coercion = debug_induce->coercion[node->as_stator.id]) != NULL)
+  if ((coercion = debug_induce->coercion[node->id]) != NULL)
     fprintf(stderr, " ∷ %s", coercion);
 }
 

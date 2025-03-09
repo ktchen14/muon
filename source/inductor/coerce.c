@@ -65,7 +65,7 @@ const mu_type_t *coerce_to_lower(induce_t *induce, const mu_variable_type_t *typ
 
 __attribute__((nonnull)) static void access_expr_coerce(
     const mu_access_expr_t *expr, induce_t *induce) {
-  const mu_type_t *type = induce->aux[expr->as_stator.id];
+  const mu_type_t *type = induce->aux[expr->as_node.id];
   assert(type != NULL);
 
   const mu_type_t *matter_type = induce_reveal(induce, &expr->matter->as_node);
@@ -73,7 +73,7 @@ __attribute__((nonnull)) static void access_expr_coerce(
   const induce_edge_t *edge = search_edge(induce, matter_type, type);
   assert(edge != NULL);
 
-  induce->coercion[expr->matter->as_stator.id] = edge->coercion;
+  induce->coercion[expr->matter->as_node.id] = edge->coercion;
 }
 
 __attribute__((nonnull)) static void boolean_expr_coerce(
@@ -84,7 +84,7 @@ __attribute__((nonnull)) static void integer_expr_coerce(
 
 __attribute__((nonnull)) static void invoke_expr_coerce(
     const mu_invoke_expr_t *expr, induce_t *induce) {
-  const mu_type_t *type = induce->aux[expr->as_stator.id];
+  const mu_type_t *type = induce->aux[expr->as_node.id];
   assert(type != NULL);
 
   const mu_type_t *operator_type = evince(induce, &expr->operator->as_node);
@@ -92,7 +92,7 @@ __attribute__((nonnull)) static void invoke_expr_coerce(
   const induce_edge_t *edge = search_edge(induce, operator_type, type);
   assert(edge != NULL);
 
-  induce->coercion[expr->operator->as_stator.id] = edge->coercion;
+  induce->coercion[expr->operator->as_node.id] = edge->coercion;
 }
 
 __attribute__((nonnull)) static void lambda_expr_coerce(
@@ -124,10 +124,10 @@ __attribute__((nonnull)) static void vector_expr_coerce(
   for (size_t i = 0; i < expr->argc; i++) {
     const mu_expr_t *argument = expr->argv[i];
 
-    assert(induce->coercion[argument->as_stator.id] == NULL);
+    assert(induce->coercion[argument->as_node.id] == NULL);
     const mu_type_t *argument_type = induce_reveal(induce, &argument->as_node);
     const induce_edge_t *edge = search_edge(induce, argument_type, result);
-    induce->coercion[argument->as_stator.id] = edge->coercion;
+    induce->coercion[argument->as_node.id] = edge->coercion;
   }
 }
 

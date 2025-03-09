@@ -15,8 +15,8 @@ const mu_define_stmt_t *mu_define_stmt(
     const mu_expr_t *expr,
     const mu_sign_t *sign) {
   assert(name->engine == engine);
-  assert(expr->as_stator.engine == engine);
-  assert(sign == NULL || sign->as_stator.engine == engine);
+  assert(expr->as_node.engine == engine);
+  assert(sign == NULL || sign->as_node.engine == engine);
 
   mu_define_stmt_t *result;
   if ((result = node_allocate(engine, sizeof(mu_define_stmt_t))) == NULL)
@@ -30,7 +30,7 @@ const mu_define_stmt_t *mu_define_stmt(
 const mu_type_stmt_t *mu_type_stmt(
     mu_engine_t *engine, const mu_name_t *name, const mu_sign_t *sign) {
   assert(name->engine == engine);
-  assert(sign->as_stator.engine == engine);
+  assert(sign->as_node.engine == engine);
 
   mu_type_stmt_t *result;
   if ((result = node_allocate(engine, sizeof(mu_type_stmt_t))) == NULL)
@@ -46,7 +46,7 @@ const mu_type_stmt_t *mu_type_stmt(
 void mu_define_stmt_debug(const mu_define_stmt_t *stmt) {
   fprintf(stderr, "%*s", debug_indent, "");
   fprintf(stderr, PRIsKIND "#" PRIuID "(name = ",
-      DEBUG_KIND("DefineStmt"), DEBUG_ID(stmt->as_stator.id));
+      DEBUG_KIND("DefineStmt"), DEBUG_ID(stmt->as_node.id));
   mu_name_debug(stmt->name);
   putc(')', stderr);
   debug_node_type(&stmt->as_node);
@@ -61,7 +61,7 @@ void mu_define_stmt_debug(const mu_define_stmt_t *stmt) {
 
 void mu_type_stmt_debug(const mu_type_stmt_t *stmt) {
   fprintf(stderr, "%*s", debug_indent, "");
-  fprintf(stderr, "Type Stmt #%zu: ", stmt->as_stator.id);
+  fprintf(stderr, "Type Stmt #%zu: ", stmt->as_node.id);
   mu_name_debug(stmt->name);
   debug_node_type(&stmt->as_node);
   putc('\n', stderr);

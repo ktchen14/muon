@@ -527,7 +527,7 @@ induce_t *induce_initialize(
 }
 
 const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
-  assert(root->as_stator.id < induce->node_length);
+  assert(root->id < induce->node_length);
 
   open_scheme_t root_scheme = { .induce = induce, .node = root };
   open_scheme_t *scheme = &root_scheme;
@@ -554,14 +554,14 @@ const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
       scheme = parent;
     }
 
-    induce->node_to_type[node->as_stator.id] = type;
+    induce->node_to_type[node->id] = type;
   } while ((node = node_return(node)) != NULL);
 
   return induce_reveal(induce, root);
 }
 
 const mu_type_t *handle_node_coercion(induce_t *induce, const mu_node_t *root) {
-  assert(root->as_stator.id < induce->node_length);
+  assert(root->id < induce->node_length);
 
   const mu_node_t *node = root, *next;
   do {
@@ -692,7 +692,7 @@ __attribute__((nonnull)) static const mu_type_t *access_expr_induce(
   };
   if ((record_type = mu_record_type(induce, 1, argv)) == NULL)
     return NULL;
-  induce->aux[expr->as_stator.id] = &record_type->as_type;
+  induce->aux[expr->as_node.id] = &record_type->as_type;
 
   const mu_type_t *matter_type = induce_reveal(induce, &expr->matter->as_node);
   if (restrict_type(induce, matter_type, &record_type->as_type) == NULL)
@@ -728,7 +728,7 @@ __attribute__((nonnull)) static const mu_type_t *invoke_expr_induce(
   const mu_simple_type_t *lambda_type;
   if ((lambda_type = mu_lambda_type(induce, argument_type, &result->as_type)) == NULL)
     return NULL;
-  induce->aux[expr->as_stator.id] = &lambda_type->as_type;
+  induce->aux[expr->as_node.id] = &lambda_type->as_type;
 
   if (restrict_type(induce, operator_type, &lambda_type->as_type) == NULL)
     return NULL;

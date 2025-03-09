@@ -3,16 +3,10 @@
 
 #include "abstract_node.h"
 
-#include "expr.h"
 #include "name.h"
-#include "sign.h"
 
 /// The header that each concrete stmt must have
-#define MU_STMT_HEADER union { \
-  mu_stmt_t as_stmt; \
-  mu_node_t as_node; \
-  mu_stator_t as_stator; \
-}
+#define MU_STMT_HEADER union { mu_stmt_t as_stmt; mu_node_t as_node; }
 
 typedef struct {
   MU_STMT_HEADER;

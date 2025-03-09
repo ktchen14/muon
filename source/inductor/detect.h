@@ -21,8 +21,8 @@ typedef struct {
 __attribute__((nonnull, pure))
 static inline const mu_node_t *detect_evince(
     const detect_result_t *detect, const mu_node_t *node) {
-  assert(node->as_stator.id < detect->length);
-  const mu_node_t *result = detect->data[node->as_stator.id];
+  assert(node->id < detect->length);
+  const mu_node_t *result = detect->data[node->id];
   assert(result != NULL);
   return result;
 }

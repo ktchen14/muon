@@ -6,11 +6,7 @@
 #include "name.h"
 
 /// The header that each concrete view must have
-#define MU_VIEW_HEADER union { \
-  mu_view_t as_view; \
-  mu_node_t as_node; \
-  mu_stator_t as_stator; \
-}
+#define MU_VIEW_HEADER union { mu_view_t as_view; mu_node_t as_node; }
 
 typedef struct {
   MU_VIEW_HEADER;

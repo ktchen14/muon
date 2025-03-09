@@ -3,48 +3,14 @@
 
 #include "abstract_node.h"
 
-// TODO
-typedef struct mu_stmt_t mu_stmt_t;
-
 #include "name.h"
 #include "view.h"
 
 #include <stddef.h>
 #include <stdint.h>
 
-/**
- * @brief An enumeration over each kind of expr
- *
- * This will define:
- *
- * @verbatim
- *   MU_ACCESS_EXPR = MU_ACCESS_EXPR_NODE,
- *   MU_BOOLEAN_EXPR = MU_BOOLEAN_EXPR_NODE,
- *   ...
- *   MU_ZERO_EXPR = MU_ZERO_EXPR_NODE,
- * @endverbatim
- */
-typedef enum {
-#define MU_EMIT(l, upper, t) MU_##upper##_EXPR = MU_##upper##_EXPR_NODE,
-  MU_EACH_EXPR_KIND(MU_EMIT)
-#undef MU_EMIT
-} mu_expr_kind_t;
-
-/// An abstract expr
-typedef struct {
-  union {
-    mu_expr_kind_t kind;
-    mu_node_t as_node;
-    mu_stator_t as_stator;
-  };
-} mu_expr_t;
-
 /// The header that each concrete expr must have
-#define MU_EXPR_HEADER union { \
-  mu_expr_t as_expr; \
-  mu_node_t as_node; \
-  mu_stator_t as_stator; \
-}
+#define MU_EXPR_HEADER union { mu_expr_t as_expr; mu_node_t as_node; }
 
 typedef struct {
   MU_EXPR_HEADER;

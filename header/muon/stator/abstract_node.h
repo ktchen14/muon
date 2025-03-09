@@ -3,6 +3,8 @@
 
 #include "common.h"  // IWYU pragma: export
 
+#include <stddef.h>
+
 /// Expands to emit(lower, upper, title, ...) for each kind of node
 #define MU_EACH_NODE_KIND(emit, ...) \
   MU_EACH_EXPR_KIND(MU_EACH_NODE_EMIT, _expr, _EXPR, Expr, emit, ##__VA_ARGS__) \
@@ -20,44 +22,41 @@
  * This will define:
  *
  * @verbatim
- *   MU_ACCESS_EXPR_NODE = MU_ACCESS_EXPR_STATOR,
+ *   MU_ACCESS_EXPR_NODE,
  *   ...
- *   MU_BOOLEAN_SIGN_NODE = MU_BOOLEAN_SIGN_STATOR,
+ *   MU_BOOLEAN_SIGN_NODE,
  *   ...
- *   MU_TYPE_STMT_NODE = MU_TYPE_STMT_STATOR,
+ *   MU_TYPE_STMT_NODE,
  * @endverbatim
  */
 typedef enum {
-#define MU_EMIT(l, upper, t) MU_##upper##_NODE = MU_##upper##_STATOR,
+#define MU_EMIT(l, upper, t) MU_##upper##_NODE,
   MU_EACH_NODE_KIND(MU_EMIT)
 #undef MU_EMIT
 } mu_node_kind_t;
 
-/**
- * @brief An enumeration over each kind of stmt
- *
- * This will define:
- *
- * @verbatim
- *   MU_DEFINE_STMT = MU_DEFINE_STMT_NODE,
- *   MU_TYPE_STMT = MU_TYPE_STMT_NODE,
- * @endverbatim
- */
+/// An enumeration over each kind of expr, e.g. @c MU_ACCESS_EXPR
+typedef enum {
+#define MU_EMIT(l, upper, t) MU_##upper##_EXPR = MU_##upper##_EXPR_NODE,
+  MU_EACH_EXPR_KIND(MU_EMIT)
+#undef MU_EMIT
+} mu_expr_kind_t;
+
+/// An enumeration over each kind of sign, e.g. @c MU_BOOLEAN_SIGN
+typedef enum {
+#define MU_EMIT(l, upper, t) MU_##upper##_SIGN = MU_##upper##_SIGN_NODE,
+  MU_EACH_SIGN_KIND(MU_EMIT)
+#undef MU_EMIT
+} mu_sign_kind_t;
+
+/// An enumeration over each kind of stmt, e.g. @c MU_DEFINE_STMT
 typedef enum {
 #define MU_EMIT(l, upper, t) MU_##upper##_STMT = MU_##upper##_STMT_NODE,
   MU_EACH_STMT_KIND(MU_EMIT)
 #undef MU_EMIT
 } mu_stmt_kind_t;
 
-/**
- * @brief An enumeration over each kind of view
- *
- * This will define:
- *
- * @verbatim
- *   MU_VARIABLE_VIEW = MU_VARIABLE_VIEW_NODE,
- * @endverbatim
- */
+/// An enumeration over each kind of view, e.g. @c MU_VARIABLE_VIEW
 typedef enum {
 #define MU_EMIT(l, upper, t) MU_##upper##_VIEW = MU_##upper##_VIEW_NODE,
   MU_EACH_VIEW_KIND(MU_EMIT)
@@ -66,35 +65,29 @@ typedef enum {
 
 /// An abstract node
 typedef struct mu_node_t {
-  union {
-    mu_node_kind_t kind;
-    mu_stator_t as_stator;
-  };
+  mu_node_kind_t kind;
+  const mu_engine_t *engine;
+  size_t id;
 } mu_node_t;
 
+/// An abstract expr
+typedef struct {
+  union { mu_expr_kind_t kind; mu_node_t as_node; };
+} mu_expr_t;
+
+/// An abstract sign
+typedef struct {
+  union { mu_sign_kind_t kind; mu_node_t as_node; };
+} mu_sign_t;
+
 /// An abstract stmt
-typedef struct mu_stmt_t mu_stmt_t;
-struct mu_stmt_t {
-  union {
-    mu_stmt_kind_t kind;
-    mu_node_t as_node;
-    mu_stator_t as_stator;
-  };
-};
+typedef struct {
+  union { mu_stmt_kind_t kind; mu_node_t as_node; };
+} mu_stmt_t;
 
 /// An abstract view
 typedef struct {
-  union {
-    mu_view_kind_t kind;
-    mu_node_t as_node;
-    mu_stator_t as_stator;
-  };
+  union { mu_view_kind_t kind; mu_node_t as_node; };
 } mu_view_t;
-
-/// The header that each concrete node must have
-#define MU_NODE_HEADER union { \
-  mu_node_t as_node; \
-  mu_stator_t as_stator; \
-}
 
 #endif /* MU_STATOR_ABSTRACT_NODE_H */

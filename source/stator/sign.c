@@ -42,7 +42,7 @@ const mu_record_sign_t *mu_record_sign(
     const mu_sign_t *member_sign = argv[i].sign;
     assert(member_name == NULL || member_name->engine == engine);
     assert(member_sign != NULL);
-    assert(member_sign->as_stator.engine == engine);
+    assert(member_sign->as_node.engine == engine);
   }
 
   size_t size;
@@ -64,7 +64,7 @@ const mu_record_sign_t *mu_record_sign(
 
 const mu_vector_sign_t *mu_vector_sign(
     mu_engine_t *engine, const mu_sign_t *matter) {
-  assert(matter->as_stator.engine == engine);
+  assert(matter->as_node.engine == engine);
 
   mu_vector_sign_t *result;
   if ((result = node_allocate(engine, sizeof(mu_vector_sign_t))) == NULL)
@@ -80,17 +80,17 @@ const mu_vector_sign_t *mu_vector_sign(
 
 void mu_boolean_sign_debug(const mu_boolean_sign_t *sign) {
   fprintf(stderr, "%*s", debug_indent, "");
-  fprintf(stderr, "Boolean Sign #%zu\n", sign->as_stator.id);
+  fprintf(stderr, "Boolean Sign #%zu\n", sign->as_node.id);
 }
 
 void mu_integer_sign_debug(const mu_integer_sign_t *sign) {
   fprintf(stderr, "%*s", debug_indent, "");
-  fprintf(stderr, "Integer Sign #%zu\n", sign->as_stator.id);
+  fprintf(stderr, "Integer Sign #%zu\n", sign->as_node.id);
 }
 
 void mu_name_sign_debug(const mu_name_sign_t *sign) {
   fprintf(stderr, "%*s", debug_indent, "");
-  fprintf(stderr, "Name Sign #%zu: ", sign->as_stator.id);
+  fprintf(stderr, "Name Sign #%zu: ", sign->as_node.id);
   mu_name_debug(sign->name);
   debug_node_type(&sign->as_node);
   putc('\n', stderr);
@@ -101,7 +101,7 @@ static void sign_member_debug(mu_sign_member_t member);
 
 void mu_record_sign_debug(const mu_record_sign_t *sign) {
   fprintf(stderr, "%*s", debug_indent, "");
-  fprintf(stderr, "Record Sign #%zu:", sign->as_stator.id);
+  fprintf(stderr, "Record Sign #%zu:", sign->as_node.id);
   debug_node_type(&sign->as_node);
   putc('\n', stderr);
 
@@ -125,7 +125,7 @@ static void sign_member_debug(mu_sign_member_t member) {
 
 void mu_vector_sign_debug(const mu_vector_sign_t *sign) {
   fprintf(stderr, "%*s", debug_indent, "");
-  fprintf(stderr, "Vector Sign #%zu:", sign->as_stator.id);
+  fprintf(stderr, "Vector Sign #%zu:", sign->as_node.id);
   debug_node_type(&sign->as_node); 
   putc('\n', stderr);
 

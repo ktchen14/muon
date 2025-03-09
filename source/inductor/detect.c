@@ -63,13 +63,13 @@ detect_t *detect_node(detect_t *detect, const mu_node_t *node) {
       if ((sequence_expr = mu_node_cast(anterior, sequence_expr)) != NULL) {
         const mu_stmt_t *target;
         if ((target = sequence_expr_get(sequence_expr, name_expr->name)) != NULL) {
-          detect->result->data[name_expr->as_stator.id] = &target->as_node;
+          detect->result->data[name_expr->as_node.id] = &target->as_node;
           goto next;
         }
       } else if ((lambda_expr = mu_node_cast(anterior, lambda_expr)) != NULL) {
         const mu_variable_view_t *view = lambda_expr->argument;
         if (view->name == name_expr->name) {
-          detect->result->data[name_expr->as_stator.id] = &view->as_node;
+          detect->result->data[name_expr->as_node.id] = &view->as_node;
           goto next;
         }
       }

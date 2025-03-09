@@ -46,8 +46,8 @@ static inline void *node_allocate(mu_engine_t *engine, size_t size) {
 /// @internal Assign the abstract @a node to the @a engine
 __attribute__((nonnull, returns_nonnull))
 static inline mu_node_t *assign_node(mu_engine_t *engine, mu_node_t *node) {
-  node->as_stator.engine = engine;
-  node->as_stator.id = engine->node_number++;
+  node->engine = engine;
+  node->id = engine->node_number++;
   return node;
 }
 

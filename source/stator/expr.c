@@ -12,7 +12,7 @@
 const mu_access_expr_t *mu_access_expr(
     mu_engine_t *engine, const mu_name_t *name, const mu_expr_t *matter) {
   assert(name->engine == engine);
-  assert(matter->as_stator.engine == engine);
+  assert(matter->as_node.engine == engine);
 
   mu_access_expr_t *result;
   if ((result = node_allocate(engine, sizeof(mu_access_expr_t))) == NULL)
@@ -45,8 +45,8 @@ const mu_integer_expr_t *mu_integer_expr(mu_engine_t *engine, uint64_t data) {
 
 const mu_invoke_expr_t *mu_invoke_expr(
     mu_engine_t *engine, const mu_expr_t *operator, const mu_expr_t *argument) {
-  assert(operator->as_stator.engine == engine);
-  assert(argument->as_stator.engine == engine);
+  assert(operator->as_node.engine == engine);
+  assert(argument->as_node.engine == engine);
 
   mu_invoke_expr_t *result;
   if ((result = node_allocate(engine, sizeof(mu_invoke_expr_t))) == NULL)
@@ -59,8 +59,8 @@ const mu_invoke_expr_t *mu_invoke_expr(
 
 const mu_lambda_expr_t *mu_lambda_expr(
     mu_engine_t *engine, const mu_variable_view_t *argument, const mu_expr_t *matter) {
-  assert(argument->as_stator.engine == engine);
-  assert(matter->as_stator.engine == engine);
+  assert(argument->as_node.engine == engine);
+  assert(matter->as_node.engine == engine);
 
   mu_lambda_expr_t *result;
   if ((result = node_allocate(engine, sizeof(mu_lambda_expr_t))) == NULL)
@@ -130,7 +130,7 @@ const mu_vector_expr_t *mu_vector_expr(
 
   for (size_t i = 0; i < argc; i++) {
     assert(argv[i] != NULL);
-    assert(argv[i]->as_stator.engine == engine);
+    assert(argv[i]->as_node.engine == engine);
   }
 
   size_t size;
@@ -166,19 +166,19 @@ mu_record_expr_t *record_expr_allocate(mu_engine_t *engine, size_t argc) {
   mu_record_expr_t *result;
   if ((result = node_allocate(engine, size)) == NULL)
     return NULL;
-  *result = (mu_record_expr_t) { .as_stator.engine = engine, .argc = argc };
+  *result = (mu_record_expr_t) { .as_node.engine = engine, .argc = argc };
   return result;
 }
 
 const mu_record_expr_t *record_expr_activate(mu_record_expr_t *expr) {
-  mu_engine_t *engine = (mu_engine_t *) expr->as_stator.engine;
+  mu_engine_t *engine = (mu_engine_t *) expr->as_node.engine;
 
   for (size_t i = 0; i < expr->argc; i++) {
     const mu_name_t *member_name = expr->argv[i].name;
     const mu_expr_t *member_expr = expr->argv[i].expr;
     assert(member_name == NULL || member_name->engine == engine);
     assert(member_expr != NULL);
-    assert(member_expr->as_stator.engine == engine);
+    assert(member_expr->as_node.engine == engine);
   }
 
   mu_record_expr_t source = {
@@ -196,16 +196,16 @@ mu_sequence_expr_t *sequence_expr_allocate(mu_engine_t *engine, size_t argc) {
   mu_sequence_expr_t *result;
   if ((result = node_allocate(engine, size)) == NULL)
     return NULL;
-  *result = (mu_sequence_expr_t) { .as_stator.engine = engine, .argc = argc };
+  *result = (mu_sequence_expr_t) { .as_node.engine = engine, .argc = argc };
   return result;
 }
 
 const mu_sequence_expr_t *sequence_expr_activate(mu_sequence_expr_t *expr) {
-  mu_engine_t *engine = (mu_engine_t *) expr->as_stator.engine;
+  mu_engine_t *engine = (mu_engine_t *) expr->as_node.engine;
 
   for (size_t i = 0; i < expr->argc; i++) {
     assert(expr->argv[i] != NULL);
-    assert(expr->argv[i]->as_stator.engine == engine);
+    assert(expr->argv[i]->as_node.engine == engine);
   }
 
   mu_sequence_expr_t source = {
@@ -220,7 +220,7 @@ const mu_sequence_expr_t *sequence_expr_activate(mu_sequence_expr_t *expr) {
 void mu_access_expr_debug(const mu_access_expr_t *expr) {
   fprintf(stderr, "%*s", debug_indent, "");
   fprintf(stderr, PRIsKIND "#" PRIuID "(name = ",
-      DEBUG_KIND("AccessExpr"), DEBUG_ID(expr->as_stator.id));
+      DEBUG_KIND("AccessExpr"), DEBUG_ID(expr->as_node.id));
   mu_name_debug(expr->name);
   putc(')', stderr);
   debug_node_type(&expr->as_node);
@@ -233,7 +233,7 @@ void mu_boolean_expr_debug(const mu_boolean_expr_t *expr) {
   fprintf(stderr, "%*s", debug_indent, "");
   fprintf(stderr, PRIsKIND "#" PRIuID "(data = %s)",
       DEBUG_KIND("BooleanExpr"),
-      DEBUG_ID(expr->as_stator.id),
+      DEBUG_ID(expr->as_node.id),
       expr->data ? "true" : "false");
   debug_node_type(&expr->as_node);
   putc('\n', stderr);
@@ -243,7 +243,7 @@ void mu_integer_expr_debug(const mu_integer_expr_t *expr) {
   fprintf(stderr, "%*s", debug_indent, "");
   fprintf(stderr, PRIsKIND "#" PRIuID "(data = %" PRIu64 ")",
     DEBUG_KIND("IntegerExpr"),
-    DEBUG_ID(expr->as_stator.id),
+    DEBUG_ID(expr->as_node.id),
     expr->data);
   debug_node_type(&expr->as_node);
   putc('\n', stderr);
@@ -252,7 +252,7 @@ void mu_integer_expr_debug(const mu_integer_expr_t *expr) {
 void mu_invoke_expr_debug(const mu_invoke_expr_t *expr) {
   fprintf(stderr, "%*s", debug_indent, "");
   fprintf(stderr, PRIsKIND "#" PRIuID,
-      DEBUG_KIND("InvokeExpr"), DEBUG_ID(expr->as_stator.id));
+      DEBUG_KIND("InvokeExpr"), DEBUG_ID(expr->as_node.id));
   debug_node_type(&expr->as_node);
   putc('\n', stderr);
 
@@ -265,7 +265,7 @@ void mu_invoke_expr_debug(const mu_invoke_expr_t *expr) {
 void mu_lambda_expr_debug(const mu_lambda_expr_t *expr) {
   fprintf(stderr, "%*s", debug_indent, "");
   fprintf(stderr, PRIsKIND "#" PRIuID,
-      DEBUG_KIND("LambdaExpr"), DEBUG_ID(expr->as_stator.id));
+      DEBUG_KIND("LambdaExpr"), DEBUG_ID(expr->as_node.id));
   debug_node_type(&expr->as_node);
   putc('\n', stderr);
 
@@ -280,7 +280,7 @@ void mu_lambda_expr_debug(const mu_lambda_expr_t *expr) {
 void mu_name_expr_debug(const mu_name_expr_t *expr) {
   fprintf(stderr, "%*s", debug_indent, "");
   fprintf(stderr, PRIsKIND "#" PRIuID "(name = ",
-      DEBUG_KIND("NameExpr"), DEBUG_ID(expr->as_stator.id));
+      DEBUG_KIND("NameExpr"), DEBUG_ID(expr->as_node.id));
   mu_name_debug(expr->name);
   putc(')', stderr);
   debug_node_type(&expr->as_node);
@@ -290,7 +290,7 @@ void mu_name_expr_debug(const mu_name_expr_t *expr) {
 void mu_native_expr_debug(const mu_native_expr_t *expr) {
   fprintf(stderr, "%*s", debug_indent, "");
   fprintf(stderr, PRIsKIND "#" PRIuID "(name = ",
-      DEBUG_KIND("NativeExpr"), DEBUG_ID(expr->as_stator.id));
+      DEBUG_KIND("NativeExpr"), DEBUG_ID(expr->as_node.id));
   mu_name_debug(expr->name);
   putc(')', stderr);
   debug_node_type(&expr->as_node);
@@ -303,7 +303,7 @@ static void expr_member_debug(mu_expr_member_t member);
 void mu_record_expr_debug(const mu_record_expr_t *expr) {
   fprintf(stderr, "%*s", debug_indent, "");
   fprintf(stderr, PRIsKIND "#" PRIuID,
-      DEBUG_KIND("RecordExpr"), DEBUG_ID(expr->as_stator.id));
+      DEBUG_KIND("RecordExpr"), DEBUG_ID(expr->as_node.id));
   debug_node_type(&expr->as_node);
   putc('\n', stderr);
 
@@ -328,7 +328,7 @@ static void expr_member_debug(mu_expr_member_t member) {
 void mu_sequence_expr_debug(const mu_sequence_expr_t *expr) {
   fprintf(stderr, "%*s", debug_indent, "");
   fprintf(stderr, PRIsKIND "#" PRIuID,
-      DEBUG_KIND("SequenceExpr"), DEBUG_ID(expr->as_stator.id));
+      DEBUG_KIND("SequenceExpr"), DEBUG_ID(expr->as_node.id));
   debug_node_type(&expr->as_node);
   putc('\n', stderr);
 
@@ -341,7 +341,7 @@ void mu_sequence_expr_debug(const mu_sequence_expr_t *expr) {
 void mu_vector_expr_debug(const mu_vector_expr_t *expr) {
   fprintf(stderr, "%*s", debug_indent, "");
   fprintf(stderr, PRIsKIND "#" PRIuID,
-      DEBUG_KIND("VectorExpr"), DEBUG_ID(expr->as_stator.id));
+      DEBUG_KIND("VectorExpr"), DEBUG_ID(expr->as_node.id));
   debug_node_type(&expr->as_node);
   putc('\n', stderr);
 
@@ -354,7 +354,7 @@ void mu_vector_expr_debug(const mu_vector_expr_t *expr) {
 void mu_zero_expr_debug(const mu_zero_expr_t *expr) {
   fprintf(stderr, "%*s", debug_indent, "");
   fprintf(stderr, PRIsKIND "#" PRIuID,
-      DEBUG_KIND("ZeroExpr"), DEBUG_ID(expr->as_stator.id));
+      DEBUG_KIND("ZeroExpr"), DEBUG_ID(expr->as_node.id));
   debug_node_type(&expr->as_node);
   putc('\n', stderr);
 }
