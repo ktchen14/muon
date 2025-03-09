@@ -10,6 +10,9 @@
 
 #include <stddef.h>
 
+/// @internal Used to emit each abstract branch in a cast
+#define MU_CAST_EMIT(l, upper, t, ...) || _kind == MU_##upper##__VA_ARGS__
+
 /// @internal Used to emit each branch in mu_expr_cast()
 #define MU_EXPR_CAST_EMIT(lower, upper, t, ...) \
   , const mu_##lower##_expr_t *: _kind == MU_##upper##_EXPR##__VA_ARGS__

@@ -32,9 +32,6 @@
 #define MU_EACH_VIEW_KIND(emit, ...) \
   emit(variable, VARIABLE, Variable, ##__VA_ARGS__)
 
-/// @internal Used to emit each abstract branch in a cast
-#define MU_CAST_EMIT(l, upper, t, ...) || _kind == MU_##upper##__VA_ARGS__
-
 typedef struct mu_engine_t mu_engine_t;
 
 #endif /* MU_STATOR_COMMON_H */
