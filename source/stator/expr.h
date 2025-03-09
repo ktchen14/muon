@@ -19,13 +19,6 @@ static inline const mu_node_t *boolean_expr_at(
   return NULL;
 }
 
-/// Return the <em>i</em>th node in the coerce @a expr
-__attribute__((nonnull, pure))
-static inline const mu_node_t *coerce_expr_at(
-    const mu_coerce_expr_t *expr, size_t i) {
-  return i == 0 ? &expr->matter->as_node : NULL;
-}
-
 /// Return the <em>i</em>th node in the integer @a expr
 __attribute__((const, nonnull))
 static inline const mu_node_t *integer_expr_at(

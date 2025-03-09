@@ -79,11 +79,6 @@ __attribute__((nonnull)) static void access_expr_coerce(
 __attribute__((nonnull)) static void boolean_expr_coerce(
     const mu_boolean_expr_t *expr, induce_t *induce) {}
 
-__attribute__((nonnull)) static void coerce_expr_coerce(
-    const mu_coerce_expr_t *expr, induce_t *induce) {
-  abort();
-}
-
 __attribute__((nonnull)) static void integer_expr_coerce(
     const mu_integer_expr_t *expr, induce_t *induce) {}
 

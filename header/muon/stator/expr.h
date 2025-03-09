@@ -55,11 +55,6 @@ typedef struct {
 
 typedef struct {
   MU_EXPR_HEADER;
-  const mu_expr_t *matter;
-} mu_coerce_expr_t;
-
-typedef struct {
-  MU_EXPR_HEADER;
   uint64_t data;
 } mu_integer_expr_t;
 
@@ -119,10 +114,6 @@ const mu_access_expr_t *mu_access_expr(
 const mu_boolean_expr_t *mu_boolean_expr(mu_engine_t *engine, _Bool data)
   __attribute__((malloc, nonnull));
 
-const mu_coerce_expr_t *mu_coerce_expr(
-    mu_engine_t *engine, const mu_expr_t *matter)
-  __attribute__((malloc, nonnull));
-
 const mu_integer_expr_t *mu_integer_expr(mu_engine_t *engine, uint64_t data)
   __attribute__((malloc, nonnull));
 
@@ -161,10 +152,6 @@ void mu_access_expr_debug(const mu_access_expr_t *expr)
 
 /// Emit debugging information on the boolean @a expr to the debug stream
 void mu_boolean_expr_debug(const mu_boolean_expr_t *expr)
-  __attribute__((nonnull));
-
-/// Emit debugging information on the coerce @a expr to the debug stream
-void mu_coerce_expr_debug(const mu_coerce_expr_t *expr)
   __attribute__((nonnull));
 
 /// Emit debugging information on the integer @a expr to the debug stream

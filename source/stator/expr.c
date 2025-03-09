@@ -33,19 +33,6 @@ const mu_boolean_expr_t *mu_boolean_expr(mu_engine_t *engine, _Bool data) {
   return assign_node(engine, result);
 }
 
-const mu_coerce_expr_t *mu_coerce_expr(
-    mu_engine_t *engine, const mu_expr_t *matter) {
-  assert(matter->as_stator.engine == engine);
-
-  mu_coerce_expr_t *result;
-  if ((result = node_allocate(engine, sizeof(mu_coerce_expr_t))) == NULL)
-    return NULL;
-  *result = (mu_coerce_expr_t) {
-    .as_expr.kind = MU_COERCE_EXPR, .matter = matter,
-  };
-  return assign_node(engine, result);
-}
-
 const mu_integer_expr_t *mu_integer_expr(mu_engine_t *engine, uint64_t data) {
   mu_integer_expr_t *result;
   if ((result = node_allocate(engine, sizeof(mu_integer_expr_t))) == NULL)
@@ -250,16 +237,6 @@ void mu_boolean_expr_debug(const mu_boolean_expr_t *expr) {
       expr->data ? "true" : "false");
   debug_node_type(&expr->as_node);
   putc('\n', stderr);
-}
-
-void mu_coerce_expr_debug(const mu_coerce_expr_t *expr) {
-  fprintf(stderr, "%*s", debug_indent, "");
-  fprintf(stderr, PRIsKIND "#" PRIuID,
-      DEBUG_KIND("CoerceExpr"), DEBUG_ID(expr->as_stator.id));
-  debug_node_type(&expr->as_node);
-  putc('\n', stderr);
-
-  WITH_DEBUG_INDENT() { mu_expr_debug(expr->matter); }
 }
 
 void mu_integer_expr_debug(const mu_integer_expr_t *expr) {

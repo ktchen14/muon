@@ -708,11 +708,6 @@ __attribute__((nonnull)) static const mu_type_t *boolean_expr_induce(
   return &result->as_type;
 }
 
-__attribute__((nonnull)) static const mu_type_t *coerce_expr_induce(
-    const mu_coerce_expr_t *expr, induce_t *induce, open_scheme_t *scheme) {
-  assert(0);
-}
-
 __attribute__((nonnull)) static const mu_type_t *integer_expr_induce(
     const mu_integer_expr_t *expr, induce_t *induce, open_scheme_t *scheme) {
   const mu_simple_type_t *result;
