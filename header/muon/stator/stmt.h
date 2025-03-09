@@ -1,7 +1,7 @@
 #ifndef MU_STATOR_STMT_H
 #define MU_STATOR_STMT_H
 
-#include "abstract_node.h"
+#include "common.h"
 
 #include "name.h"
 

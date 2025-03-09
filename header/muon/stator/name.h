@@ -1,12 +1,12 @@
 #ifndef MU_STATOR_NAME_H
 #define MU_STATOR_NAME_H
 
-#include "common.h"
-
 #include <stddef.h>
 
 /// Define @c mu_char8_t to have the same definition as @c char8_t in C23
 typedef unsigned char mu_char8_t;
+
+typedef struct mu_engine_t mu_engine_t;
 
 /// A symbol in Muon
 typedef struct mu_name_t mu_name_t;

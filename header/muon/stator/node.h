@@ -1,12 +1,12 @@
 #ifndef MU_STATOR_NODE_H
 #define MU_STATOR_NODE_H
 
-#include "abstract_node.h"  // IWYU pragma: export
+#include "common.h"  // IWYU pragma: export
 
-#include "expr.h"           // IWYU pragma: export
-#include "sign.h"           // IWYU pragma: export
-#include "stmt.h"           // IWYU pragma: export
-#include "view.h"           // IWYU pragma: export
+#include "expr.h"    // IWYU pragma: export
+#include "sign.h"    // IWYU pragma: export
+#include "stmt.h"    // IWYU pragma: export
+#include "view.h"    // IWYU pragma: export
 
 #include <stddef.h>
 
