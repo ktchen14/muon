@@ -67,9 +67,11 @@ detect_t *detect_node(detect_t *detect, const mu_node_t *node) {
           goto next;
         }
       } else if ((lambda_expr = mu_node_cast(anterior, lambda_expr)) != NULL) {
-        const mu_variable_view_t *view = lambda_expr->argument;
-        if (view->name == name_expr->name) {
-          detect->result->data[name_expr->as_node.id] = &view->as_node;
+        const mu_view_t *view = lambda_expr->argument;
+        const mu_variable_view_t *variable_view = mu_view_cast(view, variable_view);
+        assert(variable_view != NULL);
+        if (variable_view->name == name_expr->name) {
+          detect->result->data[name_expr->as_node.id] = &variable_view->as_node;
           goto next;
         }
       }
