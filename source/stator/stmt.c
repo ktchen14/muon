@@ -10,19 +10,15 @@
 #include <string.h>
 
 const mu_define_stmt_t *mu_define_stmt(
-    mu_engine_t *engine,
-    const mu_name_t *name,
-    const mu_expr_t *expr,
-    const mu_sign_t *sign) {
+    mu_engine_t *engine, const mu_name_t *name, const mu_expr_t *expr) {
   assert(name->engine == engine);
   assert(expr->as_node.engine == engine);
-  assert(sign == NULL || sign->as_node.engine == engine);
 
   mu_define_stmt_t *result;
   if ((result = node_allocate(engine, sizeof(mu_define_stmt_t))) == NULL)
     return NULL;
   *result = (mu_define_stmt_t) {
-    .as_stmt.kind = MU_DEFINE_STMT, .name = name, .expr = expr, .sign = sign,
+    .as_stmt.kind = MU_DEFINE_STMT, .name = name, .expr = expr,
   };
   return assign_node(engine, result);
 }
@@ -52,11 +48,7 @@ void mu_define_stmt_debug(const mu_define_stmt_t *stmt) {
   debug_node_type(&stmt->as_node);
   putc('\n', stderr);
 
-  WITH_DEBUG_INDENT() {
-    mu_expr_debug(stmt->expr);
-    if (stmt->sign != NULL)
-      mu_sign_debug(stmt->sign);
-  }
+  WITH_DEBUG_INDENT() { mu_expr_debug(stmt->expr); }
 }
 
 void mu_type_stmt_debug(const mu_type_stmt_t *stmt) {

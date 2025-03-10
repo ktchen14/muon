@@ -12,7 +12,6 @@ typedef struct {
   MU_STMT_HEADER;
   const mu_name_t *name;
   const mu_expr_t *expr;
-  const mu_sign_t *sign;
 } mu_define_stmt_t;
 
 typedef struct {
@@ -22,11 +21,8 @@ typedef struct {
 } mu_type_stmt_t;
 
 const mu_define_stmt_t *mu_define_stmt(
-    mu_engine_t *engine,
-    const mu_name_t *name,
-    const mu_expr_t *expr,
-    const mu_sign_t *sign)
-  __attribute__((malloc, nonnull(1, 2, 3)));
+    mu_engine_t *engine, const mu_name_t *name, const mu_expr_t *expr)
+  __attribute__((malloc, nonnull));
 
 const mu_type_stmt_t *mu_type_stmt(
     mu_engine_t *engine, const mu_name_t *name, const mu_sign_t *sign)

@@ -50,7 +50,7 @@ int main(int argc, char *argv[argc]) {
   assert(native_expr != NULL);
 
   const mu_define_stmt_t *define_stmt = mu_define_stmt(
-      &engine, name, &native_expr->as_expr, NULL);
+      &engine, name, &native_expr->as_expr);
   assert(define_stmt != NULL);
 
   const mu_stmt_t *prefix[] = { &define_stmt->as_stmt };

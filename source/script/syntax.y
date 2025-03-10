@@ -271,11 +271,8 @@ vector_sign: '[' sign ']' {
 stmt:
   define_stmt { $$ = &$define_stmt->as_stmt; }
 
-define_stmt: "define" _ name _ sign _ '=' _ expr '\n' {
-  $$ = mu_define_stmt(syntax->engine, $name, $expr, $sign);
-
-} | "define" _ name _ '=' _ expr '\n' {
-  $$ = mu_define_stmt(syntax->engine, $name, $expr, NULL);
+define_stmt: "define" _ name _ '=' _ expr '\n' {
+  $$ = mu_define_stmt(syntax->engine, $name, $expr);
 }
 
 // ================================== View ================================ {{{1
