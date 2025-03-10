@@ -567,7 +567,7 @@ const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
   return induce_reveal(induce, root);
 }
 
-const mu_type_t *handle_node_coercion(induce_t *induce, const mu_node_t *root) {
+const mu_type_t *handle_node_reduction(induce_t *induce, const mu_node_t *root) {
   assert(root->id < induce->node_length);
 
   const mu_node_t *node = root, *next;
@@ -577,7 +577,7 @@ const mu_type_t *handle_node_coercion(induce_t *induce, const mu_node_t *root) {
 
     const mu_expr_t *expr;
     if ((expr = mu_node_cast(node, expr)) != NULL)
-      expr_coerce(expr, induce);
+      expr_reduce(expr, induce);
   } while ((node = node_return(node)) != NULL);
 
   return induce_reveal(induce, root);

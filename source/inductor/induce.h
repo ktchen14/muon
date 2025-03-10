@@ -87,8 +87,8 @@ static inline const mu_type_t *induce_reveal(
 const mu_type_t *induce_node(induce_t *inductor, const mu_node_t *node)
   __attribute__((nonnull));
 
-void expr_coerce(const mu_expr_t *expr, induce_t *induce);
-const mu_type_t *handle_node_coercion(induce_t *induce, const mu_node_t *root);
+void expr_reduce(const mu_expr_t *expr, induce_t *induce);
+const mu_type_t *handle_node_reduction(induce_t *induce, const mu_node_t *root);
 
 void mark_type_from_anywhere_first(induce_t *induce, const mu_type_t *root, type_link_t *link);
 
