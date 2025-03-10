@@ -226,7 +226,7 @@ void mu_access_expr_debug(const mu_access_expr_t *expr) {
   debug_node_type(&expr->as_node);
   putc('\n', stderr);
 
-  WITH_DEBUG_INDENT() { mu_expr_debug(expr->matter); }
+  WITH_DEBUG_INDENT() { expr_debug_with_coercion(expr->matter); }
 }
 
 void mu_boolean_expr_debug(const mu_boolean_expr_t *expr) {
@@ -257,8 +257,8 @@ void mu_invoke_expr_debug(const mu_invoke_expr_t *expr) {
   putc('\n', stderr);
 
   WITH_DEBUG_INDENT() {
-    mu_expr_debug(expr->operator);
-    mu_expr_debug(expr->argument);
+    expr_debug_with_coercion(expr->operator);
+    expr_debug_with_coercion(expr->argument);
   }
 }
 
@@ -271,7 +271,7 @@ void mu_lambda_expr_debug(const mu_lambda_expr_t *expr) {
 
   WITH_DEBUG_INDENT() {
     WITH_DEBUG_NEGATE() { mu_view_debug(expr->argument); }
-    mu_expr_debug(expr->matter);
+    expr_debug_with_coercion(expr->matter);
   }
 }
 
@@ -320,7 +320,7 @@ static void expr_member_debug(mu_expr_member_t member) {
   } else
     fputs("Member:\n", stderr);
 
-  WITH_DEBUG_INDENT() { mu_expr_debug(member.expr); }
+  WITH_DEBUG_INDENT() { expr_debug_with_coercion(member.expr); }
 }
 
 void mu_sequence_expr_debug(const mu_sequence_expr_t *expr) {
@@ -345,7 +345,7 @@ void mu_vector_expr_debug(const mu_vector_expr_t *expr) {
 
   WITH_DEBUG_INDENT() {
     for (size_t i = 0; i < expr->argc; i++)
-      mu_expr_debug(expr->argv[i]);
+      expr_debug_with_coercion(expr->argv[i]);
   }
 }
 
