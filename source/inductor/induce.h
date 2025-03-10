@@ -14,12 +14,10 @@
 #include <stddef.h>
 #include <string.h>
 
-typedef const char *coercion_t;
-
 typedef struct {
   const mu_type_t *lower;
   const mu_type_t *upper;
-  coercion_t coercion;
+  const mu_coercion_t *coercion;
 } induce_edge_t;
 
 typedef struct induce_t induce_t;
@@ -47,7 +45,7 @@ struct induce_t {
   const mu_id_coercion_t *id_coercion;
 
   const mu_type_t *aux[2000];
-  coercion_t coercion[2000];
+  const mu_coercion_t *coercion[2000];
 };
 
 typedef struct open_scheme_t open_scheme_t;
@@ -99,6 +97,6 @@ const induce_edge_t *append_edge(
     induce_t *induce,
     const mu_type_t *restrict a,
     const mu_type_t *restrict b,
-    coercion_t coercion);
+    const mu_coercion_t *coercion);
 
 #endif /* MU_INDUCTOR_INDUCE_I */

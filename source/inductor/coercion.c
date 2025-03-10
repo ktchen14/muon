@@ -14,6 +14,16 @@ const mu_simple_coercion_t *mu_simple_coercion(void) {
   return result;
 }
 
+const mu_record_coercion_t *mu_record_coercion(void) {
+  mu_record_coercion_t *result;
+  if ((result = malloc(sizeof(mu_record_coercion_t))) == NULL)
+    return NULL;
+  *result = (mu_record_coercion_t) {
+    .as_coercion.kind = MU_RECORD_COERCION,
+  };
+  return result;
+}
+
 const mu_join_coercion_t *mu_join_coercion(size_t i) {
   mu_join_coercion_t *result;
   if ((result = malloc(sizeof(mu_join_coercion_t))) == NULL)
@@ -72,6 +82,10 @@ void mu_id_coercion_debug(const mu_id_coercion_t *coercion) {
 
 void mu_simple_coercion_debug(const mu_simple_coercion_t *coercion) {
   fprintf(stderr, PRIsKIND "()", DEBUG_KIND("SimpleCoercion"));
+}
+
+void mu_record_coercion_debug(const mu_record_coercion_t *coercion) {
+  fprintf(stderr, PRIsKIND "()", DEBUG_KIND("RecordCoercion"));
 }
 
 void mu_join_coercion_debug(const mu_join_coercion_t *coercion) {

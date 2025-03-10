@@ -7,6 +7,7 @@
 #define MU_EACH_COERCION_KIND(emit, ...) \
   emit(id, ID, Id, ##__VA_ARGS__) \
   emit(simple, SIMPLE, Simple, ##__VA_ARGS__) \
+  emit(record, RECORD, Record, ##__VA_ARGS__) \
   emit(join, JOIN, Join, ##__VA_ARGS__) \
   emit(unjoin, UNJOIN, Unjoin, ##__VA_ARGS__)
 
@@ -33,6 +34,10 @@ typedef struct {
   MU_COERCION_HEADER;
 } mu_simple_coercion_t;
 
+typedef struct {
+  MU_COERCION_HEADER;
+} mu_record_coercion_t;
+
 /// Coercion of τ to a join type with τ at discriminant @c i
 typedef struct {
   MU_COERCION_HEADER;
@@ -48,6 +53,9 @@ typedef struct {
 } mu_unjoin_coercion_t;
 
 const mu_simple_coercion_t *mu_simple_coercion(void)
+  __attribute__((malloc));
+
+const mu_record_coercion_t *mu_record_coercion(void)
   __attribute__((malloc));
 
 const mu_join_coercion_t *mu_join_coercion(size_t i)
@@ -71,6 +79,9 @@ void mu_id_coercion_debug(const mu_id_coercion_t *coercion)
   __attribute__((nonnull));
 
 void mu_simple_coercion_debug(const mu_simple_coercion_t *coercion)
+  __attribute__((nonnull));
+
+void mu_record_coercion_debug(const mu_record_coercion_t *coercion)
   __attribute__((nonnull));
 
 void mu_join_coercion_debug(const mu_join_coercion_t *coercion)

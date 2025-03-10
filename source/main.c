@@ -99,8 +99,8 @@ int main(int argc, char *argv[argc]) {
       fprintf(stderr, " (%zu)", sub.lower->id);
       fprintf(stderr, "\"");
 
-      if (sub.coercion != NULL && strlen(sub.coercion) != 0)
-        fprintf(stderr, " [label=\"%s\"]", sub.coercion);
+      /* if (sub.coercion != NULL && strlen(sub.coercion) != 0) */
+      /*   fprintf(stderr, " [label=\"%s\"]", sub.coercion); */
       fprintf(stderr, ";\n");
     }
     fprintf(stderr, "}\n");

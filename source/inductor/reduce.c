@@ -38,10 +38,14 @@ const mu_type_t *coerce_to_lower(induce_t *induce, const mu_variable_type_t *typ
 
   // Add an edge for each constituent type to record the coercion to the join
   // type.
+  j = 0;
   for (size_t i = 0; i < induce->edge_length; i++) {
     induce_edge_t edge = induce->edge[i];
     if (edge.upper == &type->as_type && edge.lower->kind != MU_VARIABLE_TYPE) {
-      if (append_edge(induce, edge.lower, &result->as_type, "join") == NULL)
+      const mu_join_coercion_t *join_coercion;
+      if ((join_coercion = mu_join_coercion(j)) == NULL)
+        return NULL;
+      if (append_edge(induce, edge.lower, &result->as_type, &join_coercion->as_coercion) == NULL)
         return NULL;
     }
   }

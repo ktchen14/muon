@@ -45,7 +45,7 @@ const induce_edge_t *append_edge(
     induce_t *induce,
     const mu_type_t *restrict a,
     const mu_type_t *restrict b,
-    coercion_t coercion) {
+    const mu_coercion_t *coercion) {
   if (induce->edge_length >= induce->edge_volume) {
     size_t volume = induce->edge_volume;
     if (rare(__builtin_mul_overflow(volume, 2, &volume)))
@@ -583,7 +583,7 @@ const mu_type_t *handle_node_reduction(induce_t *induce, const mu_node_t *root) 
   return induce_reveal(induce, root);
 }
 
-static coercion_t restrict_type_internal(
+static const mu_coercion_t *restrict_type_internal(
     induce_t *induce, const mu_type_t *a, const mu_type_t *b) {
   assert(a->kind != MU_SCHEME_TYPE && b->kind != MU_SCHEME_TYPE);
 
@@ -611,7 +611,10 @@ static coercion_t restrict_type_internal(
         return NULL;
     }
 
-    return "simple";
+    const mu_simple_coercion_t *result;
+    if ((result = mu_simple_coercion()) == NULL)
+      return NULL;
+    return &result->as_coercion;
   }
 
   if (a->kind == MU_RECORD_TYPE && b->kind == MU_RECORD_TYPE) {
@@ -633,7 +636,10 @@ static coercion_t restrict_type_internal(
     next:;
     }
 
-    return "record";
+    const mu_record_coercion_t *result;
+    if ((result = mu_record_coercion()) == NULL)
+      return NULL;
+    return &result->as_coercion;
   }
 
   if (a->kind != MU_VARIABLE_TYPE && b->kind != MU_VARIABLE_TYPE) {
@@ -661,7 +667,7 @@ static coercion_t restrict_type_internal(
     }
   }
 
-  return "";
+  return NULL;
 }
 
 const induce_edge_t SELF = {0};
@@ -678,7 +684,7 @@ static const induce_edge_t *restrict_type(
       return edge;
   }
 
-  coercion_t coercion;
+  const mu_coercion_t *coercion;
   if ((coercion = restrict_type_internal(induce, a, b)) == NULL)
     return NULL;
 
