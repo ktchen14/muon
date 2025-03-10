@@ -667,7 +667,7 @@ static const mu_coercion_t *restrict_type_internal(
     }
   }
 
-  return NULL;
+  return &induce->id_coercion->as_coercion;
 }
 
 const induce_edge_t SELF = {0};

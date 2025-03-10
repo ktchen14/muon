@@ -47,6 +47,7 @@ const mu_type_t *coerce_to_lower(induce_t *induce, const mu_variable_type_t *typ
         return NULL;
       if (append_edge(induce, edge.lower, &result->as_type, &join_coercion->as_coercion) == NULL)
         return NULL;
+      j++;
     }
   }
 
