@@ -25,7 +25,16 @@ void mu_simple_coercion_debug(const mu_simple_coercion_t *coercion) {
 }
 
 void mu_join_coercion_debug(const mu_join_coercion_t *coercion) {
-  fprintf(stderr, PRIsKIND "(i = %zu) <<< ",
+  fprintf(stderr, PRIsKIND "(i = %zu)",
       DEBUG_KIND("JoinCoercion"), coercion->i);
-  mu_coercion_debug(coercion->matter);
+}
+
+void mu_unjoin_coercion_debug(const mu_unjoin_coercion_t *coercion) {
+  fprintf(stderr, PRIsKIND "(", DEBUG_KIND("UnjoinCoercion"));
+  for (size_t i = 0; i < coercion->argc; i++) {
+    if (i > 0)
+      fprintf(stderr, ", ");
+    mu_coercion_debug(coercion->argv[i]);
+  }
+  fprintf(stderr, ")");
 }

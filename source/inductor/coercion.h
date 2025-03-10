@@ -7,7 +7,8 @@
 #define MU_EACH_COERCION_KIND(emit, ...) \
   emit(id, ID, Id, ##__VA_ARGS__) \
   emit(simple, SIMPLE, Simple, ##__VA_ARGS__) \
-  emit(join, JOIN, Join, ##__VA_ARGS__)
+  emit(join, JOIN, Join, ##__VA_ARGS__) \
+  emit(unjoin, UNJOIN, Unjoin, ##__VA_ARGS__)
 
 /// An enumeration over each kind of coercion, e.g. @c MU_ID_COERCION
 typedef enum {
@@ -35,8 +36,13 @@ typedef struct {
 typedef struct {
   MU_COERCION_HEADER;
   size_t i;
-  const mu_coercion_t *matter;
 } mu_join_coercion_t;
+
+typedef struct {
+  MU_COERCION_HEADER;
+  size_t argc;
+  const mu_coercion_t *argv[/* argc */];
+} mu_unjoin_coercion_t;
 
 void mu_id_coercion_debug(const mu_id_coercion_t *coercion)
   __attribute__((nonnull));
@@ -45,6 +51,9 @@ void mu_simple_coercion_debug(const mu_simple_coercion_t *coercion)
   __attribute__((nonnull));
 
 void mu_join_coercion_debug(const mu_join_coercion_t *coercion)
+  __attribute__((nonnull));
+
+void mu_unjoin_coercion_debug(const mu_unjoin_coercion_t *coercion)
   __attribute__((nonnull));
 
 #endif /* MU_INDUCTOR_COERCION_I */
