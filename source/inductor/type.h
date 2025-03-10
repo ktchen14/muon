@@ -14,7 +14,7 @@
   emit(scheme, SCHEME, Scheme, ##__VA_ARGS__) \
   emit(join, JOIN, Join, ##__VA_ARGS__)
 
-/// An enumeration over each kind of type
+/// An enumeration over each kind of type, i.e. @c MU_SIMPLE_TYPE
 typedef enum {
 #define MU_EMIT(l, upper, t) MU_##upper##_TYPE,
   MU_EACH_TYPE_KIND(MU_EMIT)
