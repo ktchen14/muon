@@ -3,6 +3,7 @@
 
 #include <muon/stator.h>
 
+#include "coercion.h"
 #include "core.h"
 #include "type.h"
 
@@ -42,6 +43,8 @@ struct induce_t {
   const mu_core_t *integer_core;
   const mu_core_t *lambda_core;
   const mu_core_t *vector_core;
+
+  const mu_id_coercion_t *id_coercion;
 
   const mu_type_t *aux[2000];
   coercion_t coercion[2000];

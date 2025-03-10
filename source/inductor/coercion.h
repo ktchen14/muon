@@ -33,16 +33,39 @@ typedef struct {
   MU_COERCION_HEADER;
 } mu_simple_coercion_t;
 
+/// Coercion of τ to a join type with τ at discriminant @c i
 typedef struct {
   MU_COERCION_HEADER;
   size_t i;
 } mu_join_coercion_t;
 
+/// Coercion of a join type to type τ. Each coercion in argv specifies the
+/// coercion to use for that discriminant.
 typedef struct {
   MU_COERCION_HEADER;
   size_t argc;
   const mu_coercion_t *argv[/* argc */];
 } mu_unjoin_coercion_t;
+
+const mu_simple_coercion_t *mu_simple_coercion(void)
+  __attribute__((malloc));
+
+const mu_join_coercion_t *mu_join_coercion(size_t i)
+  __attribute__((malloc));
+
+const mu_unjoin_coercion_t *mu_unjoin_coercion(
+    size_t argc, const mu_coercion_t *argv[/* argc */])
+  __attribute__((malloc, nonnull));
+
+mu_unjoin_coercion_t *unjoin_coercion_allocate(size_t argc)
+  __attribute__((malloc));
+
+const mu_unjoin_coercion_t *unjoin_coercion_activate(
+    mu_unjoin_coercion_t *coercion)
+  __attribute__((nonnull));
+
+void mu_coercion_debug(const mu_coercion_t *coercion)
+  __attribute__((nonnull));;
 
 void mu_id_coercion_debug(const mu_id_coercion_t *coercion)
   __attribute__((nonnull));

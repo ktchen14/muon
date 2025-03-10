@@ -482,6 +482,11 @@ induce_t *induce_initialize(
     return NULL;
   for (size_t i = 0; i < edge_volume; edge[i++] = (induce_edge_t) {0});
 
+  mu_id_coercion_t *id_coercion;
+  if ((id_coercion = malloc(sizeof(mu_id_coercion_t))) == NULL)
+    return NULL;
+  *id_coercion = (mu_id_coercion_t) { .as_coercion.kind = MU_ID_COERCION };
+
   mu_core_t *boolean_core;
   if ((boolean_core = malloc(sizeof(mu_core_t))) == NULL)
     return NULL;
@@ -517,6 +522,8 @@ induce_t *induce_initialize(
     .node_to_type = node_to_type,
     .edge_volume = edge_volume,
     .edge = edge,
+
+    .id_coercion = id_coercion,
 
     .boolean_core = boolean_core,
     .integer_core = integer_core,
