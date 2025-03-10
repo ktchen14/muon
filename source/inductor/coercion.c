@@ -77,24 +77,24 @@ void mu_coercion_debug(const mu_coercion_t *coercion) {
 }
 
 void mu_id_coercion_debug(const mu_id_coercion_t *coercion) {
-  fprintf(stderr, PRIsKIND "()", DEBUG_KIND("IdCoercion"));
+  fprintf(stderr, PRIsKIND "()", DEBUG_COERCION_KIND("IdCoercion"));
 }
 
 void mu_simple_coercion_debug(const mu_simple_coercion_t *coercion) {
-  fprintf(stderr, PRIsKIND "()", DEBUG_KIND("SimpleCoercion"));
+  fprintf(stderr, PRIsKIND "()", DEBUG_COERCION_KIND("SimpleCoercion"));
 }
 
 void mu_record_coercion_debug(const mu_record_coercion_t *coercion) {
-  fprintf(stderr, PRIsKIND "()", DEBUG_KIND("RecordCoercion"));
+  fprintf(stderr, PRIsKIND "()", DEBUG_COERCION_KIND("RecordCoercion"));
 }
 
 void mu_join_coercion_debug(const mu_join_coercion_t *coercion) {
   fprintf(stderr, PRIsKIND "(i = %zu)",
-      DEBUG_KIND("JoinCoercion"), coercion->i);
+      DEBUG_COERCION_KIND("JoinCoercion"), coercion->i);
 }
 
 void mu_unjoin_coercion_debug(const mu_unjoin_coercion_t *coercion) {
-  fprintf(stderr, PRIsKIND "(", DEBUG_KIND("UnjoinCoercion"));
+  fprintf(stderr, PRIsKIND "(", DEBUG_COERCION_KIND("UnjoinCoercion"));
   for (size_t i = 0; i < coercion->argc; i++) {
     if (i > 0)
       fprintf(stderr, ", ");
