@@ -148,9 +148,15 @@ script_argv: {
   syntax->stmt[syntax->stmt_i++] = $stmt;
 }
 
+// ================================== Name ================================ {{{1
+
+name: NAME {
+  $$ = mu_name(syntax->engine, $1.length, $1.c);
+}
+
 // ================================== Expr ================================ {{{1
 
-expr: '(' expr ')' { $$ = $2; } |
+expr: '(' expr[matter] ')' { $$ = $matter; } |
   access_expr  { $$ = &$access_expr->as_expr; } |
   boolean_expr { $$ = &$boolean_expr->as_expr; } |
   integer_expr { $$ = &$integer_expr->as_expr; } |
@@ -172,12 +178,12 @@ integer_expr: INTEGER_LITERAL {
   $$ = mu_integer_expr(syntax->engine, $1);
 }
 
-invoke_expr: expr[lambda] _ expr[matter] %prec INVOKE {
-  $$ = mu_invoke_expr(syntax->engine, $lambda, $matter);
+invoke_expr: expr[operator] _ expr[argument] %prec INVOKE {
+  $$ = mu_invoke_expr(syntax->engine, $operator, $argument);
 }
 
-lambda_expr: "lambda" _ view _ '=' _ expr %prec LAMBDA {
-  $$ = mu_lambda_expr(syntax->engine, $view, $expr);
+lambda_expr: "lambda" _ view[argument] _ '=' _ expr[matter] %prec LAMBDA {
+  $$ = mu_lambda_expr(syntax->engine, $argument, $matter);
 }
 
 name_expr: name {
@@ -236,15 +242,9 @@ vector_argv: expr {
   $$ = $1 + 1;
 }
 
-// ================================== Name ================================ {{{1
-
-name: NAME {
-  $$ = mu_name(syntax->engine, $1.length, $1.c);
-}
-
 // ================================== Sign ================================ {{{1
 
-sign: '(' sign ')' { $$ = $2; } |
+sign: '(' sign[matter] ')' { $$ = $matter; } |
   boolean_sign { $$ = &$boolean_sign->as_sign; } |
   integer_sign { $$ = &$integer_sign->as_sign; } |
   name_sign    { $$ = &$name_sign->as_sign; } |
