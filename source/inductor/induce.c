@@ -598,6 +598,9 @@ static const mu_coercion_t *restrict_type_internal(
 
     const mu_core_t *core = simple_a->core;
 
+    if (core->kind == MU_BOOLEAN_CORE || core->kind == MU_INTEGER_CORE)
+      return &induce->id_coercion->as_coercion;
+
     for (size_t i = 0; i < core->argc; i++) {
       const mu_type_t *lower = simple_a->argv[i], *upper = simple_b->argv[i];
 
