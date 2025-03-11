@@ -188,56 +188,194 @@ __attribute__((nonnull)) void expr_reduce(
   __builtin_unreachable();
 }
 
-
-
-
-
-
 const mu_type_t *reduce_origin_type(induce_t *induce, const mu_type_t *type, _Bool negative) {
   if (type->assignment != NULL)
     return type->assignment;
 
   assert(type->kind != MU_SCHEME_TYPE);
+  assert(type->kind != MU_JOIN_TYPE);
 
   const mu_simple_type_t *simple_type;
   if ((simple_type = mu_type_cast(type, simple_type)) != NULL) {
     const mu_core_t *core = simple_type->core;
-    size_t argc = core->argc;
+    _Bool remake = 0;
+
+    for (size_t i = 0; i < core->argc; i++) {
+      const mu_type_t *argument = simple_type->argv[i];
+
+      assert(core->variance[i] != MU_INVARIANCE);
+      if (core->variance[i] == MU_CONTRAVARIANCE)
+        negative = !negative;
+
+      if (reduce_origin_type(induce, argument, negative) == NULL)
+        return NULL;
+      assert(argument->assignment != NULL);
+
+      if (argument->assignment != argument)
+        remake = 1;
+    }
+
+    if (!remake)
+      return ((mu_type_t *) type)->assignment = type;
+
+    mu_simple_type_t *allocation;
+    if ((allocation = simple_type_allocate(induce, core)) == NULL)
+      return NULL;
+
+    for (size_t i = 0; i < core->argc; i++)
+      allocation->argv[i] = simple_type->argv[i]->assignment;
+
+    const mu_simple_type_t *result;
+    if ((result = simple_type_activate(allocation)) == NULL)
+      return NULL;
+
+    for (size_t i = 0; i < induce->edge_length; i++) {
+      induce_edge_t edge = induce->edge[i];
+      if (edge.lower != &simple_type->as_type)
+        continue;
+      const tactic_t *tactic = edge.tactic;
+      if (append_edge(induce, &result->as_type, edge.upper, tactic) == NULL)
+        return NULL;
+    }
+
+    for (size_t i = 0; i < induce->edge_length; i++) {
+      induce_edge_t edge = induce->edge[i];
+      if (edge.upper != &simple_type->as_type)
+        continue;
+      const tactic_t *tactic = edge.tactic;
+      if (append_edge(induce, edge.lower, &result->as_type, tactic) == NULL)
+        return NULL;
+    }
+
+    return ((mu_type_t *) type)->assignment = type;
   }
-  return NULL;
+
+  const mu_record_type_t *record_type;
+  if ((record_type = mu_type_cast(type, record_type)) != NULL) {
+    _Bool remake = 0;
+
+    for (size_t i = 0; i < record_type->argc; i++) {
+      mu_type_member_t member = record_type->argv[i];
+
+      if (reduce_origin_type(induce, member.type, negative) == NULL)
+        return NULL;
+      assert(member.type->assignment != NULL);
+
+      if (member.type->assignment != member.type)
+        remake = 1;
+    }
+
+    if (!remake)
+      return ((mu_type_t *) type)->assignment = type;
+
+    mu_record_type_t *allocation;
+    if ((allocation = record_type_allocate(induce, record_type->argc)) == NULL)
+      return NULL;
+
+    for (size_t i = 0; i < record_type->argc; i++) {
+      mu_type_member_t member = record_type->argv[i];
+      allocation->argv[i] = (mu_type_member_t) {
+        .name = member.name, .type = member.type->assignment,
+      };
+    }
+
+    const mu_record_type_t *result;
+    if ((result = record_type_activate(allocation)) == NULL)
+      return NULL;
+
+    for (size_t i = 0; i < induce->edge_length; i++) {
+      induce_edge_t edge = induce->edge[i];
+      if (edge.lower != &record_type->as_type)
+        continue;
+      const tactic_t *tactic = edge.tactic;
+      if (append_edge(induce, &result->as_type, edge.upper, tactic) == NULL)
+        return NULL;
+    }
+
+    for (size_t i = 0; i < induce->edge_length; i++) {
+      induce_edge_t edge = induce->edge[i];
+      if (edge.upper != &record_type->as_type)
+        continue;
+      const tactic_t *tactic = edge.tactic;
+      if (append_edge(induce, edge.lower, &result->as_type, tactic) == NULL)
+        return NULL;
+    }
+
+    return ((mu_type_t *) type)->assignment = type;
+  }
+
+  const mu_variable_type_t *variable_type;
+  if ((variable_type = mu_type_cast(type, variable_type)) != NULL) {
+    if (!negative) {
+      // Determine the length of the join type
+      size_t length = 0;
+      for (size_t i = 0; i < induce->edge_length; i++) {
+        induce_edge_t edge = induce->edge[i];
+        if (edge.upper == &record_type->as_type && edge.lower->kind != MU_VARIABLE_TYPE) {
+          length++;
+
+          // Also, reduce the constituent variables
+          if (reduce_origin_type(induce, edge.lower, negative) == NULL)
+            return NULL;
+          assert(edge.lower->assignment != NULL);
+        }
+      }
+
+      // Allocate the join type
+      mu_join_type_t *allocation;
+      if ((allocation = join_type_allocate(induce, length)) == NULL)
+        return NULL;
+
+      // Add each type as an argument
+      size_t j = 0;
+      for (size_t i = 0; i < induce->edge_length; i++) {
+        induce_edge_t edge = induce->edge[i];
+        if (edge.upper == &record_type->as_type && edge.lower->kind != MU_VARIABLE_TYPE)
+          allocation->argv[j++] = edge.lower;
+      }
+      assert(j == length);
+
+      // Activate the join type
+      const mu_join_type_t *result;
+      if (rare((result = join_type_activate(allocation)) == NULL))
+        return NULL;
+
+      // TODO: fix tactics here
+
+      // Add an edge for each constituent type to record the coercion to the join
+      // type.
+      j = 0;
+      for (size_t i = 0; i < induce->edge_length; i++) {
+        induce_edge_t edge = induce->edge[i];
+        if (edge.upper == &variable_type->as_type && edge.lower->kind != MU_VARIABLE_TYPE) {
+          const mu_join_coercion_t *join_coercion;
+          if ((join_coercion = mu_join_coercion(j)) == NULL)
+            return NULL;
+          if (append_edge(induce, edge.lower, &result->as_type, NULL) == NULL)
+            return NULL;
+          j++;
+        }
+      }
+
+      for (size_t j = 0; j < result->argc; j++) {
+        const mu_type_t *argument = result->argv[j];
+
+        for (size_t i = 0; i < induce->edge_length; i++) {
+          induce_edge_t edge = induce->edge[i];
+          if (edge.lower == argument && edge.upper != &result->as_type && edge.upper->kind != MU_VARIABLE_TYPE) {
+            if (append_edge(induce, &result->as_type, edge.upper, NULL) == NULL)
+              return NULL;
+          }
+        }
+      }
+
+      ((mu_variable_type_t *) type)->assignment = &result->as_type;
+
+      return &result->as_type;
+    } else {
+      assert(!"Unimplemented reduction of negative variable");
+    }
+  }
+
+  assert(0);
 }
-
-/* const mu_type_t *coerce_to_lower(induce_t *induce, const mu_variable_type_t *type) { */
-/*   assert(type->assignment == NULL); */
-
-/*   // Determine the length of the join type */
-/*   size_t length = 0; */
-/*   for (size_t i = 0; i < induce->edge_length; i++) { */
-/*     induce_edge_t edge = induce->edge[i]; */
-/*     if (edge.upper == &type->as_type && edge.lower->kind != MU_VARIABLE_TYPE) */
-/*       length++; */
-/*   } */
-
-/*   // Allocate the join type */
-/*   mu_join_type_t *allocation; */
-/*   if ((allocation = join_type_allocate(induce, length)) == NULL) */
-/*     return NULL; */
-
-/*   // Add each type as an argument */
-/*   size_t j = 0; */
-/*   for (size_t i = 0; i < induce->edge_length; i++) { */
-/*     induce_edge_t edge = induce->edge[i]; */
-/*     if (edge.upper == &type->as_type && edge.lower->kind != MU_VARIABLE_TYPE) */
-/*       allocation->argv[j++] = edge.lower; */
-/*   } */
-/*   assert(j == length); */
-
-/*   // Activate the join type */
-/*   const mu_join_type_t *result; */
-/*   if (rare((result = join_type_activate(allocation)) == NULL)) */
-/*     return NULL; */
-
-/*   ((mu_variable_type_t *) type)->assignment = &result->as_type; */
-
-/*   return &result->as_type; */
-/* } */
