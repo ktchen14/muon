@@ -46,6 +46,26 @@ const mu_unjoin_coercion_t *mu_unjoin_coercion(
   return unjoin_coercion_activate(allocation);
 }
 
+mu_record_coercion_t *record_coercion_allocate(size_t argc) {
+  size_t size;
+  if (rare((size = struct_size(mu_record_coercion_t, argv, argc)) == 0))
+    return errno = ENOMEM, NULL;
+
+  mu_record_coercion_t *allocation;
+  if ((allocation = malloc(size)) == NULL)
+    return NULL;
+
+  *allocation = (mu_record_coercion_t) {
+    .as_coercion.kind = MU_RECORD_COERCION, .argc = argc,
+  };
+  return allocation;
+}
+
+const mu_record_coercion_t *record_coercion_activate(
+    mu_record_coercion_t *coercion) {
+  return coercion;
+}
+
 mu_unjoin_coercion_t *unjoin_coercion_allocate(size_t argc) {
   size_t size;
   if (rare((size = struct_size(mu_unjoin_coercion_t, argv, argc)) == 0))
@@ -55,7 +75,9 @@ mu_unjoin_coercion_t *unjoin_coercion_allocate(size_t argc) {
   if ((allocation = malloc(size)) == NULL)
     return NULL;
 
-  *allocation = (mu_unjoin_coercion_t) { .argc = argc };
+  *allocation = (mu_unjoin_coercion_t) {
+    .as_coercion.kind = MU_UNJOIN_COERCION, .argc = argc,
+  };
   return allocation;
 }
 
@@ -85,7 +107,13 @@ void mu_simple_coercion_debug(const mu_simple_coercion_t *coercion) {
 }
 
 void mu_record_coercion_debug(const mu_record_coercion_t *coercion) {
-  fprintf(stderr, PRIsKIND "()", DEBUG_COERCION_KIND("RecordCoercion"));
+  fprintf(stderr, PRIsKIND "(", DEBUG_COERCION_KIND("RecordCoercion"));
+  for (size_t i = 0; i < coercion->argc; i++) {
+    if (i > 0)
+      fprintf(stderr, ", ");
+    fprintf(stderr, "%zu", coercion->argv[i]);
+  }
+  fprintf(stderr, ")");
 }
 
 void mu_join_coercion_debug(const mu_join_coercion_t *coercion) {

@@ -621,9 +621,11 @@ static const mu_coercion_t *restrict_type_internal(
     const mu_record_type_t *record_a = (const mu_record_type_t *) a;
     const mu_record_type_t *record_b = (const mu_record_type_t *) b;
 
+    _Bool coerce = record_a->argc != record_b->argc;
     for (size_t j = 0; j < record_b->argc; j++) {
       for (size_t i = 0; i < record_a->argc; i++) {
         if (record_a->argv[i].name == record_b->argv[j].name) {
+          coerce |= i != j;
           if (restrict_type(induce, record_a->argv[i].type, record_b->argv[j].type) == NULL)
             return NULL;
           goto next;
@@ -636,8 +638,26 @@ static const mu_coercion_t *restrict_type_internal(
     next:;
     }
 
+    if (!coerce)
+      return &induce->id_coercion->as_coercion;
+
+    mu_record_coercion_t *allocation;
+    if ((allocation = record_coercion_allocate(record_b->argc)) == NULL)
+      return NULL;
+
+    for (size_t j = 0; j < record_b->argc; j++) {
+      for (size_t i = 0; i < record_a->argc; i++) {
+        if (record_a->argv[i].name == record_b->argv[j].name) {
+          allocation->argv[j] = i;
+          goto next_member;
+        }
+      }
+
+    next_member:;
+    }
+
     const mu_record_coercion_t *result;
-    if ((result = mu_record_coercion()) == NULL)
+    if ((result = record_coercion_activate(allocation)) == NULL)
       return NULL;
     return &result->as_coercion;
   }
