@@ -47,7 +47,7 @@ struct induce_t {
 
   const mu_type_t *aux[2000];
   const mu_coercion_t *coercion[2000];
-  const tactic_t *tactic[2000];
+  const mu_type_t *real_type[2000];
 };
 
 typedef struct open_scheme_t open_scheme_t;

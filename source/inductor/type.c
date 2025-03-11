@@ -96,6 +96,29 @@ const mu_simple_type_t *mu_vector_type(
   return assign_type(induce, result);
 }
 
+mu_simple_type_t *simple_type_allocate(induce_t *induce, const mu_core_t *core) {
+  size_t size;
+  if (rare((size = struct_size(mu_simple_type_t, argv, core->argc)) == 0))
+    return NULL;
+
+  mu_simple_type_t *result;
+  if ((result = malloc(size)) == NULL)
+    return NULL;
+  *result = (mu_simple_type_t) {
+    .as_type.kind = MU_SIMPLE_TYPE, .as_type.induce = induce, .core = core,
+  };
+  return result;
+}
+
+const mu_simple_type_t *simple_type_activate(mu_simple_type_t *type) {
+  for (size_t i = 0; i < type->core->argc; i++) {
+    const mu_type_t *argument = type->argv[i];
+    assert(argument->induce == type->as_type.induce);
+    assert(argument->kind != MU_SCHEME_TYPE);
+  }
+  return assign_type(type->as_type.induce, type);
+}
+
 mu_record_type_t *record_type_allocate(induce_t *induce, size_t argc) {
   size_t size;
   if (rare((size = struct_size(mu_record_type_t, argv, argc)) == 0))

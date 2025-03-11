@@ -24,11 +24,14 @@ typedef enum {
 typedef struct induce_t induce_t;
 
 /// An abstract type
-typedef struct {
+typedef struct mu_type_t mu_type_t;
+struct mu_type_t {
+  const mu_type_t *origin;
+  const mu_type_t *assignment;
   mu_type_kind_t kind;
   induce_t *induce;
   size_t id;
-} mu_type_t;
+};
 
 /// The header that each concrete type must have
 #define MU_TYPE_HEADER mu_type_t as_type
@@ -164,6 +167,12 @@ const mu_scheme_type_t *mu_scheme_type(
     size_t argc,
     const mu_variable_type_t *argv[argc])
   __attribute__((malloc, nonnull(1, 2)));
+
+mu_simple_type_t *simple_type_allocate(induce_t *induce, const mu_core_t *core)
+  __attribute__((malloc, nonnull));
+
+const mu_simple_type_t *simple_type_activate(mu_simple_type_t *type)
+  __attribute__((nonnull));
 
 mu_record_type_t *record_type_allocate(induce_t *induce, size_t argc)
   __attribute__((malloc, nonnull));
