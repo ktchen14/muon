@@ -10,7 +10,7 @@
   emit(variance, VARIANCE, Variance, ##__VA_ARGS__) \
   emit(record, RECORD, Record, ##__VA_ARGS__)
 
-/// An enumeration over each kind of tactic, e.g. @c MU_ID_TACTIC
+/// An enumeration over each kind of tactic, e.g. @c VARIANCE_TACTIC
 typedef enum {
 #define MU_EMIT(l, upper, t) upper##_TACTIC,
   MU_EACH_TACTIC_KIND(MU_EMIT)
@@ -18,18 +18,20 @@ typedef enum {
 } tactic_kind_t;
 
 /// An abstract tactic
-typedef struct tactic_t {
+typedef struct {
   tactic_kind_t kind;
 } tactic_t;
 
 /// The header that each concrete tactic must have
 #define MU_TACTIC_HEADER tactic_t as_tactic
 
+/// The coercion can be found using a standard variance coercion on the core
 typedef struct {
   MU_TACTIC_HEADER;
   const mu_core_t *core;
 } variance_tactic_t;
 
+/// The coercion involves projection of the record
 typedef struct {
   MU_TACTIC_HEADER;
   size_t argc;

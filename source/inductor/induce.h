@@ -6,6 +6,7 @@
 #include "coercion.h"
 #include "core.h"
 #include "type.h"
+#include "tactic.h"
 
 #include "detect.h"
 #include "../status.h"
@@ -17,7 +18,7 @@
 typedef struct {
   const mu_type_t *lower;
   const mu_type_t *upper;
-  const mu_coercion_t *coercion;
+  const tactic_t *tactic;
 } induce_edge_t;
 
 typedef struct induce_t induce_t;
@@ -46,6 +47,7 @@ struct induce_t {
 
   const mu_type_t *aux[2000];
   const mu_coercion_t *coercion[2000];
+  const tactic_t *tactic[2000];
 };
 
 typedef struct open_scheme_t open_scheme_t;
@@ -97,6 +99,6 @@ const induce_edge_t *append_edge(
     induce_t *induce,
     const mu_type_t *restrict a,
     const mu_type_t *restrict b,
-    const mu_coercion_t *coercion);
+    const tactic_t *tactic);
 
 #endif /* MU_INDUCTOR_INDUCE_I */

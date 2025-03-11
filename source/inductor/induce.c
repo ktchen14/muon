@@ -45,7 +45,7 @@ const induce_edge_t *append_edge(
     induce_t *induce,
     const mu_type_t *restrict a,
     const mu_type_t *restrict b,
-    const mu_coercion_t *coercion) {
+    const tactic_t *tactic) {
   if (induce->edge_length >= induce->edge_volume) {
     size_t volume = induce->edge_volume;
     if (rare(__builtin_mul_overflow(volume, 2, &volume)))
@@ -65,7 +65,7 @@ const induce_edge_t *append_edge(
     induce->edge = sub_data;
   }
 
-  induce_edge_t edge = { .lower = a, .upper = b, .coercion = coercion };
+  induce_edge_t edge = { .lower = a, .upper = b, .tactic = tactic };
   induce->edge[induce->edge_length] = edge;
   induce_edge_t *result = &induce->edge[induce->edge_length];
   induce->edge_length++;
@@ -583,7 +583,9 @@ const mu_type_t *handle_node_reduction(induce_t *induce, const mu_node_t *root) 
   return induce_reveal(induce, root);
 }
 
-static const mu_coercion_t *restrict_type_internal(
+static const tactic_t no_tactic = {0};
+
+static const tactic_t *restrict_type_internal(
     induce_t *induce, const mu_type_t *a, const mu_type_t *b) {
   assert(a->kind != MU_SCHEME_TYPE && b->kind != MU_SCHEME_TYPE);
 
@@ -598,9 +600,6 @@ static const mu_coercion_t *restrict_type_internal(
 
     const mu_core_t *core = simple_a->core;
 
-    if (core->kind == MU_BOOLEAN_CORE || core->kind == MU_INTEGER_CORE)
-      return &induce->id_coercion->as_coercion;
-
     for (size_t i = 0; i < core->argc; i++) {
       const mu_type_t *lower = simple_a->argv[i], *upper = simple_b->argv[i];
 
@@ -614,10 +613,10 @@ static const mu_coercion_t *restrict_type_internal(
         return NULL;
     }
 
-    const mu_simple_coercion_t *result;
-    if ((result = mu_simple_coercion()) == NULL)
+    const variance_tactic_t *result;
+    if ((result = variance_tactic_create(core)) == NULL)
       return NULL;
-    return &result->as_coercion;
+    return &result->as_tactic;
   }
 
   if (a->kind == MU_RECORD_TYPE && b->kind == MU_RECORD_TYPE) {
@@ -642,10 +641,10 @@ static const mu_coercion_t *restrict_type_internal(
     }
 
     if (!coerce)
-      return &induce->id_coercion->as_coercion;
+      return &no_tactic;
 
-    mu_record_coercion_t *allocation;
-    if ((allocation = record_coercion_allocate(record_b->argc)) == NULL)
+    record_tactic_t *allocation;
+    if ((allocation = record_tactic_allocate(record_b->argc)) == NULL)
       return NULL;
 
     for (size_t j = 0; j < record_b->argc; j++) {
@@ -659,10 +658,10 @@ static const mu_coercion_t *restrict_type_internal(
     next_member:;
     }
 
-    const mu_record_coercion_t *result;
-    if ((result = record_coercion_activate(allocation)) == NULL)
+    const record_tactic_t *result;
+    if ((result = record_tactic_activate(allocation)) == NULL)
       return NULL;
-    return &result->as_coercion;
+    return &result->as_tactic;
   }
 
   if (a->kind != MU_VARIABLE_TYPE && b->kind != MU_VARIABLE_TYPE) {
@@ -690,7 +689,7 @@ static const mu_coercion_t *restrict_type_internal(
     }
   }
 
-  return &induce->id_coercion->as_coercion;
+  return &no_tactic;
 }
 
 const induce_edge_t SELF = {0};
@@ -705,11 +704,13 @@ static const induce_edge_t *restrict_type(
   if ((edge = search_edge(induce, a, b)) != NULL)
     return edge;
 
-  const mu_coercion_t *coercion;
-  if ((coercion = restrict_type_internal(induce, a, b)) == NULL)
+  const tactic_t *tactic;
+  if ((tactic = restrict_type_internal(induce, a, b)) == NULL)
     return NULL;
+  if (tactic == &no_tactic)
+    tactic = NULL;
 
-  return append_edge(induce, a, b, coercion);
+  return append_edge(induce, a, b, tactic);
 }
 
 // ---------------------------------- Expr -------------------------------- {{{1
