@@ -6,7 +6,41 @@
 
 #define evince induce_reveal
 
-const mu_coercion_t *make_coercion(induce_t *induce, const induce_edge_t *edge) {
+const mu_coercion_t *make_coercion(
+    induce_t *induce, const mu_type_t *source, const mu_type_t *target) {
+  assert(source->kind != MU_JOIN_TYPE);
+
+  if (target->kind == MU_JOIN_TYPE) {
+    const mu_join_type_t *join_type = (const mu_join_type_t *) target;
+
+    for (size_t i = 0; i < join_type->argc; i++) {
+      const mu_type_t *type = join_type->argv[i];
+
+      const mu_coercion_t *coercion;
+      if (source == type) {
+        coercion = &induce->id_coercion->as_coercion;
+      } else {
+        const induce_edge_t *edge;
+        if ((edge = search_edge(induce, source, type)) == NULL)
+          continue;
+
+        if ((coercion = make_coercion(induce, source, type)) == NULL)
+          return NULL;
+      }
+
+      const mu_join_coercion_t *result;
+      if ((result = mu_join_coercion(i)) == NULL)
+        return NULL;
+      return &result->as_coercion;
+    }
+
+    assert(0);
+  }
+
+  const induce_edge_t *edge;
+  edge = search_edge(induce, source, target);
+  assert(edge != NULL);
+
   const tactic_t *tactic = edge->tactic;
   assert(tactic != NULL);
 
@@ -100,11 +134,8 @@ __attribute__((nonnull)) static void access_expr_reduce(
 
   const mu_type_t *matter_type = induce_reveal(induce, &expr->matter->as_node);
 
-  const induce_edge_t *edge = search_edge(induce, matter_type, type);
-  assert(edge != NULL);
-
   const mu_coercion_t *coercion;
-  if ((coercion = make_coercion(induce, edge)) == NULL)
+  if ((coercion = make_coercion(induce, matter_type, type)) == NULL)
     return;
   induce->coercion[expr->matter->as_node.id] = coercion;
 }
@@ -122,11 +153,8 @@ __attribute__((nonnull)) static void invoke_expr_reduce(
 
   const mu_type_t *operator_type = evince(induce, &expr->operator->as_node);
 
-  const induce_edge_t *edge = search_edge(induce, operator_type, type);
-  assert(edge != NULL);
-
   const mu_coercion_t *coercion;
-  if ((coercion = make_coercion(induce, edge)) == NULL)
+  if ((coercion = make_coercion(induce, operator_type, type)) == NULL)
     return;
   induce->coercion[expr->operator->as_node.id] = coercion;
 }
@@ -162,10 +190,9 @@ __attribute__((nonnull)) static void vector_expr_reduce(
 
     assert(induce->coercion[argument->as_node.id] == NULL);
     const mu_type_t *argument_type = induce_reveal(induce, &argument->as_node);
-    const induce_edge_t *edge = search_edge(induce, argument_type, result);
 
     const mu_coercion_t *coercion;
-    if ((coercion = make_coercion(induce, edge)) == NULL)
+    if ((coercion = make_coercion(induce, argument_type, result)) == NULL)
       return;
     induce->coercion[argument->as_node.id] = coercion;
   }
