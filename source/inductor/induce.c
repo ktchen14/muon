@@ -697,12 +697,10 @@ static const induce_edge_t *restrict_type(
   if (a == b)
     return &SELF;
 
-  // If we don't have to continue into a or b, then just return
-  for (size_t i = 0; i < induce->edge_length; i++) {
-    induce_edge_t *edge = &induce->edge[i];
-    if (edge->lower == a && edge->upper == b)
-      return edge;
-  }
+  // If we already have an edge a -> b then just return it
+  const induce_edge_t *edge;
+  if ((edge = search_edge(induce, a, b)) != NULL)
+    return edge;
 
   const mu_coercion_t *coercion;
   if ((coercion = restrict_type_internal(induce, a, b)) == NULL)

@@ -93,4 +93,65 @@ static inline const mu_node_t *node_at(const mu_node_t *node, size_t i) {
   __builtin_unreachable();
 }
 
+/* #define SWITCH_KIND(object) \ */
+/*   for (const void *_object = (object); _object; _object = NULL) \ */
+/*     switch (((typeof((object))) _object)->kind) */
+
+/* #define JOIN(a, b) a##b */
+/* #define INDIRECT_JOIN(a, b) JOIN(a, b) */
+/* #define UNIQUE(name) INDIRECT_JOIN(name##_, __COUNTER__) */
+
+/* #define WHEN_KIND(kind) _mu_##kind:; \ */
+/*   const mu_##kind##_t *kind = _object; \ */
+/*   __attribute__((unused)) UNIQUE(case) */
+
+/* /// Return the <em>i</em>th node in the abstract @a node */
+/* static inline const mu_node_t *node_at(const mu_node_t *node, size_t i) { */
+/*   SWITCH_KIND(node) { */
+/*     case WHEN_KIND(boolean_expr): return NULL; */
+/*     case WHEN_KIND(integer_expr): return NULL; */
+/*     case WHEN_KIND(name_expr):    return NULL; */
+/*     case WHEN_KIND(native_expr):  return NULL; */
+/*     case WHEN_KIND(zero_expr):    return NULL; */
+/*     case WHEN_KIND(boolean_sign): return NULL; */
+/*     case WHEN_KIND(integer_sign): return NULL; */
+/*     case WHEN_KIND(name_sign):    return NULL; */
+
+/*     case WHEN_KIND(access_expr): */
+/*       return i == 0 ? &access_expr->matter->as_node : NULL; */
+
+/*     case WHEN_KIND(invoke_expr): switch (i) { */
+/*       case 0: return &invoke_expr->operator->as_node; */
+/*       case 1: return &invoke_expr->argument->as_node; */
+/*       default: return NULL; */
+/*     } */
+
+/*     case WHEN_KIND(lambda_expr): switch (i) { */
+/*       case 0: return &lambda_expr->argument->as_node; */
+/*       case 1: return &lambda_expr->matter->as_node; */
+/*       default: return NULL; */
+/*     } */
+
+/*     case WHEN_KIND(record_expr): */
+/*       return i < record_expr->argc ? &record_expr->argv[i].expr->as_node : NULL; */
+
+/*     case WHEN_KIND(sequence_expr): */
+/*       return i < sequence_expr->argc ? &sequence_expr->argv[i]->as_node : NULL; */
+
+/*     case WHEN_KIND(vector_expr): */
+/*       return i < vector_expr->argc ? &vector_expr->argv[i]->as_node : NULL; */
+
+/*     case WHEN_KIND(record_sign): */
+/*       return i < record_sign->argc ? &record_sign->argv[i].sign->as_node : NULL; */
+
+/*     case WHEN_KIND(vector_sign): */
+/*       return i == 0 ? &vector_sign->matter->as_node : NULL; */
+
+/*     case MU_DEFINE_STMT: return NULL; */
+/*     case MU_TYPE_STMT: return NULL; */
+/*     case MU_VARIABLE_VIEW: return NULL; */
+/*   } */
+/*   __builtin_unreachable(); */
+/* } */
+
 #endif /* MU_STATOR_NODE_I */
