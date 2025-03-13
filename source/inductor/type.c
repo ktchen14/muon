@@ -15,27 +15,27 @@ static inline mu_type_t *assign_type(induce_t *induce, mu_type_t *type) {
 #define assign_type(induce, type) \
   ((typeof((type))) (assign_type)((induce), &(type)->as_type))
 
-const mu_simple_type_t *mu_boolean_type(induce_t *induce) {
-  mu_simple_type_t *result;
-  if ((result = malloc(sizeof(mu_simple_type_t))) == NULL)
+const mu_core_type_t *mu_boolean_type(induce_t *induce) {
+  mu_core_type_t *result;
+  if ((result = malloc(sizeof(mu_core_type_t))) == NULL)
     return NULL;
-  *result = (mu_simple_type_t) {
-    .as_type.kind = MU_SIMPLE_TYPE, .core = induce->boolean_core,
+  *result = (mu_core_type_t) {
+    .as_type.kind = MU_CORE_TYPE, .core = induce->boolean_core,
   };
   return assign_type(induce, result);
 }
 
-const mu_simple_type_t *mu_integer_type(induce_t *induce) {
-  mu_simple_type_t *result;
-  if ((result = malloc(sizeof(mu_simple_type_t))) == NULL)
+const mu_core_type_t *mu_integer_type(induce_t *induce) {
+  mu_core_type_t *result;
+  if ((result = malloc(sizeof(mu_core_type_t))) == NULL)
     return NULL;
-  *result = (mu_simple_type_t) {
-    .as_type.kind = MU_SIMPLE_TYPE, .core = induce->integer_core,
+  *result = (mu_core_type_t) {
+    .as_type.kind = MU_CORE_TYPE, .core = induce->integer_core,
   };
   return assign_type(induce, result);
 }
 
-const mu_simple_type_t *mu_lambda_type(
+const mu_core_type_t *mu_lambda_type(
     induce_t *induce, const mu_type_t *argument, const mu_type_t *output) {
   assert(argument->induce == induce);
   assert(argument->kind != MU_SCHEME_TYPE);
@@ -45,15 +45,15 @@ const mu_simple_type_t *mu_lambda_type(
 
   // TODO: this can't overflow
   size_t size;
-  if (rare((size = struct_size(mu_simple_type_t, argv, 2)) == 0))
+  if (rare((size = struct_size(mu_core_type_t, argv, 2)) == 0))
     return errno = ENOMEM, NULL;
 
-  mu_simple_type_t *result;
+  mu_core_type_t *result;
   if ((result = malloc(size)) == NULL)
     return NULL;
 
-  *result = (mu_simple_type_t) {
-    .as_type.kind = MU_SIMPLE_TYPE, .core = induce->lambda_core,
+  *result = (mu_core_type_t) {
+    .as_type.kind = MU_CORE_TYPE, .core = induce->lambda_core,
   };
 
   result->argv[0] = argument;
@@ -74,21 +74,21 @@ const mu_record_type_t *mu_record_type(
   return record_type_activate(result);
 };
 
-const mu_simple_type_t *mu_vector_type(
+const mu_core_type_t *mu_vector_type(
     induce_t *induce, const mu_type_t *matter) {
   assert(matter->induce == induce);
   assert(matter->kind != MU_SCHEME_TYPE);
 
   // TODO: this can't overflow
   size_t size;
-  if (rare((size = struct_size(mu_simple_type_t, argv, 1)) == 0))
+  if (rare((size = struct_size(mu_core_type_t, argv, 1)) == 0))
     return errno = ENOMEM, NULL;
 
-  mu_simple_type_t *result;
+  mu_core_type_t *result;
   if ((result = malloc(size)) == NULL)
     return NULL;
-  *result = (mu_simple_type_t) {
-    .as_type.kind = MU_SIMPLE_TYPE, .core = induce->vector_core,
+  *result = (mu_core_type_t) {
+    .as_type.kind = MU_CORE_TYPE, .core = induce->vector_core,
   };
 
   result->argv[0] = matter;
@@ -96,21 +96,21 @@ const mu_simple_type_t *mu_vector_type(
   return assign_type(induce, result);
 }
 
-mu_simple_type_t *simple_type_allocate(induce_t *induce, const mu_core_t *core) {
+mu_core_type_t *core_type_allocate(induce_t *induce, const mu_core_t *core) {
   size_t size;
-  if (rare((size = struct_size(mu_simple_type_t, argv, core->argc)) == 0))
+  if (rare((size = struct_size(mu_core_type_t, argv, core->argc)) == 0))
     return NULL;
 
-  mu_simple_type_t *result;
+  mu_core_type_t *result;
   if ((result = malloc(size)) == NULL)
     return NULL;
-  *result = (mu_simple_type_t) {
-    .as_type.kind = MU_SIMPLE_TYPE, .as_type.induce = induce, .core = core,
+  *result = (mu_core_type_t) {
+    .as_type.kind = MU_CORE_TYPE, .as_type.induce = induce, .core = core,
   };
   return result;
 }
 
-const mu_simple_type_t *simple_type_activate(mu_simple_type_t *type) {
+const mu_core_type_t *core_type_activate(mu_core_type_t *type) {
   for (size_t i = 0; i < type->core->argc; i++) {
     const mu_type_t *argument = type->argv[i];
     assert(argument->induce == type->as_type.induce);
@@ -220,10 +220,10 @@ void debug_type(const mu_type_t *type) {
   extern _Thread_local _Bool debug_negate;
 
   switch (type->kind) {
-    case MU_SIMPLE_TYPE: {
-      const mu_simple_type_t *simple_type = (const mu_simple_type_t *) type;
+    case MU_CORE_TYPE: {
+      const mu_core_type_t *core_type = (const mu_core_type_t *) type;
 
-      switch (simple_type->core->kind) {
+      switch (core_type->core->kind) {
         case MU_BOOLEAN_CORE:
           fprintf(stderr, "Boolean"); break;
 
@@ -233,16 +233,16 @@ void debug_type(const mu_type_t *type) {
         case MU_LAMBDA_CORE:
         {
           fprintf(stderr, "(");
-          WITH_DEBUG_NEGATE() { debug_type(simple_type->argv[0]); }
+          WITH_DEBUG_NEGATE() { debug_type(core_type->argv[0]); }
           fprintf(stderr, " -> ");
-          debug_type(simple_type->argv[1]);
+          debug_type(core_type->argv[1]);
           fprintf(stderr, ")");
           break;
         }
 
         case MU_VECTOR_CORE:
           fprintf(stderr, "[");
-          debug_type(simple_type->argv[0]);
+          debug_type(core_type->argv[0]);
           fprintf(stderr, "]");
           break;
       }
@@ -379,10 +379,10 @@ void debug_just_type(const mu_type_t *type) {
   extern _Thread_local _Bool debug_negate;
 
   switch (type->kind) {
-    case MU_SIMPLE_TYPE: {
-      const mu_simple_type_t *simple_type = (const mu_simple_type_t *) type;
+    case MU_CORE_TYPE: {
+      const mu_core_type_t *core_type = (const mu_core_type_t *) type;
 
-      switch (simple_type->core->kind) {
+      switch (core_type->core->kind) {
         case MU_BOOLEAN_CORE:
           fprintf(stderr, "Boolean"); break;
 
@@ -392,16 +392,16 @@ void debug_just_type(const mu_type_t *type) {
         case MU_LAMBDA_CORE:
         {
           fprintf(stderr, "(");
-          WITH_DEBUG_NEGATE() { debug_just_type(simple_type->argv[0]); }
+          WITH_DEBUG_NEGATE() { debug_just_type(core_type->argv[0]); }
           fprintf(stderr, " -> ");
-          debug_just_type(simple_type->argv[1]);
+          debug_just_type(core_type->argv[1]);
           fprintf(stderr, ")");
           break;
         }
 
         case MU_VECTOR_CORE:
           fprintf(stderr, "[");
-          debug_just_type(simple_type->argv[0]);
+          debug_just_type(core_type->argv[0]);
           fprintf(stderr, "]");
           break;
       }

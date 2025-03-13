@@ -201,20 +201,20 @@ typedef struct {
 
 void mark_type(induce_t *induce, const mu_type_t *type, _Bool negative, size_t rank) {
   switch (type->kind) {
-    case MU_SIMPLE_TYPE: {
-      const mu_simple_type_t *simple_type = (const mu_simple_type_t *) type;
+    case MU_CORE_TYPE: {
+      const mu_core_type_t *core_type = (const mu_core_type_t *) type;
 
-      switch (simple_type->core->kind) {
+      switch (core_type->core->kind) {
         case MU_BOOLEAN_CORE: break;
         case MU_INTEGER_CORE: break;
 
         case MU_LAMBDA_CORE:
-          mark_type(induce, simple_type->argv[0], !negative, rank);
-          mark_type(induce, simple_type->argv[1], negative, rank);
+          mark_type(induce, core_type->argv[0], !negative, rank);
+          mark_type(induce, core_type->argv[1], negative, rank);
           break;
 
         case MU_VECTOR_CORE:
-          mark_type(induce, simple_type->argv[0], negative, rank);
+          mark_type(induce, core_type->argv[0], negative, rank);
           break;
       }
       break;
@@ -280,20 +280,20 @@ void mark_type_from_anywhere(
     const mu_variable_type_t *origin,
     type_link_t *link) {
   switch (type->kind) {
-    case MU_SIMPLE_TYPE: {
-      const mu_simple_type_t *simple_type = (const mu_simple_type_t *) type;
+    case MU_CORE_TYPE: {
+      const mu_core_type_t *core_type = (const mu_core_type_t *) type;
 
-      switch (simple_type->core->kind) {
+      switch (core_type->core->kind) {
         case MU_BOOLEAN_CORE: break;
         case MU_INTEGER_CORE: break;
 
         case MU_LAMBDA_CORE:
-          mark_type_from_anywhere(induce, simple_type->argv[0], !negative, NULL, link);
-          mark_type_from_anywhere(induce, simple_type->argv[1], negative, NULL, link);
+          mark_type_from_anywhere(induce, core_type->argv[0], !negative, NULL, link);
+          mark_type_from_anywhere(induce, core_type->argv[1], negative, NULL, link);
           break;
 
         case MU_VECTOR_CORE:
-          mark_type_from_anywhere(induce, simple_type->argv[0], negative, NULL, link);
+          mark_type_from_anywhere(induce, core_type->argv[0], negative, NULL, link);
           break;
       }
       break;
@@ -589,19 +589,19 @@ static const tactic_t *restrict_type_internal(
     induce_t *induce, const mu_type_t *a, const mu_type_t *b) {
   assert(a->kind != MU_SCHEME_TYPE && b->kind != MU_SCHEME_TYPE);
 
-  if (a->kind == MU_SIMPLE_TYPE && b->kind == MU_SIMPLE_TYPE) {
-    const mu_simple_type_t *simple_a = (const mu_simple_type_t *) a;
-    const mu_simple_type_t *simple_b = (const mu_simple_type_t *) b;
+  if (a->kind == MU_CORE_TYPE && b->kind == MU_CORE_TYPE) {
+    const mu_core_type_t *core_a = (const mu_core_type_t *) a;
+    const mu_core_type_t *core_b = (const mu_core_type_t *) b;
 
-    if (simple_a->core != simple_b->core) {
+    if (core_a->core != core_b->core) {
       fprintf(stderr, "Type mismatch\n");
       abort();
     }
 
-    const mu_core_t *core = simple_a->core;
+    const mu_core_t *core = core_a->core;
 
     for (size_t i = 0; i < core->argc; i++) {
-      const mu_type_t *lower = simple_a->argv[i], *upper = simple_b->argv[i];
+      const mu_type_t *lower = core_a->argv[i], *upper = core_b->argv[i];
 
       mu_variance_t variance = core->variance[i];
       assert(variance != MU_INVARIANCE);
@@ -737,7 +737,7 @@ __attribute__((nonnull)) static const mu_type_t *access_expr_induce(
 
 __attribute__((nonnull)) static const mu_type_t *boolean_expr_induce(
     const mu_boolean_expr_t *expr, induce_t *induce, open_scheme_t *scheme) {
-  const mu_simple_type_t *result;
+  const mu_core_type_t *result;
   if ((result = mu_boolean_type(induce)) == NULL)
     return NULL;
   return &result->as_type;
@@ -745,7 +745,7 @@ __attribute__((nonnull)) static const mu_type_t *boolean_expr_induce(
 
 __attribute__((nonnull)) static const mu_type_t *integer_expr_induce(
     const mu_integer_expr_t *expr, induce_t *induce, open_scheme_t *scheme) {
-  const mu_simple_type_t *result;
+  const mu_core_type_t *result;
   if ((result = mu_integer_type(induce)) == NULL)
     return NULL;
   return &result->as_type;
@@ -760,7 +760,7 @@ __attribute__((nonnull)) static const mu_type_t *invoke_expr_induce(
   if ((result = variable_type(induce, scheme)) == NULL)
     return NULL;
 
-  const mu_simple_type_t *lambda_type;
+  const mu_core_type_t *lambda_type;
   if ((lambda_type = mu_lambda_type(induce, argument_type, &result->as_type)) == NULL)
     return NULL;
   induce->aux[expr->as_node.id] = &lambda_type->as_type;
@@ -775,7 +775,7 @@ __attribute__((nonnull)) static const mu_type_t *lambda_expr_induce(
   const mu_type_t *argument_type = evince(induce, &expr->argument->as_node);
   const mu_type_t *output_type = evince(induce, &expr->matter->as_node);
 
-  const mu_simple_type_t *result;
+  const mu_core_type_t *result;
   if ((result = mu_lambda_type(induce, argument_type, output_type)) == NULL)
     return NULL;
   return &result->as_type;
@@ -803,17 +803,17 @@ __attribute__((nonnull)) static const mu_type_t *name_expr_induce(
 
 __attribute__((nonnull)) static const mu_type_t *native_expr_induce(
     const mu_native_expr_t *expr, induce_t *induce, open_scheme_t *scheme) {
-  const mu_simple_type_t *integer_type;
+  const mu_core_type_t *integer_type;
   if ((integer_type = mu_integer_type(induce)) == NULL)
     return NULL;
 
-  const mu_simple_type_t *vector_type;
+  const mu_core_type_t *vector_type;
   if ((vector_type = mu_vector_type(induce, &integer_type->as_type)) == NULL)
     return NULL;
 
   const mu_type_t *argument_type = &vector_type->as_type;
   const mu_type_t *output_type = &integer_type->as_type;
-  const mu_simple_type_t *result;
+  const mu_core_type_t *result;
   if ((result = mu_lambda_type(induce, argument_type, output_type)) == NULL)
     return NULL;
   return &result->as_type;
@@ -866,7 +866,7 @@ __attribute__((nonnull)) static const mu_type_t *vector_expr_induce(
       return NULL;
   }
 
-  const mu_simple_type_t *result;
+  const mu_core_type_t *result;
   if ((result = mu_vector_type(induce, &matter_type->as_type)) == NULL)
     return NULL;
   return &result->as_type;
@@ -884,7 +884,7 @@ __attribute__((nonnull)) static const mu_type_t *zero_expr_induce(
 
 __attribute__((nonnull)) static const mu_type_t *boolean_sign_induce(
     const mu_boolean_sign_t *sign, induce_t *induce, open_scheme_t *scheme) {
-  const mu_simple_type_t *result;
+  const mu_core_type_t *result;
   if ((result = mu_boolean_type(induce)) == NULL)
     return NULL;
   return &result->as_type;
@@ -892,7 +892,7 @@ __attribute__((nonnull)) static const mu_type_t *boolean_sign_induce(
 
 __attribute__((nonnull)) static const mu_type_t *integer_sign_induce(
     const mu_integer_sign_t *sign, induce_t *induce, open_scheme_t *scheme) {
-  const mu_simple_type_t *result;
+  const mu_core_type_t *result;
   if ((result = mu_integer_type(induce)) == NULL)
     return NULL;
   return &result->as_type;
@@ -919,7 +919,7 @@ __attribute__((nonnull)) static const mu_type_t *vector_sign_induce(
     const mu_vector_sign_t *sign, induce_t *induce, open_scheme_t *scheme) {
   const mu_type_t *matter = induce_reveal(induce, &sign->matter->as_node);
 
-  const mu_simple_type_t *result;
+  const mu_core_type_t *result;
   if ((result = mu_vector_type(induce, matter)) == NULL)
     return NULL;
   return &result->as_type;

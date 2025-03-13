@@ -8,13 +8,13 @@
 
 /// Expands to emit(lower, upper, title, ...) for each kind of type
 #define MU_EACH_TYPE_KIND(emit, ...) \
-  emit(simple, SIMPLE, Simple, ##__VA_ARGS__) \
+  emit(core, CORE, Core, ##__VA_ARGS__) \
   emit(record, RECORD, Record, ##__VA_ARGS__) \
   emit(variable, VARIABLE, Variable, ##__VA_ARGS__) \
   emit(scheme, SCHEME, Scheme, ##__VA_ARGS__) \
   emit(join, JOIN, Join, ##__VA_ARGS__)
 
-/// An enumeration over each kind of type, i.e. @c MU_SIMPLE_TYPE
+/// An enumeration over each kind of type, i.e. @c MU_CORE_TYPE
 typedef enum {
 #define MU_EMIT(l, upper, t) MU_##upper##_TYPE,
   MU_EACH_TYPE_KIND(MU_EMIT)
@@ -36,13 +36,13 @@ struct mu_type_t {
 /// The header that each concrete type must have
 #define MU_TYPE_HEADER mu_type_t as_type
 
-/// A simple type
+/// A core type
 typedef struct {
   MU_TYPE_HEADER;
 
   const mu_core_t *core;
   const mu_type_t *argv[/* core->argc */];
-} mu_simple_type_t;
+} mu_core_type_t;
 
 /// A record type member
 typedef struct {
@@ -115,7 +115,7 @@ typedef struct {
  * @code{.c}
  *   mu_type_t *abstract_type = ...;
  *
- *   mu_simple_type_t *type;
+ *   mu_core_type_t *type;
  *   if ((type = mu_type_cast(abstract_type, type)) == NULL)
  *     return ...;
  * @endcode
@@ -139,17 +139,17 @@ typedef struct {
   const mu_variable_type_t *next;
 } type_link_t;
 
-const mu_simple_type_t *mu_boolean_type(induce_t *induce)
+const mu_core_type_t *mu_boolean_type(induce_t *induce)
   __attribute__((malloc, nonnull));
 
-const mu_simple_type_t *mu_integer_type(induce_t *induce)
+const mu_core_type_t *mu_integer_type(induce_t *induce)
   __attribute__((malloc, nonnull));
 
 const mu_join_type_t *join_type(
     induce_t *induce, size_t argc, const mu_type_t *argv[/* argc */])
   __attribute__((malloc, nonnull));
 
-const mu_simple_type_t *mu_lambda_type(
+const mu_core_type_t *mu_lambda_type(
     induce_t *induce, const mu_type_t *argument, const mu_type_t *output)
   __attribute__((malloc, nonnull));
 
@@ -157,7 +157,7 @@ const mu_record_type_t *mu_record_type(
     induce_t *induce, size_t argc, const mu_type_member_t argv[argc])
   __attribute__((malloc, nonnull(1)));
 
-const mu_simple_type_t *mu_vector_type(
+const mu_core_type_t *mu_vector_type(
     induce_t *induce, const mu_type_t *matter)
   __attribute__((malloc, nonnull));
 
@@ -168,10 +168,10 @@ const mu_scheme_type_t *mu_scheme_type(
     const mu_variable_type_t *argv[argc])
   __attribute__((malloc, nonnull(1, 2)));
 
-mu_simple_type_t *simple_type_allocate(induce_t *induce, const mu_core_t *core)
+mu_core_type_t *core_type_allocate(induce_t *induce, const mu_core_t *core)
   __attribute__((malloc, nonnull));
 
-const mu_simple_type_t *simple_type_activate(mu_simple_type_t *type)
+const mu_core_type_t *core_type_activate(mu_core_type_t *type)
   __attribute__((nonnull));
 
 mu_record_type_t *record_type_allocate(induce_t *induce, size_t argc)

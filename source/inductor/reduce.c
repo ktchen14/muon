@@ -152,7 +152,7 @@ __attribute__((nonnull)) static void vector_expr_reduce(
     const mu_vector_expr_t *expr, induce_t *induce) {
   const mu_type_t *type = induce_reveal(induce, &expr->as_node);
 
-  const mu_simple_type_t *vector_type = mu_type_cast(type, vector_type);
+  const mu_core_type_t *vector_type = mu_type_cast(type, vector_type);
   assert(vector_type != NULL);
 
   const mu_variable_type_t *matter_type = mu_type_cast(vector_type->argv[0], matter_type);
@@ -195,13 +195,13 @@ const mu_type_t *reduce_origin_type(induce_t *induce, const mu_type_t *type, _Bo
   assert(type->kind != MU_SCHEME_TYPE);
   assert(type->kind != MU_JOIN_TYPE);
 
-  const mu_simple_type_t *simple_type;
-  if ((simple_type = mu_type_cast(type, simple_type)) != NULL) {
-    const mu_core_t *core = simple_type->core;
+  const mu_core_type_t *core_type;
+  if ((core_type = mu_type_cast(type, core_type)) != NULL) {
+    const mu_core_t *core = core_type->core;
     _Bool remake = 0;
 
     for (size_t i = 0; i < core->argc; i++) {
-      const mu_type_t *argument = simple_type->argv[i];
+      const mu_type_t *argument = core_type->argv[i];
 
       assert(core->variance[i] != MU_INVARIANCE);
       if (core->variance[i] == MU_CONTRAVARIANCE)
@@ -218,20 +218,20 @@ const mu_type_t *reduce_origin_type(induce_t *induce, const mu_type_t *type, _Bo
     if (!remake)
       return ((mu_type_t *) type)->assignment = type;
 
-    mu_simple_type_t *allocation;
-    if ((allocation = simple_type_allocate(induce, core)) == NULL)
+    mu_core_type_t *allocation;
+    if ((allocation = core_type_allocate(induce, core)) == NULL)
       return NULL;
 
     for (size_t i = 0; i < core->argc; i++)
-      allocation->argv[i] = simple_type->argv[i]->assignment;
+      allocation->argv[i] = core_type->argv[i]->assignment;
 
-    const mu_simple_type_t *result;
-    if ((result = simple_type_activate(allocation)) == NULL)
+    const mu_core_type_t *result;
+    if ((result = core_type_activate(allocation)) == NULL)
       return NULL;
 
     for (size_t i = 0; i < induce->edge_length; i++) {
       induce_edge_t edge = induce->edge[i];
-      if (edge.lower != &simple_type->as_type)
+      if (edge.lower != &core_type->as_type)
         continue;
       const tactic_t *tactic = edge.tactic;
       if (append_edge(induce, &result->as_type, edge.upper, tactic) == NULL)
@@ -240,7 +240,7 @@ const mu_type_t *reduce_origin_type(induce_t *induce, const mu_type_t *type, _Bo
 
     for (size_t i = 0; i < induce->edge_length; i++) {
       induce_edge_t edge = induce->edge[i];
-      if (edge.upper != &simple_type->as_type)
+      if (edge.upper != &core_type->as_type)
         continue;
       const tactic_t *tactic = edge.tactic;
       if (append_edge(induce, edge.lower, &result->as_type, tactic) == NULL)
