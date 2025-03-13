@@ -222,8 +222,9 @@ void debug_type(const mu_type_t *type) {
   switch (type->kind) {
     case MU_CORE_TYPE: {
       const mu_core_type_t *core_type = (const mu_core_type_t *) type;
+      const mu_core_t *core = core_type->core;
 
-      switch (core_type->core->kind) {
+      switch (core->kind) {
         case MU_BOOLEAN_CORE:
           fprintf(stderr, "Boolean"); break;
 
@@ -231,19 +232,29 @@ void debug_type(const mu_type_t *type) {
           fprintf(stderr, "Integer"); break;
 
         case MU_LAMBDA_CORE:
-        {
           fprintf(stderr, "(");
           WITH_DEBUG_NEGATE() { debug_type(core_type->argv[0]); }
           fprintf(stderr, " -> ");
           debug_type(core_type->argv[1]);
           fprintf(stderr, ")");
           break;
-        }
 
         case MU_VECTOR_CORE:
           fprintf(stderr, "[");
           debug_type(core_type->argv[0]);
           fprintf(stderr, "]");
+          break;
+
+        case MU_RECORD_CORE:
+          fprintf(stderr, "(");
+          for (size_t i = 0; i < core->argc; i++) {
+            if (i > 0)
+              fprintf(stderr, ", ");
+            mu_name_debug(core->argv[i].name);
+            fprintf(stderr, ": ");
+            debug_type(core_type->argv[i]);
+          }
+          fprintf(stderr, ")");
           break;
       }
       break;
@@ -381,8 +392,9 @@ void debug_just_type(const mu_type_t *type) {
   switch (type->kind) {
     case MU_CORE_TYPE: {
       const mu_core_type_t *core_type = (const mu_core_type_t *) type;
+      const mu_core_t *core = core_type->core;
 
-      switch (core_type->core->kind) {
+      switch (core->kind) {
         case MU_BOOLEAN_CORE:
           fprintf(stderr, "Boolean"); break;
 
@@ -390,19 +402,29 @@ void debug_just_type(const mu_type_t *type) {
           fprintf(stderr, "Integer"); break;
 
         case MU_LAMBDA_CORE:
-        {
           fprintf(stderr, "(");
           WITH_DEBUG_NEGATE() { debug_just_type(core_type->argv[0]); }
           fprintf(stderr, " -> ");
           debug_just_type(core_type->argv[1]);
           fprintf(stderr, ")");
           break;
-        }
 
         case MU_VECTOR_CORE:
           fprintf(stderr, "[");
           debug_just_type(core_type->argv[0]);
           fprintf(stderr, "]");
+          break;
+
+        case MU_RECORD_CORE:
+          fprintf(stderr, "(");
+          for (size_t i = 0; i < core->argc; i++) {
+            if (i > 0)
+              fprintf(stderr, ", ");
+            mu_name_debug(core->argv[i].name);
+            fprintf(stderr, ": ");
+            debug_just_type(core_type->argv[i]);
+          }
+          fprintf(stderr, ")");
           break;
       }
       break;

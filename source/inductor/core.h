@@ -10,6 +10,7 @@ typedef enum {
   MU_INTEGER_CORE,
   MU_LAMBDA_CORE,
   MU_VECTOR_CORE,
+  MU_RECORD_CORE,
 } mu_core_kind_t;
 
 typedef enum {
