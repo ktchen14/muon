@@ -329,7 +329,7 @@ const mu_type_t *reduce_type(induce_t *induce, const mu_type_t *type, _Bool nega
   assert(0);
 }
 
-const mu_type_t *handle_node_reduction(induce_t *induce, const mu_node_t *root) {
+const mu_type_t *reduce_node(induce_t *induce, const mu_node_t *root) {
   assert(root->id < induce->node_length);
 
   const mu_node_t *node = root, *next;

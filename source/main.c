@@ -73,7 +73,7 @@ int main(int argc, char *argv[argc]) {
   if (induce_node(&induce, &sequence_expr->as_node) == NULL)
     assert(0);
 
-  if (handle_node_reduction(&induce, &sequence_expr->as_node) == NULL)
+  if (reduce_node(&induce, &sequence_expr->as_node) == NULL)
     assert(0);
 
   extern _Thread_local _Bool debug_colorize;
