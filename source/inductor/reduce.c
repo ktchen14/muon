@@ -63,21 +63,21 @@ const mu_coercion_t *make_coercion(
 }
 
 __attribute__((nonnull)) static const mu_type_t *access_expr_reduce(
-    const mu_access_expr_t *expr, induce_t *induce) {
-  const mu_type_t *type = induce->aux[expr->as_node.id];
-  assert(type != NULL);
+    const mu_access_expr_t *expr, induce_t *induce, const mu_type_t *type) {
+  const mu_type_t *aux_type = induce->aux[expr->as_node.id];
+  assert(aux_type != NULL);
 
-  if ((type = reduce_origin_type(induce, type, 0)) == NULL)
+  if ((aux_type = reduce_origin_type(induce, aux_type, 0)) == NULL)
     return NULL;
 
   const mu_type_t *matter_type = induce_reveal(induce, &expr->matter->as_node);
 
   const mu_coercion_t *coercion;
-  if ((coercion = make_coercion(induce, matter_type, type)) == NULL)
+  if ((coercion = make_coercion(induce, matter_type, aux_type)) == NULL)
     return NULL;
   induce->coercion[expr->matter->as_node.id] = coercion;
 
-  const mu_core_type_t *core_type = mu_type_cast(type, core_type);
+  const mu_core_type_t *core_type = mu_type_cast(aux_type, core_type);
   assert(core_type != NULL);
   assert(core_type->core->kind == MU_RECORD_CORE);
   assert(core_type->core->argc == 1);
@@ -87,24 +87,24 @@ __attribute__((nonnull)) static const mu_type_t *access_expr_reduce(
 }
 
 __attribute__((nonnull)) static const mu_type_t *boolean_expr_reduce(
-    const mu_boolean_expr_t *expr, induce_t *induce) {
+    const mu_boolean_expr_t *expr, induce_t *induce, const mu_type_t *type) {
   return evince(induce, &expr->as_node);
 }
 
 __attribute__((nonnull)) static const mu_type_t *integer_expr_reduce(
-    const mu_integer_expr_t *expr, induce_t *induce) {
+    const mu_integer_expr_t *expr, induce_t *induce, const mu_type_t *type) {
   return evince(induce, &expr->as_node);
 }
 
 __attribute__((nonnull)) static const mu_type_t *invoke_expr_reduce(
-    const mu_invoke_expr_t *expr, induce_t *induce) {
-  const mu_type_t *type = induce->aux[expr->as_node.id];
-  assert(type != NULL);
+    const mu_invoke_expr_t *expr, induce_t *induce, const mu_type_t *type) {
+  const mu_type_t *aux_type = induce->aux[expr->as_node.id];
+  assert(aux_type != NULL);
 
   const mu_type_t *operator_type = evince(induce, &expr->operator->as_node);
 
   const mu_coercion_t *coercion;
-  if ((coercion = make_coercion(induce, operator_type, type)) == NULL)
+  if ((coercion = make_coercion(induce, operator_type, aux_type)) == NULL)
     return NULL;
   induce->coercion[expr->operator->as_node.id] = coercion;
 
@@ -112,44 +112,32 @@ __attribute__((nonnull)) static const mu_type_t *invoke_expr_reduce(
 }
 
 __attribute__((nonnull)) static const mu_type_t *lambda_expr_reduce(
-    const mu_lambda_expr_t *expr, induce_t *induce) {
-  const mu_type_t *type = evince(induce, &expr->as_node);
-  assert(type != NULL);
+    const mu_lambda_expr_t *expr, induce_t *induce, const mu_type_t *type) {
   return reduce_origin_type(induce, type, 0);
 }
 
 __attribute__((nonnull)) static const mu_type_t *name_expr_reduce(
-    const mu_name_expr_t *expr, induce_t *induce) {
-  const mu_type_t *type = evince(induce, &expr->as_node);
-  assert(type != NULL);
+    const mu_name_expr_t *expr, induce_t *induce, const mu_type_t *type) {
   return reduce_origin_type(induce, type, 0);
 }
 
 __attribute__((nonnull)) static const mu_type_t *native_expr_reduce(
-    const mu_native_expr_t *expr, induce_t *induce) {
-  const mu_type_t *type = evince(induce, &expr->as_node);
-  assert(type != NULL);
+    const mu_native_expr_t *expr, induce_t *induce, const mu_type_t *type) {
   return reduce_origin_type(induce, type, 0);
 }
 
 __attribute__((nonnull)) static const mu_type_t *record_expr_reduce(
-    const mu_record_expr_t *expr, induce_t *induce) {
-  const mu_type_t *type = evince(induce, &expr->as_node);
-  assert(type != NULL);
+    const mu_record_expr_t *expr, induce_t *induce, const mu_type_t *type) {
   return reduce_origin_type(induce, type, 0);
 }
 
 __attribute__((nonnull)) static const mu_type_t *sequence_expr_reduce(
-    const mu_sequence_expr_t *expr, induce_t *induce) {
-  const mu_type_t *type = evince(induce, &expr->as_node);
-  assert(type != NULL);
+    const mu_sequence_expr_t *expr, induce_t *induce, const mu_type_t *type) {
   return reduce_origin_type(induce, type, 0);
 }
 
 __attribute__((nonnull)) static const mu_type_t *vector_expr_reduce(
-    const mu_vector_expr_t *expr, induce_t *induce) {
-  const mu_type_t *type = induce_reveal(induce, &expr->as_node);
-
+    const mu_vector_expr_t *expr, induce_t *induce, const mu_type_t *type) {
   const mu_core_type_t *vector_type = mu_type_cast(type, vector_type);
   assert(vector_type != NULL);
 
@@ -173,18 +161,16 @@ __attribute__((nonnull)) static const mu_type_t *vector_expr_reduce(
 }
 
 __attribute__((nonnull)) static const mu_type_t *zero_expr_reduce(
-    const mu_zero_expr_t *expr, induce_t *induce) {
-  const mu_type_t *type = evince(induce, &expr->as_node);
-  assert(type != NULL);
+    const mu_zero_expr_t *expr, induce_t *induce, const mu_type_t *type) {
   return reduce_origin_type(induce, type, 0);
 }
 
 __attribute__((nonnull)) static const mu_type_t *expr_reduce(
-    const mu_expr_t *expr, induce_t *induce) {
+    const mu_expr_t *expr, induce_t *induce, const mu_type_t *type) {
   switch (expr->kind) {
 #define MU_EMIT(lower, upper, t) \
     case MU_##upper##_EXPR: \
-      return lower##_expr_reduce((const mu_##lower##_expr_t *) expr, induce);
+      return lower##_expr_reduce((const mu_##lower##_expr_t *) expr, induce, type);
     MU_EACH_EXPR_KIND(MU_EMIT)
 #undef MU_EMIT
   }
@@ -348,8 +334,10 @@ const mu_type_t *handle_node_reduction(induce_t *induce, const mu_node_t *root) 
     if ((expr = mu_node_cast(node, expr)) == NULL)
       continue;
 
-    const mu_type_t *type;
-    if ((type = expr_reduce(expr, induce)) == NULL)
+    const mu_type_t *type = evince(induce, &expr->as_node);
+    assert(type != NULL);
+
+    if ((type = expr_reduce(expr, induce, type)) == NULL)
       return NULL;
     induce->node_to_type[node->id] = type;
   } while ((node = node_return(node)) != NULL);
