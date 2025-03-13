@@ -1,6 +1,7 @@
 #include "type.h"
 #include "induce.h"
 
+#include <errno.h>
 #include <stdio.h>
 
 /// @internal Assign the abstract @a type to the @a induce instance
@@ -15,79 +16,42 @@ static inline mu_type_t *assign_type(induce_t *induce, mu_type_t *type) {
 #define assign_type(induce, type) \
   ((typeof((type))) (assign_type)((induce), &(type)->as_type))
 
-const mu_core_type_t *mu_boolean_type(induce_t *induce) {
+const mu_core_type_t *mu_core_type(
+    induce_t *induce, const mu_core_t *core, const mu_type_t *argv[]) {
   mu_core_type_t *result;
-  if ((result = malloc(sizeof(mu_core_type_t))) == NULL)
+  if ((result = core_type_allocate(induce, core)) == NULL)
     return NULL;
-  *result = (mu_core_type_t) {
-    .as_type.kind = MU_CORE_TYPE, .core = induce->boolean_core,
-  };
-  return assign_type(induce, result);
+  if (core->argc > 0)
+    memcpy(result->argv, argv, sizeof(const mu_type_t *[core->argc]));
+  return core_type_activate(result);
+}
+
+const mu_core_type_t *mu_boolean_type(induce_t *induce) {
+  return mu_core_type(induce, induce->boolean_core, NULL);
 }
 
 const mu_core_type_t *mu_integer_type(induce_t *induce) {
-  mu_core_type_t *result;
-  if ((result = malloc(sizeof(mu_core_type_t))) == NULL)
-    return NULL;
-  *result = (mu_core_type_t) {
-    .as_type.kind = MU_CORE_TYPE, .core = induce->integer_core,
-  };
-  return assign_type(induce, result);
+  return mu_core_type(induce, induce->integer_core, NULL);
 }
 
 const mu_core_type_t *mu_lambda_type(
     induce_t *induce, const mu_type_t *argument, const mu_type_t *output) {
-  assert(argument->induce == induce);
-  assert(argument->kind != MU_SCHEME_TYPE);
-
-  assert(output->induce == induce);
-  assert(output->kind != MU_SCHEME_TYPE);
-
-  // TODO: this can't overflow
-  size_t size;
-  if (rare((size = struct_size(mu_core_type_t, argv, 2)) == 0))
-    return errno = ENOMEM, NULL;
-
-  mu_core_type_t *result;
-  if ((result = malloc(size)) == NULL)
-    return NULL;
-
-  *result = (mu_core_type_t) {
-    .as_type.kind = MU_CORE_TYPE, .core = induce->lambda_core,
-  };
-
-  result->argv[0] = argument;
-  result->argv[1] = output;
-
-  return assign_type(induce, result);
+  const mu_type_t *argv[] = { argument, output };
+  return mu_core_type(induce, induce->lambda_core, argv);
 }
 
 const mu_core_type_t *mu_vector_type(
     induce_t *induce, const mu_type_t *matter) {
-  assert(matter->induce == induce);
-  assert(matter->kind != MU_SCHEME_TYPE);
-
-  // TODO: this can't overflow
-  size_t size;
-  if (rare((size = struct_size(mu_core_type_t, argv, 1)) == 0))
-    return errno = ENOMEM, NULL;
-
-  mu_core_type_t *result;
-  if ((result = malloc(size)) == NULL)
-    return NULL;
-  *result = (mu_core_type_t) {
-    .as_type.kind = MU_CORE_TYPE, .core = induce->vector_core,
-  };
-
-  result->argv[0] = matter;
-
-  return assign_type(induce, result);
+  const mu_type_t *argv[] = { matter };
+  return mu_core_type(induce, induce->vector_core, argv);
 }
 
 mu_core_type_t *core_type_allocate(induce_t *induce, const mu_core_t *core) {
+  assert(core->induce == induce);
+
   size_t size;
   if (rare((size = struct_size(mu_core_type_t, argv, core->argc)) == 0))
-    return NULL;
+    return errno = ENOMEM, NULL;
 
   mu_core_type_t *result;
   if ((result = malloc(size)) == NULL)
@@ -101,6 +65,7 @@ mu_core_type_t *core_type_allocate(induce_t *induce, const mu_core_t *core) {
 const mu_core_type_t *core_type_activate(mu_core_type_t *type) {
   for (size_t i = 0; i < type->core->argc; i++) {
     const mu_type_t *argument = type->argv[i];
+    assert(argument != NULL);
     assert(argument->induce == type->as_type.induce);
     assert(argument->kind != MU_SCHEME_TYPE);
   }
@@ -110,7 +75,7 @@ const mu_core_type_t *core_type_activate(mu_core_type_t *type) {
 mu_scheme_type_t *scheme_type_allocate(induce_t *induce, size_t argc) {
   size_t size;
   if (rare((size = struct_size(mu_scheme_type_t, argv, argc)) == 0))
-    return NULL;
+    return errno = ENOMEM, NULL;
 
   mu_scheme_type_t *result;
   if ((result = malloc(size)) == NULL)
@@ -134,7 +99,7 @@ const mu_scheme_type_t *scheme_type_activate(
 mu_join_type_t *join_type_allocate(induce_t *induce, size_t argc) {
   size_t size;
   if (rare((size = struct_size(mu_join_type_t, argv, argc)) == 0))
-    return NULL;
+    return errno = ENOMEM, NULL;
 
   mu_join_type_t *result;
   if (rare((result = malloc(size)) == NULL))
