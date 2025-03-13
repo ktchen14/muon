@@ -25,7 +25,6 @@ typedef struct induce_t induce_t;
 /// An abstract type
 typedef struct mu_type_t mu_type_t;
 struct mu_type_t {
-  const mu_type_t *origin;
   const mu_type_t *assignment;
   mu_type_kind_t kind;
   induce_t *induce;
@@ -43,9 +42,9 @@ typedef struct {
 } mu_core_type_t;
 
 typedef struct mu_scheme_type_t mu_scheme_type_t;
-typedef struct mu_variable_type_t mu_variable_type_t;
 
 /// A variable type
+typedef struct mu_variable_type_t mu_variable_type_t;
 struct mu_variable_type_t {
   MU_TYPE_HEADER;
 
@@ -114,7 +113,6 @@ typedef struct {
 #define mu_type_cast(abstract, concrete) ({ \
     const mu_type_t *_abstract = (abstract); \
     typeof(concrete) _concrete; \
-    \
     mu_type_kind_t _kind = _abstract->kind; \
     int _castable = _Generic(_concrete MU_EACH_TYPE_KIND(MU_TYPE_CAST_EMIT)); \
     _castable ? (typeof(_concrete)) _abstract : NULL; \
