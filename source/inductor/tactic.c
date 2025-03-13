@@ -24,6 +24,16 @@ const record_tactic_t *record_tactic_create(const record_instance_t *instance) {
   return result;
 }
 
+const join_tactic_t *join_tactic_create(size_t i) {
+  join_tactic_t *result;
+  if ((result = malloc(sizeof(join_tactic_t))) == NULL)
+    return NULL;
+  *result = (join_tactic_t) {
+    .as_tactic.kind = JOIN_TACTIC, .i = i
+  };
+  return result;
+}
+
 void tactic_debug(const tactic_t *tactic) {
   switch (tactic->kind) {
 #define MU_EMIT(lower, upper, t) \
@@ -48,4 +58,8 @@ void record_tactic_debug(const record_tactic_t *tactic) {
     fprintf(stderr, "%zu", tactic->instance->argv[i]);
   }
   fprintf(stderr, ")");
+}
+
+void join_tactic_debug(const join_tactic_t *tactic) {
+  fprintf(stderr, PRIsKIND "(i = %zu)", DEBUG_KIND("JoinTactic"), tactic->i);
 }
