@@ -40,6 +40,19 @@ typedef struct {
   size_t argv[/* target->argc */];
 } record_instance_t;
 
+const mu_core_t *single_record_core(induce_t *induce, const mu_name_t *name)
+  __attribute__((malloc, nonnull));
+
+mu_core_t *record_core_allocate(induce_t *induce, size_t argc)
+  __attribute__((malloc, nonnull));
+
+const mu_core_t *record_core_activate(mu_core_t *core)
+  __attribute__((nonnull));
+
+const record_instance_t *get_record_instance(
+    induce_t *induce, const mu_core_t *source, const mu_core_t *target)
+  __attribute__((nonnull));
+
 /// Compare the core member @a a to the core member @a b
 __attribute__((nonnull, pure))
 static inline int core_member_cmp(const void *a, const void *b) {

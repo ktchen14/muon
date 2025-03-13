@@ -48,14 +48,8 @@ const mu_coercion_t *make_coercion(
   if (tactic->kind == RECORD_TACTIC) {
     const record_tactic_t *record_tactic = (const record_tactic_t *) tactic;
 
-    mu_record_coercion_t *allocation;
-    if ((allocation = record_coercion_allocate(record_tactic->argc)) == NULL)
-      return NULL;
-    for (size_t i = 0; i < record_tactic->argc; i++)
-      allocation->argv[i] = record_tactic->argv[i];
-
     const mu_record_coercion_t *result;
-    if ((result = record_coercion_activate(allocation)) == NULL)
+    if ((result = mu_record_coercion(record_tactic->instance)) == NULL)
       return NULL;
     return &result->as_coercion;
   }
@@ -251,60 +245,6 @@ const mu_type_t *reduce_origin_type(induce_t *induce, const mu_type_t *type, _Bo
     return ((mu_type_t *) type)->assignment = type;
   }
 
-  const mu_record_type_t *record_type;
-  if ((record_type = mu_type_cast(type, record_type)) != NULL) {
-    _Bool remake = 0;
-
-    for (size_t i = 0; i < record_type->argc; i++) {
-      mu_type_member_t member = record_type->argv[i];
-
-      if (reduce_origin_type(induce, member.type, negative) == NULL)
-        return NULL;
-      assert(member.type->assignment != NULL);
-
-      if (member.type->assignment != member.type)
-        remake = 1;
-    }
-
-    if (!remake)
-      return ((mu_type_t *) type)->assignment = type;
-
-    mu_record_type_t *allocation;
-    if ((allocation = record_type_allocate(induce, record_type->argc)) == NULL)
-      return NULL;
-
-    for (size_t i = 0; i < record_type->argc; i++) {
-      mu_type_member_t member = record_type->argv[i];
-      allocation->argv[i] = (mu_type_member_t) {
-        .name = member.name, .type = member.type->assignment,
-      };
-    }
-
-    const mu_record_type_t *result;
-    if ((result = record_type_activate(allocation)) == NULL)
-      return NULL;
-
-    for (size_t i = 0; i < induce->edge_length; i++) {
-      induce_edge_t edge = induce->edge[i];
-      if (edge.lower != &record_type->as_type)
-        continue;
-      const tactic_t *tactic = edge.tactic;
-      if (append_edge(induce, &result->as_type, edge.upper, tactic) == NULL)
-        return NULL;
-    }
-
-    for (size_t i = 0; i < induce->edge_length; i++) {
-      induce_edge_t edge = induce->edge[i];
-      if (edge.upper != &record_type->as_type)
-        continue;
-      const tactic_t *tactic = edge.tactic;
-      if (append_edge(induce, edge.lower, &result->as_type, tactic) == NULL)
-        return NULL;
-    }
-
-    return ((mu_type_t *) type)->assignment = type;
-  }
-
   const mu_variable_type_t *variable_type;
   if ((variable_type = mu_type_cast(type, variable_type)) != NULL) {
     if (!negative) {
@@ -312,7 +252,7 @@ const mu_type_t *reduce_origin_type(induce_t *induce, const mu_type_t *type, _Bo
       size_t length = 0;
       for (size_t i = 0; i < induce->edge_length; i++) {
         induce_edge_t edge = induce->edge[i];
-        if (edge.upper == &record_type->as_type && edge.lower->kind != MU_VARIABLE_TYPE) {
+        if (edge.upper == &variable_type->as_type && edge.lower->kind != MU_VARIABLE_TYPE) {
           length++;
 
           // Also, reduce the constituent variables
@@ -331,7 +271,7 @@ const mu_type_t *reduce_origin_type(induce_t *induce, const mu_type_t *type, _Bo
       size_t j = 0;
       for (size_t i = 0; i < induce->edge_length; i++) {
         induce_edge_t edge = induce->edge[i];
-        if (edge.upper == &record_type->as_type && edge.lower->kind != MU_VARIABLE_TYPE)
+        if (edge.upper == &variable_type->as_type && edge.lower->kind != MU_VARIABLE_TYPE)
           allocation->argv[j++] = edge.lower;
       }
       assert(j == length);

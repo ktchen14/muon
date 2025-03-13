@@ -1,0 +1,111 @@
+#include "core.h"
+#include "induce.h"
+
+#include <stdio.h>
+
+const mu_core_t *single_record_core(induce_t *induce, const mu_name_t *name) {
+  for (size_t i = 0; i < induce->record_core_length; i++) {
+    const mu_core_t *candidate = induce->record_core[i];
+    assert(candidate->kind == MU_RECORD_CORE);
+
+    if (candidate->argc != 1)
+      continue;
+
+    if (candidate->argv[0].name == name)
+      return candidate;
+  }
+
+  mu_core_t *result;
+  if ((result = malloc(struct_size(mu_core_t, argv, 1))) == NULL)
+    return NULL;
+
+  *result = (mu_core_t) {
+    .kind = MU_RECORD_CORE, .induce = induce, .argc = 1,
+  };
+  result->argv[0] = (mu_core_member_t) { .name = name };
+
+  induce->record_core[induce->record_core_length++] = result;
+  return result;
+}
+
+mu_core_t *record_core_allocate(induce_t *induce, size_t argc) {
+  size_t size;
+  if (rare((size = struct_size(mu_core_t, argv, argc)) == 0))
+    return NULL;
+
+  mu_core_t *allocation;
+  if ((allocation = malloc(size)) == NULL)
+    return NULL;
+  *allocation = (mu_core_t) {
+    .kind = MU_RECORD_CORE, .induce = induce, .argc = argc,
+  };
+  return allocation;
+}
+
+const mu_core_t *record_core_activate(mu_core_t *core) {
+  // Ensure that each member is sorted after the previous one
+  for (size_t i = 1; i < core->argc; i++)
+    assert(name_cmp(core->argv[i].name, core->argv[i - 1].name) > 0);
+
+  induce_t *induce = (induce_t *) core->induce;
+
+  for (size_t i = 0; i < induce->record_core_length; i++) {
+    const mu_core_t *candidate = induce->record_core[i];
+    assert(candidate->kind == MU_RECORD_CORE);
+
+    if (core->argc != candidate->argc)
+      continue;
+
+    for (size_t j = 0; j < core->argc; j++) {
+      if (candidate->argv[i].name != core->argv[i].name)
+        goto next_record_core;
+    }
+
+    free(core);
+    return candidate;
+
+  next_record_core:;
+  }
+
+  induce->record_core[induce->record_core_length++] = core;
+  return core;
+}
+
+const record_instance_t *get_record_instance(
+    induce_t *induce, const mu_core_t *source, const mu_core_t *target) {
+  assert(source->kind == MU_RECORD_CORE);
+  assert(target->kind == MU_RECORD_CORE);
+
+  for (size_t i = 0; i < induce->record_instance_length; i++) {
+    const record_instance_t *instance = induce->record_instance[i];
+    if (instance->source == source && instance->target == target)
+      return instance;
+  }
+
+  size_t size;
+  if (rare((size = struct_size(record_instance_t, argv, target->argc)) == 0))
+    return NULL;
+
+  record_instance_t *allocation;
+  if ((allocation = malloc(size)) == NULL)
+    return NULL;
+
+  allocation->target = target;
+  allocation->source = source;
+
+  for (size_t j = 0; j < target->argc; j++) {
+    for (size_t i = 0; i < source->argc; i++) {
+      if (source->argv[i].name == target->argv[j].name) {
+        allocation->argv[j] = i;
+        goto next;
+      }
+    }
+
+    fprintf(stderr, "Type mismatch\n");
+    abort();
+  next:;
+  }
+
+  induce->record_instance[induce->record_instance_length++] = allocation;
+  return allocation;
+}

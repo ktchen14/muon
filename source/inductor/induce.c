@@ -15,74 +15,6 @@
 
 _Thread_local induce_t *debug_induce;
 
-const mu_core_t *single_record_core(induce_t *induce, const mu_name_t *name) {
-  for (size_t i = 0; i < induce->record_core_length; i++) {
-    const mu_core_t *candidate = induce->record_core[i];
-    assert(candidate->kind == MU_RECORD_CORE);
-
-    if (candidate->argc != 1)
-      continue;
-
-    if (candidate->argv[0].name == name)
-      return candidate;
-  }
-
-  mu_core_t *result;
-  if ((result = malloc(struct_size(mu_core_t, argv, 1))) == NULL)
-    return NULL;
-
-  *result = (mu_core_t) {
-    .kind = MU_RECORD_CORE, .induce = induce, .argc = 1,
-  };
-  result->argv[0] = (mu_core_member_t) { .name = name };
-
-  induce->record_core[induce->record_core_length++] = result;
-  return result;
-}
-
-mu_core_t *record_core_allocate(induce_t *induce, size_t argc) {
-  size_t size;
-  if (rare((size = struct_size(mu_core_t, argv, argc)) == 0))
-    return NULL;
-
-  mu_core_t *allocation;
-  if ((allocation = malloc(size)) == NULL)
-    return NULL;
-  *allocation = (mu_core_t) {
-    .kind = MU_RECORD_CORE, .induce = induce, .argc = argc,
-  };
-  return allocation;
-}
-
-const mu_core_t *record_core_activate(mu_core_t *core) {
-  // Ensure that each member is sorted after the previous one
-  for (size_t i = 1; i < core->argc; i++)
-    assert(name_cmp(core->argv[i].name, core->argv[i - 1].name) > 0);
-
-  induce_t *induce = (induce_t *) core->induce;
-
-  for (size_t i = 0; i < induce->record_core_length; i++) {
-    const mu_core_t *candidate = induce->record_core[i];
-    assert(candidate->kind == MU_RECORD_CORE);
-
-    if (core->argc != candidate->argc)
-      continue;
-
-    for (size_t j = 0; j < core->argc; j++) {
-      if (candidate->argv[i].name != core->argv[i].name)
-        goto next_record_core;
-    }
-
-    free(core);
-    return candidate;
-
-  next_record_core:;
-  }
-
-  induce->record_core[induce->record_core_length++] = core;
-  return core;
-}
-
 const induce_edge_t *search_edge(
     const induce_t *induce, const mu_type_t *a, const mu_type_t *b) {
   for (size_t i = 0; i < induce->edge_length; i++) {
@@ -627,45 +559,6 @@ const mu_type_t *handle_node_reduction(induce_t *induce, const mu_node_t *root) 
 
 static const tactic_t no_tactic = {0};
 
-static const record_instance_t *get_record_instance(
-    induce_t *induce, const mu_core_t *source, const mu_core_t *target) {
-  assert(source->kind == MU_RECORD_CORE);
-  assert(target->kind == MU_RECORD_CORE);
-
-  for (size_t i = 0; i < induce->record_instance_length; i++) {
-    const record_instance_t *instance = induce->record_instance[i];
-    if (instance->source == source && instance->target == target)
-      return instance;
-  }
-
-  size_t size;
-  if (rare((size = struct_size(record_instance_t, argv, target->argc)) == 0))
-    return NULL;
-
-  record_instance_t *allocation;
-  if ((allocation = malloc(size)) == NULL)
-    return NULL;
-
-  allocation->target = target;
-  allocation->source = source;
-
-  for (size_t j = 0; j < target->argc; j++) {
-    for (size_t i = 0; i < source->argc; i++) {
-      if (source->argv[i].name == target->argv[j].name) {
-        allocation->argv[j] = i;
-        goto next;
-      }
-    }
-
-    fprintf(stderr, "Type mismatch\n");
-    abort();
-  next:;
-  }
-
-  induce->record_instance[induce->record_instance_length++] = allocation;
-  return allocation;
-}
-
 static const tactic_t *restrict_type_internal(
     induce_t *induce, const mu_type_t *a, const mu_type_t *b) {
   assert(a->kind != MU_SCHEME_TYPE && b->kind != MU_SCHEME_TYPE);
@@ -884,27 +777,33 @@ __attribute__((nonnull)) static const mu_type_t *native_expr_induce(
 
 __attribute__((nonnull)) static const mu_type_t *record_expr_induce(
     const mu_record_expr_t *expr, induce_t *induce, open_scheme_t *scheme) {
-  mu_record_type_t *allocation;
-  if ((allocation = record_type_allocate(induce, expr->argc)) == NULL)
+  mu_core_t *core_allocation;
+  if ((core_allocation = record_core_allocate(induce, expr->argc)) == NULL)
     return NULL;
 
-  size_t i = 0, j = expr->argc;
-  for (size_t k = 0; k < expr->argc; k++) {
-    const mu_name_t *member_name = expr->argv[k].name;
-    const mu_expr_t *member_expr = expr->argv[k].expr;
+  for (size_t i = 0; i < expr->argc; i++) {
+    const mu_name_t *name = expr->argv[i].name;
 
-    mu_type_member_t member = {
-      .name = member_name, .type = induce_reveal(induce, &member_expr->as_node),
-    };
-    allocation->argv[member.name == NULL ? i++ : --j] = member;
+    mu_core_member_t member = { .name = name };
+    core_allocation->argv[i] = member;
   }
-  assert(i == j);
-  qsort(&allocation->argv[j], expr->argc - j, sizeof(mu_expr_member_t),
-      type_member_cmp);
+  /* qsort(&core_allocation->argv[j], expr->argc - j, sizeof(mu_expr_member_t), */
+  /*     type_member_cmp); */
   // TODO: check for duplicates
 
-  const mu_record_type_t *result;
-  if (rare((result = record_type_activate(allocation)) == NULL))
+  const mu_core_t *core;
+  if (rare((core = record_core_activate(core_allocation)) == NULL))
+    return NULL;
+
+  mu_core_type_t *type_allocation;
+  if ((type_allocation = core_type_allocate(induce, core)) == NULL)
+    return NULL;
+
+  for (size_t i = 0; i < expr->argc; i++)
+    type_allocation->argv[i] = induce_reveal(induce, &expr->argv[i].expr->as_node);
+
+  const mu_core_type_t *result;
+  if (rare((result = core_type_activate(type_allocation)) == NULL))
     return NULL;
   return &result->as_type;
 }

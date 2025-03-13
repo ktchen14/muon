@@ -1,6 +1,8 @@
 #ifndef MU_INDUCTOR_COERCION_I
 #define MU_INDUCTOR_COERCION_I
 
+#include "core.h"
+
 #include <stddef.h>
 
 /// Expands to emit(lower, upper, title, ...) for each kind of coercion
@@ -36,8 +38,7 @@ typedef struct {
 
 typedef struct {
   MU_COERCION_HEADER;
-  size_t argc;
-  size_t argv[];
+  const record_instance_t *instance;
 } mu_record_coercion_t;
 
 /// Coercion of τ to a join type with τ at discriminant @c i
@@ -57,8 +58,8 @@ typedef struct {
 const mu_simple_coercion_t *mu_simple_coercion(void)
   __attribute__((malloc));
 
-const mu_record_coercion_t *mu_record_coercion(void)
-  __attribute__((malloc));
+const mu_record_coercion_t *mu_record_coercion(const record_instance_t *instance)
+  __attribute__((malloc, nonnull));
 
 const mu_join_coercion_t *mu_join_coercion(size_t i)
   __attribute__((malloc));
@@ -66,13 +67,6 @@ const mu_join_coercion_t *mu_join_coercion(size_t i)
 const mu_unjoin_coercion_t *mu_unjoin_coercion(
     size_t argc, const mu_coercion_t *argv[/* argc */])
   __attribute__((malloc, nonnull));
-
-mu_record_coercion_t *record_coercion_allocate(size_t argc)
-  __attribute__((malloc));
-
-const mu_record_coercion_t *record_coercion_activate(
-    mu_record_coercion_t *coercion)
-  __attribute__((nonnull));
 
 mu_unjoin_coercion_t *unjoin_coercion_allocate(size_t argc)
   __attribute__((malloc));

@@ -2,6 +2,7 @@ add_subdirectory(script)
 
 target_sources(muon PRIVATE
   inductor/coercion.c
+  inductor/core.c
   inductor/detect.c
   inductor/induce.c
   inductor/reduce.c
