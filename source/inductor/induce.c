@@ -306,27 +306,20 @@ void mark_type_from_anywhere(
         } else {
           const mu_variable_type_t *earlier_origin = variable_type->positively_entered_from;
 
-          for (size_t i = 0; i < induce->edge_length; i++) {
-            induce_edge_t sub = induce->edge[i];
+          // If this origin is a subtype of the earlier origin, then use this
+          // origin instead
+          if (search_edge(induce, &origin->as_type, &earlier_origin->as_type))
+            ((mu_variable_type_t *) variable_type)->positively_entered_from = origin;
 
-            // If this origin is a subtype of the earlier origin, then use this
-            // origin instead
-            if (sub.lower == &origin->as_type && sub.upper == &earlier_origin->as_type) {
-              ((mu_variable_type_t *) variable_type)->positively_entered_from = origin;
-              goto found_positive;
-
-            // If this origin is a supertype of the earlier origin, then keep
-            // the earlier origin
-            } else if (sub.lower == &earlier_origin->as_type && sub.upper == &origin->as_type) {
-              goto found_positive;
-            }
-          }
+          // If this origin is a supertype of the earlier origin, then keep
+          // the earlier origin
+          else if (search_edge(induce, &earlier_origin->as_type, &origin->as_type))
+            ;
 
           // If we found no relationship, then mark the variable as multihomed
           // by marking it as its own "entered from"
-          ((mu_variable_type_t *) variable_type)->positively_entered_from = variable_type;
-
-          found_positive:;
+          else
+            ((mu_variable_type_t *) variable_type)->positively_entered_from = variable_type;
         }
 
         for (size_t i = 0; i < induce->edge_length; i++) {
@@ -348,27 +341,20 @@ void mark_type_from_anywhere(
         } else {
           const mu_variable_type_t *earlier_origin = variable_type->negatively_entered_from;
 
-          for (size_t i = 0; i < induce->edge_length; i++) {
-            induce_edge_t sub = induce->edge[i];
+          // If this origin is a supertype of the earlier origin, then use this
+          // origin instead
+          if (search_edge(induce, &earlier_origin->as_type, &origin->as_type))
+            ((mu_variable_type_t *) variable_type)->negatively_entered_from = origin;
 
-            // If this origin is a supertype of the earlier origin, then use this
-            // origin instead
-            if (sub.lower == &earlier_origin->as_type && sub.upper == &origin->as_type) {
-              ((mu_variable_type_t *) variable_type)->negatively_entered_from = origin;
-              goto found_negative;
-
-            // If this origin is a subtype of the earlier origin, then keep
-            // the earlier origin
-            } else if (sub.lower == &origin->as_type && sub.upper == &earlier_origin->as_type) {
-              goto found_negative;
-            }
-          }
+          // If this origin is a subtype of the earlier origin, then keep the
+          // earlier origin
+          else if (search_edge(induce, &origin->as_type, &earlier_origin->as_type))
+            ;
 
           // If we found no relationship, then mark the variable as multihomed
           // by marking it as its own "entered from"
-          ((mu_variable_type_t *) variable_type)->negatively_entered_from = variable_type;
-
-          found_negative:;
+          else
+            ((mu_variable_type_t *) variable_type)->negatively_entered_from = variable_type;
         }
 
         for (size_t i = 0; i < induce->edge_length; i++) {
