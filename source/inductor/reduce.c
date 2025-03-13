@@ -28,33 +28,6 @@ const mu_coercion_t *make_coercion(
     }
   }
 
-  /* if (target->kind == MU_JOIN_TYPE) { */
-  /*   const mu_join_type_t *join_type = (const mu_join_type_t *) target; */
-
-  /*   for (size_t i = 0; i < join_type->argc; i++) { */
-  /*     const mu_type_t *type = join_type->argv[i]; */
-
-  /*     const mu_coercion_t *coercion; */
-  /*     if (source == type) { */
-  /*       coercion = &induce->id_coercion->as_coercion; */
-  /*     } else { */
-  /*       const induce_edge_t *edge; */
-  /*       if ((edge = search_edge(induce, source, type)) == NULL) */
-  /*         continue; */
-
-  /*       if ((coercion = make_coercion(induce, source, type)) == NULL) */
-  /*         return NULL; */
-  /*     } */
-
-  /*     const mu_join_coercion_t *result; */
-  /*     if ((result = mu_join_coercion(i)) == NULL) */
-  /*       return NULL; */
-  /*     return &result->as_coercion; */
-  /*   } */
-
-  /*   assert(0); */
-  /* } */
-
   assert(edge != NULL);
 
   const tactic_t *tactic = edge->tactic;
@@ -301,10 +274,6 @@ const mu_type_t *reduce_type(induce_t *induce, const mu_type_t *type, _Bool nega
       if (rare((result = join_type_activate(allocation)) == NULL))
         return NULL;
 
-      // TODO: fix tactics here
-
-      // Add an edge for each constituent type to record the coercion to the join
-      // type.
       j = 0;
       for (size_t i = 0; i < induce->edge_length; i++) {
         induce_edge_t edge = induce->edge[i];
@@ -313,18 +282,6 @@ const mu_type_t *reduce_type(induce_t *induce, const mu_type_t *type, _Bool nega
           if (append_edge(induce, edge.lower, &result->as_type, &tactic->as_tactic) == NULL)
             return NULL;
           j++;
-        }
-      }
-
-      for (size_t j = 0; j < result->argc; j++) {
-        const mu_type_t *argument = result->argv[j];
-
-        for (size_t i = 0; i < induce->edge_length; i++) {
-          induce_edge_t edge = induce->edge[i];
-          if (edge.lower == argument && edge.upper != &result->as_type && edge.upper->kind != MU_VARIABLE_TYPE) {
-            if (append_edge(induce, &result->as_type, edge.upper, NULL) == NULL)
-              return NULL;
-          }
         }
       }
 
