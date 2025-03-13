@@ -138,13 +138,13 @@ __attribute__((nonnull)) static const mu_type_t *sequence_expr_reduce(
 
 __attribute__((nonnull)) static const mu_type_t *vector_expr_reduce(
     const mu_vector_expr_t *expr, induce_t *induce, const mu_type_t *type) {
+  if ((type = reduce_origin_type(induce, type, 0)) == NULL)
+    return NULL;
+
   const mu_core_type_t *vector_type = mu_type_cast(type, vector_type);
   assert(vector_type != NULL);
+  const mu_type_t *matter_type = vector_type->argv[0];
 
-  const mu_variable_type_t *matter_type = mu_type_cast(vector_type->argv[0], matter_type);
-  assert(matter_type != NULL);
-
-  const mu_type_t *result = reduce_origin_type(induce, &matter_type->as_type, 0);
   for (size_t i = 0; i < expr->argc; i++) {
     const mu_expr_t *argument = expr->argv[i];
 
@@ -152,7 +152,7 @@ __attribute__((nonnull)) static const mu_type_t *vector_expr_reduce(
     const mu_type_t *argument_type = evince(induce, &argument->as_node);
 
     const mu_coercion_t *coercion;
-    if ((coercion = make_coercion(induce, argument_type, result)) == NULL)
+    if ((coercion = make_coercion(induce, argument_type, matter_type)) == NULL)
       return NULL;
     induce->coercion[argument->as_node.id] = coercion;
   }
@@ -213,7 +213,8 @@ const mu_type_t *reduce_core_type(
   if ((result = core_type_activate(allocation)) == NULL)
     return NULL;
 
-  if (!negative) {
+  // TODO: not sure if this is correct
+  if (negative) {
     for (size_t i = 0; i < induce->edge_length; i++) {
       induce_edge_t edge = induce->edge[i];
       if (edge.lower != &origin->as_type)
