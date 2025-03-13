@@ -6,6 +6,8 @@
 
 #define evince induce_reveal
 
+const mu_type_t *reduce_origin_type(induce_t *induce, const mu_type_t *type, _Bool negative);
+
 const mu_coercion_t *make_coercion(
     induce_t *induce, const mu_type_t *source, const mu_type_t *target) {
   assert(source->kind != MU_JOIN_TYPE);
@@ -58,41 +60,6 @@ const mu_coercion_t *make_coercion(
   if ((result = mu_simple_coercion()) == NULL)
     return NULL;
   return &result->as_coercion;
-}
-
-const mu_type_t *coerce_to_lower(induce_t *induce, const mu_variable_type_t *type) {
-  assert(type->assignment == NULL);
-
-  // Determine the length of the join type
-  size_t length = 0;
-  for (size_t i = 0; i < induce->edge_length; i++) {
-    induce_edge_t edge = induce->edge[i];
-    if (edge.upper == &type->as_type && edge.lower->kind != MU_VARIABLE_TYPE)
-      length++;
-  }
-
-  // Allocate the join type
-  mu_join_type_t *allocation;
-  if ((allocation = join_type_allocate(induce, length)) == NULL)
-    return NULL;
-
-  // Add each type as an argument
-  size_t j = 0;
-  for (size_t i = 0; i < induce->edge_length; i++) {
-    induce_edge_t edge = induce->edge[i];
-    if (edge.upper == &type->as_type && edge.lower->kind != MU_VARIABLE_TYPE)
-      allocation->argv[j++] = edge.lower;
-  }
-  assert(j == length);
-
-  // Activate the join type
-  const mu_join_type_t *result;
-  if (rare((result = join_type_activate(allocation)) == NULL))
-    return NULL;
-
-  ((mu_variable_type_t *) type)->assignment = &result->as_type;
-
-  return &result->as_type;
 }
 
 __attribute__((nonnull)) static void access_expr_reduce(
@@ -152,7 +119,7 @@ __attribute__((nonnull)) static void vector_expr_reduce(
   const mu_variable_type_t *matter_type = mu_type_cast(vector_type->argv[0], matter_type);
   assert(matter_type != NULL);
 
-  const mu_type_t *result = coerce_to_lower(induce, matter_type);
+  const mu_type_t *result = reduce_origin_type(induce, &matter_type->as_type, 0);
   for (size_t i = 0; i < expr->argc; i++) {
     const mu_expr_t *argument = expr->argv[i];
 
@@ -182,6 +149,63 @@ __attribute__((nonnull)) void expr_reduce(
   __builtin_unreachable();
 }
 
+const mu_type_t *reduce_core_type(
+    induce_t *induce, const mu_core_type_t *origin, _Bool negative) {
+  const mu_core_t *core = origin->core;
+  _Bool change = 0;
+
+  for (size_t i = 0; i < core->argc; i++) {
+    const mu_type_t *argument = origin->argv[i];
+
+    _Bool argument_negative = negative;
+    mu_variance_t variance = core->argv[i].variance;
+    assert(variance != MU_INVARIANCE);
+    if (variance == MU_CONTRAVARIANCE)
+      argument_negative = !argument_negative;
+
+    const mu_type_t *assignment;
+    if ((assignment = reduce_origin_type(induce, argument, argument_negative)) == NULL)
+      return NULL;
+    assert(assignment == argument->assignment);
+
+    change |= assignment != argument;
+  }
+
+  if (!change)
+    return ((mu_type_t *) origin)->assignment = &origin->as_type;
+
+  mu_core_type_t *allocation;
+  if ((allocation = core_type_allocate(induce, core)) == NULL)
+    return NULL;
+
+  for (size_t i = 0; i < core->argc; i++)
+    allocation->argv[i] = origin->argv[i]->assignment;
+
+  const mu_core_type_t *result;
+  if ((result = core_type_activate(allocation)) == NULL)
+    return NULL;
+
+  if (!negative) {
+    for (size_t i = 0; i < induce->edge_length; i++) {
+      induce_edge_t edge = induce->edge[i];
+      if (edge.lower != &origin->as_type)
+        continue;
+      if (append_edge(induce, &result->as_type, edge.upper, edge.tactic) == NULL)
+        return NULL;
+    }
+  } else {
+    for (size_t i = 0; i < induce->edge_length; i++) {
+      induce_edge_t edge = induce->edge[i];
+      if (edge.upper != &origin->as_type)
+        continue;
+      if (append_edge(induce, edge.lower, &result->as_type, edge.tactic) == NULL)
+        return NULL;
+    }
+  }
+
+  return ((mu_type_t *) origin)->assignment = &origin->as_type;
+}
+
 const mu_type_t *reduce_origin_type(induce_t *induce, const mu_type_t *type, _Bool negative) {
   if (type->assignment != NULL)
     return type->assignment;
@@ -190,60 +214,8 @@ const mu_type_t *reduce_origin_type(induce_t *induce, const mu_type_t *type, _Bo
   assert(type->kind != MU_JOIN_TYPE);
 
   const mu_core_type_t *core_type;
-  if ((core_type = mu_type_cast(type, core_type)) != NULL) {
-    const mu_core_t *core = core_type->core;
-    _Bool remake = 0;
-
-    for (size_t i = 0; i < core->argc; i++) {
-      const mu_type_t *argument = core_type->argv[i];
-
-      mu_variance_t variance = core->argv[i].variance;
-      assert(variance != MU_INVARIANCE);
-      if (variance == MU_CONTRAVARIANCE)
-        negative = !negative;
-
-      if (reduce_origin_type(induce, argument, negative) == NULL)
-        return NULL;
-      assert(argument->assignment != NULL);
-
-      if (argument->assignment != argument)
-        remake = 1;
-    }
-
-    if (!remake)
-      return ((mu_type_t *) type)->assignment = type;
-
-    mu_core_type_t *allocation;
-    if ((allocation = core_type_allocate(induce, core)) == NULL)
-      return NULL;
-
-    for (size_t i = 0; i < core->argc; i++)
-      allocation->argv[i] = core_type->argv[i]->assignment;
-
-    const mu_core_type_t *result;
-    if ((result = core_type_activate(allocation)) == NULL)
-      return NULL;
-
-    for (size_t i = 0; i < induce->edge_length; i++) {
-      induce_edge_t edge = induce->edge[i];
-      if (edge.lower != &core_type->as_type)
-        continue;
-      const tactic_t *tactic = edge.tactic;
-      if (append_edge(induce, &result->as_type, edge.upper, tactic) == NULL)
-        return NULL;
-    }
-
-    for (size_t i = 0; i < induce->edge_length; i++) {
-      induce_edge_t edge = induce->edge[i];
-      if (edge.upper != &core_type->as_type)
-        continue;
-      const tactic_t *tactic = edge.tactic;
-      if (append_edge(induce, edge.lower, &result->as_type, tactic) == NULL)
-        return NULL;
-    }
-
-    return ((mu_type_t *) type)->assignment = type;
-  }
+  if ((core_type = mu_type_cast(type, core_type)) != NULL)
+    return reduce_core_type(induce, core_type, negative);
 
   const mu_variable_type_t *variable_type;
   if ((variable_type = mu_type_cast(type, variable_type)) != NULL) {
