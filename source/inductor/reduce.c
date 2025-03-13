@@ -64,15 +64,32 @@ const mu_coercion_t *make_coercion(
 
 __attribute__((nonnull)) static void access_expr_reduce(
     const mu_access_expr_t *expr, induce_t *induce) {
-  const mu_type_t *type = induce->aux[expr->as_node.id];
-  assert(type != NULL);
+  const mu_type_t *aux_type = induce->aux[expr->as_node.id];
+  assert(aux_type != NULL);
+
+  const mu_core_type_t *record_type = mu_type_cast(aux_type, record_type);
+  assert(record_type != NULL);
+
+  const mu_core_t *core = record_type->core;
+  assert(core->kind == MU_RECORD_CORE);
+  assert(core->argc == 1);
+  assert(core->argv[0].name == expr->name);
+
+  const mu_type_t *reduced_type = reduce_origin_type(induce, aux_type, 0);
+  assert(reduced_type != NULL);
+
+  record_type = mu_type_cast(aux_type, record_type);
+  assert(record_type != NULL);
+  assert(record_type->core == core);
 
   const mu_type_t *matter_type = induce_reveal(induce, &expr->matter->as_node);
 
   const mu_coercion_t *coercion;
-  if ((coercion = make_coercion(induce, matter_type, type)) == NULL)
+  if ((coercion = make_coercion(induce, matter_type, reduced_type)) == NULL)
     return;
   induce->coercion[expr->matter->as_node.id] = coercion;
+
+  induce->node_to_type[expr->as_node.id] = reduced_type;
 }
 
 __attribute__((nonnull)) static void boolean_expr_reduce(
@@ -107,7 +124,12 @@ __attribute__((nonnull)) static void record_expr_reduce(
     const mu_record_expr_t *expr, induce_t *induce) {}
 
 __attribute__((nonnull)) static void sequence_expr_reduce(
-    const mu_sequence_expr_t *expr, induce_t *induce) {}
+    const mu_sequence_expr_t *expr, induce_t *induce) {
+  const mu_type_t *type = evince(induce, &expr->as_node);
+  assert(type != NULL);
+  const mu_type_t *result = reduce_origin_type(induce, type, 0);
+  induce->node_to_type[expr->as_node.id] = result;
+}
 
 __attribute__((nonnull)) static void vector_expr_reduce(
     const mu_vector_expr_t *expr, induce_t *induce) {
@@ -283,6 +305,7 @@ const mu_type_t *reduce_origin_type(induce_t *induce, const mu_type_t *type, _Bo
       }
 
       ((mu_variable_type_t *) type)->assignment = &result->as_type;
+      ((mu_type_t *) type)->assignment = &result->as_type;
 
       return &result->as_type;
     } else {
