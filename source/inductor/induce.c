@@ -500,19 +500,19 @@ induce_t *induce_initialize(
   size_t size;
 
   mu_core_t *lambda_core;
-  size = struct_size(mu_core_t, variance, 2);
+  size = struct_size(mu_core_t, argv, 2);
   if ((lambda_core = malloc(size)) == NULL)
     return NULL;
   *lambda_core = (mu_core_t) { .kind = MU_LAMBDA_CORE, .argc = 2 };
-  lambda_core->variance[0] = MU_CONTRAVARIANCE;
-  lambda_core->variance[1] = MU_COVARIANCE;
+  lambda_core->argv[0] = (mu_core_member_t) { .variance = MU_CONTRAVARIANCE };
+  lambda_core->argv[1] = (mu_core_member_t) { .variance = MU_COVARIANCE };
 
   mu_core_t *vector_core;
-  size = struct_size(mu_core_t, variance, 1);
+  size = struct_size(mu_core_t, argv, 1);
   if ((vector_core = malloc(size)) == NULL)
     return NULL;
   *vector_core = (mu_core_t) { .kind = MU_VECTOR_CORE, .argc = 1 };
-  vector_core->variance[0] = MU_COVARIANCE;
+  vector_core->argv[0] = (mu_core_member_t) { .variance = MU_COVARIANCE };
 
   *induce = (induce_t) {
     .engine = engine,
@@ -603,7 +603,7 @@ static const tactic_t *restrict_type_internal(
     for (size_t i = 0; i < core->argc; i++) {
       const mu_type_t *lower = core_a->argv[i], *upper = core_b->argv[i];
 
-      mu_variance_t variance = core->variance[i];
+      mu_variance_t variance = core->argv[i].variance;
       assert(variance != MU_INVARIANCE);
       if (variance == MU_CONTRAVARIANCE) {
         const mu_type_t *t = lower; lower = upper; upper = t;

@@ -203,8 +203,9 @@ const mu_type_t *reduce_origin_type(induce_t *induce, const mu_type_t *type, _Bo
     for (size_t i = 0; i < core->argc; i++) {
       const mu_type_t *argument = core_type->argv[i];
 
-      assert(core->variance[i] != MU_INVARIANCE);
-      if (core->variance[i] == MU_CONTRAVARIANCE)
+      mu_variance_t variance = core->argv[i].variance;
+      assert(variance != MU_INVARIANCE);
+      if (variance == MU_CONTRAVARIANCE)
         negative = !negative;
 
       if (reduce_origin_type(induce, argument, negative) == NULL)
