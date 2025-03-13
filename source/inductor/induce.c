@@ -203,24 +203,15 @@ void mark_type(induce_t *induce, const mu_type_t *type, _Bool negative, size_t r
   switch (type->kind) {
     case MU_CORE_TYPE: {
       const mu_core_type_t *core_type = (const mu_core_type_t *) type;
+      const mu_core_t *core = core_type->core;
 
-      switch (core_type->core->kind) {
-        case MU_BOOLEAN_CORE: break;
-        case MU_INTEGER_CORE: break;
-
-        case MU_LAMBDA_CORE:
-          mark_type(induce, core_type->argv[0], !negative, rank);
-          mark_type(induce, core_type->argv[1], negative, rank);
-          break;
-
-        case MU_VECTOR_CORE:
-          mark_type(induce, core_type->argv[0], negative, rank);
-          break;
-
-        case MU_RECORD_CORE:
-          for (size_t i = 0; i < core_type->core->argc; i++)
-            mark_type(induce, core_type->argv[i], negative, rank);
+      for (size_t i = 0; i < core_type->core->argc; i++) {
+        mu_variance_t variance = core->argv[i].variance;
+        assert(variance != MU_INVARIANCE);
+        negative = variance == MU_COVARIANCE ? negative : !negative;
+        mark_type(induce, core_type->argv[i], negative, rank);
       }
+
       break;
     }
 
@@ -286,24 +277,15 @@ void mark_type_from_anywhere(
   switch (type->kind) {
     case MU_CORE_TYPE: {
       const mu_core_type_t *core_type = (const mu_core_type_t *) type;
+      const mu_core_t *core = core_type->core;
 
-      switch (core_type->core->kind) {
-        case MU_BOOLEAN_CORE: break;
-        case MU_INTEGER_CORE: break;
-
-        case MU_LAMBDA_CORE:
-          mark_type_from_anywhere(induce, core_type->argv[0], !negative, NULL, link);
-          mark_type_from_anywhere(induce, core_type->argv[1], negative, NULL, link);
-          break;
-
-        case MU_VECTOR_CORE:
-          mark_type_from_anywhere(induce, core_type->argv[0], negative, NULL, link);
-          break;
-
-        case MU_RECORD_CORE:
-          for (size_t i = 0; i < core_type->core->argc; i++)
-            mark_type_from_anywhere(induce, core_type->argv[i], negative, NULL, link);
+      for (size_t i = 0; i < core->argc; i++) {
+        mu_variance_t variance = core->argv[i].variance;
+        assert(variance != MU_INVARIANCE);
+        negative = variance == MU_COVARIANCE ? negative : !negative;
+        mark_type_from_anywhere(induce, core_type->argv[i], negative, NULL, link);
       }
+
       break;
     }
 
