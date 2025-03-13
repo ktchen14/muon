@@ -3,6 +3,7 @@
 
 #include "../stator/name.h"
 
+#include <assert.h>
 #include <stddef.h>
 
 typedef enum {
@@ -24,10 +25,27 @@ typedef struct {
   mu_variance_t variance;
 } mu_core_member_t;
 
+typedef struct induce_t induce_t;
+
 typedef struct {
   mu_core_kind_t kind;
+  const induce_t *induce;
   size_t argc;
   mu_core_member_t argv[/* argc */];
 } mu_core_t;
+
+typedef struct {
+  const mu_core_t *target;
+  const mu_core_t *source;
+  size_t argv[/* target->argc */];
+} record_instance_t;
+
+/// Compare the core member @a a to the core member @a b
+__attribute__((nonnull, pure))
+static inline int core_member_cmp(const void *a, const void *b) {
+  const mu_core_member_t *ra = a, *rb = b;
+  assert(ra->name != NULL && rb->name != NULL);
+  return name_cmp(ra->name, rb->name);
+}
 
 #endif /* MU_INDUCTOR_CORE_I */

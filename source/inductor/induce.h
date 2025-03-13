@@ -43,6 +43,12 @@ struct induce_t {
   const mu_core_t *lambda_core;
   const mu_core_t *vector_core;
 
+  const mu_core_t *record_core[200];
+  size_t record_core_length;
+
+  const record_instance_t *record_instance[200];
+  size_t record_instance_length;
+
   const mu_id_coercion_t *id_coercion;
 
   const mu_type_t *aux[2000];

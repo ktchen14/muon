@@ -15,6 +15,74 @@
 
 _Thread_local induce_t *debug_induce;
 
+const mu_core_t *single_record_core(induce_t *induce, const mu_name_t *name) {
+  for (size_t i = 0; i < induce->record_core_length; i++) {
+    const mu_core_t *candidate = induce->record_core[i];
+    assert(candidate->kind == MU_RECORD_CORE);
+
+    if (candidate->argc != 1)
+      continue;
+
+    if (candidate->argv[0].name == name)
+      return candidate;
+  }
+
+  mu_core_t *result;
+  if ((result = malloc(struct_size(mu_core_t, argv, 1))) == NULL)
+    return NULL;
+
+  *result = (mu_core_t) {
+    .kind = MU_RECORD_CORE, .induce = induce, .argc = 1,
+  };
+  result->argv[0] = (mu_core_member_t) { .name = name };
+
+  induce->record_core[induce->record_core_length++] = result;
+  return result;
+}
+
+mu_core_t *record_core_allocate(induce_t *induce, size_t argc) {
+  size_t size;
+  if (rare((size = struct_size(mu_core_t, argv, argc)) == 0))
+    return NULL;
+
+  mu_core_t *allocation;
+  if ((allocation = malloc(size)) == NULL)
+    return NULL;
+  *allocation = (mu_core_t) {
+    .kind = MU_RECORD_CORE, .induce = induce, .argc = argc,
+  };
+  return allocation;
+}
+
+const mu_core_t *record_core_activate(mu_core_t *core) {
+  // Ensure that each member is sorted after the previous one
+  for (size_t i = 1; i < core->argc; i++)
+    assert(name_cmp(core->argv[i].name, core->argv[i - 1].name) > 0);
+
+  induce_t *induce = (induce_t *) core->induce;
+
+  for (size_t i = 0; i < induce->record_core_length; i++) {
+    const mu_core_t *candidate = induce->record_core[i];
+    assert(candidate->kind == MU_RECORD_CORE);
+
+    if (core->argc != candidate->argc)
+      continue;
+
+    for (size_t j = 0; j < core->argc; j++) {
+      if (candidate->argv[i].name != core->argv[i].name)
+        goto next_record_core;
+    }
+
+    free(core);
+    return candidate;
+
+  next_record_core:;
+  }
+
+  induce->record_core[induce->record_core_length++] = core;
+  return core;
+}
+
 const induce_edge_t *search_edge(
     const induce_t *induce, const mu_type_t *a, const mu_type_t *b) {
   for (size_t i = 0; i < induce->edge_length; i++) {
@@ -215,14 +283,6 @@ void mark_type(induce_t *induce, const mu_type_t *type, _Bool negative, size_t r
       break;
     }
 
-    case MU_RECORD_TYPE: {
-      const mu_record_type_t *record_type = (const mu_record_type_t *) type;
-
-      for (size_t i = 0; i < record_type->argc; i++)
-        mark_type(induce, record_type->argv[i].type, negative, rank);
-      break;
-    }
-
     case MU_VARIABLE_TYPE: {
       const mu_variable_type_t *variable_type = (const mu_variable_type_t *) type;
 
@@ -286,14 +346,6 @@ void mark_type_from_anywhere(
         mark_type_from_anywhere(induce, core_type->argv[i], negative, NULL, link);
       }
 
-      break;
-    }
-
-    case MU_RECORD_TYPE: {
-      const mu_record_type_t *record_type = (const mu_record_type_t *) type;
-
-      for (size_t i = 0; i < record_type->argc; i++)
-        mark_type_from_anywhere(induce, record_type->argv[i].type, negative, NULL, link);
       break;
     }
 
@@ -575,23 +627,82 @@ const mu_type_t *handle_node_reduction(induce_t *induce, const mu_node_t *root) 
 
 static const tactic_t no_tactic = {0};
 
+static const record_instance_t *get_record_instance(
+    induce_t *induce, const mu_core_t *source, const mu_core_t *target) {
+  assert(source->kind == MU_RECORD_CORE);
+  assert(target->kind == MU_RECORD_CORE);
+
+  for (size_t i = 0; i < induce->record_instance_length; i++) {
+    const record_instance_t *instance = induce->record_instance[i];
+    if (instance->source == source && instance->target == target)
+      return instance;
+  }
+
+  size_t size;
+  if (rare((size = struct_size(record_instance_t, argv, target->argc)) == 0))
+    return NULL;
+
+  record_instance_t *allocation;
+  if ((allocation = malloc(size)) == NULL)
+    return NULL;
+
+  allocation->target = target;
+  allocation->source = source;
+
+  for (size_t j = 0; j < target->argc; j++) {
+    for (size_t i = 0; i < source->argc; i++) {
+      if (source->argv[i].name == target->argv[j].name) {
+        allocation->argv[j] = i;
+        goto next;
+      }
+    }
+
+    fprintf(stderr, "Type mismatch\n");
+    abort();
+  next:;
+  }
+
+  induce->record_instance[induce->record_instance_length++] = allocation;
+  return allocation;
+}
+
 static const tactic_t *restrict_type_internal(
     induce_t *induce, const mu_type_t *a, const mu_type_t *b) {
   assert(a->kind != MU_SCHEME_TYPE && b->kind != MU_SCHEME_TYPE);
 
   if (a->kind == MU_CORE_TYPE && b->kind == MU_CORE_TYPE) {
-    const mu_core_type_t *core_a = (const mu_core_type_t *) a;
-    const mu_core_type_t *core_b = (const mu_core_type_t *) b;
+    const mu_core_type_t *core_type_a = (const mu_core_type_t *) a;
+    const mu_core_t *core_a = core_type_a->core;
 
-    if (core_a->core != core_b->core) {
+    const mu_core_type_t *core_type_b = (const mu_core_type_t *) b;
+    const mu_core_t *core_b = core_type_b->core;
+
+    if (core_a->kind == MU_RECORD_CORE && core_b->kind == MU_RECORD_CORE) {
+      const record_instance_t *instance;
+      if (rare((instance = get_record_instance(induce, core_a, core_b)) == NULL))
+        return NULL;
+
+      for (size_t j = 0; j < core_b->argc; j++) {
+        size_t i = instance->argv[j];
+        if (restrict_type(induce, core_type_a->argv[i], core_type_b->argv[j]) == NULL)
+          return NULL;
+      }
+
+      const record_tactic_t *result;
+      if ((result = record_tactic_create(instance)) == NULL)
+        return NULL;
+      return &result->as_tactic;
+    }
+
+    if (core_type_a->core != core_type_b->core) {
       fprintf(stderr, "Type mismatch\n");
       abort();
     }
 
-    const mu_core_t *core = core_a->core;
+    const mu_core_t *core = core_type_a->core;
 
     for (size_t i = 0; i < core->argc; i++) {
-      const mu_type_t *lower = core_a->argv[i], *upper = core_b->argv[i];
+      const mu_type_t *lower = core_type_a->argv[i], *upper = core_type_b->argv[i];
 
       mu_variance_t variance = core->argv[i].variance;
       assert(variance != MU_INVARIANCE);
@@ -605,51 +716,6 @@ static const tactic_t *restrict_type_internal(
 
     const variance_tactic_t *result;
     if ((result = variance_tactic_create(core)) == NULL)
-      return NULL;
-    return &result->as_tactic;
-  }
-
-  if (a->kind == MU_RECORD_TYPE && b->kind == MU_RECORD_TYPE) {
-    const mu_record_type_t *record_a = (const mu_record_type_t *) a;
-    const mu_record_type_t *record_b = (const mu_record_type_t *) b;
-
-    _Bool coerce = record_a->argc != record_b->argc;
-    for (size_t j = 0; j < record_b->argc; j++) {
-      for (size_t i = 0; i < record_a->argc; i++) {
-        if (record_a->argv[i].name == record_b->argv[j].name) {
-          coerce |= i != j;
-          if (restrict_type(induce, record_a->argv[i].type, record_b->argv[j].type) == NULL)
-            return NULL;
-          goto next;
-        }
-      }
-
-      fprintf(stderr, "Type mismatch\n");
-      abort();
-
-    next:;
-    }
-
-    if (!coerce)
-      return &no_tactic;
-
-    record_tactic_t *allocation;
-    if ((allocation = record_tactic_allocate(record_b->argc)) == NULL)
-      return NULL;
-
-    for (size_t j = 0; j < record_b->argc; j++) {
-      for (size_t i = 0; i < record_a->argc; i++) {
-        if (record_a->argv[i].name == record_b->argv[j].name) {
-          allocation->argv[j] = i;
-          goto next_member;
-        }
-      }
-
-    next_member:;
-    }
-
-    const record_tactic_t *result;
-    if ((result = record_tactic_activate(allocation)) == NULL)
       return NULL;
     return &result->as_tactic;
   }
@@ -711,11 +777,18 @@ __attribute__((nonnull)) static const mu_type_t *access_expr_induce(
   if ((result = variable_type(induce, scheme)) == NULL)
     return NULL;
 
-  const mu_record_type_t *record_type;
-  const mu_type_member_t argv[] = {
-    { .name = expr->name, .type = &result->as_type }
-  };
-  if ((record_type = mu_record_type(induce, 1, argv)) == NULL)
+  const mu_core_t *core;
+  if ((core = single_record_core(induce, expr->name)) == NULL)
+    return NULL;
+  assert(core->kind == MU_RECORD_CORE);
+
+  mu_core_type_t *allocation;
+  if ((allocation = core_type_allocate(induce, core)) == NULL)
+    return NULL;
+  allocation->argv[0] = &result->as_type;
+
+  const mu_core_type_t *record_type;
+  if (rare((record_type = core_type_activate(allocation)) == NULL))
     return NULL;
   induce->aux[expr->as_node.id] = &record_type->as_type;
 

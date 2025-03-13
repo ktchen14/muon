@@ -9,7 +9,6 @@
 /// Expands to emit(lower, upper, title, ...) for each kind of type
 #define MU_EACH_TYPE_KIND(emit, ...) \
   emit(core, CORE, Core, ##__VA_ARGS__) \
-  emit(record, RECORD, Record, ##__VA_ARGS__) \
   emit(variable, VARIABLE, Variable, ##__VA_ARGS__) \
   emit(scheme, SCHEME, Scheme, ##__VA_ARGS__) \
   emit(join, JOIN, Join, ##__VA_ARGS__)
@@ -39,23 +38,9 @@ struct mu_type_t {
 /// A core type
 typedef struct {
   MU_TYPE_HEADER;
-
   const mu_core_t *core;
   const mu_type_t *argv[/* core->argc */];
 } mu_core_type_t;
-
-/// A record type member
-typedef struct {
-  const mu_name_t *name;
-  const mu_type_t *type;
-} mu_type_member_t;
-
-/// A record type
-typedef struct {
-  MU_TYPE_HEADER;
-  size_t argc;
-  mu_type_member_t argv[/* argc */];
-} mu_record_type_t;
 
 typedef struct mu_scheme_type_t mu_scheme_type_t;
 typedef struct mu_variable_type_t mu_variable_type_t;
@@ -153,10 +138,6 @@ const mu_core_type_t *mu_lambda_type(
     induce_t *induce, const mu_type_t *argument, const mu_type_t *output)
   __attribute__((malloc, nonnull));
 
-const mu_record_type_t *mu_record_type(
-    induce_t *induce, size_t argc, const mu_type_member_t argv[argc])
-  __attribute__((malloc, nonnull(1)));
-
 const mu_core_type_t *mu_vector_type(
     induce_t *induce, const mu_type_t *matter)
   __attribute__((malloc, nonnull));
@@ -172,12 +153,6 @@ mu_core_type_t *core_type_allocate(induce_t *induce, const mu_core_t *core)
   __attribute__((malloc, nonnull));
 
 const mu_core_type_t *core_type_activate(mu_core_type_t *type)
-  __attribute__((nonnull));
-
-mu_record_type_t *record_type_allocate(induce_t *induce, size_t argc)
-  __attribute__((malloc, nonnull));
-
-const mu_record_type_t *record_type_activate(mu_record_type_t *type)
   __attribute__((nonnull));
 
 mu_scheme_type_t *scheme_type_allocate(induce_t *induce, size_t argc)
@@ -196,14 +171,6 @@ const mu_join_type_t *join_type_activate(mu_join_type_t *type)
 void debug_type(const mu_type_t *type);
 void debug_variable_type_name(const mu_variable_type_t *type);
 void debug_just_type(const mu_type_t *type);
-
-/// Compare the type member @a a to the type member @a b
-__attribute__((nonnull, pure))
-static inline int type_member_cmp(const void *a, const void *b) {
-  const mu_type_member_t *ra = a, *rb = b;
-  assert(ra->name != NULL && rb->name != NULL);
-  return name_cmp(ra->name, rb->name);
-}
 
 static inline _Bool is_significant(const mu_variable_type_t *type) {
   return 1;

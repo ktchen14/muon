@@ -34,22 +34,14 @@ typedef struct {
 /// The coercion involves projection of the record
 typedef struct {
   MU_TACTIC_HEADER;
-  size_t argc;
-  size_t argv[];
+  const record_instance_t *instance;
 } record_tactic_t;
 
 const variance_tactic_t *variance_tactic_create(const mu_core_t *core)
   __attribute__((malloc, nonnull));
 
-const record_tactic_t *record_tactic_create(
-    size_t argc, size_t argv[/* argc */])
-  __attribute__((malloc));
-
-record_tactic_t *record_tactic_allocate(size_t argc)
-  __attribute__((malloc));
-
-const record_tactic_t *record_tactic_activate(record_tactic_t *tactic)
-  __attribute__((nonnull));
+const record_tactic_t *record_tactic_create(const record_instance_t *instance)
+  __attribute__((malloc, nonnull));
 
 void tactic_debug(const tactic_t *tactic)
   __attribute__((nonnull));;

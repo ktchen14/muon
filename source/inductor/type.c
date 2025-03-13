@@ -62,18 +62,6 @@ const mu_core_type_t *mu_lambda_type(
   return assign_type(induce, result);
 }
 
-const mu_record_type_t *mu_record_type(
-    induce_t *induce, size_t argc, const mu_type_member_t argv[argc]) {
-  mu_record_type_t *result;
-  if ((result = record_type_allocate(induce, argc)) == NULL)
-    return NULL;
-
-  for (size_t i = 0; i < argc; i++)
-    result->argv[i] = argv[i];
-
-  return record_type_activate(result);
-};
-
 const mu_core_type_t *mu_vector_type(
     induce_t *induce, const mu_type_t *matter) {
   assert(matter->induce == induce);
@@ -115,30 +103,6 @@ const mu_core_type_t *core_type_activate(mu_core_type_t *type) {
     const mu_type_t *argument = type->argv[i];
     assert(argument->induce == type->as_type.induce);
     assert(argument->kind != MU_SCHEME_TYPE);
-  }
-  return assign_type(type->as_type.induce, type);
-}
-
-mu_record_type_t *record_type_allocate(induce_t *induce, size_t argc) {
-  size_t size;
-  if (rare((size = struct_size(mu_record_type_t, argv, argc)) == 0))
-    return NULL;
-
-  mu_record_type_t *result;
-  if ((result = malloc(size)) == NULL)
-    return NULL;
-  *result = (mu_record_type_t) {
-    .as_type.kind = MU_RECORD_TYPE, .as_type.induce = induce, .argc = argc,
-  };
-  return result;
-}
-
-const mu_record_type_t *record_type_activate(mu_record_type_t *type) {
-  for (size_t i = 0; i < type->argc; i++) {
-    const mu_type_member_t *member = &type->argv[i];
-
-    assert(member->type->induce == type->as_type.induce);
-    assert(member->type->kind != MU_SCHEME_TYPE);
   }
   return assign_type(type->as_type.induce, type);
 }
@@ -257,22 +221,6 @@ void debug_type(const mu_type_t *type) {
           fprintf(stderr, ")");
           break;
       }
-      break;
-    }
-
-    case MU_RECORD_TYPE: {
-      const mu_record_type_t *record_type = (const mu_record_type_t *) type;
-
-      fprintf(stderr, "(");
-      for (size_t i = 0; i < record_type->argc; i++) {
-        const mu_type_member_t *member = &record_type->argv[i];
-        if (i > 0)
-          fprintf(stderr, ", ");
-        mu_name_debug(member->name);
-        fprintf(stderr, ": ");
-        debug_type(member->type);
-      }
-      fprintf(stderr, ")");
       break;
     }
 
@@ -427,22 +375,6 @@ void debug_just_type(const mu_type_t *type) {
           fprintf(stderr, ")");
           break;
       }
-      break;
-    }
-
-    case MU_RECORD_TYPE: {
-      const mu_record_type_t *record_type = (const mu_record_type_t *) type;
-
-      fprintf(stderr, "(");
-      for (size_t i = 0; i < record_type->argc; i++) {
-        const mu_type_member_t *member = &record_type->argv[i];
-        if (i > 0)
-          fprintf(stderr, ", ");
-        mu_name_debug(member->name);
-        fprintf(stderr, ": ");
-        debug_just_type(member->type);
-      }
-      fprintf(stderr, ")");
       break;
     }
 
