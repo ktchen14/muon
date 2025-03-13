@@ -77,7 +77,13 @@ __attribute__((nonnull)) static const mu_type_t *access_expr_reduce(
     return NULL;
   induce->coercion[expr->matter->as_node.id] = coercion;
 
-  return type;
+  const mu_core_type_t *core_type = mu_type_cast(type, core_type);
+  assert(core_type != NULL);
+  assert(core_type->core->kind == MU_RECORD_CORE);
+  assert(core_type->core->argc == 1);
+  assert(core_type->core->argv[0].name == expr->name);
+
+  return core_type->argv[0];
 }
 
 __attribute__((nonnull)) static const mu_type_t *boolean_expr_reduce(
@@ -107,22 +113,30 @@ __attribute__((nonnull)) static const mu_type_t *invoke_expr_reduce(
 
 __attribute__((nonnull)) static const mu_type_t *lambda_expr_reduce(
     const mu_lambda_expr_t *expr, induce_t *induce) {
-  return evince(induce, &expr->as_node);
+  const mu_type_t *type = evince(induce, &expr->as_node);
+  assert(type != NULL);
+  return reduce_origin_type(induce, type, 0);
 }
 
 __attribute__((nonnull)) static const mu_type_t *name_expr_reduce(
     const mu_name_expr_t *expr, induce_t *induce) {
-  return evince(induce, &expr->as_node);
+  const mu_type_t *type = evince(induce, &expr->as_node);
+  assert(type != NULL);
+  return reduce_origin_type(induce, type, 0);
 }
 
 __attribute__((nonnull)) static const mu_type_t *native_expr_reduce(
     const mu_native_expr_t *expr, induce_t *induce) {
-  return evince(induce, &expr->as_node);
+  const mu_type_t *type = evince(induce, &expr->as_node);
+  assert(type != NULL);
+  return reduce_origin_type(induce, type, 0);
 }
 
 __attribute__((nonnull)) static const mu_type_t *record_expr_reduce(
     const mu_record_expr_t *expr, induce_t *induce) {
-  return evince(induce, &expr->as_node);
+  const mu_type_t *type = evince(induce, &expr->as_node);
+  assert(type != NULL);
+  return reduce_origin_type(induce, type, 0);
 }
 
 __attribute__((nonnull)) static const mu_type_t *sequence_expr_reduce(
@@ -162,7 +176,9 @@ __attribute__((nonnull)) static const mu_type_t *vector_expr_reduce(
 
 __attribute__((nonnull)) static const mu_type_t *zero_expr_reduce(
     const mu_zero_expr_t *expr, induce_t *induce) {
-  return evince(induce, &expr->as_node);
+  const mu_type_t *type = evince(induce, &expr->as_node);
+  assert(type != NULL);
+  return reduce_origin_type(induce, type, 0);
 }
 
 __attribute__((nonnull)) static const mu_type_t *expr_reduce(
