@@ -265,7 +265,6 @@ const mu_type_t *reduce_type(induce_t *induce, const mu_type_t *type, _Bool nega
           induce_edge_t edge = induce->edge[i];
           if (edge.upper == &variable_type->as_type && edge.lower->kind != MU_VARIABLE_TYPE) {
             ((mu_type_t *) variable_type)->assignment = edge.lower->assignment;
-            ((mu_variable_type_t *) variable_type)->assignment = edge.lower->assignment;
             return edge.lower->assignment;
           }
         }
@@ -319,7 +318,6 @@ const mu_type_t *reduce_type(induce_t *induce, const mu_type_t *type, _Bool nega
         }
       }
 
-      ((mu_variable_type_t *) variable_type)->assignment = &result->as_type;
       ((mu_type_t *) variable_type)->assignment = &result->as_type;
 
       return &result->as_type;
