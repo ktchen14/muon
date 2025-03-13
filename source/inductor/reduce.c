@@ -10,6 +10,8 @@ const mu_type_t *reduce_type(induce_t *induce, const mu_type_t *type, _Bool nega
 
 const mu_coercion_t *make_coercion(
     induce_t *induce, const mu_type_t *source, const mu_type_t *target) {
+  if (source == target)
+    return &induce->id_coercion->as_coercion;
   assert(source->kind != MU_JOIN_TYPE);
 
   if (target->kind == MU_JOIN_TYPE) {
@@ -212,7 +214,7 @@ const mu_type_t *reduce_core_type(
     return NULL;
 
   // TODO: not sure if this is correct
-  if (negative) {
+  /* if (negative) { */
     for (size_t i = 0; i < induce->edge_length; i++) {
       induce_edge_t edge = induce->edge[i];
       if (edge.lower != &origin->as_type)
@@ -220,7 +222,7 @@ const mu_type_t *reduce_core_type(
       if (append_edge(induce, &result->as_type, edge.upper, edge.tactic) == NULL)
         return NULL;
     }
-  } else {
+  /* } else { */
     for (size_t i = 0; i < induce->edge_length; i++) {
       induce_edge_t edge = induce->edge[i];
       if (edge.upper != &origin->as_type)
@@ -228,7 +230,7 @@ const mu_type_t *reduce_core_type(
       if (append_edge(induce, edge.lower, &result->as_type, edge.tactic) == NULL)
         return NULL;
     }
-  }
+  /* } */
 
   return ((mu_type_t *) origin)->assignment = &result->as_type;
 }
@@ -258,6 +260,17 @@ const mu_type_t *reduce_type(induce_t *induce, const mu_type_t *type, _Bool nega
           if (reduce_type(induce, edge.lower, negative) == NULL)
             return NULL;
           assert(edge.lower->assignment != NULL);
+        }
+      }
+
+      if (length == 1) {
+        for (size_t i = 0; i < induce->edge_length; i++) {
+          induce_edge_t edge = induce->edge[i];
+          if (edge.upper == &variable_type->as_type && edge.lower->kind != MU_VARIABLE_TYPE) {
+            ((mu_type_t *) variable_type)->assignment = edge.lower->assignment;
+            ((mu_variable_type_t *) variable_type)->assignment = edge.lower->assignment;
+            return edge.lower->assignment;
+          }
         }
       }
 
