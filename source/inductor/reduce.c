@@ -143,9 +143,7 @@ __attribute__((nonnull)) static const mu_type_t *sequence_expr_reduce(
     const mu_sequence_expr_t *expr, induce_t *induce) {
   const mu_type_t *type = evince(induce, &expr->as_node);
   assert(type != NULL);
-  const mu_type_t *result = reduce_origin_type(induce, type, 0);
-  induce->node_to_type[expr->as_node.id] = result;
-  return type;
+  return reduce_origin_type(induce, type, 0);
 }
 
 __attribute__((nonnull)) static const mu_type_t *vector_expr_reduce(

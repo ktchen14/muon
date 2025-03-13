@@ -57,7 +57,7 @@ const mu_core_t *record_core_activate(mu_core_t *core) {
       continue;
 
     for (size_t j = 0; j < core->argc; j++) {
-      if (candidate->argv[i].name != core->argv[i].name)
+      if (candidate->argv[j].name != core->argv[j].name)
         goto next_record_core;
     }
 
