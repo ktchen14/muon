@@ -271,7 +271,7 @@ const mu_type_t *reduce_type(induce_t *induce, const mu_type_t *type, _Bool nega
       for (size_t i = 0; i < induce->edge_length; i++) {
         induce_edge_t edge = induce->edge[i];
         if (edge.upper == &variable_type->as_type && edge.lower->kind != MU_VARIABLE_TYPE)
-          allocation->argv[j++] = edge.lower;
+          allocation->argv[j++] = edge.lower->assignment;
       }
       assert(j == length);
 
