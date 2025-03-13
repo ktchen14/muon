@@ -382,7 +382,6 @@ void mark_type_from_anywhere(
     }
 
     case MU_SCHEME_TYPE:
-      return;
       abort();
 
     case MU_JOIN_TYPE: {
@@ -464,12 +463,12 @@ induce_t *induce_initialize(
   mu_core_t *boolean_core;
   if ((boolean_core = malloc(sizeof(mu_core_t))) == NULL)
     return NULL;
-  *boolean_core = (mu_core_t) { .kind = MU_BOOLEAN_CORE };
+  *boolean_core = (mu_core_t) { .kind = MU_BOOLEAN_CORE, .induce = induce };
 
   mu_core_t *integer_core;
   if ((integer_core = malloc(sizeof(mu_core_t))) == NULL)
     return NULL;
-  *integer_core = (mu_core_t) { .kind = MU_INTEGER_CORE };
+  *integer_core = (mu_core_t) { .kind = MU_INTEGER_CORE, .induce = induce };
 
   size_t size;
 
@@ -477,7 +476,7 @@ induce_t *induce_initialize(
   size = struct_size(mu_core_t, argv, 2);
   if ((lambda_core = malloc(size)) == NULL)
     return NULL;
-  *lambda_core = (mu_core_t) { .kind = MU_LAMBDA_CORE, .argc = 2 };
+  *lambda_core = (mu_core_t) { .kind = MU_LAMBDA_CORE, .induce = induce, .argc = 2 };
   lambda_core->argv[0] = (mu_core_member_t) { .variance = MU_CONTRAVARIANCE };
   lambda_core->argv[1] = (mu_core_member_t) { .variance = MU_COVARIANCE };
 
@@ -485,7 +484,7 @@ induce_t *induce_initialize(
   size = struct_size(mu_core_t, argv, 1);
   if ((vector_core = malloc(size)) == NULL)
     return NULL;
-  *vector_core = (mu_core_t) { .kind = MU_VECTOR_CORE, .argc = 1 };
+  *vector_core = (mu_core_t) { .kind = MU_VECTOR_CORE, .induce = induce, .argc = 1 };
   vector_core->argv[0] = (mu_core_member_t) { .variance = MU_COVARIANCE };
 
   *induce = (induce_t) {
