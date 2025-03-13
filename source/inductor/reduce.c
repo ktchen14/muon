@@ -213,24 +213,21 @@ const mu_type_t *reduce_core_type(
   if ((result = core_type_activate(allocation)) == NULL)
     return NULL;
 
-  // TODO: not sure if this is correct
-  /* if (negative) { */
-    for (size_t i = 0; i < induce->edge_length; i++) {
-      induce_edge_t edge = induce->edge[i];
-      if (edge.lower != &origin->as_type)
-        continue;
-      if (append_edge(induce, &result->as_type, edge.upper, edge.tactic) == NULL)
-        return NULL;
-    }
-  /* } else { */
-    for (size_t i = 0; i < induce->edge_length; i++) {
-      induce_edge_t edge = induce->edge[i];
-      if (edge.upper != &origin->as_type)
-        continue;
-      if (append_edge(induce, edge.lower, &result->as_type, edge.tactic) == NULL)
-        return NULL;
-    }
-  /* } */
+  for (size_t i = 0; i < induce->edge_length; i++) {
+    induce_edge_t edge = induce->edge[i];
+    if (edge.lower != &origin->as_type)
+      continue;
+    if (append_edge(induce, &result->as_type, edge.upper, edge.tactic) == NULL)
+      return NULL;
+  }
+
+  for (size_t i = 0; i < induce->edge_length; i++) {
+    induce_edge_t edge = induce->edge[i];
+    if (edge.upper != &origin->as_type)
+      continue;
+    if (append_edge(induce, edge.lower, &result->as_type, edge.tactic) == NULL)
+      return NULL;
+  }
 
   return ((mu_type_t *) origin)->assignment = &result->as_type;
 }
