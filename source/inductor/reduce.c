@@ -231,7 +231,7 @@ const mu_type_t *reduce_core_type(
     }
   }
 
-  return ((mu_type_t *) origin)->assignment = &origin->as_type;
+  return ((mu_type_t *) origin)->assignment = &result->as_type;
 }
 
 const mu_type_t *reduce_origin_type(induce_t *induce, const mu_type_t *type, _Bool negative) {
@@ -310,8 +310,8 @@ const mu_type_t *reduce_origin_type(induce_t *induce, const mu_type_t *type, _Bo
         }
       }
 
-      ((mu_variable_type_t *) type)->assignment = &result->as_type;
-      ((mu_type_t *) type)->assignment = &result->as_type;
+      ((mu_variable_type_t *) variable_type)->assignment = &result->as_type;
+      ((mu_type_t *) variable_type)->assignment = &result->as_type;
 
       return &result->as_type;
     } else {
