@@ -70,7 +70,7 @@ __attribute__((nonnull)) static const mu_type_t *access_expr_reduce(
   if ((aux_type = reduce_origin_type(induce, aux_type, 0)) == NULL)
     return NULL;
 
-  const mu_type_t *matter_type = induce_reveal(induce, &expr->matter->as_node);
+  const mu_type_t *matter_type = evince(induce, &expr->matter->as_node);
 
   const mu_coercion_t *coercion;
   if ((coercion = make_coercion(induce, matter_type, aux_type)) == NULL)
@@ -88,12 +88,12 @@ __attribute__((nonnull)) static const mu_type_t *access_expr_reduce(
 
 __attribute__((nonnull)) static const mu_type_t *boolean_expr_reduce(
     const mu_boolean_expr_t *expr, induce_t *induce, const mu_type_t *type) {
-  return evince(induce, &expr->as_node);
+  return type;
 }
 
 __attribute__((nonnull)) static const mu_type_t *integer_expr_reduce(
     const mu_integer_expr_t *expr, induce_t *induce, const mu_type_t *type) {
-  return evince(induce, &expr->as_node);
+  return type;
 }
 
 __attribute__((nonnull)) static const mu_type_t *invoke_expr_reduce(
@@ -108,7 +108,7 @@ __attribute__((nonnull)) static const mu_type_t *invoke_expr_reduce(
     return NULL;
   induce->coercion[expr->operator->as_node.id] = coercion;
 
-  return evince(induce, &expr->as_node);
+  return reduce_origin_type(induce, type, 0);
 }
 
 __attribute__((nonnull)) static const mu_type_t *lambda_expr_reduce(
@@ -149,7 +149,7 @@ __attribute__((nonnull)) static const mu_type_t *vector_expr_reduce(
     const mu_expr_t *argument = expr->argv[i];
 
     assert(induce->coercion[argument->as_node.id] == NULL);
-    const mu_type_t *argument_type = induce_reveal(induce, &argument->as_node);
+    const mu_type_t *argument_type = evince(induce, &argument->as_node);
 
     const mu_coercion_t *coercion;
     if ((coercion = make_coercion(induce, argument_type, result)) == NULL)
@@ -342,5 +342,5 @@ const mu_type_t *handle_node_reduction(induce_t *induce, const mu_node_t *root) 
     induce->node_to_type[node->id] = type;
   } while ((node = node_return(node)) != NULL);
 
-  return induce_reveal(induce, root);
+  return evince(induce, root);
 }
