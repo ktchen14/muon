@@ -237,6 +237,7 @@ const mu_type_t *reduce_core_type(
   mu_core_type_t *allocation;
   if ((allocation = core_type_allocate(induce, core)) == NULL)
     return NULL;
+  allocation->as_type.assignment = &allocation->as_type;
 
   for (size_t i = 0; i < core->argc; i++)
     allocation->argv[i] = origin->argv[i]->assignment;
@@ -279,41 +280,69 @@ const mu_type_t *reduce_type(induce_t *induce, const mu_type_t *type, _Bool nega
   const mu_variable_type_t *variable_type;
   if ((variable_type = mu_type_cast(type, variable_type)) != NULL) {
     if (!negative) {
-      // Determine the length of the join type
-      size_t length = 0;
+      // Reduce each subtype of the variable type
       for (size_t i = 0; i < induce->edge_length; i++) {
         induce_edge_t edge = induce->edge[i];
-        if (edge.upper == &variable_type->as_type && edge.lower->kind != MU_VARIABLE_TYPE) {
-          length++;
-
-          // Also, reduce the constituent variables
+        if (edge.upper == &variable_type->as_type) {
           if (reduce_type(induce, edge.lower, negative) == NULL)
             return NULL;
           assert(edge.lower->assignment != NULL);
         }
       }
 
+      // Determine the length of the join type
+      size_t length = 0;
+      induce_edge_t *last_edge;
+      for (size_t i = 0; i < induce->edge_length; i++) {
+        induce_edge_t *edge = &induce->edge[i];
+        if (edge->upper == &variable_type->as_type) {
+          last_edge = edge;
+          length++;
+        }
+      }
+
+      // If there's only one subtype of this variable type, then we don't need
+      // to make a join type
       if (length == 1) {
+        const mu_type_t *result = last_edge->lower;
+        ((mu_type_t *) variable_type)->assignment = result;
+        *last_edge = (induce_edge_t) {0};
+
+        // Now, rewrite each edge
         for (size_t i = 0; i < induce->edge_length; i++) {
-          induce_edge_t edge = induce->edge[i];
-          if (edge.upper == &variable_type->as_type && edge.lower->kind != MU_VARIABLE_TYPE) {
-            ((mu_type_t *) variable_type)->assignment = edge.lower->assignment;
-            return edge.lower->assignment;
+          induce_edge_t *edge = &induce->edge[i];
+          if (edge->lower == &variable_type->as_type) {
+            if (append_edge(induce, result, edge->upper, edge->tactic) == NULL)
+              return NULL;
+            // TODO: a bit of a hack. We just zero out the existing edge
+            *edge = (induce_edge_t) {0};
+          }
+
+          if (edge->upper == &variable_type->as_type) {
+            if (append_edge(induce, edge->lower, result, edge->tactic) == NULL)
+              return NULL;
+            // TODO: a bit of a hack. We just zero out the existing edge
+            *edge = (induce_edge_t) {0};
           }
         }
+
+        return result;
       }
 
       // Allocate the join type
       mu_join_type_t *allocation;
       if ((allocation = join_type_allocate(induce, length)) == NULL)
         return NULL;
+      allocation->as_type.assignment = &allocation->as_type;
 
       // Add each type as an argument
       size_t j = 0;
       for (size_t i = 0; i < induce->edge_length; i++) {
         induce_edge_t edge = induce->edge[i];
-        if (edge.upper == &variable_type->as_type && edge.lower->kind != MU_VARIABLE_TYPE)
+        if (edge.upper == &variable_type->as_type) {
+          assert(edge.lower->kind != MU_VARIABLE_TYPE);
           allocation->argv[j++] = edge.lower->assignment;
+        }
       }
       assert(j == length);
 
@@ -325,11 +354,28 @@ const mu_type_t *reduce_type(induce_t *induce, const mu_type_t *type, _Bool nega
       j = 0;
       for (size_t i = 0; i < induce->edge_length; i++) {
         induce_edge_t edge = induce->edge[i];
-        if (edge.upper == &variable_type->as_type && edge.lower->kind != MU_VARIABLE_TYPE) {
+        if (edge.upper == &variable_type->as_type) {
           const join_tactic_t *tactic = join_tactic_create(j);
           if (append_edge(induce, edge.lower, &result->as_type, &tactic->as_tactic) == NULL)
             return NULL;
           j++;
+        }
+      }
+
+      for (size_t i = 0; i < induce->edge_length; i++) {
+        induce_edge_t *edge = &induce->edge[i];
+        if (edge->lower == &variable_type->as_type) {
+          if (append_edge(induce, &result->as_type, edge->upper, edge->tactic) == NULL)
+            return NULL;
+          // TODO: a bit of a hack. We just zero out the existing edge
+          *edge = (induce_edge_t) {0};
+        }
+
+        if (edge->upper == &variable_type->as_type) {
+          if (append_edge(induce, edge->lower, &result->as_type, edge->tactic) == NULL)
+            return NULL;
+          // TODO: a bit of a hack. We just zero out the existing edge
+          *edge = (induce_edge_t) {0};
         }
       }
 
