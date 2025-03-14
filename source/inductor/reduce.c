@@ -13,22 +13,41 @@ const mu_coercion_t *make_coercion(
   if (source == target)
     return &induce->id_coercion->as_coercion;
 
-  assert(source->kind != MU_JOIN_TYPE);
+  const mu_join_type_t *join_type;
 
-  const induce_edge_t *edge;
-  edge = search_edge(induce, source, target);
+  // If the source type is a join type, then return an unjoin coercion with a
+  // coercion for each discriminant in the join type
+  if ((join_type = mu_type_cast(source, join_type)) != NULL) {
+    mu_unjoin_coercion_t *allocation;
+    if ((allocation = unjoin_coercion_allocate(join_type->argc)) == NULL)
+      return NULL;
 
-  if (edge != NULL && edge->tactic != NULL) {
-    if (edge->tactic->kind == JOIN_TACTIC) {
-      join_tactic_t *tactic = (join_tactic_t *) edge->tactic;
-      const mu_join_coercion_t *result;
-      if ((result = mu_join_coercion(tactic->i)) == NULL)
+    for (size_t i = 0; i < join_type->argc; i++) {
+      const mu_coercion_t *coercion;
+      if ((coercion = make_coercion(induce, join_type->argv[i], target)) == NULL)
         return NULL;
-      return &result->as_coercion;
+      allocation->argv[i] = coercion;
     }
+
+    const mu_unjoin_coercion_t *result;
+    if ((result = unjoin_coercion_activate(allocation)) == NULL)
+      return NULL;
+    return &result->as_coercion;
   }
 
+  const induce_edge_t *edge = search_edge(induce, source, target);
   assert(edge != NULL);
+
+  // If the target type is a join type
+  if ((join_type = mu_type_cast(target, join_type)) != NULL) {
+    assert(edge->tactic->kind == JOIN_TACTIC);
+    join_tactic_t *tactic = (join_tactic_t *) edge->tactic;
+
+    const mu_join_coercion_t *result;
+    if ((result = mu_join_coercion(tactic->i)) == NULL)
+      return NULL;
+    return &result->as_coercion;
+  }
 
   const tactic_t *tactic = edge->tactic;
   if (tactic == NULL)
