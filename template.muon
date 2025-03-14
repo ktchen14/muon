@@ -3,4 +3,4 @@ define y = 2
 define list = [x, y, 3, 4]
 define x = handle_list list
 
-define z = (a: 2, foo: 1).foo
+define a = [[1]]

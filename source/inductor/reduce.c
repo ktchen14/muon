@@ -10,8 +10,17 @@ const mu_type_t *reduce_type(induce_t *induce, const mu_type_t *type, _Bool nega
 
 const mu_coercion_t *make_coercion(
     induce_t *induce, const mu_type_t *source, const mu_type_t *target) {
+  assert(source->kind != MU_VARIABLE_TYPE && source->kind != MU_SCHEME_TYPE);
+  assert(target->kind != MU_VARIABLE_TYPE && target->kind != MU_SCHEME_TYPE);
+
   if (source == target)
     return &induce->id_coercion->as_coercion;
+
+  fprintf(stderr, "Making coercion from ");
+  debug_just_type(source);
+  fprintf(stderr, " to ");
+  debug_just_type(target);
+  fprintf(stderr, "\n");
 
   const mu_join_type_t *join_type;
 
@@ -131,6 +140,8 @@ __attribute__((nonnull)) static const mu_type_t *invoke_expr_reduce(
     const mu_invoke_expr_t *expr, induce_t *induce, const mu_type_t *type) {
   const mu_type_t *aux_type = induce->aux[expr->as_node.id];
   assert(aux_type != NULL);
+  if ((aux_type = reduce_type(induce, aux_type, 0)) == NULL)
+    return NULL;
 
   const mu_type_t *operator_type = evince(induce, &expr->operator->as_node);
 
@@ -196,6 +207,8 @@ __attribute__((nonnull)) static const mu_type_t *zero_expr_reduce(
 
 __attribute__((nonnull)) static const mu_type_t *expr_reduce(
     const mu_expr_t *expr, induce_t *induce, const mu_type_t *type) {
+  fprintf(stderr, "Reducing expr %zu\n", expr->as_node.id);
+
   switch (expr->kind) {
 #define MU_EMIT(lower, upper, t) \
     case MU_##upper##_EXPR: \

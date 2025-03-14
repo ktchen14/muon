@@ -107,7 +107,7 @@ void mu_id_coercion_debug(const mu_id_coercion_t *coercion) {
 }
 
 void mu_variance_coercion_debug(const mu_variance_coercion_t *coercion) {
-  fprintf(stderr, PRIsKIND "(core = ", DEBUG_COERCION_KIND("VarianceCoercion"));
+  fprintf(stderr, PRIsKIND "(", DEBUG_COERCION_KIND("VarianceCoercion"));
 
   const mu_core_t *core = coercion->core;
   mu_core_debug(core);
