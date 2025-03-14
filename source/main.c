@@ -42,21 +42,33 @@ int main(int argc, char *argv[argc]) {
     goto except_read_script;
   }
 
-  const char name_text[] = "handle_list";
-  const mu_name_t *name = mu_name(&engine, strlen(name_text), (const mu_char8_t *) name_text);
-  assert(name != NULL);
+  vector_access = mu_name(&engine, strlen("[]"), (mu_char8_t[]) { "[]" });
+  assert(vector_access != NULL);
 
-  const mu_native_expr_t *native_expr = mu_native_expr(&engine, name);
-  assert(native_expr != NULL);
+  const mu_native_expr_t *vector_access_expr = mu_native_expr(&engine, vector_access);
+  assert(vector_access_expr != NULL);
 
-  const mu_define_stmt_t *define_stmt = mu_define_stmt(
-      &engine, name, &native_expr->as_expr);
-  assert(define_stmt != NULL);
+  const mu_define_stmt_t *define_vector_access = mu_define_stmt(
+      &engine, vector_access, &vector_access_expr->as_expr);
+  assert(define_vector_access != NULL);
 
-  const mu_stmt_t *prefix[] = { &define_stmt->as_stmt };
+  vector_join = mu_name(&engine, strlen("+"), (mu_char8_t[]) { "+" });
+  assert(vector_join != NULL);
+
+  const mu_native_expr_t *vector_join_expr = mu_native_expr(&engine, vector_join);
+  assert(vector_join_expr != NULL);
+
+  const mu_define_stmt_t *define_vector_join = mu_define_stmt(
+      &engine, vector_join, &vector_join_expr->as_expr);
+  assert(define_vector_join != NULL);
+
+  const mu_stmt_t *prefix[] = {
+    &define_vector_access->as_stmt,
+    &define_vector_join->as_stmt,
+  };
 
   const mu_sequence_expr_t *sequence_expr;
-  if ((sequence_expr = mu_script_to_sequence_expr_with_prefix(&engine, script, 1, prefix)) == NULL)
+  if ((sequence_expr = mu_script_to_sequence_expr_with_prefix(&engine, script, 2, prefix)) == NULL)
     assert(0);
 
   detect_t detect;

@@ -106,4 +106,7 @@ const induce_edge_t *append_edge(
     const mu_type_t *restrict b,
     const tactic_t *tactic);
 
+extern const mu_name_t *vector_access;
+extern const mu_name_t *vector_join;
+
 #endif /* MU_INDUCTOR_INDUCE_I */

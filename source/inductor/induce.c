@@ -15,6 +15,9 @@
 
 _Thread_local induce_t *debug_induce;
 
+const mu_name_t *vector_access;
+const mu_name_t *vector_join;
+
 const induce_edge_t *search_edge(
     const induce_t *induce, const mu_type_t *a, const mu_type_t *b) {
   for (size_t i = 0; i < induce->edge_length; i++) {
