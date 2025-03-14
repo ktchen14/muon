@@ -41,6 +41,7 @@ const mu_coercion_t *make_coercion(
     const mu_unjoin_coercion_t *result;
     if ((result = unjoin_coercion_activate(allocation)) == NULL)
       return NULL;
+    ((mu_coercion_t *) result)->target = target;
     return &result->as_coercion;
   }
 
@@ -55,6 +56,7 @@ const mu_coercion_t *make_coercion(
     const mu_join_coercion_t *result;
     if ((result = mu_join_coercion(tactic->i)) == NULL)
       return NULL;
+    ((mu_coercion_t *) result)->target = target;
     return &result->as_coercion;
   }
 
@@ -68,6 +70,7 @@ const mu_coercion_t *make_coercion(
     const mu_record_coercion_t *result;
     if ((result = mu_record_coercion(record_tactic->instance)) == NULL)
       return NULL;
+    ((mu_coercion_t *) result)->target = target;
     return &result->as_coercion;
   }
 
@@ -99,6 +102,7 @@ const mu_coercion_t *make_coercion(
   const mu_variance_coercion_t *result;
   if ((result = variance_coercion_activate(allocation)) == NULL)
     return NULL;
+  ((mu_coercion_t *) result)->target = target;
   return &result->as_coercion;
 }
 
@@ -205,20 +209,6 @@ __attribute__((nonnull)) static const mu_type_t *zero_expr_reduce(
   return reduce_type(induce, type, 0);
 }
 
-__attribute__((nonnull)) static const mu_type_t *expr_reduce(
-    const mu_expr_t *expr, induce_t *induce, const mu_type_t *type) {
-  fprintf(stderr, "Reducing expr %zu\n", expr->as_node.id);
-
-  switch (expr->kind) {
-#define MU_EMIT(lower, upper, t) \
-    case MU_##upper##_EXPR: \
-      return lower##_expr_reduce((const mu_##lower##_expr_t *) expr, induce, type);
-    MU_EACH_EXPR_KIND(MU_EMIT)
-#undef MU_EMIT
-  }
-  __builtin_unreachable();
-}
-
 const mu_type_t *reduce_core_type(
     induce_t *induce, const mu_core_type_t *origin, _Bool negative) {
   const mu_core_t *core = origin->core;
@@ -257,22 +247,19 @@ const mu_type_t *reduce_core_type(
 
   for (size_t i = 0; i < induce->edge_length; i++) {
     induce_edge_t *edge = &induce->edge[i];
-    if (edge->lower != &origin->as_type)
-      continue;
+    if (edge->lower == &origin->as_type) {
+      if (append_edge(induce, &result->as_type, edge->upper, edge->tactic) == NULL)
+        return NULL;
+      // TODO: a bit of a hack. We just zero out the existing edge
+      *edge = (induce_edge_t) {0};
+    }
 
-    if (append_edge(induce, &result->as_type, edge->upper, edge->tactic) == NULL)
-      return NULL;
-    *edge = (induce_edge_t) {0};
-  }
-
-  for (size_t i = 0; i < induce->edge_length; i++) {
-    induce_edge_t *edge = &induce->edge[i];
-    if (edge->upper != &origin->as_type)
-      continue;
-
-    if (append_edge(induce, edge->lower, &result->as_type, edge->tactic) == NULL)
-      return NULL;
-    *edge = (induce_edge_t) {0};
+    if (edge->upper == &origin->as_type) {
+      if (append_edge(induce, edge->lower, &result->as_type, edge->tactic) == NULL)
+        return NULL;
+      // TODO: a bit of a hack. We just zero out the existing edge
+      *edge = (induce_edge_t) {0};
+    }
   }
 
   return ((mu_type_t *) origin)->assignment = &result->as_type;
@@ -355,6 +342,20 @@ const mu_type_t *reduce_type(induce_t *induce, const mu_type_t *type, _Bool nega
   }
 
   assert(0);
+}
+
+__attribute__((nonnull)) static const mu_type_t *expr_reduce(
+    const mu_expr_t *expr, induce_t *induce, const mu_type_t *type) {
+  fprintf(stderr, "Reducing expr %zu\n", expr->as_node.id);
+
+  switch (expr->kind) {
+#define MU_EMIT(lower, upper, t) \
+    case MU_##upper##_EXPR: \
+      return lower##_expr_reduce((const mu_##lower##_expr_t *) expr, induce, type);
+    MU_EACH_EXPR_KIND(MU_EMIT)
+#undef MU_EMIT
+  }
+  __builtin_unreachable();
 }
 
 const mu_type_t *reduce_node(induce_t *induce, const mu_node_t *root) {

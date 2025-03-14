@@ -104,6 +104,10 @@ void mu_coercion_debug(const mu_coercion_t *coercion) {
 
 void mu_id_coercion_debug(const mu_id_coercion_t *coercion) {
   fprintf(stderr, PRIsKIND, DEBUG_COERCION_KIND("Id"));
+  if (coercion->as_coercion.target != NULL) {
+    fprintf(stderr, " ∷ ");
+    debug_type(coercion->as_coercion.target);
+  }
 }
 
 void mu_variance_coercion_debug(const mu_variance_coercion_t *coercion) {

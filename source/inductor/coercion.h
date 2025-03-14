@@ -2,6 +2,7 @@
 #define MU_INDUCTOR_COERCION_I
 
 #include "core.h"
+#include "type.h"
 
 #include <stddef.h>
 
@@ -23,6 +24,7 @@ typedef enum {
 /// An abstract coercion
 typedef struct mu_coercion_t {
   mu_coercion_kind_t kind;
+  const mu_type_t *target;
 } mu_coercion_t;
 
 /// The header that each concrete coercion must have

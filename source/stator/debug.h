@@ -92,7 +92,13 @@ static inline void expr_debug_with_coercion(const mu_expr_t *expr) {
     if ((coercion = debug_induce->coercion[expr->as_node.id]) != NULL) {
       fprintf(stderr, "%*s", debug_indent, "");
       mu_coercion_debug(coercion);
-      fprintf(stderr, ":\n");
+
+      if (coercion->target != NULL) {
+        fprintf(stderr, " ∷ ");
+        debug_type(coercion->target);
+      }
+
+      fprintf(stderr, "\n");
       debug_indent += 2;
     }
   }
