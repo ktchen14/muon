@@ -248,19 +248,13 @@ const mu_type_t *reduce_core_type(
 
   for (size_t i = 0; i < induce->edge_length; i++) {
     induce_edge_t *edge = &induce->edge[i];
-    if (edge->lower == &origin->as_type) {
-      if (append_edge(induce, &result->as_type, edge->upper, edge->tactic) == NULL)
-        return NULL;
-      // TODO: a bit of a hack. We just zero out the existing edge
-      *edge = (induce_edge_t) {0};
-    }
 
-    if (edge->upper == &origin->as_type) {
-      if (append_edge(induce, edge->lower, &result->as_type, edge->tactic) == NULL)
-        return NULL;
-      // TODO: a bit of a hack. We just zero out the existing edge
-      *edge = (induce_edge_t) {0};
-    }
+    // TODO: a bit of a hack. We rewrite the existing edges
+    if (edge->lower == &origin->as_type)
+      edge->lower = &result->as_type;
+
+    if (edge->upper == &origin->as_type)
+      edge->upper = &result->as_type;
   }
 
   return ((mu_type_t *) origin)->assignment = &result->as_type;
@@ -311,19 +305,13 @@ const mu_type_t *reduce_type(induce_t *induce, const mu_type_t *type, _Bool nega
         // Now, rewrite each edge
         for (size_t i = 0; i < induce->edge_length; i++) {
           induce_edge_t *edge = &induce->edge[i];
-          if (edge->lower == &variable_type->as_type) {
-            if (append_edge(induce, result, edge->upper, edge->tactic) == NULL)
-              return NULL;
-            // TODO: a bit of a hack. We just zero out the existing edge
-            *edge = (induce_edge_t) {0};
-          }
 
-          if (edge->upper == &variable_type->as_type) {
-            if (append_edge(induce, edge->lower, result, edge->tactic) == NULL)
-              return NULL;
-            // TODO: a bit of a hack. We just zero out the existing edge
-            *edge = (induce_edge_t) {0};
-          }
+          // TODO: a bit of a hack. We rewrite the existing edges
+          if (edge->lower == &variable_type->as_type)
+            edge->lower = result;
+
+          if (edge->upper == &variable_type->as_type)
+            edge->upper = result;
         }
 
         return result;
@@ -353,29 +341,17 @@ const mu_type_t *reduce_type(induce_t *induce, const mu_type_t *type, _Bool nega
 
       j = 0;
       for (size_t i = 0; i < induce->edge_length; i++) {
-        induce_edge_t edge = induce->edge[i];
-        if (edge.upper == &variable_type->as_type) {
-          const join_tactic_t *tactic = join_tactic_create(j);
-          if (append_edge(induce, edge.lower, &result->as_type, &tactic->as_tactic) == NULL)
-            return NULL;
-          j++;
-        }
-      }
-
-      for (size_t i = 0; i < induce->edge_length; i++) {
         induce_edge_t *edge = &induce->edge[i];
-        if (edge->lower == &variable_type->as_type) {
-          if (append_edge(induce, &result->as_type, edge->upper, edge->tactic) == NULL)
-            return NULL;
-          // TODO: a bit of a hack. We just zero out the existing edge
-          *edge = (induce_edge_t) {0};
-        }
+
+        // TODO: a bit of a hack. We rewrite the existing edges
+        if (edge->lower == &variable_type->as_type)
+          edge->lower = &result->as_type;
 
         if (edge->upper == &variable_type->as_type) {
-          if (append_edge(induce, edge->lower, &result->as_type, edge->tactic) == NULL)
-            return NULL;
-          // TODO: a bit of a hack. We just zero out the existing edge
-          *edge = (induce_edge_t) {0};
+          edge->upper = &result->as_type;
+          assert(edge->tactic == NULL);
+          edge->tactic = &join_tactic_create(j++)->as_tactic;
+          assert(edge->tactic != NULL);
         }
       }
 
