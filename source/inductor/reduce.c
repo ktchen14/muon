@@ -62,8 +62,33 @@ const mu_coercion_t *make_coercion(
     return &result->as_coercion;
   }
 
-  const mu_simple_coercion_t *result;
-  if ((result = mu_simple_coercion()) == NULL)
+  assert(source->kind == MU_CORE_TYPE && target->kind == MU_CORE_TYPE);
+  const mu_core_type_t *source_core_type = (const mu_core_type_t *) source;
+  const mu_core_t *source_core = source_core_type->core;
+  const mu_core_type_t *target_core_type = (const mu_core_type_t *) target;
+  const mu_core_t *target_core = target_core_type->core;
+
+  assert(source_core == target_core);
+
+  const mu_core_t *core = source_core;
+
+  mu_variance_coercion_t *allocation;
+  if ((allocation = variance_coercion_allocate(core)) == NULL)
+    return NULL;
+
+  for (size_t i = 0; i < core->argc; i++) {
+    const mu_type_t *next_source = source_core_type->argv[i];
+    const mu_type_t *next_target = target_core_type->argv[i];
+
+    assert(core->argv[i].variance != MU_INVARIANCE);
+    if (core->argv[i].variance == MU_CONTRAVARIANCE) {
+      const mu_type_t *t = next_source; next_source = next_target; next_target = t;
+    }
+    allocation->argv[i] = make_coercion(induce, next_source, next_target);
+  }
+
+  const mu_variance_coercion_t *result;
+  if ((result = variance_coercion_activate(allocation)) == NULL)
     return NULL;
   return &result->as_coercion;
 }

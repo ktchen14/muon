@@ -2,7 +2,6 @@
 #define MU_INDUCTOR_TYPE_I
 
 #include "core.h"
-#include "../stator/name.h"
 
 #include <assert.h>
 

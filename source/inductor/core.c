@@ -109,3 +109,21 @@ const record_instance_t *get_record_instance(
   induce->record_instance[induce->record_instance_length++] = allocation;
   return allocation;
 }
+
+#include "../stator/debug.h"
+
+void mu_core_debug(const mu_core_t *core) {
+  switch (core->kind) {
+    case MU_BOOLEAN_CORE:
+      fprintf(stderr, PRIsKIND, DEBUG_KIND("Boolean")); return;
+    case MU_INTEGER_CORE:
+      fprintf(stderr, PRIsKIND, DEBUG_KIND("Integer")); return;
+    case MU_LAMBDA_CORE:
+      fprintf(stderr, PRIsKIND, DEBUG_KIND("Lambda")); return;
+    case MU_VECTOR_CORE:
+      fprintf(stderr, PRIsKIND, DEBUG_KIND("Vector")); return;
+    case MU_RECORD_CORE:
+      fprintf(stderr, PRIsKIND, DEBUG_KIND("Record")); return;
+  }
+  __builtin_unreachable();
+}

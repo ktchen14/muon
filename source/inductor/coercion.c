@@ -4,14 +4,18 @@
 
 #include "../stator/debug.h"
 
-const mu_simple_coercion_t *mu_simple_coercion(void) {
-  mu_simple_coercion_t *result;
-  if ((result = malloc(sizeof(mu_simple_coercion_t))) == NULL)
+const mu_variance_coercion_t *mu_variance_coercion(
+    const mu_core_t *core, const mu_coercion_t *argv[/* core->argc */]) {
+  assert(core->argc == 0 && argv == NULL || core->argc != 0 && argv != NULL);
+
+  mu_variance_coercion_t *allocation;
+  if ((allocation = variance_coercion_allocate(core)) == NULL)
     return NULL;
-  *result = (mu_simple_coercion_t) {
-    .as_coercion.kind = MU_SIMPLE_COERCION,
-  };
-  return result;
+
+  if (core->argc > 0)
+    memcpy(allocation->argv, argv, sizeof(const mu_coercion_t *[core->argc]));
+
+  return variance_coercion_activate(allocation);
 }
 
 const mu_record_coercion_t *mu_record_coercion(const record_instance_t *instance) {
@@ -44,6 +48,26 @@ const mu_unjoin_coercion_t *mu_unjoin_coercion(
     allocation->argv[i] = argv[i];
 
   return unjoin_coercion_activate(allocation);
+}
+
+mu_variance_coercion_t *variance_coercion_allocate(const mu_core_t *core) {
+  size_t size;
+  if (rare((size = struct_size(mu_variance_coercion_t, argv, core->argc)) == 0))
+    return errno = ENOMEM, NULL;
+
+  mu_variance_coercion_t *allocation;
+  if ((allocation = malloc(size)) == NULL)
+    return NULL;
+
+  *allocation = (mu_variance_coercion_t) {
+    .as_coercion.kind = MU_VARIANCE_COERCION, .core = core,
+  };
+  return allocation;
+}
+
+const mu_variance_coercion_t *variance_coercion_activate(
+    mu_variance_coercion_t *coercion) {
+  return coercion;
 }
 
 mu_unjoin_coercion_t *unjoin_coercion_allocate(size_t argc) {
@@ -79,11 +103,20 @@ void mu_coercion_debug(const mu_coercion_t *coercion) {
 }
 
 void mu_id_coercion_debug(const mu_id_coercion_t *coercion) {
-  fprintf(stderr, PRIsKIND "()", DEBUG_COERCION_KIND("IdCoercion"));
+  fprintf(stderr, PRIsKIND, DEBUG_COERCION_KIND("IdCoercion"));
 }
 
-void mu_simple_coercion_debug(const mu_simple_coercion_t *coercion) {
-  fprintf(stderr, PRIsKIND "()", DEBUG_COERCION_KIND("SimpleCoercion"));
+void mu_variance_coercion_debug(const mu_variance_coercion_t *coercion) {
+  fprintf(stderr, PRIsKIND "(core = ", DEBUG_COERCION_KIND("VarianceCoercion"));
+
+  const mu_core_t *core = coercion->core;
+  mu_core_debug(core);
+
+  for (size_t i = 0; i < core->argc; i++) {
+    fputs(", ", stderr);
+    mu_coercion_debug(coercion->argv[i]);
+  }
+  fprintf(stderr, ")");
 }
 
 void mu_record_coercion_debug(const mu_record_coercion_t *coercion) {

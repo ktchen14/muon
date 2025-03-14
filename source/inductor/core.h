@@ -61,4 +61,6 @@ static inline int core_member_cmp(const void *a, const void *b) {
   return name_cmp(ra->name, rb->name);
 }
 
+void mu_core_debug(const mu_core_t *core) __attribute__((nonnull));
+
 #endif /* MU_INDUCTOR_CORE_I */
