@@ -367,8 +367,18 @@ const mu_type_t *reduce_node(induce_t *induce, const mu_node_t *root) {
       node = node_continue(node, next);
 
     const mu_expr_t *expr;
-    if ((expr = mu_node_cast(node, expr)) == NULL)
+    if ((expr = mu_node_cast(node, expr)) == NULL) {
+      const mu_variable_view_t *view;
+      if ((view = mu_node_cast(node, view)) == NULL)
+        continue;
       continue;
+
+      /* const mu_type_t *type = evince(induce, &view->as_node); */
+      /* assert(type != NULL); */
+      /* if ((type = reduce_type(induce, type, 1)) == NULL) */
+      /*   return NULL; */
+      /* induce->node_to_type[node->id] = type; */
+    }
 
     const mu_type_t *type = evince(induce, &expr->as_node);
     assert(type != NULL);
