@@ -256,19 +256,23 @@ const mu_type_t *reduce_core_type(
     return NULL;
 
   for (size_t i = 0; i < induce->edge_length; i++) {
-    induce_edge_t edge = induce->edge[i];
-    if (edge.lower != &origin->as_type)
+    induce_edge_t *edge = &induce->edge[i];
+    if (edge->lower != &origin->as_type)
       continue;
-    if (append_edge(induce, &result->as_type, edge.upper, edge.tactic) == NULL)
+
+    if (append_edge(induce, &result->as_type, edge->upper, edge->tactic) == NULL)
       return NULL;
+    *edge = (induce_edge_t) {0};
   }
 
   for (size_t i = 0; i < induce->edge_length; i++) {
-    induce_edge_t edge = induce->edge[i];
-    if (edge.upper != &origin->as_type)
+    induce_edge_t *edge = &induce->edge[i];
+    if (edge->upper != &origin->as_type)
       continue;
-    if (append_edge(induce, edge.lower, &result->as_type, edge.tactic) == NULL)
+
+    if (append_edge(induce, edge->lower, &result->as_type, edge->tactic) == NULL)
       return NULL;
+    *edge = (induce_edge_t) {0};
   }
 
   return ((mu_type_t *) origin)->assignment = &result->as_type;
