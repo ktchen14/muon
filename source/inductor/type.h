@@ -49,6 +49,9 @@ struct mu_variable_type_t {
   const mu_variable_type_t *debug_next;
   size_t number; ///< Used to generate a name
 
+  const mu_variable_type_t *positively_entered_from;
+  const mu_variable_type_t *negatively_entered_from;
+
   // Polymorphism
   mu_variable_type_t *scheme_next;
 
@@ -57,9 +60,6 @@ struct mu_variable_type_t {
 
   _Bool positively_reachable;
   _Bool negatively_reachable;
-
-  const mu_variable_type_t *positively_entered_from;
-  const mu_variable_type_t *negatively_entered_from;
 };
 
 /// A scheme type
