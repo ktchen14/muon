@@ -9,8 +9,7 @@
 #define MU_EACH_TYPE_KIND(emit, ...) \
   emit(core, CORE, Core, ##__VA_ARGS__) \
   emit(variable, VARIABLE, Variable, ##__VA_ARGS__) \
-  emit(scheme, SCHEME, Scheme, ##__VA_ARGS__) \
-  emit(join, JOIN, Join, ##__VA_ARGS__)
+  emit(scheme, SCHEME, Scheme, ##__VA_ARGS__)
 
 /// An enumeration over each kind of type, i.e. @c MU_CORE_TYPE
 typedef enum {
@@ -73,13 +72,6 @@ struct mu_scheme_type_t {
   const mu_variable_type_t *argv[/* argc */];
 };
 
-// A join type (⊔ or ⊥)
-typedef struct {
-  MU_TYPE_HEADER;
-  size_t argc;
-  const mu_type_t *argv[/* argc */];
-} mu_join_type_t;
-
 /// @internal Used to emit each branch in mu_type_cast()
 #define MU_TYPE_CAST_EMIT(lower, upper, t) \
   , const mu_##lower##_type_t *: _kind == MU_##upper##_TYPE
@@ -129,10 +121,6 @@ const mu_core_type_t *mu_core_type(
     induce_t *induce, const mu_core_t *core, const mu_type_t *argv[])
   __attribute__((malloc, nonnull(1, 2)));
 
-const mu_join_type_t *join_type(
-    induce_t *induce, size_t argc, const mu_type_t *argv[/* argc */])
-  __attribute__((malloc, nonnull));
-
 const mu_core_type_t *mu_lambda_type(
     induce_t *induce, const mu_type_t *argument, const mu_type_t *output)
   __attribute__((malloc, nonnull));
@@ -159,12 +147,6 @@ mu_scheme_type_t *scheme_type_allocate(induce_t *induce, size_t argc)
 
 const mu_scheme_type_t *scheme_type_activate(
     mu_scheme_type_t *type, const mu_type_t *matter)
-  __attribute__((nonnull));
-
-mu_join_type_t *join_type_allocate(induce_t *induce, size_t argc)
-  __attribute__((malloc, nonnull));
-
-const mu_join_type_t *join_type_activate(mu_join_type_t *type)
   __attribute__((nonnull));
 
 void debug_type(const mu_type_t *type);

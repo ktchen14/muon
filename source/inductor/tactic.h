@@ -9,7 +9,8 @@
 #define MU_EACH_TACTIC_KIND(emit, ...) \
   emit(variance, VARIANCE, Variance, ##__VA_ARGS__) \
   emit(record, RECORD, Record, ##__VA_ARGS__) \
-  emit(join, JOIN, Join, ##__VA_ARGS__)
+  emit(join, JOIN, Join, ##__VA_ARGS__) \
+  emit(unjoin, UNJOIN, Unjoin, ##__VA_ARGS__)
 
 /// An enumeration over each kind of tactic, e.g. @c VARIANCE_TACTIC
 typedef enum {
@@ -44,6 +45,13 @@ typedef struct {
   size_t i;
 } join_tactic_t;
 
+/// The coercion involves a different coercion for each discriminant in a join
+/// type
+typedef struct {
+  MU_TACTIC_HEADER;
+  size_t length;
+} unjoin_tactic_t;
+
 const variance_tactic_t *variance_tactic_create(const mu_core_t *core)
   __attribute__((malloc, nonnull));
 
@@ -51,6 +59,9 @@ const record_tactic_t *record_tactic_create(const record_instance_t *instance)
   __attribute__((malloc, nonnull));
 
 const join_tactic_t *join_tactic_create(size_t i)
+  __attribute__((malloc));
+
+const unjoin_tactic_t *unjoin_tactic_create(size_t length)
   __attribute__((malloc));
 
 void tactic_debug(const tactic_t *tactic)
@@ -63,6 +74,9 @@ void record_tactic_debug(const record_tactic_t *tactic)
   __attribute__((nonnull));
 
 void join_tactic_debug(const join_tactic_t *tactic)
+  __attribute__((nonnull));
+
+void unjoin_tactic_debug(const unjoin_tactic_t *tactic)
   __attribute__((nonnull));
 
 #endif /* MU_INDUCTOR_TACTIC_I */

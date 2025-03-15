@@ -10,8 +10,8 @@ const mu_type_t *reduce_type(induce_t *induce, const mu_type_t *type, _Bool nega
 
 const mu_coercion_t *make_coercion(
     induce_t *induce, const mu_type_t *source, const mu_type_t *target) {
-  assert(source->kind != MU_VARIABLE_TYPE && source->kind != MU_SCHEME_TYPE);
-  assert(target->kind != MU_VARIABLE_TYPE && target->kind != MU_SCHEME_TYPE);
+  assert(source->kind != MU_SCHEME_TYPE);
+  assert(target->kind != MU_SCHEME_TYPE);
 
   if (source == target)
     return &induce->id_coercion->as_coercion;
@@ -22,20 +22,32 @@ const mu_coercion_t *make_coercion(
   debug_just_type(target);
   fprintf(stderr, "\n");
 
-  const mu_join_type_t *join_type;
+  const induce_edge_t *edge = search_edge(induce, source, target);
+  assert(edge != NULL);
+  assert(edge->tactic != NULL);
 
   // If the source type is a join type, then return an unjoin coercion with a
   // coercion for each discriminant in the join type
-  if ((join_type = mu_type_cast(source, join_type)) != NULL) {
+  if (edge->tactic->kind == UNJOIN_TACTIC) {
+    const unjoin_tactic_t *tactic = (const unjoin_tactic_t *) edge->tactic;
+
     mu_unjoin_coercion_t *allocation;
-    if ((allocation = unjoin_coercion_allocate(join_type->argc)) == NULL)
+    if ((allocation = unjoin_coercion_allocate(tactic->length)) == NULL)
       return NULL;
 
-    for (size_t i = 0; i < join_type->argc; i++) {
+    for (size_t i = 0; i < induce->edge_length; i++) {
+      const induce_edge_t *join_edge = &induce->edge[i];
+      if (join_edge->upper != source)
+        continue;
+      assert(join_edge->tactic != NULL);
+      assert(join_edge->tactic->kind == JOIN_TACTIC);
+
+      const join_tactic_t *join_tactic = (const join_tactic_t *) join_edge->tactic;
+
       const mu_coercion_t *coercion;
-      if ((coercion = make_coercion(induce, join_type->argv[i], target)) == NULL)
+      if ((coercion = make_coercion(induce, join_edge->lower, target)) == NULL)
         return NULL;
-      allocation->argv[i] = coercion;
+      allocation->argv[join_tactic->i] = coercion;
     }
 
     const mu_unjoin_coercion_t *result;
@@ -45,12 +57,8 @@ const mu_coercion_t *make_coercion(
     return &result->as_coercion;
   }
 
-  const induce_edge_t *edge = search_edge(induce, source, target);
-  assert(edge != NULL);
-
   // If the target type is a join type
-  if ((join_type = mu_type_cast(target, join_type)) != NULL) {
-    assert(edge->tactic->kind == JOIN_TACTIC);
+  if (edge->tactic->kind == JOIN_TACTIC) {
     join_tactic_t *tactic = (join_tactic_t *) edge->tactic;
 
     const mu_join_coercion_t *result;
@@ -212,7 +220,6 @@ __attribute__((nonnull)) static const mu_type_t *zero_expr_reduce(
 const mu_type_t *reduce_core_type(
     induce_t *induce, const mu_core_type_t *origin, _Bool negative) {
   const mu_core_t *core = origin->core;
-  _Bool change = 0;
 
   for (size_t i = 0; i < core->argc; i++) {
     const mu_type_t *argument = origin->argv[i];
@@ -226,38 +233,9 @@ const mu_type_t *reduce_core_type(
     const mu_type_t *assignment;
     if ((assignment = reduce_type(induce, argument, argument_negative)) == NULL)
       return NULL;
-    assert(assignment == argument->assignment);
-
-    change |= assignment != argument;
   }
 
-  if (!change)
-    return ((mu_type_t *) origin)->assignment = &origin->as_type;
-
-  mu_core_type_t *allocation;
-  if ((allocation = core_type_allocate(induce, core)) == NULL)
-    return NULL;
-  allocation->as_type.assignment = &allocation->as_type;
-
-  for (size_t i = 0; i < core->argc; i++)
-    allocation->argv[i] = origin->argv[i]->assignment;
-
-  const mu_core_type_t *result;
-  if ((result = core_type_activate(allocation)) == NULL)
-    return NULL;
-
-  for (size_t i = 0; i < induce->edge_length; i++) {
-    induce_edge_t *edge = &induce->edge[i];
-
-    // TODO: a bit of a hack. We rewrite the existing edges
-    if (edge->lower == &origin->as_type)
-      edge->lower = &result->as_type;
-
-    if (edge->upper == &origin->as_type)
-      edge->upper = &result->as_type;
-  }
-
-  return ((mu_type_t *) origin)->assignment = &result->as_type;
+  return &origin->as_type;
 }
 
 const mu_type_t *reduce_type(induce_t *induce, const mu_type_t *type, _Bool negative) {
@@ -265,7 +243,6 @@ const mu_type_t *reduce_type(induce_t *induce, const mu_type_t *type, _Bool nega
     return type->assignment;
 
   assert(type->kind != MU_SCHEME_TYPE);
-  assert(type->kind != MU_JOIN_TYPE);
 
   const mu_core_type_t *core_type;
   if ((core_type = mu_type_cast(type, core_type)) != NULL)
@@ -273,94 +250,29 @@ const mu_type_t *reduce_type(induce_t *induce, const mu_type_t *type, _Bool nega
 
   const mu_variable_type_t *variable_type;
   if ((variable_type = mu_type_cast(type, variable_type)) != NULL) {
-    if (!negative) {
+    /* if (!negative) { */
       // Reduce each subtype of the variable type
-      for (size_t i = 0; i < induce->edge_length; i++) {
-        induce_edge_t edge = induce->edge[i];
-        if (edge.upper == &variable_type->as_type) {
-          if (reduce_type(induce, edge.lower, negative) == NULL)
-            return NULL;
-          assert(edge.lower->assignment != NULL);
-        }
-      }
-
-      // Determine the length of the join type
-      size_t length = 0;
-      induce_edge_t *last_edge;
-      for (size_t i = 0; i < induce->edge_length; i++) {
-        induce_edge_t *edge = &induce->edge[i];
-        if (edge->upper == &variable_type->as_type) {
-          last_edge = edge;
-          length++;
-        }
-      }
-
-      // If there's only one subtype of this variable type, then we don't need
-      // to make a join type
-      if (length == 1) {
-        const mu_type_t *result = last_edge->lower;
-        ((mu_type_t *) variable_type)->assignment = result;
-        *last_edge = (induce_edge_t) {0};
-
-        // Now, rewrite each edge
-        for (size_t i = 0; i < induce->edge_length; i++) {
-          induce_edge_t *edge = &induce->edge[i];
-
-          // TODO: a bit of a hack. We rewrite the existing edges
-          if (edge->lower == &variable_type->as_type)
-            edge->lower = result;
-
-          if (edge->upper == &variable_type->as_type)
-            edge->upper = result;
-        }
-
-        return result;
-      }
-
-      // Allocate the join type
-      mu_join_type_t *allocation;
-      if ((allocation = join_type_allocate(induce, length)) == NULL)
-        return NULL;
-      allocation->as_type.assignment = &allocation->as_type;
-
-      // Add each type as an argument
       size_t j = 0;
       for (size_t i = 0; i < induce->edge_length; i++) {
-        induce_edge_t edge = induce->edge[i];
-        if (edge.upper == &variable_type->as_type) {
-          assert(edge.lower->kind != MU_VARIABLE_TYPE);
-          allocation->argv[j++] = edge.lower->assignment;
+        induce_edge_t *edge = &induce->edge[i];
+        if (edge->upper == &variable_type->as_type) {
+          if (reduce_type(induce, edge->lower, negative) == NULL)
+            return NULL;
+          edge->tactic = &join_tactic_create(j++)->as_tactic;
         }
       }
-      assert(j == length);
 
-      // Activate the join type
-      const mu_join_type_t *result;
-      if (rare((result = join_type_activate(allocation)) == NULL))
-        return NULL;
-
-      j = 0;
       for (size_t i = 0; i < induce->edge_length; i++) {
         induce_edge_t *edge = &induce->edge[i];
-
-        // TODO: a bit of a hack. We rewrite the existing edges
-        if (edge->lower == &variable_type->as_type)
-          edge->lower = &result->as_type;
-
-        if (edge->upper == &variable_type->as_type) {
-          edge->upper = &result->as_type;
-          assert(edge->tactic == NULL);
-          edge->tactic = &join_tactic_create(j++)->as_tactic;
-          assert(edge->tactic != NULL);
+        if (edge->lower == &variable_type->as_type) {
+          edge->tactic = &unjoin_tactic_create(j)->as_tactic;
         }
       }
 
-      ((mu_type_t *) variable_type)->assignment = &result->as_type;
-
-      return &result->as_type;
-    } else {
-      assert(!"Unimplemented reduction of negative variable");
-    }
+      return &variable_type->as_type;
+    /* } else { */
+    /*   assert(!"Unimplemented reduction of negative variable"); */
+    /* } */
   }
 
   assert(0);

@@ -248,18 +248,6 @@ void mark_type(induce_t *induce, const mu_type_t *type, _Bool negative, size_t r
 
     case MU_SCHEME_TYPE:
       abort();
-
-    case MU_JOIN_TYPE: {
-      const mu_join_type_t *join_type = (const mu_join_type_t *) type;
-
-      if (negative)
-        return;
-
-      for (size_t i = 0; i < join_type->argc; i++)
-        mark_type(induce, join_type->argv[i], negative, rank);
-
-      break;
-    }
   }
 }
 
@@ -372,19 +360,6 @@ void mark_type_from_anywhere(
 
     case MU_SCHEME_TYPE:
       abort();
-
-    case MU_JOIN_TYPE: {
-      const mu_join_type_t *join_type = (const mu_join_type_t *) type;
-
-      if (negative)
-        return;
-
-      // TODO: the join type itself should be the next origin. But we declared
-      // origin as a variable type, so do an ugly cast.
-      for (size_t i = 0; i < join_type->argc; i++)
-        mark_type_from_anywhere(induce, join_type->argv[i], negative, (const mu_variable_type_t *) join_type, link);
-      break;
-    }
   }
 }
 

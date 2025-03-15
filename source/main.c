@@ -42,7 +42,7 @@ int main(int argc, char *argv[argc]) {
     goto except_read_script;
   }
 
-  vector_access = mu_name(&engine, strlen("[]"), (mu_char8_t[]) { "[]" });
+  vector_access = mu_name(&engine, strlen("handle_list"), (mu_char8_t[]) { "handle_list" });
   assert(vector_access != NULL);
 
   const mu_native_expr_t *vector_access_expr = mu_native_expr(&engine, vector_access);

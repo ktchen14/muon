@@ -96,29 +96,6 @@ const mu_scheme_type_t *scheme_type_activate(
   return assign_type(type->as_type.induce, type);
 }
 
-mu_join_type_t *join_type_allocate(induce_t *induce, size_t argc) {
-  size_t size;
-  if (rare((size = struct_size(mu_join_type_t, argv, argc)) == 0))
-    return errno = ENOMEM, NULL;
-
-  mu_join_type_t *result;
-  if (rare((result = malloc(size)) == NULL))
-    return NULL;
-  *result = (mu_join_type_t) {
-    .as_type.kind = MU_JOIN_TYPE, .as_type.induce = induce, .argc = argc,
-  };
-  return result;
-}
-
-const mu_join_type_t *join_type_activate(mu_join_type_t *type) {
-  for (size_t i = 0; i < type->argc; i++) {
-    assert(type->argv[i] != NULL);
-    assert(type->argv[i]->induce == type->as_type.induce);
-    assert(type->argv[i]->kind != MU_SCHEME_TYPE);
-  }
-  return assign_type(type->as_type.induce, type);
-}
-
 void debug_variable_type_name(const mu_variable_type_t *type) {
   static _Atomic size_t next_number = 0;
   static const char *alphabet[] = {
@@ -276,21 +253,6 @@ void debug_type(const mu_type_t *type) {
       debug_type(scheme_type->matter);
       break;
     }
-
-    case MU_JOIN_TYPE: {
-      const mu_join_type_t *join_type = (const mu_join_type_t *) type;
-
-      for (size_t i = 0; i < join_type->argc; i++) {
-        if (i > 0)
-          fprintf(stderr, " ⊔ ");
-        debug_type(join_type->argv[i]);
-      }
-
-      if (join_type->argc == 0)
-        fprintf(stderr, "⊥");
-
-      break;
-    }
   }
 }
 
@@ -359,34 +321,5 @@ void debug_just_type(const mu_type_t *type) {
       debug_just_type(scheme_type->matter);
       break;
     }
-
-    case MU_JOIN_TYPE: {
-      const mu_join_type_t *join_type = (const mu_join_type_t *) type;
-
-      for (size_t i = 0; i < join_type->argc; i++) {
-        if (i > 0)
-          fprintf(stderr, " ⊔ ");
-        debug_just_type(join_type->argv[i]);
-      }
-
-      if (join_type->argc == 0)
-        fprintf(stderr, "⊥");
-
-      break;
-    }
   }
 }
-
-/* const type_t *join_type(induce_t *induce, size_t argc, const type_t *argv[]) { */
-/*   size_t size; */
-/*   if (rare((size = struct_size(type_t, join_argv, argc)) == 0)) */
-/*     return NULL; */
-
-/*   type_t *result; */
-/*   if ((result = malloc(size)) == NULL) */
-/*     return NULL; */
-/*   *result = (type_t) { .kind = JOIN_TYPE, .join_argc = argc }; */
-/*   for (size_t i = 0; i < argc; i++) */
-/*     result->join_argv[i] = argv[i]; */
-/*   return result; */
-/* } */
