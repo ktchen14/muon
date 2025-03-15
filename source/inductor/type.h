@@ -45,10 +45,12 @@ typedef struct mu_variable_type_t mu_variable_type_t;
 struct mu_variable_type_t {
   MU_TYPE_HEADER;
 
-  mu_variable_type_t *scheme_next;
+  // Debugging
   const mu_variable_type_t *debug_next;
-
   size_t number; ///< Used to generate a name
+
+  // Polymorphism
+  mu_variable_type_t *scheme_next;
 
   size_t rank;
   const mu_scheme_type_t *polymorphic_to;
