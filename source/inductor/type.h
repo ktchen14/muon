@@ -23,7 +23,6 @@ typedef struct induce_t induce_t;
 /// An abstract type
 typedef struct mu_type_t mu_type_t;
 struct mu_type_t {
-  const mu_type_t *assignment;
   mu_type_kind_t kind;
   induce_t *induce;
   size_t id;

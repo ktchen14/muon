@@ -217,36 +217,29 @@ __attribute__((nonnull)) static const mu_type_t *zero_expr_reduce(
   return reduce_type(induce, type, 0);
 }
 
-const mu_type_t *reduce_core_type(
-    induce_t *induce, const mu_core_type_t *origin, _Bool negative) {
-  const mu_core_t *core = origin->core;
-
-  for (size_t i = 0; i < core->argc; i++) {
-    const mu_type_t *argument = origin->argv[i];
-
-    _Bool argument_negative = negative;
-    mu_variance_t variance = core->argv[i].variance;
-    assert(variance != MU_INVARIANCE);
-    if (variance == MU_CONTRAVARIANCE)
-      argument_negative = !argument_negative;
-
-    const mu_type_t *assignment;
-    if ((assignment = reduce_type(induce, argument, argument_negative)) == NULL)
-      return NULL;
-  }
-
-  return &origin->as_type;
-}
-
 const mu_type_t *reduce_type(induce_t *induce, const mu_type_t *type, _Bool negative) {
-  if (type->assignment != NULL)
-    return type->assignment;
-
   assert(type->kind != MU_SCHEME_TYPE);
 
   const mu_core_type_t *core_type;
-  if ((core_type = mu_type_cast(type, core_type)) != NULL)
-    return reduce_core_type(induce, core_type, negative);
+  if ((core_type = mu_type_cast(type, core_type)) != NULL) {
+    const mu_core_t *core = core_type->core;
+
+    for (size_t i = 0; i < core->argc; i++) {
+      const mu_type_t *argument = core_type->argv[i];
+
+      _Bool argument_negative = negative;
+      mu_variance_t variance = core->argv[i].variance;
+      assert(variance != MU_INVARIANCE);
+      if (variance == MU_CONTRAVARIANCE)
+        argument_negative = !argument_negative;
+
+      const mu_type_t *assignment;
+      if ((assignment = reduce_type(induce, argument, argument_negative)) == NULL)
+        return NULL;
+    }
+
+    return &core_type->as_type;
+  }
 
   const mu_variable_type_t *variable_type;
   if ((variable_type = mu_type_cast(type, variable_type)) != NULL) {
