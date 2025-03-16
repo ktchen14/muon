@@ -43,6 +43,7 @@ typedef struct {
 typedef struct {
   MU_COERCION_HEADER;
   const record_instance_t *instance;
+  const mu_coercion_t *argv[/* instance->target->argc */];
 } mu_record_coercion_t;
 
 /// Coercion of τ to a join type with τ at discriminant @c i
@@ -78,6 +79,13 @@ mu_variance_coercion_t *variance_coercion_allocate(const mu_core_t *core)
 
 const mu_variance_coercion_t *variance_coercion_activate(
     mu_variance_coercion_t *coercion)
+  __attribute__((nonnull));
+
+mu_record_coercion_t *record_coercion_allocate(const record_instance_t *instance)
+  __attribute__((malloc));
+
+const mu_record_coercion_t *record_coercion_activate(
+    mu_record_coercion_t *coercion)
   __attribute__((nonnull));
 
 mu_unjoin_coercion_t *unjoin_coercion_allocate(size_t argc)

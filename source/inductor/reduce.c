@@ -74,10 +74,30 @@ const mu_coercion_t *make_coercion(
 
   if (tactic->kind == RECORD_TACTIC) {
     const record_tactic_t *record_tactic = (const record_tactic_t *) tactic;
+    const record_instance_t *instance = record_tactic->instance;
+
+    assert(source->kind == MU_CORE_TYPE && target->kind == MU_CORE_TYPE);
+    const mu_core_type_t *source_core_type = (const mu_core_type_t *) source;
+    const mu_core_type_t *target_core_type = (const mu_core_type_t *) target;
+
+    mu_record_coercion_t *allocation;
+    if ((allocation = record_coercion_allocate(instance)) == NULL)
+      return NULL;
+
+    for (size_t i = 0; i < instance->target->argc; i++) {
+      const mu_type_t *next_target = target_core_type->argv[i];
+      const mu_type_t *next_source = source_core_type->argv[instance->argv[i]];
+
+      const mu_coercion_t *coercion;
+      if ((coercion = make_coercion(induce, next_source, next_target)) == NULL)
+        return NULL;
+      allocation->argv[i] = coercion;
+    }
 
     const mu_record_coercion_t *result;
-    if ((result = mu_record_coercion(record_tactic->instance)) == NULL)
+    if ((result = record_coercion_activate(allocation)) == NULL)
       return NULL;
+
     ((mu_coercion_t *) result)->target = target;
     return &result->as_coercion;
   }
