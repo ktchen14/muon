@@ -19,6 +19,7 @@ typedef struct {
   const mu_type_t *lower;
   const mu_type_t *upper;
   const tactic_t *tactic;
+  _Bool direct;
 } induce_edge_t;
 
 typedef struct induce_t induce_t;

@@ -3,4 +3,9 @@ define y = 2
 define list = [x, y, 3, 4]
 define x = list
 
-define a = handle_list [1]
+define id1 = lambda x = x
+define id2 = lambda x = x
+define id3 = lambda x = x
+define id4 = lambda x = x
+
+define b = id1 (id2 (id3 id4))

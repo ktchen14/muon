@@ -95,21 +95,26 @@ int main(int argc, char *argv[argc]) {
   mu_sequence_expr_debug(sequence_expr);
 
   if (getenv("DOT") != NULL) {
-    fprintf(stderr, "digraph muon {\n");
+    fprintf(stderr, "digraph muon {\n  rankdir=\"BT\"\n");
     for (size_t i = 0; i < debug_induce->edge_length; i++) {
       induce_edge_t sub = debug_induce->edge[i];
 
       fprintf(stderr, "%*s", 2, "");
 
       fprintf(stderr, "\"");
-      debug_just_type(sub.upper);
-      fprintf(stderr, " (%zu)", sub.upper->id);
-
-      fprintf(stderr, "\" -> \"");
-
       debug_just_type(sub.lower);
       fprintf(stderr, " (%zu)", sub.lower->id);
       fprintf(stderr, "\"");
+
+      fprintf(stderr, " -> ");
+
+      fprintf(stderr, "\"");
+      debug_just_type(sub.upper);
+      fprintf(stderr, " (%zu)", sub.upper->id);
+      fprintf(stderr, "\"");
+
+      if (!sub.direct)
+        fprintf(stderr, " [constraint=false,style=dashed]");
 
       /* if (sub.coercion != NULL && strlen(sub.coercion) != 0) */
       /*   fprintf(stderr, " [label=\"%s\"]", sub.coercion); */

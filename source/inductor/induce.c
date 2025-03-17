@@ -18,6 +18,9 @@ _Thread_local induce_t *debug_induce;
 const mu_name_t *vector_access;
 const mu_name_t *vector_join;
 
+static const induce_edge_t *restrict_type_semiinternal(
+    induce_t *induce, const mu_type_t *a, const mu_type_t *b, _Bool direct);
+
 const induce_edge_t *search_edge(
     const induce_t *induce, const mu_type_t *a, const mu_type_t *b) {
   for (size_t i = 0; i < induce->edge_length; i++) {
@@ -507,7 +510,7 @@ const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
 static const tactic_t no_tactic = {0};
 
 static const tactic_t *restrict_type_internal(
-    induce_t *induce, const mu_type_t *a, const mu_type_t *b) {
+    induce_t *induce, const mu_type_t *a, const mu_type_t *b, _Bool direct) {
   assert(a->kind != MU_SCHEME_TYPE && b->kind != MU_SCHEME_TYPE);
 
   if (a->kind == MU_CORE_TYPE && b->kind == MU_CORE_TYPE) {
@@ -524,7 +527,7 @@ static const tactic_t *restrict_type_internal(
 
       for (size_t j = 0; j < core_b->argc; j++) {
         size_t i = instance->argv[j];
-        if (restrict_type(induce, core_type_a->argv[i], core_type_b->argv[j]) == NULL)
+        if (restrict_type_semiinternal(induce, core_type_a->argv[i], core_type_b->argv[j], direct) == NULL)
           return NULL;
       }
 
@@ -550,7 +553,7 @@ static const tactic_t *restrict_type_internal(
         const mu_type_t *t = lower; lower = upper; upper = t;
       }
 
-      if (restrict_type(induce, lower, upper) == NULL)
+      if (restrict_type_semiinternal(induce, lower, upper, direct) == NULL)
         return NULL;
     }
 
@@ -565,12 +568,15 @@ static const tactic_t *restrict_type_internal(
     abort();
   }
 
+  if (a->kind == MU_VARIABLE_TYPE && b->kind == MU_VARIABLE_TYPE)
+    direct = 0;
+
   const mu_variable_type_t *variable_a;
   if ((variable_a = mu_type_cast(a, variable_a)) != NULL) {
     for (size_t i = 0; i < induce->edge_length; i++) {
       if (induce->edge[i].upper != &variable_a->as_type)
         continue;
-      if (restrict_type(induce, induce->edge[i].lower, b) == NULL)
+      if (restrict_type_semiinternal(induce, induce->edge[i].lower, b, direct) == NULL)
         return NULL;
     }
   }
@@ -580,7 +586,7 @@ static const tactic_t *restrict_type_internal(
     for (size_t j = 0; j < induce->edge_length; j++) {
       if (induce->edge[j].lower != &variable_b->as_type)
         continue;
-      if (restrict_type(induce, a, induce->edge[j].upper) == NULL)
+      if (restrict_type_semiinternal(induce, a, induce->edge[j].upper, direct) == NULL)
         return NULL;
     }
   }
@@ -590,8 +596,8 @@ static const tactic_t *restrict_type_internal(
 
 const induce_edge_t SELF = {0};
 
-static const induce_edge_t *restrict_type(
-    induce_t *induce, const mu_type_t *a, const mu_type_t *b) {
+static const induce_edge_t *restrict_type_semiinternal(
+    induce_t *induce, const mu_type_t *a, const mu_type_t *b, _Bool direct) {
   if (a == b)
     return &SELF;
 
@@ -601,12 +607,19 @@ static const induce_edge_t *restrict_type(
     return edge;
 
   const tactic_t *tactic;
-  if ((tactic = restrict_type_internal(induce, a, b)) == NULL)
+  if ((tactic = restrict_type_internal(induce, a, b, direct)) == NULL)
     return NULL;
   if (tactic == &no_tactic)
     tactic = NULL;
 
-  return append_edge(induce, a, b, tactic);
+  induce_edge_t *result = (induce_edge_t *) append_edge(induce, a, b, tactic);
+  result->direct = direct;
+  return result;
+}
+
+static const induce_edge_t *restrict_type(
+    induce_t *induce, const mu_type_t *a, const mu_type_t *b) {
+  return restrict_type_semiinternal(induce, a, b, 1);
 }
 
 // ---------------------------------- Expr -------------------------------- {{{1
