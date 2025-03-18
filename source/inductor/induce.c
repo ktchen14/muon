@@ -849,6 +849,16 @@ __attribute__((nonnull)) static const mu_type_t *vector_sign_induce(
 
 // ---------------------------------- Stmt -------------------------------- {{{1
 
+__attribute__((nonnull)) static const mu_type_t *datatype_option_induce(
+    const mu_datatype_option_t *option, induce_t *induce, open_scheme_t *scheme) {
+  assert(0);
+}
+
+__attribute__((nonnull)) static const mu_type_t *datatype_stmt_induce(
+    const mu_datatype_stmt_t *stmt, induce_t *induce, open_scheme_t *scheme) {
+  assert(0);
+}
+
 __attribute__((nonnull, pure)) static const mu_type_t *define_stmt_induce(
     const mu_define_stmt_t *stmt, induce_t *induce, open_scheme_t *scheme) {
   assert(scheme->node == &stmt->as_node);
@@ -920,11 +930,6 @@ __attribute__((nonnull, pure)) static const mu_type_t *define_stmt_induce(
   if (rare((result = scheme_type_activate(allocation, expr_type)) == NULL))
     return NULL;
   return &result->as_type;
-}
-
-__attribute__((nonnull)) static const mu_type_t *type_stmt_induce(
-    const mu_type_stmt_t *stmt, induce_t *induce, open_scheme_t *scheme) {
-  assert(0);
 }
 
 // ---------------------------------- View -------------------------------- {{{1

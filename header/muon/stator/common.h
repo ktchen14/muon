@@ -27,8 +27,8 @@
 
 /// Expands to emit(lower, upper, title, ...) for each kind of stmt
 #define MU_EACH_STMT_KIND(emit, ...) \
+  emit(datatype, DATATYPE, Datatype, ##__VA_ARGS__) \
   emit(define, DEFINE, Define, ##__VA_ARGS__) \
-  emit(type, TYPE, Type, ##__VA_ARGS__)
 
 /// Expands to emit(lower, upper, title, ...) for each kind of view
 #define MU_EACH_VIEW_KIND(emit, ...) \
@@ -44,7 +44,8 @@
   MU_EACH_SIGN_KIND(MU_EACH_NODE_EMIT, _sign, _SIGN, Sign, emit, ##__VA_ARGS__) \
   MU_EACH_STMT_KIND(MU_EACH_NODE_EMIT, _stmt, _STMT, Stmt, emit, ##__VA_ARGS__) \
   MU_EACH_VIEW_KIND(MU_EACH_NODE_EMIT, _view, _VIEW, View, emit, ##__VA_ARGS__) \
-  emit(expr_member, EXPR_MEMBER, ExprMember, ##__VA_ARGS__)
+  emit(expr_member, EXPR_MEMBER, ExprMember, ##__VA_ARGS__) \
+  emit(datatype_option, DATATYPE_OPTION, DatatypeOption, ##__VA_ARGS__)
 
 /// An enumeration over each kind of node, e.g. @c MU_ACCESS_EXPR_NODE
 typedef enum {
