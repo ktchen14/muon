@@ -34,6 +34,10 @@
 #define MU_EACH_VIEW_KIND(emit, ...) \
   emit(variable, VARIABLE, Variable, ##__VA_ARGS__)
 
+/// @internal Used as @c emit in MU_EACH_NODE_KIND
+#define MU_EACH_NODE_EMIT(l, u, t, lsuffix, usuffix, tsuffix, emit, ...) \
+  emit(l##lsuffix, u##usuffix, t##tsuffix, ##__VA_ARGS__)
+
 /// Expands to emit(lower, upper, title, ...) for each kind of node
 #define MU_EACH_NODE_KIND(emit, ...) \
   MU_EACH_EXPR_KIND(MU_EACH_NODE_EMIT, _expr, _EXPR, Expr, emit, ##__VA_ARGS__) \
@@ -41,10 +45,6 @@
   MU_EACH_STMT_KIND(MU_EACH_NODE_EMIT, _stmt, _STMT, Stmt, emit, ##__VA_ARGS__) \
   MU_EACH_VIEW_KIND(MU_EACH_NODE_EMIT, _view, _VIEW, View, emit, ##__VA_ARGS__) \
   emit(expr_member, EXPR_MEMBER, ExprMember, ##__VA_ARGS__)
-
-/// @internal Used as @c emit in MU_EACH_NODE_KIND
-#define MU_EACH_NODE_EMIT(l, u, t, lsuffix, usuffix, tsuffix, emit, ...) \
-  emit(l##lsuffix, u##usuffix, t##tsuffix, ##__VA_ARGS__)
 
 /// An enumeration over each kind of node, e.g. @c MU_ACCESS_EXPR_NODE
 typedef enum {
