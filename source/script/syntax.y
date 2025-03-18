@@ -13,7 +13,7 @@ typedef struct {
   size_t stmt_i;
   const mu_expr_t *expr[800];
   size_t expr_i;
-  mu_expr_member_t expr_member[800];
+  const mu_expr_member_t *expr_member[800];
   size_t expr_member_i;
 } syntax_t;
 }
@@ -42,13 +42,13 @@ typedef struct {
   const mu_name_t *name;
 
   const mu_expr_t *expr;
-  mu_expr_member_t expr_member;
   const mu_access_expr_t *access_expr;
   const mu_boolean_expr_t *boolean_expr;
   const mu_integer_expr_t *integer_expr;
   const mu_invoke_expr_t *invoke_expr;
   const mu_lambda_expr_t *lambda_expr;
   const mu_name_expr_t *name_expr;
+  const mu_expr_member_t *expr_member;
   const mu_record_expr_t *record_expr;
   const mu_vector_expr_t *vector_expr;
 
@@ -193,7 +193,9 @@ name_expr: name {
 // --------------------------------- Record ------------------------------- {{{2
 
 expr_member: name ':' _ expr {
-  $$ = (mu_expr_member_t) { .name = $name, .expr = $expr };
+  $$ = mu_expr_member(syntax->engine, $name, $expr);
+} | expr {
+  $$ = mu_expr_member(syntax->engine, NULL, $expr);
 }
 
 record_expr: '(' record_argv ')' {
@@ -209,16 +211,8 @@ record_argv: expr_member {
   syntax->expr_member[syntax->expr_member_i++] = $expr_member;
   $$ = 1;
 
-} | expr {
-  syntax->expr_member[syntax->expr_member_i++] = (mu_expr_member_t) { .expr = $expr };
-  $$ = 1;
-
 } | record_argv ',' _ expr_member {
   syntax->expr_member[syntax->expr_member_i++] = $expr_member;
-  $$ = $1 + 1;
-
-} | record_argv ',' _ expr {
-  syntax->expr_member[syntax->expr_member_i++] = (mu_expr_member_t) { .expr = $expr };
   $$ = $1 + 1;
 }
 

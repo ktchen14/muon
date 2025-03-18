@@ -95,17 +95,30 @@ const mu_native_expr_t *mu_native_expr(mu_engine_t *engine, const mu_name_t *nam
   return assign_node(engine, result);
 }
 
+const mu_expr_member_t *mu_expr_member(
+    mu_engine_t *engine, const mu_name_t *name, const mu_expr_t *expr) {
+  assert(name == NULL || name->engine == engine);
+  assert(expr->as_node.engine == engine);
+
+  mu_expr_member_t *result;
+  if ((result = node_allocate(engine, sizeof(mu_expr_member_t))) == NULL)
+    return NULL;
+  *result = (mu_expr_member_t) {
+    .as_node.kind = MU_EXPR_MEMBER_NODE, .name = name, .expr = expr,
+  };
+  return assign_node(engine, result);
+}
 
 const mu_record_expr_t *mu_record_expr(
-    mu_engine_t *engine, size_t argc, const mu_expr_member_t argv[]) {
+    mu_engine_t *engine, size_t argc, const mu_expr_member_t *argv[]) {
   assert(argc == 0 && argv == NULL || argc != 0 && argv != NULL);
 
   mu_record_expr_t *result;
   if ((result = record_expr_allocate(engine, argc)) == NULL)
     return NULL;
 
-  if (argc > 0)
-    memcpy(&result->argv, argv, sizeof(const mu_expr_member_t[argc]));
+  for (size_t i = 0; i < argc; i++)
+    result->argv[i] = argv[i];
 
   return record_expr_activate(result);
 }
@@ -118,8 +131,8 @@ const mu_sequence_expr_t *mu_sequence_expr(
   if ((result = sequence_expr_allocate(engine, argc)) == NULL)
     return NULL;
 
-  if (argc > 0)
-    memcpy(&result->argv, argv, sizeof(const mu_stmt_t *[argc]));
+  for (size_t i = 0; i < argc; i++)
+    result->argv[i] = argv[i];
 
   return sequence_expr_activate(result);
 }
@@ -144,8 +157,8 @@ const mu_vector_expr_t *mu_vector_expr(
     .as_expr.kind = MU_VECTOR_EXPR, .argc = argc,
   };
 
-  if (argc > 0)
-    memcpy(&result->argv, argv, sizeof(const mu_expr_t *[argc]));
+  for (size_t i = 0; i < argc; i++)
+    result->argv[i] = argv[i];
 
   return assign_node(engine, result);
 }
@@ -174,11 +187,8 @@ const mu_record_expr_t *record_expr_activate(mu_record_expr_t *expr) {
   mu_engine_t *engine = (mu_engine_t *) expr->as_node.engine;
 
   for (size_t i = 0; i < expr->argc; i++) {
-    const mu_name_t *member_name = expr->argv[i].name;
-    const mu_expr_t *member_expr = expr->argv[i].expr;
-    assert(member_name == NULL || member_name->engine == engine);
-    assert(member_expr != NULL);
-    assert(member_expr->as_node.engine == engine);
+    assert(expr->argv[i] != NULL);
+    assert(expr->argv[i]->as_node.engine == engine);
   }
 
   mu_record_expr_t source = {
@@ -295,8 +305,22 @@ void mu_native_expr_debug(const mu_native_expr_t *expr) {
   putc('\n', stderr);
 }
 
-/// Emit debugging information on the expr @a member to the debug stream
-static void expr_member_debug(mu_expr_member_t member);
+void mu_expr_member_debug(const mu_expr_member_t *member) {
+  fprintf(stderr, "%*s", debug_indent, "");
+  fprintf(stderr, PRIsKIND "#" PRIuID,
+      DEBUG_KIND("ExprMember"), DEBUG_ID(member->as_node.id));
+
+  if (member->name != NULL) {
+    fprintf(stderr, "(name = ");
+    mu_name_debug(member->name);
+    putc(')', stderr);
+  }
+
+  debug_node_type(&member->as_node);
+  putc('\n', stderr);
+
+  WITH_DEBUG_INDENT() { expr_debug_with_coercion(member->expr); }
+}
 
 void mu_record_expr_debug(const mu_record_expr_t *expr) {
   fprintf(stderr, "%*s", debug_indent, "");
@@ -307,20 +331,8 @@ void mu_record_expr_debug(const mu_record_expr_t *expr) {
 
   WITH_DEBUG_INDENT() {
     for (size_t i = 0; i < expr->argc; i++)
-      expr_member_debug(expr->argv[i]);
+      mu_expr_member_debug(expr->argv[i]);
   }
-}
-
-static void expr_member_debug(mu_expr_member_t member) {
-  fprintf(stderr, "%*s", debug_indent, "");
-  if (member.name != NULL) {
-    fprintf(stderr, "Member: ");
-    mu_name_debug(member.name);
-    putc('\n', stderr);
-  } else
-    fputs("Member:\n", stderr);
-
-  WITH_DEBUG_INDENT() { expr_debug_with_coercion(member.expr); }
 }
 
 void mu_sequence_expr_debug(const mu_sequence_expr_t *expr) {

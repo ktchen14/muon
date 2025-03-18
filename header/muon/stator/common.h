@@ -39,7 +39,8 @@
   MU_EACH_EXPR_KIND(MU_EACH_NODE_EMIT, _expr, _EXPR, Expr, emit, ##__VA_ARGS__) \
   MU_EACH_SIGN_KIND(MU_EACH_NODE_EMIT, _sign, _SIGN, Sign, emit, ##__VA_ARGS__) \
   MU_EACH_STMT_KIND(MU_EACH_NODE_EMIT, _stmt, _STMT, Stmt, emit, ##__VA_ARGS__) \
-  MU_EACH_VIEW_KIND(MU_EACH_NODE_EMIT, _view, _VIEW, View, emit, ##__VA_ARGS__)
+  MU_EACH_VIEW_KIND(MU_EACH_NODE_EMIT, _view, _VIEW, View, emit, ##__VA_ARGS__) \
+  emit(expr_member, EXPR_MEMBER, ExprMember, ##__VA_ARGS__)
 
 /// @internal Used as @c emit in MU_EACH_NODE_KIND
 #define MU_EACH_NODE_EMIT(l, u, t, lsuffix, usuffix, tsuffix, emit, ...) \
@@ -88,6 +89,9 @@ typedef struct mu_node_t {
   const mu_engine_t *engine;
   size_t id;
 } mu_node_t;
+
+/// The header that each concrete expr must have
+#define MU_NODE_HEADER mu_node_t as_node
 
 /// An abstract expr
 typedef struct {

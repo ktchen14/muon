@@ -62,11 +62,18 @@ static inline const mu_node_t *native_expr_at(
   return NULL;
 }
 
+/// Return the <em>i</em>th node in the record member @a node
+__attribute__((nonnull, pure))
+static inline const mu_node_t *expr_member_at(
+    const mu_expr_member_t *member, size_t i) {
+  return i == 0 ? &member->expr->as_node : NULL;
+}
+
 /// Return the <em>i</em>th node in the record @a expr
 __attribute__((nonnull, pure))
 static inline const mu_node_t *record_expr_at(
     const mu_record_expr_t *expr, size_t i) {
-  return i < expr->argc ? &expr->argv[i].expr->as_node : NULL;
+  return i < expr->argc ? &expr->argv[i]->as_node : NULL;
 }
 
 /// Return the <em>i</em>th node in the sequence @a expr

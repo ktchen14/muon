@@ -75,7 +75,8 @@
       MU_EACH_EXPR_KIND(MU_EXPR_CAST_EMIT, _NODE) \
       MU_EACH_SIGN_KIND(MU_SIGN_CAST_EMIT, _NODE) \
       MU_EACH_STMT_KIND(MU_STMT_CAST_EMIT, _NODE) \
-      MU_EACH_VIEW_KIND(MU_VIEW_CAST_EMIT, _NODE)); \
+      MU_EACH_VIEW_KIND(MU_VIEW_CAST_EMIT, _NODE), \
+      const mu_expr_member_t *: _kind == MU_EXPR_MEMBER_NODE); \
     _castable ? (typeof(_concrete)) _abstract : NULL; \
   })
 

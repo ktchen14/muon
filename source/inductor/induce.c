@@ -742,7 +742,7 @@ __attribute__((nonnull)) static const mu_type_t *record_expr_induce(
     return NULL;
 
   for (size_t i = 0; i < expr->argc; i++) {
-    const mu_name_t *name = expr->argv[i].name;
+    const mu_name_t *name = expr->argv[i]->name;
 
     mu_core_member_t member = { .name = name };
     core_allocation->argv[i] = member;
@@ -760,7 +760,7 @@ __attribute__((nonnull)) static const mu_type_t *record_expr_induce(
     return NULL;
 
   for (size_t i = 0; i < expr->argc; i++)
-    type_allocation->argv[i] = induce_reveal(induce, &expr->argv[i].expr->as_node);
+    type_allocation->argv[i] = induce_reveal(induce, &expr->argv[i]->as_node);
 
   const mu_core_type_t *result;
   if (rare((result = core_type_activate(type_allocation)) == NULL))
@@ -938,6 +938,11 @@ __attribute__((nonnull)) static const mu_type_t *variable_view_induce(
 }
 
 // -------------------------------- Abstract ------------------------------ {{{1
+
+__attribute__((nonnull)) static const mu_type_t *expr_member_induce(
+    const mu_expr_member_t *member, induce_t *induce, open_scheme_t *scheme) {
+  return induce_reveal(induce, &member->expr->as_node);
+}
 
 static const mu_type_t *node_induce(const mu_node_t *node, induce_t *induce, open_scheme_t *scheme) {
   switch (node->kind) {

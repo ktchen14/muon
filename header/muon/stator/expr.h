@@ -50,6 +50,7 @@ typedef struct {
 } mu_native_expr_t;
 
 typedef struct {
+  MU_NODE_HEADER;
   const mu_name_t *name; // optional
   const mu_expr_t *expr;
 } mu_expr_member_t;
@@ -57,7 +58,7 @@ typedef struct {
 typedef struct {
   MU_EXPR_HEADER;
   size_t argc;
-  mu_expr_member_t argv[/* argc */];
+  const mu_expr_member_t *argv[/* argc */];
 } mu_record_expr_t;
 
 typedef struct {
@@ -101,8 +102,12 @@ const mu_native_expr_t *mu_native_expr(
     mu_engine_t *engine, const mu_name_t *name)
   __attribute__((malloc, nonnull));
 
+const mu_expr_member_t *mu_expr_member(
+    mu_engine_t *engine, const mu_name_t *name, const mu_expr_t *expr)
+  __attribute__((malloc, nonnull));
+
 const mu_record_expr_t *mu_record_expr(
-    mu_engine_t *engine, size_t argc, const mu_expr_member_t argv[/* argc */])
+    mu_engine_t *engine, size_t argc, const mu_expr_member_t *argv[/* argc */])
   __attribute__((malloc, nonnull(1)));
 
 const mu_sequence_expr_t *mu_sequence_expr(
@@ -142,6 +147,10 @@ void mu_name_expr_debug(const mu_name_expr_t *expr)
 
 /// Emit debugging information on the native @a expr to the debug stream
 void mu_native_expr_debug(const mu_native_expr_t *expr)
+  __attribute__((nonnull));
+
+/// Emit debugging information on the expr @a member to the debug stream
+void mu_expr_member_debug(const mu_expr_member_t *member)
   __attribute__((nonnull));
 
 /// Emit debugging information on the record @a expr to the debug stream
