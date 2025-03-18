@@ -15,6 +15,10 @@ typedef struct {
   size_t expr_i;
   const mu_expr_member_t *expr_member[800];
   size_t expr_member_i;
+
+  const mu_switch_case_t *switch_case[800];
+  size_t switch_case_i;
+
   const mu_datatype_option_t *datatype_option[200];
   size_t datatype_option_i;
 } syntax_t;
@@ -52,6 +56,8 @@ typedef struct {
   const mu_name_expr_t *name_expr;
   const mu_expr_member_t *expr_member;
   const mu_record_expr_t *record_expr;
+  const mu_switch_case_t *switch_case;
+  const mu_switch_expr_t *switch_expr;
   const mu_vector_expr_t *vector_expr;
 
   const mu_sign_t *sign;
@@ -69,10 +75,12 @@ typedef struct {
   const mu_variable_view_t *variable_view;
 }
 
+%token CASE "case"
 %token DATATYPE "datatype"
 %token DEFINE "define"
 %token INSTANCE "instance"
 %token LAMBDA "lambda"
+%token SWITCH "switch"
 
 %token BOOLEAN "Boolean"
 %token INTEGER "Integer"
@@ -96,6 +104,8 @@ typedef struct {
 %type <name_expr> name_expr
 %type <expr_member> expr_member
 %type <record_expr> record_expr
+%type <switch_case> switch_case
+%type <switch_expr> switch_expr
 %type <vector_expr> vector_expr
 
 %type <boolean_sign> boolean_sign
@@ -109,7 +119,7 @@ typedef struct {
 
 %type <variable_view> variable_view
 
-%type <i> datatype_argv record_argv vector_argv
+%type <i> datatype_argv record_argv switch_argv vector_argv
 
 %nonassoc LAMBDA
 %left     INVOKE ' '
@@ -171,6 +181,7 @@ expr: '(' expr[matter] ')' { $$ = $matter; } |
   lambda_expr  { $$ = &$lambda_expr->as_expr; } |
   name_expr    { $$ = &$name_expr->as_expr; } |
   record_expr  { $$ = &$record_expr->as_expr; } |
+  switch_expr  { $$ = &$switch_expr->as_expr; } |
   vector_expr  { $$ = &$vector_expr->as_expr; }
 
 access_expr: expr[matter] '.' name {
@@ -220,6 +231,27 @@ record_argv: expr_member {
 
 } | record_argv ',' _ expr_member {
   syntax->expr_member[syntax->expr_member_i++] = $expr_member;
+  $$ = $1 + 1;
+}
+
+// --------------------------------- Switch ------------------------------- {{{2
+
+switch_case: "case" _ name _ '=' _ expr {
+  $$ = mu_switch_case(syntax->engine, $name, $expr);
+}
+
+switch_expr: "switch" _ '(' switch_argv ')' {
+  size_t i = $switch_argv;
+  syntax->switch_case_i -= i;
+  $$ = mu_switch_expr(syntax->engine, i, &syntax->switch_case[syntax->switch_case_i]);
+}
+
+switch_argv: switch_case {
+  syntax->switch_case[syntax->switch_case_i++] = $switch_case;
+  $$ = 1;
+
+} | switch_argv ',' _ switch_case {
+  syntax->switch_case[syntax->switch_case_i++] = $switch_case;
   $$ = $1 + 1;
 }
 

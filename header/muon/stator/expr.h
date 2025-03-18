@@ -122,8 +122,16 @@ const mu_record_expr_t *mu_record_expr(
     mu_engine_t *engine, size_t argc, const mu_expr_member_t *argv[/* argc */])
   __attribute__((malloc, nonnull(1)));
 
+const mu_switch_case_t *mu_switch_case(
+    mu_engine_t *engine, const mu_name_t *name, const mu_expr_t *expr)
+  __attribute__((malloc, nonnull));
+
+const mu_switch_expr_t *mu_switch_expr(
+    mu_engine_t *engine, size_t argc, const mu_switch_case_t *const argv[argc])
+  __attribute__((malloc, nonnull));
+
 const mu_sequence_expr_t *mu_sequence_expr(
-    mu_engine_t *engine, size_t argc, const mu_stmt_t *const argv[/* argc */])
+    mu_engine_t *engine, size_t argc, const mu_stmt_t *const argv[argc])
   __attribute__((malloc, nonnull(1)));
 
 const mu_vector_expr_t *mu_vector_expr(

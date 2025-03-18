@@ -1,5 +1,7 @@
 datatype Foo = Foo1 | Foo2
 
+define foo = lambda x = Foo1
+
 define x = 1
 define y = 2
 define list = [x, y, 3, 4]
@@ -11,3 +13,6 @@ define id3 = lambda x = x
 define id4 = lambda x = x
 
 define b = id1 (id2 (id3 id4))
+
+define sw = switch (case Foo1 = 1, case Foo2 = true)
+define rs = sw Foo1

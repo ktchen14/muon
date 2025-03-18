@@ -123,8 +123,34 @@ const mu_record_expr_t *mu_record_expr(
   return record_expr_activate(result);
 }
 
+const mu_switch_case_t *mu_switch_case(
+    mu_engine_t *engine, const mu_name_t *name, const mu_expr_t *expr) {
+  assert(name->engine == engine);
+  assert(expr->as_node.engine == engine);
+
+  mu_switch_case_t *result;
+  if ((result = node_allocate(engine, sizeof(mu_switch_case_t))) == NULL)
+    return NULL;
+  *result = (mu_switch_case_t) {
+    .as_node.kind = MU_SWITCH_CASE_NODE, .name = name, .expr = expr,
+  };
+  return assign_node(engine, result);
+}
+
+const mu_switch_expr_t *mu_switch_expr(
+    mu_engine_t *engine, size_t argc, const mu_switch_case_t *const argv[argc]) {
+  mu_switch_expr_t *result;
+  if ((result = switch_expr_allocate(engine, argc)) == NULL)
+    return NULL;
+
+  for (size_t i = 0; i < argc; i++)
+    result->argv[i] = argv[i];
+
+  return switch_expr_activate(result);
+}
+
 const mu_sequence_expr_t *mu_sequence_expr(
-    mu_engine_t *engine, size_t argc, const mu_stmt_t *const argv[]) {
+    mu_engine_t *engine, size_t argc, const mu_stmt_t *const argv[argc]) {
   assert(argc == 0 && argv == NULL || argc != 0 && argv != NULL);
 
   mu_sequence_expr_t *result;
@@ -195,6 +221,33 @@ const mu_record_expr_t *record_expr_activate(mu_record_expr_t *expr) {
     .as_expr.kind = MU_RECORD_EXPR, .argc = expr->argc
   };
   memcpy(expr, &source, offsetof(mu_record_expr_t, argv));
+  return assign_node(engine, expr);
+}
+
+mu_switch_expr_t *switch_expr_allocate(mu_engine_t *engine, size_t argc) {
+  size_t size;
+  if (rare((size = struct_size(mu_switch_expr_t, argv, argc)) == 0))
+    return errno = ENOMEM, NULL;
+
+  mu_switch_expr_t *result;
+  if ((result = node_allocate(engine, size)) == NULL)
+    return NULL;
+  *result = (mu_switch_expr_t) { .as_node.engine = engine, .argc = argc };
+  return result;
+}
+
+const mu_switch_expr_t *switch_expr_activate(mu_switch_expr_t *expr) {
+  mu_engine_t *engine = (mu_engine_t *) expr->as_node.engine;
+
+  for (size_t i = 0; i < expr->argc; i++) {
+    assert(expr->argv[i] != NULL);
+    assert(expr->argv[i]->as_node.engine == engine);
+  }
+
+  mu_switch_expr_t source = {
+    .as_expr.kind = MU_SWITCH_EXPR, .argc = expr->argc
+  };
+  memcpy(expr, &source, offsetof(mu_switch_expr_t, argv));
   return assign_node(engine, expr);
 }
 
