@@ -777,6 +777,37 @@ __attribute__((nonnull)) static const mu_type_t *record_expr_induce(
   return &result->as_type;
 }
 
+__attribute__((nonnull)) static const mu_type_t *switch_case_induce(
+    const mu_switch_case_t *node, induce_t *induce, open_scheme_t *scheme) {
+  const mu_node_t *target;
+  if ((target = detect_evince(induce->detect, &node->as_node)) == NULL)
+    abort();
+  const mu_type_t *case_type = induce_reveal(induce, target);
+  assert(case_type->kind != MU_SCHEME_TYPE);
+
+  const mu_type_t *expr_type = evince(induce, &node->expr->as_node);
+
+  const mu_core_type_t *result;
+  if ((result = mu_lambda_type(induce, case_type, expr_type)) == NULL)
+    return NULL;
+  return &result->as_type;
+}
+
+__attribute__((nonnull)) static const mu_type_t *switch_expr_induce(
+    const mu_switch_expr_t *expr, induce_t *induce, open_scheme_t *scheme) {
+  const mu_variable_type_t *result;
+  if ((result = variable_type(induce, scheme)) == NULL)
+    return NULL;
+
+  for (size_t i = 0; i < expr->argc; i++) {
+    const mu_type_t *type = induce_reveal(induce, &expr->argv[i]->as_node);
+    if (restrict_type(induce, type, &result->as_type) == NULL)
+      return NULL;
+  }
+
+  return &result->as_type;
+}
+
 __attribute__((nonnull)) static const mu_type_t *sequence_expr_induce(
     const mu_sequence_expr_t *expr, induce_t *induce, open_scheme_t *scheme) {
   const mu_variable_type_t *result;

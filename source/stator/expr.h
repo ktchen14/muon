@@ -76,6 +76,20 @@ static inline const mu_node_t *record_expr_at(
   return i < expr->argc ? &expr->argv[i]->as_node : NULL;
 }
 
+/// Return the <em>i</em>th node in the switch case @a node
+__attribute__((nonnull, pure))
+static inline const mu_node_t *switch_case_at(
+    const mu_switch_case_t *node, size_t i) {
+  return i == 0 ? &node->expr->as_node : NULL;
+}
+
+/// Return the <em>i</em>th node in the switch @a expr
+__attribute__((nonnull, pure))
+static inline const mu_node_t *switch_expr_at(
+    const mu_switch_expr_t *expr, size_t i) {
+  return i < expr->argc ? &expr->argv[i]->as_node : NULL;
+}
+
 /// Return the <em>i</em>th node in the sequence @a expr
 __attribute__((nonnull, pure))
 static inline const mu_node_t *sequence_expr_at(

@@ -348,6 +348,29 @@ void mu_sequence_expr_debug(const mu_sequence_expr_t *expr) {
   }
 }
 
+void mu_switch_case_debug(const mu_switch_case_t *node) {
+  fprintf(stderr, "%*s", debug_indent, "");
+  fprintf(stderr, PRIsKIND "#" PRIuID "(name = ",
+      DEBUG_KIND("SwitchCase"), DEBUG_ID(node->as_node.id));
+  mu_name_debug(node->name);
+  putc(')', stderr);
+  debug_node_type(&node->as_node);
+  putc('\n', stderr);
+}
+
+void mu_switch_expr_debug(const mu_switch_expr_t *expr) {
+  fprintf(stderr, "%*s", debug_indent, "");
+  fprintf(stderr, PRIsKIND "#" PRIuID,
+      DEBUG_KIND("SwitchExpr"), DEBUG_ID(expr->as_node.id));
+  debug_node_type(&expr->as_node);
+  putc('\n', stderr);
+
+  WITH_DEBUG_INDENT() {
+    for (size_t i = 0; i < expr->argc; i++)
+      mu_switch_case_debug(expr->argv[i]);
+  }
+}
+
 void mu_vector_expr_debug(const mu_vector_expr_t *expr) {
   fprintf(stderr, "%*s", debug_indent, "");
   fprintf(stderr, PRIsKIND "#" PRIuID,

@@ -28,7 +28,7 @@ detect_t *detect_initialize(
   return detect;
 }
 
-const mu_stmt_t *sequence_expr_get(
+const mu_node_t *sequence_expr_get(
     const mu_sequence_expr_t *expr, const mu_name_t *name) {
   for (size_t i = 0; i < expr->argc; i++) {
     const mu_stmt_t *stmt = expr->argv[i];
@@ -40,7 +40,20 @@ const mu_stmt_t *sequence_expr_get(
     if (define_stmt->name != name)
       continue;
 
-    return &define_stmt->as_stmt;
+    return &define_stmt->as_node;
+  }
+
+  for (size_t j = 0; j < expr->argc; j++) {
+    const mu_stmt_t *stmt = expr->argv[j];
+
+    const mu_datatype_stmt_t *datatype_stmt;
+    if ((datatype_stmt = mu_stmt_cast(stmt, datatype_stmt)) != NULL) {
+      for (size_t i = 0; i < datatype_stmt->argc; i++) {
+        const mu_datatype_option_t *option = datatype_stmt->argv[i];
+        if (option->name == name)
+          return &option->as_node;
+      }
+    }
   }
 
   return NULL;
@@ -52,33 +65,28 @@ detect_t *detect_node(detect_t *detect, const mu_node_t *node) {
     while ((next = node_at(node, node_cursor(node)->i++)) != NULL)
       node = node_continue(node, next);
 
+    const mu_node_t *source;
+    const mu_name_t *name;
+
     const mu_name_expr_t *name_expr;
-    if ((name_expr = mu_node_cast(node, name_expr)) == NULL)
+    const mu_switch_case_t *switch_case;
+    if ((name_expr = mu_node_cast(node, name_expr)) != NULL) {
+      name = name_expr->name;
+      source = &name_expr->as_node;
+    } else if ((switch_case = mu_node_cast(node, switch_case)) != NULL) {
+      name = switch_case->name;
+      source = &switch_case->as_node;
+    } else
       continue;
 
     const mu_node_t *anterior = node_cursor(node)->anterior;
     for (; anterior != NULL; anterior = node_cursor(anterior)->anterior) {
       const mu_sequence_expr_t *sequence_expr;
       if ((sequence_expr = mu_node_cast(anterior, sequence_expr)) != NULL) {
-        const mu_stmt_t *target;
-        if ((target = sequence_expr_get(sequence_expr, name_expr->name)) != NULL) {
-          detect->result->data[name_expr->as_node.id] = &target->as_node;
+        const mu_node_t *target;
+        if ((target = sequence_expr_get(sequence_expr, name)) != NULL) {
+          detect->result->data[source->id] = target;
           goto next;
-        }
-
-        for (size_t j = 0; j < sequence_expr->argc; j++) {
-          const mu_stmt_t *stmt = sequence_expr->argv[j];
-
-          const mu_datatype_stmt_t *datatype_stmt;
-          if ((datatype_stmt = mu_stmt_cast(stmt, datatype_stmt)) != NULL) {
-            for (size_t i = 0; i < datatype_stmt->argc; i++) {
-              const mu_datatype_option_t *option = datatype_stmt->argv[i];
-              if (option->name == name_expr->name) {
-                detect->result->data[name_expr->as_node.id] = &option->as_node;
-                goto next;
-              }
-            }
-          }
         }
 
         continue;
@@ -89,8 +97,8 @@ detect_t *detect_node(detect_t *detect, const mu_node_t *node) {
         const mu_view_t *view = lambda_expr->argument;
         const mu_variable_view_t *variable_view = mu_view_cast(view, variable_view);
         assert(variable_view != NULL);
-        if (variable_view->name == name_expr->name) {
-          detect->result->data[name_expr->as_node.id] = &variable_view->as_node;
+        if (variable_view->name == name) {
+          detect->result->data[source->id] = &variable_view->as_node;
           goto next;
         }
         continue;

@@ -68,6 +68,18 @@ typedef struct {
 } mu_sequence_expr_t;
 
 typedef struct {
+  MU_NODE_HEADER;
+  const mu_name_t *name;
+  const mu_expr_t *expr;
+} mu_switch_case_t;
+
+typedef struct {
+  MU_EXPR_HEADER;
+  size_t argc;
+  const mu_switch_case_t *argv[/* argc */];
+} mu_switch_expr_t;
+
+typedef struct {
   MU_EXPR_HEADER;
   size_t argc;
   const mu_expr_t *argv[/* argc */];
@@ -159,6 +171,14 @@ void mu_record_expr_debug(const mu_record_expr_t *expr)
 
 /// Emit debugging information on the sequence @a expr to the debug stream
 void mu_sequence_expr_debug(const mu_sequence_expr_t *expr)
+  __attribute__((nonnull));
+
+/// Emit debugging information on the switch case @a node to the debug stream
+void mu_switch_case_debug(const mu_switch_case_t *node)
+  __attribute__((nonnull));
+
+/// Emit debugging information on the switch @a expr to the debug stream
+void mu_switch_expr_debug(const mu_switch_expr_t *expr)
   __attribute__((nonnull));
 
 /// Emit debugging information on the vector @a expr to the debug stream

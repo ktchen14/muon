@@ -14,6 +14,7 @@
   emit(native, NATIVE, Native, ##__VA_ARGS__) \
   emit(record, RECORD, Record, ##__VA_ARGS__) \
   emit(sequence, SEQUENCE, Sequence, ##__VA_ARGS__) \
+  emit(switch, SWITCH, Switch, ##__VA_ARGS__) \
   emit(vector, VECTOR, Vector, ##__VA_ARGS__) \
   emit(zero, ZERO, Zero, ##__VA_ARGS__)
 
@@ -45,6 +46,7 @@
   MU_EACH_STMT_KIND(MU_EACH_NODE_EMIT, _stmt, _STMT, Stmt, emit, ##__VA_ARGS__) \
   MU_EACH_VIEW_KIND(MU_EACH_NODE_EMIT, _view, _VIEW, View, emit, ##__VA_ARGS__) \
   emit(expr_member, EXPR_MEMBER, ExprMember, ##__VA_ARGS__) \
+  emit(switch_case, SWITCH_CASE, SwitchCase, ##__VA_ARGS__) \
   emit(datatype_option, DATATYPE_OPTION, DatatypeOption, ##__VA_ARGS__)
 
 /// An enumeration over each kind of node, e.g. @c MU_ACCESS_EXPR_NODE
