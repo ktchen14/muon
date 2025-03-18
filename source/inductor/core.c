@@ -3,6 +3,14 @@
 
 #include <stdio.h>
 
+const mu_core_t *mu_simple_core(induce_t *induce, const mu_name_t *name) {
+  mu_core_t *core;
+  if ((core = malloc(sizeof(mu_core_t))) == NULL)
+    return NULL;
+  *core = (mu_core_t) { .kind = MU_CUSTOM_CORE, .induce = induce, .name = name };
+  return core;
+}
+
 const mu_core_t *single_record_core(induce_t *induce, const mu_name_t *name) {
   for (size_t i = 0; i < induce->record_core_length; i++) {
     const mu_core_t *candidate = induce->record_core[i];
@@ -124,6 +132,8 @@ void mu_core_debug(const mu_core_t *core) {
       fprintf(stderr, PRIsKIND, DEBUG_KIND("Vector")); return;
     case MU_RECORD_CORE:
       fprintf(stderr, PRIsKIND, DEBUG_KIND("Record")); return;
+    case MU_CUSTOM_CORE:
+      mu_name_debug(core->name); return;
   }
   __builtin_unreachable();
 }

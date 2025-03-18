@@ -135,14 +135,14 @@ static void symbol_debug(
     case YYerror:
       printf("Error\n");
       break;
+    case DATATYPE:
+      printf("\"datatype\"");
+      break;
     case DEFINE:
       printf("\"define\"");
       break;
     case INSTANCE:
       printf("\"instance\"");
-      break;
-    case TYPE:
-      printf("\"type\"");
       break;
     case NAME:
       fputs("NAME ", stdout);

@@ -484,6 +484,15 @@ const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
     while ((next = node_at(node, node_cursor(node)->i++)) != NULL) {
       node = node_continue(node, next);
 
+      const mu_datatype_stmt_t *datatype_stmt;
+      if ((datatype_stmt = mu_node_cast(node, datatype_stmt)) != NULL) {
+        const mu_core_t *core;
+        if ((core = mu_simple_core(induce, datatype_stmt->name)) == NULL)
+          return NULL;
+        induce->core[induce->core_length++] = core;
+        induce->datatype_core = core;
+      }
+
       if (node->kind != MU_DEFINE_STMT_NODE)
         continue;
 
@@ -851,12 +860,22 @@ __attribute__((nonnull)) static const mu_type_t *vector_sign_induce(
 
 __attribute__((nonnull)) static const mu_type_t *datatype_option_induce(
     const mu_datatype_option_t *option, induce_t *induce, open_scheme_t *scheme) {
-  assert(0);
+  const mu_core_t *core = induce->datatype_core;
+  assert(core != NULL);
+
+  const mu_core_type_t *result;
+  if ((result = mu_core_type(induce, core, NULL)) == NULL)
+    return NULL;
+  return &result->as_type;
 }
 
 __attribute__((nonnull)) static const mu_type_t *datatype_stmt_induce(
     const mu_datatype_stmt_t *stmt, induce_t *induce, open_scheme_t *scheme) {
-  assert(0);
+  // TODO: Fake this
+  const mu_core_type_t *result;
+  if ((result = mu_integer_type(induce)) == NULL)
+    return NULL;
+  return &result->as_type;
 }
 
 __attribute__((nonnull, pure)) static const mu_type_t *define_stmt_induce(

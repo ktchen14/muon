@@ -12,6 +12,7 @@ typedef enum {
   MU_LAMBDA_CORE,
   MU_VECTOR_CORE,
   MU_RECORD_CORE,
+  MU_CUSTOM_CORE,
 } mu_core_kind_t;
 
 typedef enum {
@@ -30,6 +31,7 @@ typedef struct induce_t induce_t;
 typedef struct {
   mu_core_kind_t kind;
   const induce_t *induce;
+  const mu_name_t *name;
   size_t argc;
   mu_core_member_t argv[/* argc */];
 } mu_core_t;
@@ -39,6 +41,8 @@ typedef struct {
   const mu_core_t *source;
   size_t argv[/* target->argc */];
 } record_instance_t;
+
+const mu_core_t *mu_simple_core(induce_t *induce, const mu_name_t *name);
 
 const mu_core_t *single_record_core(induce_t *induce, const mu_name_t *name)
   __attribute__((malloc, nonnull));

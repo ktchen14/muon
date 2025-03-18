@@ -44,6 +44,10 @@ struct induce_t {
   const mu_core_t *lambda_core;
   const mu_core_t *vector_core;
 
+  const mu_core_t *datatype_core;
+  const mu_core_t *core[200];
+  size_t core_length;
+
   const mu_core_t *record_core[200];
   size_t record_core_length;
 

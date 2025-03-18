@@ -23,4 +23,11 @@ static inline const mu_node_t *define_stmt_at(
   return i == 0 ? &stmt->expr->as_node : NULL;
 }
 
+mu_datatype_stmt_t *datatype_stmt_allocate(mu_engine_t *engine, size_t argc)
+  __attribute__((malloc, nonnull));
+
+const mu_datatype_stmt_t *datatype_stmt_activate(
+    mu_datatype_stmt_t *stmt, const mu_name_t *name)
+  __attribute__((nonnull));
+
 #endif /* MU_STATOR_STMT_I */

@@ -26,13 +26,23 @@ typedef struct {
   const mu_expr_t *expr;
 } mu_define_stmt_t;
 
-const mu_datatype_stmt_t *mu_datatype_stmt(
-    mu_engine_t *engine, const mu_name_t *name, const mu_sign_t *sign)
+const mu_datatype_option_t *mu_datatype_option(
+    mu_engine_t *engine, const mu_name_t *name)
   __attribute__((malloc, nonnull));
+
+const mu_datatype_stmt_t *mu_datatype_stmt(
+    mu_engine_t *engine,
+    const mu_name_t *name,
+    size_t argc,
+    const mu_datatype_option_t *argv[/* argc */])
+  __attribute__((malloc, nonnull(1, 2)));
 
 const mu_define_stmt_t *mu_define_stmt(
     mu_engine_t *engine, const mu_name_t *name, const mu_expr_t *expr)
   __attribute__((malloc, nonnull));
+
+void mu_datatype_option_debug(const mu_datatype_option_t *option)
+  __attribute__((nonnull));
 
 void mu_datatype_stmt_debug(const mu_datatype_stmt_t *stmt)
   __attribute__((nonnull));

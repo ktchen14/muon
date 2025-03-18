@@ -1,3 +1,5 @@
+datatype Foo = Foo1 | Foo2
+
 define x = 1
 define y = 2
 define list = [x, y, 3, 4]

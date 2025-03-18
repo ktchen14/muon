@@ -59,14 +59,33 @@ detect_t *detect_node(detect_t *detect, const mu_node_t *node) {
     const mu_node_t *anterior = node_cursor(node)->anterior;
     for (; anterior != NULL; anterior = node_cursor(anterior)->anterior) {
       const mu_sequence_expr_t *sequence_expr;
-      const mu_lambda_expr_t *lambda_expr;
       if ((sequence_expr = mu_node_cast(anterior, sequence_expr)) != NULL) {
         const mu_stmt_t *target;
         if ((target = sequence_expr_get(sequence_expr, name_expr->name)) != NULL) {
           detect->result->data[name_expr->as_node.id] = &target->as_node;
           goto next;
         }
-      } else if ((lambda_expr = mu_node_cast(anterior, lambda_expr)) != NULL) {
+
+        for (size_t j = 0; j < sequence_expr->argc; j++) {
+          const mu_stmt_t *stmt = sequence_expr->argv[j];
+
+          const mu_datatype_stmt_t *datatype_stmt;
+          if ((datatype_stmt = mu_stmt_cast(stmt, datatype_stmt)) != NULL) {
+            for (size_t i = 0; i < datatype_stmt->argc; i++) {
+              const mu_datatype_option_t *option = datatype_stmt->argv[i];
+              if (option->name == name_expr->name) {
+                detect->result->data[name_expr->as_node.id] = &option->as_node;
+                goto next;
+              }
+            }
+          }
+        }
+
+        continue;
+      }
+
+      const mu_lambda_expr_t *lambda_expr;
+      if ((lambda_expr = mu_node_cast(anterior, lambda_expr)) != NULL) {
         const mu_view_t *view = lambda_expr->argument;
         const mu_variable_view_t *variable_view = mu_view_cast(view, variable_view);
         assert(variable_view != NULL);
@@ -74,6 +93,7 @@ detect_t *detect_node(detect_t *detect, const mu_node_t *node) {
           detect->result->data[name_expr->as_node.id] = &variable_view->as_node;
           goto next;
         }
+        continue;
       }
     }
 

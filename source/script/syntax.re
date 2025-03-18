@@ -12,10 +12,10 @@ stop = [\x00];
 
 // ================================ Keyword ====================================
 
+<normal> "datatype" { return DATATYPE; }
 <normal> "define"   { return DEFINE; }
 <normal> "instance" { return INSTANCE; }
 <normal> "lambda"   { return LAMBDA; }
-<normal> "type"     { return TYPE; }
 
 <normal> "Boolean"  { return BOOLEAN; }
 <normal> "Integer"  { return INTEGER; }
@@ -30,6 +30,7 @@ stop = [\x00];
 <normal> "="                { return '='; }
 <normal> "["                { return '['; }
 <normal> "]"                { return ']'; }
+<normal> "|"                { return '|'; }
 
 // ================================ Boolean ====================================
 

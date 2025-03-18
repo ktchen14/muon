@@ -162,6 +162,9 @@ void debug_type(const mu_type_t *type) {
           }
           fprintf(stderr, ")");
           break;
+
+        case MU_CUSTOM_CORE:
+          mu_core_debug(core);
       }
       break;
     }
@@ -296,6 +299,9 @@ void debug_just_type(const mu_type_t *type) {
           }
           fprintf(stderr, ")");
           break;
+
+        case MU_CUSTOM_CORE:
+          mu_core_debug(core);
       }
       break;
     }

@@ -15,6 +15,8 @@ typedef struct {
   size_t expr_i;
   const mu_expr_member_t *expr_member[800];
   size_t expr_member_i;
+  const mu_datatype_option_t *datatype_option[200];
+  size_t datatype_option_i;
 } syntax_t;
 }
 
@@ -59,16 +61,19 @@ typedef struct {
   const mu_vector_sign_t *vector_sign;
 
   const mu_stmt_t *stmt;
+  const mu_datatype_option_t *datatype_option;
+  const mu_datatype_stmt_t *datatype_stmt;
   const mu_define_stmt_t *define_stmt;
 
   const mu_view_t *view;
   const mu_variable_view_t *variable_view;
 }
 
+%token DATATYPE "datatype"
 %token DEFINE "define"
 %token INSTANCE "instance"
 %token LAMBDA "lambda"
-%token TYPE "type"
+
 %token BOOLEAN "Boolean"
 %token INTEGER "Integer"
 
@@ -83,13 +88,13 @@ typedef struct {
 %type <stmt> stmt
 %type <view> view
 
-%type <expr_member> expr_member
 %type <access_expr> access_expr
 %type <boolean_expr> boolean_expr
 %type <integer_expr> integer_expr
 %type <invoke_expr> invoke_expr
 %type <lambda_expr> lambda_expr
 %type <name_expr> name_expr
+%type <expr_member> expr_member
 %type <record_expr> record_expr
 %type <vector_expr> vector_expr
 
@@ -98,11 +103,13 @@ typedef struct {
 %type <name_sign> name_sign
 %type <vector_sign> vector_sign
 
+%type <datatype_option> datatype_option
+%type <datatype_stmt> datatype_stmt
 %type <define_stmt> define_stmt
 
 %type <variable_view> variable_view
 
-%type <i> record_argv vector_argv
+%type <i> datatype_argv record_argv vector_argv
 
 %nonassoc LAMBDA
 %left     INVOKE ' '
@@ -263,7 +270,27 @@ vector_sign: '[' sign ']' {
 // ================================== Stmt ================================ {{{1
 
 stmt:
-  define_stmt { $$ = &$define_stmt->as_stmt; }
+  datatype_stmt { $$ = &$datatype_stmt->as_stmt; } |
+  define_stmt   { $$ = &$define_stmt->as_stmt; }
+
+datatype_stmt: "datatype" _ name _ '=' _ datatype_argv '\n' {
+  size_t i = $datatype_argv;
+  syntax->datatype_option_i -= i;
+  $$ = mu_datatype_stmt(syntax->engine, $name, i, &syntax->datatype_option[syntax->datatype_option_i]);
+}
+
+datatype_argv: datatype_option {
+  syntax->datatype_option[syntax->datatype_option_i++] = $datatype_option;
+  $$ = 1;
+
+} | datatype_argv _ '|' _ datatype_option {
+  syntax->datatype_option[syntax->datatype_option_i++] = $datatype_option;
+  $$ = $1 + 1;
+}
+
+datatype_option: name {
+  $$ = mu_datatype_option(syntax->engine, $name);
+}
 
 define_stmt: "define" _ name _ '=' _ expr '\n' {
   $$ = mu_define_stmt(syntax->engine, $name, $expr);
