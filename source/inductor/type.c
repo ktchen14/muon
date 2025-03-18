@@ -21,8 +21,8 @@ const mu_core_type_t *mu_core_type(
   mu_core_type_t *result;
   if ((result = core_type_allocate(induce, core)) == NULL)
     return NULL;
-  if (core->argc > 0)
-    memcpy(result->argv, argv, sizeof(const mu_type_t *[core->argc]));
+  for (size_t i = 0; i < core->argc; i++)
+    result->argv[i] = argv[i];
   return core_type_activate(result);
 }
 

@@ -19,7 +19,9 @@ mu_script_t *mu_script(size_t argc, const mu_stmt_t *argv[argc]) {
     return NULL;
   *script = (mu_script_t) { .argc = argc };
 
-  memcpy(script->argv, argv, sizeof(const mu_stmt_t *[argc]));
+  for (size_t i = 0; i < argc; i++)
+    script->argv[i] = argv[i];
+
   return script;
 }
 

@@ -12,8 +12,8 @@ const mu_variance_coercion_t *mu_variance_coercion(
   if ((allocation = variance_coercion_allocate(core)) == NULL)
     return NULL;
 
-  if (core->argc > 0)
-    memcpy(allocation->argv, argv, sizeof(const mu_coercion_t *[core->argc]));
+  for (size_t i = 0; i < core->argc; i++)
+    allocation->argv[i] = argv[i];
 
   return variance_coercion_activate(allocation);
 }

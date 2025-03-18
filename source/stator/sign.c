@@ -56,8 +56,8 @@ const mu_record_sign_t *mu_record_sign(
     .as_sign.kind = MU_RECORD_SIGN, .argc = argc,
   };
 
-  if (argc > 0)
-    memcpy(&result->argv, argv, sizeof(const mu_sign_member_t[argc]));
+  for (size_t i = 0; i < argc; i++)
+    result->argv[i] = argv[i];
 
   return assign_node(engine, result);
 }
