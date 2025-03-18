@@ -53,7 +53,7 @@ _Thread_local mbstate_t cs = {0};
 
 void mu_name_debug(const mu_name_t *name) {
   if (debug_colorize)
-    fputs("\e[0;32m", stderr);
+    fputs("\x1b[0;32m", stderr);
 
   fprintf(stderr, "%s", name->text);
 
@@ -69,7 +69,7 @@ void mu_name_debug(const mu_name_t *name) {
   /* } */
 
   if (debug_colorize)
-    fputs("\e[0m", stderr);
+    fputs("\x1b[0m", stderr);
 
   assert(mbsinit(&cs));
 }

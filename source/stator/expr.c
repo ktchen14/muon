@@ -151,8 +151,6 @@ const mu_switch_expr_t *mu_switch_expr(
 
 const mu_sequence_expr_t *mu_sequence_expr(
     mu_engine_t *engine, size_t argc, const mu_stmt_t *const argv[argc]) {
-  assert(argc == 0 && argv == NULL || argc != 0 && argv != NULL);
-
   mu_sequence_expr_t *result;
   if ((result = sequence_expr_allocate(engine, argc)) == NULL)
     return NULL;

@@ -65,7 +65,7 @@ const unjoin_tactic_t *unjoin_tactic_create(size_t length)
   __attribute__((malloc));
 
 void tactic_debug(const tactic_t *tactic)
-  __attribute__((nonnull));;
+  __attribute__((nonnull));
 
 void variance_tactic_debug(const variance_tactic_t *tactic)
   __attribute__((nonnull));

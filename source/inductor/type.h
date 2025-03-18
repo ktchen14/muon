@@ -100,7 +100,7 @@ struct mu_scheme_type_t {
  * - @a concrete isn't, or doesn't have, the type of a const qualified pointer
  *   to a concrete type
  */
-#define mu_type_cast(abstract, concrete) ({ \
+#define mu_type_cast(abstract, concrete) __extension__ ({ \
     const mu_type_t *_abstract = (abstract); \
     typeof(concrete) _concrete; \
     mu_type_kind_t _kind = _abstract->kind; \

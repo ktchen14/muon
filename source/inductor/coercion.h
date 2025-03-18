@@ -96,7 +96,7 @@ const mu_unjoin_coercion_t *unjoin_coercion_activate(
   __attribute__((nonnull));
 
 void mu_coercion_debug(const mu_coercion_t *coercion)
-  __attribute__((nonnull));;
+  __attribute__((nonnull));
 
 void mu_id_coercion_debug(const mu_id_coercion_t *coercion)
   __attribute__((nonnull));

@@ -10,12 +10,12 @@
 #define rare(...)   __builtin_expect((__VA_ARGS__), 0)
 
 /// Return the minimum of @a a and @a b (as defined by the @c < operator)
-#define minimum(a, b) ({ \
+#define minimum(a, b) __extension__ ({ \
     typeof((a)) _a = (a); typeof((b)) _b = (b); _a < _b ? _a : _b; \
   })
 
 /// Return the maximum of @a a and @a b (as defined by the @c > operator)
-#define maximum(a, b) ({ \
+#define maximum(a, b) __extension__ ({ \
     typeof((a)) _a = (a); typeof((b)) _b = (b); _a > _b ? _a : _b; \
   })
 

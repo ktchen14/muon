@@ -62,7 +62,7 @@
  *   - <tt>const mu_view_t *</tt>
  *   - or a const qualified pointer to a concrete node
  */
-#define mu_node_cast(abstract, concrete) ({ \
+#define mu_node_cast(abstract, concrete) __extension__ ({ \
     const mu_node_t *_abstract = (abstract); \
     typeof(concrete) _concrete; \
     \
@@ -104,7 +104,7 @@
  * - @a concrete isn't, or doesn't have, the type of a const qualified pointer
  *   to a concrete expr
  */
-#define mu_expr_cast(abstract, concrete) ({ \
+#define mu_expr_cast(abstract, concrete) __extension__ ({ \
     const mu_expr_t *_abstract = (abstract); \
     typeof(concrete) _concrete; \
     \
@@ -136,7 +136,7 @@
  * - @a concrete isn't, or doesn't have, the type of a const qualified pointer
  *   to a concrete sign
  */
-#define mu_sign_cast(abstract, concrete) ({ \
+#define mu_sign_cast(abstract, concrete) __extension__ ({ \
     const mu_sign_t *_abstract = (abstract); \
     typeof(concrete) _concrete; \
     \
@@ -168,7 +168,7 @@
  * - @a concrete isn't, or doesn't have, the type of a const qualified pointer
  *   to a concrete stmt
  */
-#define mu_stmt_cast(abstract, concrete) ({ \
+#define mu_stmt_cast(abstract, concrete) __extension__ ({ \
     const mu_stmt_t *_abstract = (abstract); \
     typeof(concrete) _concrete; \
     \
@@ -200,7 +200,7 @@
  * - @a concrete isn't, or doesn't have, the type of a const qualified pointer
  *   to a concrete view
  */
-#define mu_view_cast(abstract, concrete) ({ \
+#define mu_view_cast(abstract, concrete) __extension__ ({ \
     const mu_view_t *_abstract = (abstract); \
     typeof(concrete) _concrete; \
     \

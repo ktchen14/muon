@@ -18,13 +18,13 @@ extern _Thread_local _Bool debug_negate;
 
 #define PRIsKIND "%s%s%s"
 #define DEBUG_KIND(text) \
-  debug_colorize ? "\e[0;33m" : "", (text), debug_colorize ? "\e[0m" : ""
+  debug_colorize ? "\x1b[0;33m" : "", (text), debug_colorize ? "\x1b[0m" : ""
 #define DEBUG_COERCION_KIND(text) \
-  debug_colorize ? "\e[0;34m" : "", (text), debug_colorize ? "\e[0m" : ""
+  debug_colorize ? "\x1b[0;34m" : "", (text), debug_colorize ? "\x1b[0m" : ""
 
 #define PRIuID "%s%zu%s"
 #define DEBUG_ID(id) \
-  debug_colorize ? "\e[0;31m" : "", (id), debug_colorize ? "\e[0m" : ""
+  debug_colorize ? "\x1b[0;31m" : "", (id), debug_colorize ? "\x1b[0m" : ""
 
 #define WITH_DEBUG_INDENT() \
   for (int _i = (debug_indent += 2); debug_indent == _i; debug_indent -= 2)

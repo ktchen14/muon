@@ -8,7 +8,7 @@ typedef struct memo_t memo_t;
 struct memo_t {
   const memo_t *next;
 
-  mu_memo_t _;
+  // mu_memo_t _;
 };
 
 struct mu_status_t {

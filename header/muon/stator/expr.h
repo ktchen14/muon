@@ -132,7 +132,7 @@ const mu_switch_expr_t *mu_switch_expr(
 
 const mu_sequence_expr_t *mu_sequence_expr(
     mu_engine_t *engine, size_t argc, const mu_stmt_t *const argv[argc])
-  __attribute__((malloc, nonnull(1)));
+  __attribute__((malloc, nonnull));
 
 const mu_vector_expr_t *mu_vector_expr(
     mu_engine_t *engine, size_t argc, const mu_expr_t *const argv[/* argc */])
