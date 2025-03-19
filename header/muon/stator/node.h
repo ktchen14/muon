@@ -101,26 +101,26 @@ typedef struct mu_node_t {
 
 /// An abstract expr
 typedef struct {
-  union { mu_expr_kind_t kind; mu_node_t as_node; };
+  union { MU_NODE_HEADER; mu_expr_kind_t kind; };
 } mu_expr_t;
 
 /// An abstract sign
 typedef struct {
-  union { mu_sign_kind_t kind; mu_node_t as_node; };
+  union { MU_NODE_HEADER; mu_sign_kind_t kind; };
 } mu_sign_t;
 
 /// An abstract stmt
 typedef struct {
-  union { mu_stmt_kind_t kind; mu_node_t as_node; };
+  union { MU_NODE_HEADER; mu_stmt_kind_t kind; };
 } mu_stmt_t;
 
 /// An abstract view
 typedef struct {
-  union { mu_view_kind_t kind; mu_node_t as_node; };
+  union { MU_NODE_HEADER; mu_view_kind_t kind; };
 } mu_view_t;
 
 /// @internal Used to emit each abstract branch in a cast
-#define MU_CAST_EMIT(l, upper, t, ...) || _kind == MU_##upper##__VA_ARGS__
+#define MU_NODE_CAST_EMIT(l, upper, t, ...) || _kind == MU_##upper##__VA_ARGS__
 
 /// @internal Used to emit each branch in mu_expr_cast()
 #define MU_EXPR_CAST_EMIT(lower, upper, t, ...) \
@@ -176,10 +176,10 @@ typedef struct {
     typeof(concrete) _concrete; \
     mu_node_kind_t _kind = _abstract->kind; \
     _Bool _castable = _Generic(_concrete, \
-      const mu_expr_t *: 0 MU_EACH_EXPR_KIND(MU_CAST_EMIT, _EXPR_NODE), \
-      const mu_sign_t *: 0 MU_EACH_SIGN_KIND(MU_CAST_EMIT, _SIGN_NODE), \
-      const mu_stmt_t *: 0 MU_EACH_STMT_KIND(MU_CAST_EMIT, _STMT_NODE), \
-      const mu_view_t *: 0 MU_EACH_VIEW_KIND(MU_CAST_EMIT, _VIEW_NODE) \
+      const mu_expr_t *: 0 MU_EACH_EXPR_KIND(MU_NODE_CAST_EMIT, _EXPR_NODE), \
+      const mu_sign_t *: 0 MU_EACH_SIGN_KIND(MU_NODE_CAST_EMIT, _SIGN_NODE), \
+      const mu_stmt_t *: 0 MU_EACH_STMT_KIND(MU_NODE_CAST_EMIT, _STMT_NODE), \
+      const mu_view_t *: 0 MU_EACH_VIEW_KIND(MU_NODE_CAST_EMIT, _VIEW_NODE) \
       MU_EACH_EXPR_KIND(MU_EXPR_CAST_EMIT, _NODE) \
       MU_EACH_SIGN_KIND(MU_SIGN_CAST_EMIT, _NODE) \
       MU_EACH_STMT_KIND(MU_STMT_CAST_EMIT, _NODE) \
@@ -394,67 +394,6 @@ typedef struct {
   MU_EXPR_HEADER;
 } mu_zero_expr_t;
 
-/// The header that each concrete sign must have
-#define MU_SIGN_HEADER union { mu_sign_t as_sign; mu_node_t as_node; }
-
-typedef struct {
-  MU_SIGN_HEADER;
-} mu_boolean_sign_t;
-
-typedef struct {
-  MU_SIGN_HEADER;
-} mu_integer_sign_t;
-
-typedef struct {
-  MU_SIGN_HEADER;
-  const mu_name_t *name;
-} mu_name_sign_t;
-
-typedef struct {
-  const mu_name_t *name; // optional
-  const mu_sign_t *sign;
-} mu_sign_member_t;
-
-typedef struct {
-  MU_SIGN_HEADER;
-  size_t argc;
-  mu_sign_member_t argv[/* argc */];
-} mu_record_sign_t;
-
-typedef struct {
-  MU_SIGN_HEADER;
-  const mu_sign_t *matter;
-} mu_vector_sign_t;
-
-/// The header that each concrete stmt must have
-#define MU_STMT_HEADER union { mu_stmt_t as_stmt; mu_node_t as_node; }
-
-typedef struct {
-  MU_NODE_HEADER;
-  const mu_name_t *name;
-} mu_datatype_option_t;
-
-typedef struct {
-  MU_STMT_HEADER;
-  const mu_name_t *name;
-  size_t argc;
-  const mu_datatype_option_t *argv[/* argc */];
-} mu_datatype_stmt_t;
-
-typedef struct {
-  MU_STMT_HEADER;
-  const mu_name_t *name;
-  const mu_expr_t *expr;
-} mu_define_stmt_t;
-
-/// The header that each concrete view must have
-#define MU_VIEW_HEADER union { mu_view_t as_view; mu_node_t as_node; }
-
-typedef struct {
-  MU_VIEW_HEADER;
-  const mu_name_t *name;
-} mu_variable_view_t;
-
 const mu_access_expr_t *mu_access_expr(
     mu_engine_t *engine, const mu_name_t *name, const mu_expr_t *matter)
   __attribute__((malloc, nonnull));
@@ -507,6 +446,38 @@ const mu_vector_expr_t *mu_vector_expr(
 const mu_zero_expr_t *mu_zero_expr(mu_engine_t *engine)
   __attribute__((malloc, nonnull));
 
+/// The header that each concrete sign must have
+#define MU_SIGN_HEADER union { mu_sign_t as_sign; mu_node_t as_node; }
+
+typedef struct {
+  MU_SIGN_HEADER;
+} mu_boolean_sign_t;
+
+typedef struct {
+  MU_SIGN_HEADER;
+} mu_integer_sign_t;
+
+typedef struct {
+  MU_SIGN_HEADER;
+  const mu_name_t *name;
+} mu_name_sign_t;
+
+typedef struct {
+  const mu_name_t *name; // optional
+  const mu_sign_t *sign;
+} mu_sign_member_t;
+
+typedef struct {
+  MU_SIGN_HEADER;
+  size_t argc;
+  mu_sign_member_t argv[/* argc */];
+} mu_record_sign_t;
+
+typedef struct {
+  MU_SIGN_HEADER;
+  const mu_sign_t *matter;
+} mu_vector_sign_t;
+
 const mu_boolean_sign_t *mu_boolean_sign(mu_engine_t *engine)
   __attribute__((malloc, nonnull));
 
@@ -524,6 +495,27 @@ const mu_vector_sign_t *mu_vector_sign(
     mu_engine_t *engine, const mu_sign_t *matter)
   __attribute__((malloc, nonnull));
 
+/// The header that each concrete stmt must have
+#define MU_STMT_HEADER union { mu_stmt_t as_stmt; mu_node_t as_node; }
+
+typedef struct {
+  MU_NODE_HEADER;
+  const mu_name_t *name;
+} mu_datatype_option_t;
+
+typedef struct {
+  MU_STMT_HEADER;
+  const mu_name_t *name;
+  size_t argc;
+  const mu_datatype_option_t *argv[/* argc */];
+} mu_datatype_stmt_t;
+
+typedef struct {
+  MU_STMT_HEADER;
+  const mu_name_t *name;
+  const mu_expr_t *expr;
+} mu_define_stmt_t;
+
 const mu_datatype_option_t *mu_datatype_option(
     mu_engine_t *engine, const mu_name_t *name)
   __attribute__((malloc, nonnull));
@@ -538,6 +530,14 @@ const mu_datatype_stmt_t *mu_datatype_stmt(
 const mu_define_stmt_t *mu_define_stmt(
     mu_engine_t *engine, const mu_name_t *name, const mu_expr_t *expr)
   __attribute__((malloc, nonnull));
+
+/// The header that each concrete view must have
+#define MU_VIEW_HEADER union { mu_view_t as_view; mu_node_t as_node; }
+
+typedef struct {
+  MU_VIEW_HEADER;
+  const mu_name_t *name;
+} mu_variable_view_t;
 
 const mu_variable_view_t *mu_variable_view(
     mu_engine_t *engine, const mu_name_t *name)
