@@ -1,6 +1,7 @@
 #include "tactic.h"
 
 #include <stddef.h>
+#include <stdlib.h>
 
 #include "../stator/debug.h"
 

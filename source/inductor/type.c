@@ -3,6 +3,7 @@
 
 #include <errno.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 /// @internal Assign the abstract @a type to the @a induce instance
 __attribute__((nonnull, returns_nonnull))

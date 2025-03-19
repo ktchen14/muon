@@ -2,6 +2,7 @@
 #include "induce.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 
 const mu_core_t *mu_simple_core(induce_t *induce, const mu_name_t *name) {
   mu_core_t *core;

@@ -8,6 +8,13 @@
 #include <assert.h>
 #include <stddef.h>
 
+/// @internal An enumeration over each kind of node, e.g. @c _access_expr_kind
+enum {
+#define MU_EMIT(lower, u, t) _##lower##_kind,
+  MU_EACH_NODE_KIND(MU_EMIT)
+#undef MU_EMIT
+};
+
 typedef struct {
   const mu_node_t *anterior;
   size_t i;
@@ -48,26 +55,6 @@ static inline const mu_node_t *node_return(const mu_node_t *node) {
   return anterior;
 }
 
-static _Thread_local const void *_object;
-
-#define ON_ABSTRACT_OBJECT(object) ( \
-  (_object = (object)), ((typeof((object))) _object)->kind \
-)
-
-#define JOIN(a, b) a##b
-#define INDIRECT_JOIN(a, b) JOIN(a, b)
-
-#define IS_KIND_OF(kind) _mu_##kind:; \
-  const mu_##kind##_t *kind = _object; \
-  goto INDIRECT_JOIN(case_on_, __LINE__); \
-  INDIRECT_JOIN(case_on_, __LINE__)
-
-enum {
-#define MU_EMIT(lower, u, t) _mu_##lower,
-  MU_EACH_NODE_KIND(MU_EMIT)
-#undef MU_EMIT
-};
-
 /// Return the <em>i</em>th node in the abstract @a node
 static inline const mu_node_t *node_at(const mu_node_t *node, size_t i) {
   switch ON_ABSTRACT_OBJECT(node) {
@@ -80,6 +67,7 @@ static inline const mu_node_t *node_at(const mu_node_t *node, size_t i) {
     case MU_INTEGER_SIGN:         return NULL;
     case MU_NAME_SIGN:            return NULL;
     case MU_DATATYPE_OPTION_NODE: return NULL;
+    case MU_VARIABLE_VIEW:        return NULL;
 
     case IS_KIND_OF(access_expr):
       return (const mu_node_t *[]) { &access_expr->matter->as_node, NULL }[i];
@@ -123,8 +111,6 @@ static inline const mu_node_t *node_at(const mu_node_t *node, size_t i) {
 
     case IS_KIND_OF(datatype_stmt):
       return i < datatype_stmt->argc ? &datatype_stmt->argv[i]->as_node : NULL;
-
-    case MU_VARIABLE_VIEW: return NULL;
   }
   __builtin_unreachable();
 }

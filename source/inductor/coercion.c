@@ -1,6 +1,8 @@
 #include "coercion.h"
 
+#include <errno.h>
 #include <stddef.h>
+#include <stdlib.h>
 
 #include "../stator/debug.h"
 

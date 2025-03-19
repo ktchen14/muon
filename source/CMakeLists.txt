@@ -17,11 +17,6 @@ target_sources(muon PRIVATE
   stator/name.c
   stator/node.c
 
-  stator/expr.c
-  stator/sign.c
-  stator/stmt.c
-  stator/view.c
-
   $<TARGET_OBJECTS:reader>
 )
 
