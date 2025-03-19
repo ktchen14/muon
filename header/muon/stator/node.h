@@ -57,6 +57,10 @@ typedef enum {
 #define MU_EMIT(l, upper, t) MU_##upper##_NODE,
   MU_EACH_NODE_KIND(MU_EMIT)
 #undef MU_EMIT
+
+  MU_EXPR_MEMBER = MU_EXPR_MEMBER_NODE,
+  MU_SWITCH_CASE = MU_SWITCH_CASE_NODE,
+  MU_DATATYPE_OPTION = MU_DATATYPE_OPTION_NODE,
 } mu_node_kind_t;
 
 /// An enumeration over each kind of expr, e.g. @c MU_ACCESS_EXPR

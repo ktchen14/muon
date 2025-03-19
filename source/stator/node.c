@@ -446,30 +446,28 @@ const mu_variable_view_t *mu_variable_view(
 }
 
 __attribute__((nonnull))
-static inline void node_debug_with_coercion(const mu_node_t *node) {
-  int i = debug_indent;
+static inline int debug_node_coercion(const mu_node_t *node) {
+  if (debug_induce == NULL)
+    return debug_indent;
 
-  if (debug_induce != NULL) {
-    const mu_coercion_t *coercion;
-    if ((coercion = debug_induce->coercion[node->id]) != NULL) {
-      if (coercion->kind != MU_ID_COERCION) {
-        fprintf(stderr, "%*s", debug_indent, "");
-        mu_coercion_debug(coercion);
+  const mu_coercion_t *coercion;
+  if ((coercion = debug_induce->coercion[node->id]) == NULL)
+    return debug_indent;
 
-        if (coercion->target != NULL) {
-          fprintf(stderr, " ∷ ");
-          debug_type(coercion->target);
-        }
+  if (coercion->kind == MU_ID_COERCION)
+    return debug_indent;
 
-        fprintf(stderr, "\n");
-        debug_indent += 2;
-      }
-    }
+  fprintf(stderr, "%*s", debug_indent, "");
+  mu_coercion_debug(coercion);
+
+  if (coercion->target != NULL) {
+    fprintf(stderr, " ∷ ");
+    debug_type(coercion->target);
   }
 
-  mu_node_debug(node);
+  fprintf(stderr, "\n");
 
-  debug_indent = i;
+  return debug_indent + 2;
 }
 
 /// Emit debugging information on the abstract @a node to the debug stream
@@ -480,8 +478,10 @@ void mu_node_debug(const mu_node_t *node) {
     MU_EACH_NODE_KIND(MU_EMIT)
 #undef MU_EMIT
   };
-
   const char *kind = KIND_TEXT[node->kind];
+
+  int indent = debug_indent;
+  debug_indent = debug_node_coercion(node);
 
   fprintf(stderr, "%*s", debug_indent, "");
   fprintf(stderr, PRIsKIND "#" PRIuID, DEBUG_KIND(kind), DEBUG_ID(node->id));
@@ -534,6 +534,8 @@ void mu_node_debug(const mu_node_t *node) {
   WITH_DEBUG_INDENT() {
     size_t i = 0;
     for (const mu_node_t *next; (next = node_at(node, i)) != NULL; i++)
-      node_debug_with_coercion(next);
+      mu_node_debug(next);
   }
+
+  debug_indent = indent;
 }
