@@ -178,8 +178,8 @@ void debug_type(const mu_type_t *type) {
 
       _Bool already_printed = 0;
       if (debug_negate) {
-        for (size_t i = 0; i < debug_induce->edge_length; i++) {
-          induce_edge_t edge = debug_induce->edge[i];
+        for (size_t i = 0; i < debug_induce->universe.length; i++) {
+          induce_edge_t edge = debug_induce->universe.data[i];
           if (edge.lower != type)
             continue;
 
@@ -209,8 +209,8 @@ void debug_type(const mu_type_t *type) {
           fprintf(stderr, "⊤");
         }
       } else {
-        for (size_t i = 0; i < debug_induce->edge_length; i++) {
-          induce_edge_t edge = debug_induce->edge[i];
+        for (size_t i = 0; i < debug_induce->universe.length; i++) {
+          induce_edge_t edge = debug_induce->universe.data[i];
           if (edge.upper != type)
             continue;
 

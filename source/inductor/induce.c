@@ -1,11 +1,11 @@
 #include "induce.h"
+#include "universe.h"
 
 #include "detect.h"
 #include "../stator.h"
 #include "../status.h"
 
 #include <assert.h>
-#include <errno.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -21,16 +21,6 @@ const mu_name_t *vector_join;
 static const induce_edge_t *restrict_type_semiinternal(
     induce_t *induce, const mu_type_t *a, const mu_type_t *b, _Bool direct);
 
-const induce_edge_t *search_edge(
-    const induce_t *induce, const mu_type_t *a, const mu_type_t *b) {
-  for (size_t i = 0; i < induce->edge_length; i++) {
-    const induce_edge_t *edge = &induce->edge[i];
-    if (edge->lower == a && edge->upper == b)
-      return edge;
-  }
-  return NULL;
-}
-
 const mu_variable_type_t *variable_type(induce_t *induce, open_scheme_t *scheme) {
   mu_variable_type_t *result;
   if ((result = malloc(sizeof(mu_variable_type_t))) == NULL)
@@ -44,38 +34,6 @@ const mu_variable_type_t *variable_type(induce_t *induce, open_scheme_t *scheme)
     .rank = scheme->rank,
   };
   return scheme->link = result;
-}
-
-/// Register @a a <: @a b in the @a induce engine
-const induce_edge_t *append_edge(
-    induce_t *induce,
-    const mu_type_t *restrict a,
-    const mu_type_t *restrict b,
-    const tactic_t *tactic) {
-  if (induce->edge_length >= induce->edge_volume) {
-    size_t volume = induce->edge_volume;
-    if (rare(__builtin_mul_overflow(volume, 2, &volume)))
-      return errno = ENOMEM, NULL;
-
-    size_t size;
-    if (rare(__builtin_mul_overflow(volume, sizeof(induce_edge_t), &size)))
-      return errno = ENOMEM, NULL;
-
-    induce_edge_t *sub_data = induce->edge;
-    if ((sub_data = realloc(sub_data, size)) == NULL)
-      return NULL;
-    for (size_t i = induce->edge_volume; i < volume; i++)
-      sub_data[i] = (induce_edge_t) {0};
-
-    induce->edge_volume = volume;
-    induce->edge = sub_data;
-  }
-
-  induce_edge_t edge = { .lower = a, .upper = b, .tactic = tactic };
-  induce->edge[induce->edge_length] = edge;
-  induce_edge_t *result = &induce->edge[induce->edge_length];
-  induce->edge_length++;
-  return result;
 }
 
 typedef struct {
@@ -230,8 +188,8 @@ void mark_type(induce_t *induce, const mu_type_t *type, _Bool negative, size_t r
       if (!negative) {
         ((mu_variable_type_t *) variable_type)->positively_reachable = 1;
 
-        for (size_t i = 0; i < induce->edge_length; i++) {
-          induce_edge_t sub = induce->edge[i];
+        for (size_t i = 0; i < induce->universe.length; i++) {
+          induce_edge_t sub = induce->universe.data[i];
           if (sub.upper != &variable_type->as_type)
             continue;
           mark_type(induce, sub.lower, negative, rank);
@@ -239,8 +197,8 @@ void mark_type(induce_t *induce, const mu_type_t *type, _Bool negative, size_t r
       } else {
         ((mu_variable_type_t *) variable_type)->negatively_reachable = 1;
 
-        for (size_t i = 0; i < induce->edge_length; i++) {
-          induce_edge_t sub = induce->edge[i];
+        for (size_t i = 0; i < induce->universe.length; i++) {
+          induce_edge_t sub = induce->universe.data[i];
           if (sub.lower != &variable_type->as_type)
             continue;
           mark_type(induce, sub.upper, negative, rank);
@@ -302,12 +260,12 @@ void mark_type_from_anywhere(
 
           // If this origin is a subtype of the earlier origin, then use this
           // origin instead
-          if (search_edge(induce, &origin->as_type, &earlier_origin->as_type))
+          if (universe_search(&induce->universe, &origin->as_type, &earlier_origin->as_type))
             ((mu_variable_type_t *) variable_type)->positively_entered_from = origin;
 
           // If this origin is a supertype of the earlier origin, then keep
           // the earlier origin
-          else if (search_edge(induce, &earlier_origin->as_type, &origin->as_type))
+          else if (universe_search(&induce->universe, &earlier_origin->as_type, &origin->as_type))
             ;
 
           // If we found no relationship, then mark the variable as multihomed
@@ -316,8 +274,8 @@ void mark_type_from_anywhere(
             ((mu_variable_type_t *) variable_type)->positively_entered_from = variable_type;
         }
 
-        for (size_t i = 0; i < induce->edge_length; i++) {
-          induce_edge_t sub = induce->edge[i];
+        for (size_t i = 0; i < induce->universe.length; i++) {
+          induce_edge_t sub = induce->universe.data[i];
           if (sub.upper != &variable_type->as_type)
             continue;
           mark_type_from_anywhere(induce, sub.lower, negative, variable_type, link);
@@ -337,12 +295,12 @@ void mark_type_from_anywhere(
 
           // If this origin is a supertype of the earlier origin, then use this
           // origin instead
-          if (search_edge(induce, &earlier_origin->as_type, &origin->as_type))
+          if (universe_search(&induce->universe, &earlier_origin->as_type, &origin->as_type))
             ((mu_variable_type_t *) variable_type)->negatively_entered_from = origin;
 
           // If this origin is a subtype of the earlier origin, then keep the
           // earlier origin
-          else if (search_edge(induce, &origin->as_type, &earlier_origin->as_type))
+          else if (universe_search(&induce->universe, &origin->as_type, &earlier_origin->as_type))
             ;
 
           // If we found no relationship, then mark the variable as multihomed
@@ -351,8 +309,8 @@ void mark_type_from_anywhere(
             ((mu_variable_type_t *) variable_type)->negatively_entered_from = variable_type;
         }
 
-        for (size_t i = 0; i < induce->edge_length; i++) {
-          induce_edge_t sub = induce->edge[i];
+        for (size_t i = 0; i < induce->universe.length; i++) {
+          induce_edge_t sub = induce->universe.data[i];
           if (sub.lower != &variable_type->as_type)
             continue;
           mark_type_from_anywhere(induce, sub.upper, negative, variable_type, link);
@@ -416,11 +374,9 @@ induce_t *induce_initialize(
     return NULL;
   for (size_t i = 0; i < node_length; node_to_type[i++] = NULL);
 
-  size_t edge_volume = 1;
-  induce_edge_t *edge;
-  if ((edge = malloc(sizeof(induce_edge_t[edge_volume]))) == NULL)
+  universe_t universe;
+  if (rare(universe_initialize(&universe) == NULL))
     return NULL;
-  for (size_t i = 0; i < edge_volume; edge[i++] = (induce_edge_t) {0});
 
   mu_id_coercion_t *id_coercion;
   if ((id_coercion = malloc(sizeof(mu_id_coercion_t))) == NULL)
@@ -460,8 +416,7 @@ induce_t *induce_initialize(
     .detect = detect_result(detect),
     .node_length = node_length,
     .node_to_type = node_to_type,
-    .edge_volume = edge_volume,
-    .edge = edge,
+    .universe = universe,
 
     .id_coercion = id_coercion,
 
@@ -582,20 +537,20 @@ static const tactic_t *restrict_type_internal(
 
   const mu_variable_type_t *variable_a;
   if ((variable_a = mu_type_cast(a, variable_a)) != NULL) {
-    for (size_t i = 0; i < induce->edge_length; i++) {
-      if (induce->edge[i].upper != &variable_a->as_type)
+    for (size_t i = 0; i < induce->universe.length; i++) {
+      if (induce->universe.data[i].upper != &variable_a->as_type)
         continue;
-      if (restrict_type_semiinternal(induce, induce->edge[i].lower, b, direct) == NULL)
+      if (restrict_type_semiinternal(induce, induce->universe.data[i].lower, b, direct) == NULL)
         return NULL;
     }
   }
 
   const mu_variable_type_t *variable_b;
   if ((variable_b = mu_type_cast(b, variable_b)) != NULL) {
-    for (size_t j = 0; j < induce->edge_length; j++) {
-      if (induce->edge[j].lower != &variable_b->as_type)
+    for (size_t j = 0; j < induce->universe.length; j++) {
+      if (induce->universe.data[j].lower != &variable_b->as_type)
         continue;
-      if (restrict_type_semiinternal(induce, a, induce->edge[j].upper, direct) == NULL)
+      if (restrict_type_semiinternal(induce, a, induce->universe.data[j].upper, direct) == NULL)
         return NULL;
     }
   }
@@ -612,7 +567,7 @@ static const induce_edge_t *restrict_type_semiinternal(
 
   // If we already have an edge a -> b then just return it
   const induce_edge_t *edge;
-  if ((edge = search_edge(induce, a, b)) != NULL)
+  if ((edge = universe_search(&induce->universe, a, b)) != NULL)
     return edge;
 
   const tactic_t *tactic;
@@ -621,7 +576,7 @@ static const induce_edge_t *restrict_type_semiinternal(
   if (tactic == &no_tactic)
     tactic = NULL;
 
-  induce_edge_t *result = (induce_edge_t *) append_edge(induce, a, b, tactic);
+  induce_edge_t *result = (induce_edge_t *) universe_append(&induce->universe, a, b, tactic);
   result->direct = direct;
   return result;
 }

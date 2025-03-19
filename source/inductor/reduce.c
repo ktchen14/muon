@@ -22,7 +22,7 @@ const mu_coercion_t *make_coercion(
   debug_just_type(target);
   fprintf(stderr, "\n");
 
-  const induce_edge_t *edge = search_edge(induce, source, target);
+  const induce_edge_t *edge = universe_search(&induce->universe, source, target);
   assert(edge != NULL);
   assert(edge->tactic != NULL);
 
@@ -35,8 +35,8 @@ const mu_coercion_t *make_coercion(
     if ((allocation = unjoin_coercion_allocate(tactic->length)) == NULL)
       return NULL;
 
-    for (size_t i = 0; i < induce->edge_length; i++) {
-      const induce_edge_t *join_edge = &induce->edge[i];
+    for (size_t i = 0; i < induce->universe.length; i++) {
+      const induce_edge_t *join_edge = &induce->universe.data[i];
       if (join_edge->upper != source)
         continue;
       assert(join_edge->tactic != NULL);
@@ -271,8 +271,8 @@ const mu_type_t *reduce_type(induce_t *induce, const mu_type_t *type, _Bool nega
     /* if (!negative) { */
       // Reduce each subtype of the variable type
       size_t j = 0;
-      for (size_t i = 0; i < induce->edge_length; i++) {
-        induce_edge_t *edge = &induce->edge[i];
+      for (size_t i = 0; i < induce->universe.length; i++) {
+        induce_edge_t *edge = &induce->universe.data[i];
         if (edge->upper == &variable_type->as_type) {
           if (reduce_type(induce, edge->lower, negative) == NULL)
             return NULL;
@@ -280,8 +280,8 @@ const mu_type_t *reduce_type(induce_t *induce, const mu_type_t *type, _Bool nega
         }
       }
 
-      for (size_t i = 0; i < induce->edge_length; i++) {
-        induce_edge_t *edge = &induce->edge[i];
+      for (size_t i = 0; i < induce->universe.length; i++) {
+        induce_edge_t *edge = &induce->universe.data[i];
         if (edge->lower == &variable_type->as_type) {
           edge->tactic = &unjoin_tactic_create(j)->as_tactic;
         }

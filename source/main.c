@@ -96,8 +96,8 @@ int main(int argc, char *argv[argc]) {
 
   if (getenv("DOT") != NULL) {
     fprintf(stderr, "digraph muon {\n  rankdir=\"BT\"\n");
-    for (size_t i = 0; i < debug_induce->edge_length; i++) {
-      induce_edge_t sub = debug_induce->edge[i];
+    for (size_t i = 0; i < debug_induce->universe.length; i++) {
+      induce_edge_t sub = debug_induce->universe.data[i];
 
       fprintf(stderr, "%*s", 2, "");
 
