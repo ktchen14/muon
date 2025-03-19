@@ -56,7 +56,7 @@ static inline void debug_node_type(const mu_node_t *node) {
 
   mu_variable_type_t sentinel;
   type_link_t link = { .next = &sentinel };
-  mark_type_from_anywhere_first(debug_induce, type, &link);
+  mark_type_from_anywhere_first(&debug_induce->universe, type, &link);
 
   if (link.next != &sentinel) {
     size_t number = 0;

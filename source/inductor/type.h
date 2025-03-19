@@ -154,6 +154,13 @@ void debug_type(const mu_type_t *type);
 void debug_variable_type_name(const mu_variable_type_t *type);
 void debug_just_type(const mu_type_t *type);
 
+/// @internal An enumeration over each kind of type, e.g. @c _core_type_kind
+enum {
+#define MU_EMIT(lower, u, t) _##lower##_type_kind,
+  MU_EACH_TYPE_KIND(MU_EMIT)
+#undef MU_EMIT
+};
+
 static inline _Bool is_significant(const mu_variable_type_t *type) {
   return 1;
   return type->positively_entered_from == type && type->negatively_entered_from == type

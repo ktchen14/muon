@@ -7,8 +7,16 @@
 #include <stddef.h>
 
 typedef struct {
-  const mu_type_t *lower;
-  const mu_type_t *upper;
+  union {
+    const mu_type_t *source;
+    const mu_type_t *lower;
+  };
+
+  union {
+    const mu_type_t *target;
+    const mu_type_t *upper;
+  };
+
   const tactic_t *tactic;
   _Bool direct;
 } universe_edge_t;
@@ -33,6 +41,9 @@ const universe_edge_t *universe_append(
     const mu_type_t *restrict source,
     const mu_type_t *restrict target,
     const tactic_t *tactic);
+
+void mark_type_from_anywhere_first(
+    const universe_t *universe, const mu_type_t *root, type_link_t *link);
 
 typedef universe_edge_t induce_edge_t;
 
