@@ -46,33 +46,14 @@ typedef struct {
   size_t i;
 
   const mu_name_t *name;
-
   const mu_expr_t *expr;
-  const mu_access_expr_t *access_expr;
-  const mu_boolean_expr_t *boolean_expr;
-  const mu_integer_expr_t *integer_expr;
-  const mu_invoke_expr_t *invoke_expr;
-  const mu_lambda_expr_t *lambda_expr;
-  const mu_name_expr_t *name_expr;
-  const mu_expr_member_t *expr_member;
-  const mu_record_expr_t *record_expr;
-  const mu_switch_case_t *switch_case;
-  const mu_switch_expr_t *switch_expr;
-  const mu_vector_expr_t *vector_expr;
-
   const mu_sign_t *sign;
-  const mu_boolean_sign_t *boolean_sign;
-  const mu_integer_sign_t *integer_sign;
-  const mu_name_sign_t *name_sign;
-  const mu_vector_sign_t *vector_sign;
-
   const mu_stmt_t *stmt;
-  const mu_datatype_option_t *datatype_option;
-  const mu_datatype_stmt_t *datatype_stmt;
-  const mu_define_stmt_t *define_stmt;
-
   const mu_view_t *view;
-  const mu_variable_view_t *variable_view;
+
+#define MU_EMIT(lower, u, t) const mu_##lower##_t *lower;
+  MU_EACH_NODE_KIND(MU_EMIT)
+#undef MU_EMIT
 }
 
 %token CASE "case"

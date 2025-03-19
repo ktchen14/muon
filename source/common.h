@@ -3,10 +3,10 @@
 
 #include <stddef.h>
 
-/// Mark that @c ... will, in the common case, evaluate to 1
+/// Indicate that @c ... will, in the common case, evaluate to 1
 #define common(...) __builtin_expect((__VA_ARGS__), 1)
 
-/// Mark that @c ... will, in the common case, evaluate to 0
+/// Indicate that @c ... will, in the common case, evaluate to 0
 #define rare(...)   __builtin_expect((__VA_ARGS__), 0)
 
 /// Return the minimum of @a a and @a b (as defined by the @c < operator)
