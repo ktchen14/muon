@@ -31,9 +31,10 @@ static inline mu_node_t *assign_node(mu_engine_t *engine, mu_node_t *node) {
   return node;
 }
 
-/// Assign the concrete @a node to the @a engine
-#define assign_node(engine, node) \
-  ((typeof((node))) (assign_node)((engine), &(node)->as_node))
+/// @internal Assign the concrete @a node to the @a engine
+#define assign_node(engine, node) ( \
+  (typeof((node))) assign_node((engine), &(node)->as_node) \
+)
 
 const mu_access_expr_t *mu_access_expr(
     mu_engine_t *engine, const mu_name_t *name, const mu_expr_t *matter) {
@@ -103,13 +104,12 @@ const mu_name_expr_t *mu_name_expr(mu_engine_t *engine, const mu_name_t *name) {
   mu_name_expr_t *result;
   if ((result = node_allocate(engine, sizeof(mu_name_expr_t))) == NULL)
     return NULL;
-  *result = (mu_name_expr_t) {
-    .as_expr.kind = MU_NAME_EXPR, .name = name,
-  };
+  *result = (mu_name_expr_t) { .as_expr.kind = MU_NAME_EXPR, .name = name };
   return assign_node(engine, result);
 }
 
-const mu_native_expr_t *mu_native_expr(mu_engine_t *engine, const mu_name_t *name) {
+const mu_native_expr_t *mu_native_expr(
+    mu_engine_t *engine, const mu_name_t *name) {
   assert(name->engine == engine);
 
   mu_native_expr_t *result;
@@ -137,15 +137,13 @@ const mu_expr_member_t *mu_expr_member(
 
 const mu_record_expr_t *mu_record_expr(
     mu_engine_t *engine, size_t argc, const mu_expr_member_t *argv[]) {
-  assert(argc == 0 && argv == NULL || argc != 0 && argv != NULL);
+  assert(argc == 0 || argv != NULL);
 
   mu_record_expr_t *result;
   if ((result = record_expr_allocate(engine, argc)) == NULL)
     return NULL;
-
   for (size_t i = 0; i < argc; i++)
     result->argv[i] = argv[i];
-
   return record_expr_activate(result);
 }
 
@@ -168,10 +166,8 @@ const mu_switch_expr_t *mu_switch_expr(
   mu_switch_expr_t *result;
   if ((result = switch_expr_allocate(engine, argc)) == NULL)
     return NULL;
-
   for (size_t i = 0; i < argc; i++)
     result->argv[i] = argv[i];
-
   return switch_expr_activate(result);
 }
 
@@ -180,16 +176,14 @@ const mu_sequence_expr_t *mu_sequence_expr(
   mu_sequence_expr_t *result;
   if ((result = sequence_expr_allocate(engine, argc)) == NULL)
     return NULL;
-
   for (size_t i = 0; i < argc; i++)
     result->argv[i] = argv[i];
-
   return sequence_expr_activate(result);
 }
 
 const mu_vector_expr_t *mu_vector_expr(
     mu_engine_t *engine, size_t argc, const mu_expr_t *const argv[]) {
-  assert(argc == 0 && argv == NULL || argc != 0 && argv != NULL);
+  assert(argc == 0 || argv != NULL);
 
   for (size_t i = 0; i < argc; i++) {
     assert(argv[i] != NULL);
@@ -330,7 +324,7 @@ const mu_name_sign_t *mu_name_sign(mu_engine_t *engine, const mu_name_t *name) {
 
 const mu_record_sign_t *mu_record_sign(
     mu_engine_t *engine, size_t argc, const mu_sign_member_t argv[]) {
-  assert(argc == 0 && argv == NULL || argc != 0 && argv != NULL);
+  assert(argc == 0 || argv != NULL);
 
   for (size_t i = 0; i < argc; i++) {
     const mu_name_t *member_name = argv[i].name;
@@ -481,14 +475,16 @@ static inline void node_debug_with_coercion(const mu_node_t *node) {
 /// Emit debugging information on the abstract @a node to the debug stream
 void mu_node_debug(const mu_node_t *node) {
   // Kind -> Text, e.g. [MU_ACCESS_EXPR_NODE] = "AccessExpr"
-  static const char *const TEXT[] = {
+  static const char *const KIND_TEXT[] = {
 #define MU_EMIT(l, upper, title) [MU_##upper##_NODE] = #title,
     MU_EACH_NODE_KIND(MU_EMIT)
 #undef MU_EMIT
   };
 
-  fprintf(stderr, "%*s" PRIsKIND "#" PRIuID,
-      debug_indent, "", DEBUG_KIND(TEXT[node->kind]), DEBUG_ID(node->id));
+  const char *kind = KIND_TEXT[node->kind];
+
+  fprintf(stderr, "%*s", debug_indent, "");
+  fprintf(stderr, PRIsKIND "#" PRIuID, DEBUG_KIND(kind), DEBUG_ID(node->id));
 
   switch ON_ABSTRACT_OBJECT(node) {
     case IS_KIND_OF(access_expr):
