@@ -81,18 +81,6 @@ static inline const mu_node_t *node_return(const mu_node_t *node) {
   return anterior;
 }
 
-/// Return the <em>i</em>th node in the abstract @a node
-static inline const mu_node_t *node_at(const mu_node_t *node, size_t i) {
-  switch (node->kind) {
-#define MU_EMIT(lower, upper, t) \
-    case MU_##upper##_NODE: \
-      return lower##_at((const mu_##lower##_t *) node, i);
-    MU_EACH_NODE_KIND(MU_EMIT)
-#undef MU_EMIT
-  }
-  __builtin_unreachable();
-}
-
 static _Thread_local const void *_object;
 
 #define ON_ABSTRACT_OBJECT(object) ( \
@@ -114,31 +102,30 @@ enum {
 };
 
 /// Return the <em>i</em>th node in the abstract @a node
-static inline const mu_node_t *test_node_at(const mu_node_t *node, size_t i) {
+static inline const mu_node_t *node_at(const mu_node_t *node, size_t i) {
   switch ON_ABSTRACT_OBJECT(node) {
-    case IS_KIND_OF(boolean_expr): return NULL;
-    case IS_KIND_OF(integer_expr): return NULL;
-    case IS_KIND_OF(name_expr):    return NULL;
-    case IS_KIND_OF(native_expr):  return NULL;
-    case IS_KIND_OF(zero_expr):    return NULL;
-    case IS_KIND_OF(boolean_sign): return NULL;
-    case IS_KIND_OF(integer_sign): return NULL;
-    case IS_KIND_OF(name_sign):    return NULL;
+    case MU_BOOLEAN_EXPR:         return NULL;
+    case MU_INTEGER_EXPR:         return NULL;
+    case MU_NAME_EXPR:            return NULL;
+    case MU_NATIVE_EXPR:          return NULL;
+    case MU_ZERO_EXPR:            return NULL;
+    case MU_BOOLEAN_SIGN:         return NULL;
+    case MU_INTEGER_SIGN:         return NULL;
+    case MU_NAME_SIGN:            return NULL;
+    case MU_DATATYPE_OPTION_NODE: return NULL;
 
     case IS_KIND_OF(access_expr):
       return (const mu_node_t *[]) { &access_expr->matter->as_node, NULL }[i];
 
-    case IS_KIND_OF(invoke_expr): switch (i) {
-      case 0: return &invoke_expr->operator->as_node;
-      case 1: return &invoke_expr->argument->as_node;
-      default: return NULL;
-    }
+    case IS_KIND_OF(invoke_expr):
+      return (const mu_node_t *[]) {
+        &invoke_expr->operator->as_node, &invoke_expr->argument->as_node, NULL,
+      }[i];
 
-    case IS_KIND_OF(lambda_expr): switch (i) {
-      case 0: return &lambda_expr->argument->as_node;
-      case 1: return &lambda_expr->matter->as_node;
-      default: return NULL;
-    }
+    case IS_KIND_OF(lambda_expr):
+      return (const mu_node_t *[]) {
+        &lambda_expr->argument->as_node, &lambda_expr->matter->as_node, NULL,
+      }[i];
 
     case IS_KIND_OF(expr_member):
       return (const mu_node_t *[]) { &expr_member->expr->as_node, NULL }[i];
@@ -148,6 +135,9 @@ static inline const mu_node_t *test_node_at(const mu_node_t *node, size_t i) {
 
     case IS_KIND_OF(sequence_expr):
       return i < sequence_expr->argc ? &sequence_expr->argv[i]->as_node : NULL;
+
+    case IS_KIND_OF(switch_case):
+      return (const mu_node_t *[]) { &switch_case->expr->as_node, NULL }[i];
 
     case IS_KIND_OF(switch_expr):
       return i < switch_expr->argc ? &switch_expr->argv[i]->as_node : NULL;
@@ -161,8 +151,12 @@ static inline const mu_node_t *test_node_at(const mu_node_t *node, size_t i) {
     case IS_KIND_OF(vector_sign):
       return (const mu_node_t *[]) { &vector_sign->matter->as_node, NULL }[i];
 
-    case MU_DEFINE_STMT: return NULL;
-    case MU_DATATYPE_STMT: return NULL;
+    case IS_KIND_OF(define_stmt):
+      return (const mu_node_t *[]) { &define_stmt->expr->as_node, NULL }[i];
+
+    case IS_KIND_OF(datatype_stmt):
+      return i < datatype_stmt->argc ? &datatype_stmt->argv[i]->as_node : NULL;
+
     case MU_VARIABLE_VIEW: return NULL;
   }
   __builtin_unreachable();

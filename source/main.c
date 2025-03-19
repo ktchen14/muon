@@ -92,7 +92,7 @@ int main(int argc, char *argv[argc]) {
   debug_colorize = 1;
   debug_induce = &induce;
 
-  mu_sequence_expr_debug(sequence_expr);
+  mu_node_debug(&sequence_expr->as_node);
 
   if (getenv("DOT") != NULL) {
     fprintf(stderr, "digraph muon {\n  rankdir=\"BT\"\n");

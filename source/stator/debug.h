@@ -94,31 +94,4 @@ static inline void debug_node_type(const mu_node_t *node) {
   }
 }
 
-__attribute__((nonnull))
-static inline void expr_debug_with_coercion(const mu_expr_t *expr) {
-  int i = debug_indent;
-
-  if (debug_induce != NULL) {
-    const mu_coercion_t *coercion;
-    if ((coercion = debug_induce->coercion[expr->as_node.id]) != NULL) {
-      if (coercion->kind != MU_ID_COERCION) {
-        fprintf(stderr, "%*s", debug_indent, "");
-        mu_coercion_debug(coercion);
-
-        if (coercion->target != NULL) {
-          fprintf(stderr, " ∷ ");
-          debug_type(coercion->target);
-        }
-
-        fprintf(stderr, "\n");
-        debug_indent += 2;
-      }
-    }
-  }
-
-  mu_expr_debug(expr);
-
-  debug_indent = i;
-}
-
 #endif /* MU_STATOR_DEBUG_I */

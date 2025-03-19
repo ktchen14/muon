@@ -1,64 +1,37 @@
+#include "debug.h"
 #include "node.h"
 
-void mu_node_debug(const mu_node_t *node) {
-  switch (node->kind) {
-#define MU_EMIT(lower, upper, t) \
-    case MU_##upper##_NODE: \
-      mu_##lower##_debug((const mu_##lower##_t *) node); return;
-    MU_EACH_NODE_KIND(MU_EMIT)
-#undef MU_EMIT
-  }
-  __builtin_unreachable();
-}
-
-void mu_expr_debug(const mu_expr_t *expr) {
-  switch (expr->kind) {
-#define MU_EMIT(lower, upper, t) \
-    case MU_##upper##_EXPR: \
-      mu_##lower##_expr_debug((const mu_##lower##_expr_t *) expr); return;
-    MU_EACH_EXPR_KIND(MU_EMIT)
-#undef MU_EMIT
-  }
-  __builtin_unreachable();
-}
-
-void mu_sign_debug(const mu_sign_t *sign) {
-  switch (sign->kind) {
-#define MU_EMIT(lower, upper, t) \
-    case MU_##upper##_SIGN: \
-      mu_##lower##_sign_debug((const mu_##lower##_sign_t *) sign); return;
-    MU_EACH_SIGN_KIND(MU_EMIT)
-#undef MU_EMIT
-  }
-  __builtin_unreachable();
-}
-
-void mu_stmt_debug(const mu_stmt_t *stmt) {
-  switch (stmt->kind) {
-#define MU_EMIT(lower, upper, t) \
-    case MU_##upper##_STMT: \
-      mu_##lower##_stmt_debug((const mu_##lower##_stmt_t *) stmt); return;
-    MU_EACH_STMT_KIND(MU_EMIT)
-#undef MU_EMIT
-  }
-  __builtin_unreachable();
-}
-
-void mu_view_debug(const mu_view_t *view) {
-  switch (view->kind) {
-#define MU_EMIT(lower, upper, t) \
-    case MU_##upper##_VIEW: \
-      mu_##lower##_view_debug((const mu_##lower##_view_t *) view); return;
-    MU_EACH_VIEW_KIND(MU_EMIT)
-#undef MU_EMIT
-  }
-  __builtin_unreachable();
-}
-
-#include "debug.h"
 #include <inttypes.h>
 
-void mu_node_debug1(const mu_node_t *node) {
+__attribute__((nonnull))
+static inline void node_debug_with_coercion(const mu_node_t *node) {
+  int i = debug_indent;
+
+  if (debug_induce != NULL) {
+    const mu_coercion_t *coercion;
+    if ((coercion = debug_induce->coercion[node->id]) != NULL) {
+      if (coercion->kind != MU_ID_COERCION) {
+        fprintf(stderr, "%*s", debug_indent, "");
+        mu_coercion_debug(coercion);
+
+        if (coercion->target != NULL) {
+          fprintf(stderr, " ∷ ");
+          debug_type(coercion->target);
+        }
+
+        fprintf(stderr, "\n");
+        debug_indent += 2;
+      }
+    }
+  }
+
+  mu_node_debug(node);
+
+  debug_indent = i;
+}
+
+/// Emit debugging information on the abstract @a node to the debug stream
+void mu_node_debug(const mu_node_t *node) {
   // Kind -> Text, e.g. [MU_ACCESS_EXPR_NODE] = "AccessExpr"
   static const char *const TEXT[] = {
 #define MU_EMIT(l, upper, title) [MU_##upper##_NODE] = #title,
@@ -117,6 +90,6 @@ void mu_node_debug1(const mu_node_t *node) {
   WITH_DEBUG_INDENT() {
     size_t i = 0;
     for (const mu_node_t *next; (next = node_at(node, i)) != NULL; i++)
-      mu_node_debug1(next);
+      node_debug_with_coercion(next);
   }
 }

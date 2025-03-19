@@ -41,13 +41,4 @@ const mu_define_stmt_t *mu_define_stmt(
     mu_engine_t *engine, const mu_name_t *name, const mu_expr_t *expr)
   __attribute__((malloc, nonnull));
 
-void mu_datatype_option_debug(const mu_datatype_option_t *option)
-  __attribute__((nonnull));
-
-void mu_datatype_stmt_debug(const mu_datatype_stmt_t *stmt)
-  __attribute__((nonnull));
-
-void mu_define_stmt_debug(const mu_define_stmt_t *stmt)
-  __attribute__((nonnull));
-
 #endif /* MU_STATOR_STMT_H */

@@ -57,6 +57,6 @@ void mu_script_debug(const mu_script_t *script) {
 
   WITH_DEBUG_INDENT() {
     for (size_t i = 0; i < script->argc; i++)
-      mu_stmt_debug(script->argv[i]);
+      mu_node_debug(&script->argv[i]->as_node);
   }
 }

@@ -212,16 +212,4 @@
 /// Emit debugging information on the abstract @a node to the debug stream
 void mu_node_debug(const mu_node_t *node) __attribute__((nonnull));
 
-/// Emit debugging information on the abstract @a expr to the debug stream
-void mu_expr_debug(const mu_expr_t *expr) __attribute__((nonnull));
-
-/// Emit debugging information on the abstract @a sign to the debug stream
-void mu_sign_debug(const mu_sign_t *sign) __attribute__((nonnull));
-
-/// Emit debugging information on the abstract @a stmt to the debug stream
-void mu_stmt_debug(const mu_stmt_t *stmt) __attribute__((nonnull));
-
-/// Emit debugging information on the abstract @a view to the debug stream
-void mu_view_debug(const mu_view_t *view) __attribute__((nonnull));
-
 #endif /* MU_STATOR_NODE_H */

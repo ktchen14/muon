@@ -1,4 +1,5 @@
 #include "expr.h"
+#include "sign.h"
 
 #include "engine.h"
 #include "name.h"
@@ -276,169 +277,151 @@ const mu_sequence_expr_t *sequence_expr_activate(mu_sequence_expr_t *expr) {
   return assign_node(engine, expr);
 }
 
-#include "debug.h"
-
-void mu_access_expr_debug(const mu_access_expr_t *expr) {
-  fprintf(stderr, "%*s", debug_indent, "");
-  fprintf(stderr, PRIsKIND "#" PRIuID "(name = ",
-      DEBUG_KIND("AccessExpr"), DEBUG_ID(expr->as_node.id));
-  mu_name_debug(expr->name);
-  putc(')', stderr);
-  debug_node_type(&expr->as_node);
-  putc('\n', stderr);
-
-  WITH_DEBUG_INDENT() { expr_debug_with_coercion(expr->matter); }
+const mu_boolean_sign_t *mu_boolean_sign(mu_engine_t *engine) {
+  mu_boolean_sign_t *result;
+  if ((result = node_allocate(engine, sizeof(mu_boolean_sign_t))) == NULL)
+    return NULL;
+  *result = (mu_boolean_sign_t) { .as_sign.kind = MU_BOOLEAN_SIGN };
+  return assign_node(engine, result);
 }
 
-void mu_boolean_expr_debug(const mu_boolean_expr_t *expr) {
-  fprintf(stderr, "%*s", debug_indent, "");
-  fprintf(stderr, PRIsKIND "#" PRIuID "(data = %s)",
-      DEBUG_KIND("BooleanExpr"),
-      DEBUG_ID(expr->as_node.id),
-      expr->data ? "true" : "false");
-  debug_node_type(&expr->as_node);
-  putc('\n', stderr);
+const mu_integer_sign_t *mu_integer_sign(mu_engine_t *engine) {
+  mu_integer_sign_t *result;
+  if ((result = node_allocate(engine, sizeof(mu_integer_sign_t))) == NULL)
+    return NULL;
+  *result = (mu_integer_sign_t) { .as_sign.kind = MU_INTEGER_SIGN };
+  return assign_node(engine, result);
 }
 
-void mu_integer_expr_debug(const mu_integer_expr_t *expr) {
-  fprintf(stderr, "%*s", debug_indent, "");
-  fprintf(stderr, PRIsKIND "#" PRIuID "(data = %" PRIu64 ")",
-    DEBUG_KIND("IntegerExpr"),
-    DEBUG_ID(expr->as_node.id),
-    expr->data);
-  debug_node_type(&expr->as_node);
-  putc('\n', stderr);
+const mu_name_sign_t *mu_name_sign(mu_engine_t *engine, const mu_name_t *name) {
+  assert(name->engine == engine);
+
+  mu_name_sign_t *result;
+  if ((result = node_allocate(engine, sizeof(mu_name_sign_t))) == NULL)
+    return NULL;
+  *result = (mu_name_sign_t) { .as_sign.kind = MU_NAME_SIGN, .name = name };
+  return assign_node(engine, result);
 }
 
-void mu_invoke_expr_debug(const mu_invoke_expr_t *expr) {
-  fprintf(stderr, "%*s", debug_indent, "");
-  fprintf(stderr, PRIsKIND "#" PRIuID,
-      DEBUG_KIND("InvokeExpr"), DEBUG_ID(expr->as_node.id));
-  debug_node_type(&expr->as_node);
-  putc('\n', stderr);
+const mu_record_sign_t *mu_record_sign(
+    mu_engine_t *engine, size_t argc, const mu_sign_member_t argv[]) {
+  assert(argc == 0 && argv == NULL || argc != 0 && argv != NULL);
 
-  WITH_DEBUG_INDENT() {
-    expr_debug_with_coercion(expr->operator);
-    expr_debug_with_coercion(expr->argument);
-  }
-}
-
-void mu_lambda_expr_debug(const mu_lambda_expr_t *expr) {
-  fprintf(stderr, "%*s", debug_indent, "");
-  fprintf(stderr, PRIsKIND "#" PRIuID,
-      DEBUG_KIND("LambdaExpr"), DEBUG_ID(expr->as_node.id));
-  debug_node_type(&expr->as_node);
-  putc('\n', stderr);
-
-  WITH_DEBUG_INDENT() {
-    WITH_DEBUG_NEGATE() { mu_view_debug(expr->argument); }
-    expr_debug_with_coercion(expr->matter);
-  }
-}
-
-void mu_name_expr_debug(const mu_name_expr_t *expr) {
-  fprintf(stderr, "%*s", debug_indent, "");
-  fprintf(stderr, PRIsKIND "#" PRIuID "(name = ",
-      DEBUG_KIND("NameExpr"), DEBUG_ID(expr->as_node.id));
-  mu_name_debug(expr->name);
-  putc(')', stderr);
-  debug_node_type(&expr->as_node);
-  putc('\n', stderr);
-}
-
-void mu_native_expr_debug(const mu_native_expr_t *expr) {
-  fprintf(stderr, "%*s", debug_indent, "");
-  fprintf(stderr, PRIsKIND "#" PRIuID "(name = ",
-      DEBUG_KIND("NativeExpr"), DEBUG_ID(expr->as_node.id));
-  mu_name_debug(expr->name);
-  putc(')', stderr);
-  debug_node_type(&expr->as_node);
-  putc('\n', stderr);
-}
-
-void mu_expr_member_debug(const mu_expr_member_t *member) {
-  fprintf(stderr, "%*s", debug_indent, "");
-  fprintf(stderr, PRIsKIND "#" PRIuID,
-      DEBUG_KIND("ExprMember"), DEBUG_ID(member->as_node.id));
-
-  if (member->name != NULL) {
-    fprintf(stderr, "(name = ");
-    mu_name_debug(member->name);
-    putc(')', stderr);
+  for (size_t i = 0; i < argc; i++) {
+    const mu_name_t *member_name = argv[i].name;
+    const mu_sign_t *member_sign = argv[i].sign;
+    assert(member_name == NULL || member_name->engine == engine);
+    assert(member_sign != NULL);
+    assert(member_sign->as_node.engine == engine);
   }
 
-  debug_node_type(&member->as_node);
-  putc('\n', stderr);
+  size_t size;
+  if (rare((size = struct_size(mu_record_sign_t, argv, argc)) == 0))
+    return errno = ENOMEM, NULL;
 
-  WITH_DEBUG_INDENT() { expr_debug_with_coercion(member->expr); }
+  mu_record_sign_t *result;
+  if ((result = node_allocate(engine, size)) == NULL)
+    return NULL;
+  *result = (mu_record_sign_t) {
+    .as_sign.kind = MU_RECORD_SIGN, .argc = argc,
+  };
+
+  for (size_t i = 0; i < argc; i++)
+    result->argv[i] = argv[i];
+
+  return assign_node(engine, result);
 }
 
-void mu_record_expr_debug(const mu_record_expr_t *expr) {
-  fprintf(stderr, "%*s", debug_indent, "");
-  fprintf(stderr, PRIsKIND "#" PRIuID,
-      DEBUG_KIND("RecordExpr"), DEBUG_ID(expr->as_node.id));
-  debug_node_type(&expr->as_node);
-  putc('\n', stderr);
+const mu_vector_sign_t *mu_vector_sign(
+    mu_engine_t *engine, const mu_sign_t *matter) {
+  assert(matter->as_node.engine == engine);
 
-  WITH_DEBUG_INDENT() {
-    for (size_t i = 0; i < expr->argc; i++)
-      mu_expr_member_debug(expr->argv[i]);
+  mu_vector_sign_t *result;
+  if ((result = node_allocate(engine, sizeof(mu_vector_sign_t))) == NULL)
+    return NULL;
+  *result = (mu_vector_sign_t) {
+    .as_sign.kind = MU_VECTOR_SIGN, .matter = matter,
+  };
+  return assign_node(engine, result);
+}
+
+const mu_datatype_option_t *mu_datatype_option(
+    mu_engine_t *engine, const mu_name_t *name) {
+  assert(name->engine == engine);
+
+  mu_datatype_option_t *result;
+  if ((result = node_allocate(engine, sizeof(mu_datatype_option_t))) == NULL)
+    return NULL;
+  *result = (mu_datatype_option_t) {
+    .as_node.kind = MU_DATATYPE_OPTION_NODE, .name = name,
+  };
+  return assign_node(engine, result);
+}
+
+const mu_datatype_stmt_t *mu_datatype_stmt(
+    mu_engine_t *engine,
+    const mu_name_t *name,
+    size_t argc,
+    const mu_datatype_option_t *argv[/* argc */]) {
+  mu_datatype_stmt_t *result;
+  if ((result = datatype_stmt_allocate(engine, argc)) == NULL)
+    return NULL;
+  for (size_t i = 0; i < argc; i++)
+    result->argv[i] = argv[i];
+  return datatype_stmt_activate(result, name);
+}
+
+const mu_define_stmt_t *mu_define_stmt(
+    mu_engine_t *engine, const mu_name_t *name, const mu_expr_t *expr) {
+  assert(name->engine == engine);
+  assert(expr->as_node.engine == engine);
+
+  mu_define_stmt_t *result;
+  if ((result = node_allocate(engine, sizeof(mu_define_stmt_t))) == NULL)
+    return NULL;
+  *result = (mu_define_stmt_t) {
+    .as_stmt.kind = MU_DEFINE_STMT, .name = name, .expr = expr,
+  };
+  return assign_node(engine, result);
+}
+
+mu_datatype_stmt_t *datatype_stmt_allocate(mu_engine_t *engine, size_t argc) {
+  size_t size;
+  if (rare((size = struct_size(mu_datatype_stmt_t, argv, argc)) == 0))
+    return errno = ENOMEM, NULL;
+
+  mu_datatype_stmt_t *result;
+  if ((result = node_allocate(engine, size)) == NULL)
+    return NULL;
+  *result = (mu_datatype_stmt_t) { .as_node.engine = engine, .argc = argc };
+  return result;
+}
+
+const mu_datatype_stmt_t *datatype_stmt_activate(
+    mu_datatype_stmt_t *stmt, const mu_name_t *name) {
+  mu_engine_t *engine = (mu_engine_t *) stmt->as_node.engine;
+
+  assert(name->engine == engine);
+
+  for (size_t i = 0; i < stmt->argc; i++) {
+    assert(stmt->argv[i] != NULL);
+    assert(stmt->argv[i]->as_node.engine == engine);
   }
+
+  mu_datatype_stmt_t source = {
+    .as_stmt.kind = MU_DATATYPE_STMT, .name = name, .argc = stmt->argc,
+  };
+  memcpy(stmt, &source, offsetof(mu_datatype_stmt_t, argv));
+  return assign_node(engine, stmt);
 }
 
-void mu_sequence_expr_debug(const mu_sequence_expr_t *expr) {
-  fprintf(stderr, "%*s", debug_indent, "");
-  fprintf(stderr, PRIsKIND "#" PRIuID,
-      DEBUG_KIND("SequenceExpr"), DEBUG_ID(expr->as_node.id));
-  debug_node_type(&expr->as_node);
-  putc('\n', stderr);
-
-  WITH_DEBUG_INDENT() {
-    for (size_t i = 0; i < expr->argc; i++)
-      mu_stmt_debug(expr->argv[i]);
-  }
-}
-
-void mu_switch_case_debug(const mu_switch_case_t *node) {
-  fprintf(stderr, "%*s", debug_indent, "");
-  fprintf(stderr, PRIsKIND "#" PRIuID "(name = ",
-      DEBUG_KIND("SwitchCase"), DEBUG_ID(node->as_node.id));
-  mu_name_debug(node->name);
-  putc(')', stderr);
-  debug_node_type(&node->as_node);
-  putc('\n', stderr);
-}
-
-void mu_switch_expr_debug(const mu_switch_expr_t *expr) {
-  fprintf(stderr, "%*s", debug_indent, "");
-  fprintf(stderr, PRIsKIND "#" PRIuID,
-      DEBUG_KIND("SwitchExpr"), DEBUG_ID(expr->as_node.id));
-  debug_node_type(&expr->as_node);
-  putc('\n', stderr);
-
-  WITH_DEBUG_INDENT() {
-    for (size_t i = 0; i < expr->argc; i++)
-      mu_switch_case_debug(expr->argv[i]);
-  }
-}
-
-void mu_vector_expr_debug(const mu_vector_expr_t *expr) {
-  fprintf(stderr, "%*s", debug_indent, "");
-  fprintf(stderr, PRIsKIND "#" PRIuID,
-      DEBUG_KIND("VectorExpr"), DEBUG_ID(expr->as_node.id));
-  debug_node_type(&expr->as_node);
-  putc('\n', stderr);
-
-  WITH_DEBUG_INDENT() {
-    for (size_t i = 0; i < expr->argc; i++)
-      expr_debug_with_coercion(expr->argv[i]);
-  }
-}
-
-void mu_zero_expr_debug(const mu_zero_expr_t *expr) {
-  fprintf(stderr, "%*s", debug_indent, "");
-  fprintf(stderr, PRIsKIND "#" PRIuID,
-      DEBUG_KIND("ZeroExpr"), DEBUG_ID(expr->as_node.id));
-  debug_node_type(&expr->as_node);
-  putc('\n', stderr);
+const mu_variable_view_t *mu_variable_view(
+    mu_engine_t *engine, const mu_name_t *name) {
+  mu_variable_view_t *result;
+  if ((result = node_allocate(engine, sizeof(mu_variable_view_t))) == NULL)
+    return NULL;
+  *result = (mu_variable_view_t) {
+    .as_view.kind = MU_VARIABLE_VIEW, .name = name,
+  };
+  return assign_node(engine, result);
 }
