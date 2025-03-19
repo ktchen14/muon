@@ -129,11 +129,4 @@ mu_sequence_expr_t *sequence_expr_allocate(mu_engine_t *engine, size_t argc)
 const mu_sequence_expr_t *sequence_expr_activate(mu_sequence_expr_t *expr)
   __attribute__((nonnull));
 
-/// @internal An enumeration over each kind of expr, e.g. @c _mu_access_expr
-enum {
-#define MU_EMIT(lower, upper, t) _mu_##lower##_expr = MU_##upper##_EXPR,
-  MU_EACH_EXPR_KIND(MU_EMIT)
-#undef MU_EMIT
-};
-
 #endif /* MU_STATOR_EXPR_I */

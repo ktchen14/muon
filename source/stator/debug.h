@@ -5,6 +5,7 @@
 
 #include "../inductor/induce.h"
 
+#include <stdarg.h>
 #include <stdio.h>
 
 /// Whether to colorize the debug output
@@ -26,11 +27,21 @@ extern _Thread_local _Bool debug_negate;
 #define DEBUG_ID(id) \
   debug_colorize ? "\x1b[0;31m" : "", (id), debug_colorize ? "\x1b[0m" : ""
 
+#define PRIsNAME "%s"
+#define DEBUG_NAME(name) ((name)->text)
+
 #define WITH_DEBUG_INDENT() \
   for (int _i = (debug_indent += 2); debug_indent == _i; debug_indent -= 2)
 
 #define WITH_DEBUG_NEGATE() \
   for (_Bool _n = (debug_negate = !debug_negate); debug_negate == _n; debug_negate = !debug_negate)
+
+static inline void debug(const char *restrict format, ...) {
+  va_list variadic;
+  va_start(variadic, format);
+  vfprintf(stderr, format, variadic);
+  va_end(variadic);
+}
 
 __attribute__((nonnull))
 static inline void debug_node_type(const mu_node_t *node) {

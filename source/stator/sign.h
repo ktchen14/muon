@@ -40,11 +40,4 @@ static inline const mu_node_t *vector_sign_at(
   return i == 0 ? &sign->matter->as_node : NULL;
 }
 
-/// @internal An enumeration over each kind of sign, e.g. @c _mu_access_sign
-enum {
-#define MU_EMIT(lower, upper, t) _mu_##lower##_sign = MU_##upper##_SIGN,
-  MU_EACH_SIGN_KIND(MU_EMIT)
-#undef MU_EMIT
-};
-
 #endif /* MU_STATOR_SIGN_I */
