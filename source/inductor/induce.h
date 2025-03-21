@@ -90,6 +90,30 @@ const mu_type_t *induce_node(induce_t *inductor, const mu_node_t *node)
 
 const mu_type_t *reduce_node(induce_t *induce, const mu_node_t *root);
 
+open_scheme_t *open_scheme(open_scheme_t *parent, const mu_node_t *node);
+const mu_variable_type_t *variable_type(induce_t *induce, open_scheme_t *scheme);
+
+/**
+ * @brief Restrict type @a a to be a subtype of @a b in the @a induce engine
+ *
+ * On allocation failure, @c errno is set by the allocator. This function can't
+ * fail otherwise. The behavior is undefined if:
+ *
+ * - @a induce, @a a, or @a b is @c NULL
+ *
+ * This returns &SELF if @a a and @a b are identical.
+ *
+ * @param induce the induce engine to restrict @a a and @a b within
+ * @param a the type to restrict to a subtype of @a b
+ * @param b the type to restrict to a supertype of @a a
+ */
+
+const induce_edge_t *restrict_type(
+    induce_t *induce, const mu_type_t *a, const mu_type_t *b)
+  __attribute__((nonnull));
+
+void mark_type(induce_t *induce, const mu_type_t *type, _Bool negative, size_t rank);
+
 extern const mu_name_t *vector_access;
 extern const mu_name_t *vector_join;
 
