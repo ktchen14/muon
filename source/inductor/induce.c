@@ -36,56 +36,6 @@ const mu_variable_type_t *variable_type(induce_t *induce, open_scheme_t *scheme)
   return scheme->link = result;
 }
 
-void mark_type(induce_t *induce, const mu_type_t *type, _Bool negative, size_t rank) {
-  switch ON_ABSTRACT_OBJECT(type) {
-    case IS_KIND_OF(core_type): {
-      const mu_core_t *core = core_type->core;
-
-      for (size_t i = 0; i < core_type->core->argc; i++) {
-        const mu_type_t *next = core_type->argv[i];
-        _Bool next_negative = negative;
-
-        mu_variance_t variance = core->argv[i].variance;
-        assert(variance != MU_INVARIANCE);
-        if (variance == MU_CONTRAVARIANCE)
-          next_negative = !next_negative;
-
-        mark_type(induce, next, next_negative, rank);
-      }
-
-      break;
-    }
-
-    case IS_KIND_OF(variable_type):
-      if (variable_type->rank < rank)
-        return;
-
-      if (!negative) {
-        ((mu_variable_type_t *) variable_type)->positively_reachable = 1;
-
-        for (size_t i = 0; i < induce->universe.length; i++) {
-          induce_edge_t sub = induce->universe.data[i];
-          if (sub.upper != &variable_type->as_type)
-            continue;
-          mark_type(induce, sub.lower, negative, rank);
-        }
-      } else {
-        ((mu_variable_type_t *) variable_type)->negatively_reachable = 1;
-
-        for (size_t i = 0; i < induce->universe.length; i++) {
-          induce_edge_t sub = induce->universe.data[i];
-          if (sub.lower != &variable_type->as_type)
-            continue;
-          mark_type(induce, sub.upper, negative, rank);
-        }
-      }
-      break;
-
-    case MU_SCHEME_TYPE:
-      abort();
-  }
-}
-
 open_scheme_t *open_scheme(open_scheme_t *parent, const mu_node_t *node) {
   open_scheme_t *result;
   if ((result = malloc(sizeof(open_scheme_t))) == NULL)

@@ -112,8 +112,6 @@ const induce_edge_t *restrict_type(
     induce_t *induce, const mu_type_t *a, const mu_type_t *b)
   __attribute__((nonnull));
 
-void mark_type(induce_t *induce, const mu_type_t *type, _Bool negative, size_t rank);
-
 extern const mu_name_t *vector_access;
 extern const mu_name_t *vector_join;
 

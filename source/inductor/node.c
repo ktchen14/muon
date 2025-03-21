@@ -5,9 +5,7 @@
 
 #include <assert.h>
 #include <stddef.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #define evince induce_reveal
 
@@ -339,7 +337,8 @@ __attribute__((nonnull, pure)) static const mu_type_t *define_stmt_induce(
   assert(scheme->node == &stmt->as_node);
 
   const mu_type_t *expr_type = induce_reveal(induce, &stmt->expr->as_node);
-  mark_type(induce, expr_type, 0, scheme->rank);
+  return expr_type;
+  /* mark_type(induce, expr_type, 0, scheme->rank); */
 
   size_t polymorphic_length = 0;
   mu_variable_type_t *polymorphic = NULL;
