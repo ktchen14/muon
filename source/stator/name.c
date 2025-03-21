@@ -10,10 +10,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-/* #include <uchar.h> */
-#include <wchar.h>
-
-size_t c8rtomb(char *restrict s, mu_char8_t c8, mbstate_t *restrict ps);
 
 const mu_name_t *mu_name(
     mu_engine_t *engine,
@@ -46,30 +42,8 @@ const mu_name_t *mu_name(
   return name;
 }
 
-_Thread_local char conversion[MB_LEN_MAX];
-_Thread_local mbstate_t cs = {0};
-
 #include "debug.h"
 
 void mu_name_debug(const mu_name_t *name) {
-  if (debug_colorize)
-    fputs("\x1b[0;32m", stderr);
-
-  fprintf(stderr, "%s", name->text);
-
-  /* for (size_t i = 0; i < name->length; i++) { */
-  /*   mu_char8_t c = name->text[i]; */
-
-  /*   size_t size; */
-  /*   if ((size = c8rtomb(conversion, c, &cs)) == 0) */
-  /*     continue; */
-  /*   assert(size != (size_t) -1); */
-
-  /*   fwrite(conversion, size, 1, stderr); */
-  /* } */
-
-  if (debug_colorize)
-    fputs("\x1b[0m", stderr);
-
-  assert(mbsinit(&cs));
+  debug(PRIsNAME, DEBUG_NAME(name));
 }
