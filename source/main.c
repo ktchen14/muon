@@ -95,38 +95,27 @@ int main(int argc, char *argv[argc]) {
 
   mu_node_debug(&sequence_expr->as_node);
 
+  FILE *output = fopen("out.dot", "w");
+  debug_stream = output;
+
   if (getenv("DOT") != NULL) {
-    FILE *output = fopen("out.dot", "w");
-    debug_stream = output;
-
     debug("digraph muon {\n  rankdir=\"BT\"\n");
-
-    size_t type_id[1000] = {0};
-    for (size_t i = 0; i < debug_induce->universe.length; i++) {
-      induce_edge_t edge = debug_induce->universe.data[i];
-
-      if (!type_id[edge.source->id]) {
-        debug("%*s", 2, "");
-        debug("T%zu [label=\"", edge.source->id);
-        type_debug(edge.source, 0);
-        debug("\"];\n");
-        type_id[edge.source->id] = 1;
-      }
-
-      if (!type_id[edge.target->id]) {
-        debug("%*s", 2, "");
-        debug("T%zu [label=\"", edge.target->id);
-        type_debug(edge.target, 0);
-        debug("\"];\n");
-        type_id[edge.target->id] = 1;
-      }
-    }
-
     for (size_t i = 0; i < debug_induce->universe.length; i++) {
       induce_edge_t sub = debug_induce->universe.data[i];
 
       debug("%*s", 2, "");
-      debug("T%zu -> T%zu", sub.source->id, sub.target->id);
+
+      debug("\"");
+      type_debug(sub.source, 0);
+      debug(" (%zu)", sub.source->id);
+      debug("\"");
+
+      debug(" -> ");
+
+      debug("\"");
+      type_debug(sub.target, 0);
+      debug(" (%zu)", sub.target->id);
+      debug("\"");
 
       if (!sub.direct)
         debug(" [constraint=false,style=dashed]");
@@ -136,12 +125,12 @@ int main(int argc, char *argv[argc]) {
       debug(";\n");
     }
     debug("}\n");
-
-    fclose(output);
-    debug_stream = stderr;
-
-    system("dot -Tpng -O out.dot");
   }
+
+  fclose(output);
+  debug_stream = stderr;
+
+  system("dot -Tpng -O out.dot");
 
   return EXIT_SUCCESS;
 
