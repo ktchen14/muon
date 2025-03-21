@@ -461,9 +461,7 @@ static const induce_edge_t *restrict_type_semiinternal(
   if (tactic == &no_tactic)
     tactic = NULL;
 
-  induce_edge_t *result = (induce_edge_t *) universe_append(&induce->universe, a, b, tactic);
-  result->direct = direct;
-  return result;
+  return universe_append(&induce->universe, a, b, direct, tactic);
 }
 
 static const induce_edge_t *restrict_type(

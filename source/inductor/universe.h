@@ -40,6 +40,7 @@ const universe_edge_t *universe_append(
     universe_t *universe,
     const mu_type_t *restrict source,
     const mu_type_t *restrict target,
+    _Bool direct,
     const tactic_t *tactic);
 
 typedef universe_edge_t induce_edge_t;
