@@ -394,15 +394,16 @@ static const tactic_t *restrict_type_internal(
     const mu_core_t *core = core_type_a->core;
 
     for (size_t i = 0; i < core->argc; i++) {
-      const mu_type_t *lower = core_type_a->argv[i], *upper = core_type_b->argv[i];
+      const mu_type_t *source = core_type_a->argv[i];
+      const mu_type_t *target = core_type_b->argv[i];
 
       mu_variance_t variance = core->argv[i].variance;
       assert(variance != MU_INVARIANCE);
       if (variance == MU_CONTRAVARIANCE) {
-        const mu_type_t *t = lower; lower = upper; upper = t;
+        const mu_type_t *t = source; source = target; target = t;
       }
 
-      if (restrict_type_semiinternal(induce, lower, upper, direct) == NULL)
+      if (restrict_type_semiinternal(induce, source, target, direct) == NULL)
         return NULL;
     }
 
