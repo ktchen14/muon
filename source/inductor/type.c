@@ -123,32 +123,29 @@ void debug_variable_type_name(const mu_variable_type_t *type) {
 
 #include "../stator/debug.h"
 
-void debug_type(const mu_type_t *type) {
-  extern _Thread_local _Bool debug_negate;
-
-  switch (type->kind) {
-    case MU_CORE_TYPE: {
-      const mu_core_type_t *core_type = (const mu_core_type_t *) type;
+void type_debug(const mu_type_t *type, _Bool expand) {
+  switch ON_ABSTRACT_OBJECT(type) {
+    case IS_KIND_OF(core_type): {
       const mu_core_t *core = core_type->core;
 
       switch (core->kind) {
         case MU_BOOLEAN_CORE:
-          fprintf(stderr, "Boolean"); break;
-
         case MU_INTEGER_CORE:
-          fprintf(stderr, "Integer"); break;
+        case MU_CUSTOM_CORE:
+          mu_core_debug(core);
+          break;
 
         case MU_LAMBDA_CORE:
           fprintf(stderr, "(");
-          WITH_DEBUG_NEGATE() { debug_type(core_type->argv[0]); }
+          WITH_DEBUG_NEGATE() { type_debug(core_type->argv[0], expand); }
           fprintf(stderr, " -> ");
-          debug_type(core_type->argv[1]);
+          type_debug(core_type->argv[1], expand);
           fprintf(stderr, ")");
           break;
 
         case MU_VECTOR_CORE:
           fprintf(stderr, "[");
-          debug_type(core_type->argv[0]);
+          type_debug(core_type->argv[0], expand);
           fprintf(stderr, "]");
           break;
 
@@ -159,47 +156,38 @@ void debug_type(const mu_type_t *type) {
               fprintf(stderr, ", ");
             mu_name_debug(core->argv[i].name);
             fprintf(stderr, ": ");
-            debug_type(core_type->argv[i]);
+            type_debug(core_type->argv[i], expand);
           }
           fprintf(stderr, ")");
           break;
-
-        case MU_CUSTOM_CORE:
-          mu_core_debug(core);
       }
       break;
     }
 
-    case MU_VARIABLE_TYPE: {
-      const mu_variable_type_t *variable_type = (const mu_variable_type_t *) type;
+    case IS_KIND_OF(variable_type):
+      if (!expand || debug_induce == NULL) {
+        debug_variable_type_name(variable_type);
+        break;
+      }
 
-      if (debug_induce == NULL)
-        return;
-
-      _Bool already_printed = 0;
+      size_t length = 0;
       if (debug_negate) {
         for (size_t i = 0; i < debug_induce->universe.length; i++) {
           induce_edge_t edge = debug_induce->universe.data[i];
           if (edge.lower != type)
             continue;
 
+          if (length++)
+            fprintf(stderr, " ⊓ ");
+
           const mu_variable_type_t *upper_variable_type;
-          if ((upper_variable_type = mu_type_cast(edge.upper, upper_variable_type)) != NULL) {
-            if (already_printed)
-              fprintf(stderr, " ⊓ ");
-            already_printed = 1;
-
+          if ((upper_variable_type = mu_type_cast(edge.upper, upper_variable_type)) == NULL)
+            type_debug(edge.upper, expand);
+          else
             debug_variable_type_name(upper_variable_type);
-          } else {
-            if (already_printed)
-              fprintf(stderr, " ⊓ ");
-            already_printed = 1;
-
-            debug_type(edge.upper);
-          }
         }
 
-        if (already_printed)
+        if (length++)
           fprintf(stderr, " ⊓ ");
         debug_variable_type_name(variable_type);
       } else {
@@ -208,32 +196,23 @@ void debug_type(const mu_type_t *type) {
           if (edge.upper != type)
             continue;
 
+          if (length++)
+            fprintf(stderr, " ⊔ ");
+
           const mu_variable_type_t *lower_variable_type;
-          if ((lower_variable_type = mu_type_cast(edge.lower, lower_variable_type)) != NULL) {
-            if (already_printed > 0)
-              fprintf(stderr, " ⊔ ");
-            already_printed = 1;
-
+          if ((lower_variable_type = mu_type_cast(edge.lower, lower_variable_type)) == NULL)
+            type_debug(edge.lower, expand);
+          else
             debug_variable_type_name(lower_variable_type);
-          } else {
-            if (already_printed > 0)
-              fprintf(stderr, " ⊔ ");
-            already_printed = 1;
-
-            debug_type(edge.lower);
-          }
         }
 
-          if (already_printed)
-            fprintf(stderr, " ⊔ ");
-          debug_variable_type_name(variable_type);
+        if (length++)
+          fprintf(stderr, " ⊔ ");
+        debug_variable_type_name(variable_type);
       }
       break;
-    }
 
-    case MU_SCHEME_TYPE: {
-      const mu_scheme_type_t *scheme_type = (const mu_scheme_type_t *) type;
-
+    case IS_KIND_OF(scheme_type):
       fprintf(stderr, "∀(");
       for (size_t i = 0; i < scheme_type->argc; i++) {
         if (i > 0)
@@ -242,79 +221,15 @@ void debug_type(const mu_type_t *type) {
       }
       fprintf(stderr, ") ");
 
-      debug_type(scheme_type->matter);
+      type_debug(scheme_type->matter, expand);
       break;
-    }
   }
 }
 
+void debug_type(const mu_type_t *type) {
+  type_debug(type, 1);
+}
+
 void debug_just_type(const mu_type_t *type) {
-  extern _Thread_local _Bool debug_negate;
-
-  switch (type->kind) {
-    case MU_CORE_TYPE: {
-      const mu_core_type_t *core_type = (const mu_core_type_t *) type;
-      const mu_core_t *core = core_type->core;
-
-      switch (core->kind) {
-        case MU_BOOLEAN_CORE:
-          fprintf(stderr, "Boolean"); break;
-
-        case MU_INTEGER_CORE:
-          fprintf(stderr, "Integer"); break;
-
-        case MU_LAMBDA_CORE:
-          fprintf(stderr, "(");
-          WITH_DEBUG_NEGATE() { debug_just_type(core_type->argv[0]); }
-          fprintf(stderr, " -> ");
-          debug_just_type(core_type->argv[1]);
-          fprintf(stderr, ")");
-          break;
-
-        case MU_VECTOR_CORE:
-          fprintf(stderr, "[");
-          debug_just_type(core_type->argv[0]);
-          fprintf(stderr, "]");
-          break;
-
-        case MU_RECORD_CORE:
-          fprintf(stderr, "(");
-          for (size_t i = 0; i < core->argc; i++) {
-            if (i > 0)
-              fprintf(stderr, ", ");
-            mu_name_debug(core->argv[i].name);
-            fprintf(stderr, ": ");
-            debug_just_type(core_type->argv[i]);
-          }
-          fprintf(stderr, ")");
-          break;
-
-        case MU_CUSTOM_CORE:
-          mu_core_debug(core);
-      }
-      break;
-    }
-
-    case MU_VARIABLE_TYPE: {
-      const mu_variable_type_t *variable_type = (const mu_variable_type_t *) type;
-
-      debug_variable_type_name(variable_type);
-      break;
-    }
-
-    case MU_SCHEME_TYPE: {
-      const mu_scheme_type_t *scheme_type = (const mu_scheme_type_t *) type;
-
-      fprintf(stderr, "∀(");
-      for (size_t i = 0; i < scheme_type->argc; i++) {
-        if (i > 0)
-          fprintf(stderr, ", ");
-        debug_variable_type_name(scheme_type->argv[i]);
-      }
-      fprintf(stderr, ") ");
-
-      debug_just_type(scheme_type->matter);
-      break;
-    }
-  }
+  type_debug(type, 0);
 }
