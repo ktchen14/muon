@@ -89,7 +89,7 @@ static inline size_t extant_size(
 
 // TODO: better documentation
 
-static _Thread_local const void *_object;
+__attribute__((unused)) static _Thread_local const void *_object;
 
 #define JOIN(a, b) a##b
 
