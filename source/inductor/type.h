@@ -146,7 +146,9 @@ const mu_scheme_type_t *scheme_type_activate(
     mu_scheme_type_t *type, const mu_type_t *matter)
   __attribute__((nonnull));
 
-void debug_type(const mu_type_t *type);
+void type_debug(const mu_type_t *type, _Bool expand)
+  __attribute__((nonnull));
+
 void debug_variable_type_name(const mu_variable_type_t *type);
 void debug_just_type(const mu_type_t *type);
 

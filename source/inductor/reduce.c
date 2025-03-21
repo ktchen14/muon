@@ -17,9 +17,9 @@ const mu_coercion_t *make_coercion(
     return &induce->id_coercion->as_coercion;
 
   fprintf(stderr, "Making coercion from ");
-  debug_just_type(source);
+  type_debug(source, 0);
   fprintf(stderr, " to ");
-  debug_just_type(target);
+  type_debug(target, 0);
   fprintf(stderr, "\n");
 
   const induce_edge_t *edge = universe_search(&induce->universe, source, target);

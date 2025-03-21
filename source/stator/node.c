@@ -462,7 +462,7 @@ static inline int debug_node_coercion(const mu_node_t *node) {
 
   if (coercion->target != NULL) {
     fprintf(stderr, " ∷ ");
-    debug_type(coercion->target);
+    type_debug(coercion->target, 1);
   }
 
   fprintf(stderr, "\n");

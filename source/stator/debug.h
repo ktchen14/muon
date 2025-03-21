@@ -56,7 +56,7 @@ static inline void debug_node_type(const mu_node_t *node) {
 
   fprintf(stderr, " ∷ ");
 
-  debug_type(type);
+  type_debug(type, 1);
 }
 
 #endif /* MU_STATOR_DEBUG_I */

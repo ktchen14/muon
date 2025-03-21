@@ -225,11 +225,3 @@ void type_debug(const mu_type_t *type, _Bool expand) {
       break;
   }
 }
-
-void debug_type(const mu_type_t *type) {
-  type_debug(type, 1);
-}
-
-void debug_just_type(const mu_type_t *type) {
-  type_debug(type, 0);
-}

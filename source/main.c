@@ -102,14 +102,14 @@ int main(int argc, char *argv[argc]) {
       fprintf(stderr, "%*s", 2, "");
 
       fprintf(stderr, "\"");
-      debug_just_type(sub.lower);
+      type_debug(sub.lower, 0);
       fprintf(stderr, " (%zu)", sub.lower->id);
       fprintf(stderr, "\"");
 
       fprintf(stderr, " -> ");
 
       fprintf(stderr, "\"");
-      debug_just_type(sub.upper);
+      type_debug(sub.upper, 0);
       fprintf(stderr, " (%zu)", sub.upper->id);
       fprintf(stderr, "\"");
 
