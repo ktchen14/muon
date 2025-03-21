@@ -445,6 +445,21 @@ const mu_variable_view_t *mu_variable_view(
   return assign_node(engine, result);
 }
 
+#include "../inductor/induce.h"
+
+__attribute__((nonnull))
+static inline void debug_node_type(const mu_node_t *node) {
+  if (debug_induce == NULL)
+    return;
+
+  const mu_type_t *type;
+  if ((type = induce_reveal(debug_induce, node)) == NULL)
+    return;
+
+  debug(" ∷ ");
+  type_debug(type, 1);
+}
+
 __attribute__((nonnull))
 static inline int debug_node_coercion(const mu_node_t *node) {
   if (debug_induce == NULL)

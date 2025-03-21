@@ -1,11 +1,6 @@
 #ifndef MU_STATOR_DEBUG_I
 #define MU_STATOR_DEBUG_I
 
-#include "node.h"
-
-#include "../inductor/induce.h"
-
-#include <stdarg.h>
 #include <stdio.h>
 
 /// Whether to colorize the debug output
@@ -41,19 +36,5 @@ extern FILE *debug_stream;
   for (_Bool _n = (debug_negate = !debug_negate); debug_negate == _n; debug_negate = !debug_negate)
 
 #define debug(...) fprintf(debug_stream, ##__VA_ARGS__)
-
-__attribute__((nonnull))
-static inline void debug_node_type(const mu_node_t *node) {
-  if (debug_induce == NULL)
-    return;
-
-  const mu_type_t *type;
-  if ((type = induce_reveal(debug_induce, node)) == NULL)
-    return;
-
-  debug(" ∷ ");
-
-  type_debug(type, 1);
-}
 
 #endif /* MU_STATOR_DEBUG_I */
