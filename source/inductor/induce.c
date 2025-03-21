@@ -164,24 +164,26 @@ typedef struct {
 /* } */
 
 void mark_type(induce_t *induce, const mu_type_t *type, _Bool negative, size_t rank) {
-  switch (type->kind) {
-    case MU_CORE_TYPE: {
-      const mu_core_type_t *core_type = (const mu_core_type_t *) type;
+  switch ON_ABSTRACT_OBJECT(type) {
+    case IS_KIND_OF(core_type): {
       const mu_core_t *core = core_type->core;
 
       for (size_t i = 0; i < core_type->core->argc; i++) {
+        const mu_type_t *next = core_type->argv[i];
+        _Bool next_negative = negative;
+
         mu_variance_t variance = core->argv[i].variance;
         assert(variance != MU_INVARIANCE);
-        negative = variance == MU_COVARIANCE ? negative : !negative;
-        mark_type(induce, core_type->argv[i], negative, rank);
+        if (variance == MU_CONTRAVARIANCE)
+          next_negative = !next_negative;
+
+        mark_type(induce, next, next_negative, rank);
       }
 
       break;
     }
 
-    case MU_VARIABLE_TYPE: {
-      const mu_variable_type_t *variable_type = (const mu_variable_type_t *) type;
-
+    case IS_KIND_OF(variable_type):
       if (variable_type->rank < rank)
         return;
 
@@ -205,7 +207,6 @@ void mark_type(induce_t *induce, const mu_type_t *type, _Bool negative, size_t r
         }
       }
       break;
-    }
 
     case MU_SCHEME_TYPE:
       abort();
@@ -804,21 +805,22 @@ __attribute__((nonnull, pure)) static const mu_type_t *define_stmt_induce(
 
   if (polymorphic_length == 0)
     return expr_type;
+  return expr_type;
 
-  mu_scheme_type_t *allocation;
-  if ((allocation = scheme_type_allocate(induce, polymorphic_length)) == NULL)
-    return NULL;
+  /* mu_scheme_type_t *allocation; */
+  /* if ((allocation = scheme_type_allocate(induce, polymorphic_length)) == NULL) */
+  /*   return NULL; */
 
-  size_t i = 0;
-  for (mu_variable_type_t *type = polymorphic; type != NULL; type = type->scheme_next) {
-    allocation->argv[i++] = type;
-    type->polymorphic_to = allocation;
-  }
+  /* size_t i = 0; */
+  /* for (mu_variable_type_t *type = polymorphic; type != NULL; type = type->scheme_next) { */
+  /*   allocation->argv[i++] = type; */
+  /*   type->polymorphic_to = allocation; */
+  /* } */
 
-  const mu_scheme_type_t *result;
-  if (rare((result = scheme_type_activate(allocation, expr_type)) == NULL))
-    return NULL;
-  return &result->as_type;
+  /* const mu_scheme_type_t *result; */
+  /* if (rare((result = scheme_type_activate(allocation, expr_type)) == NULL)) */
+  /*   return NULL; */
+  /* return &result->as_type; */
 }
 
 // ---------------------------------- View -------------------------------- {{{1
