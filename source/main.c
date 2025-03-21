@@ -95,10 +95,11 @@ int main(int argc, char *argv[argc]) {
 
   mu_node_debug(&sequence_expr->as_node);
 
-  FILE *output = fopen("out.dot", "w");
-  debug_stream = output;
-
   if (getenv("DOT") != NULL) {
+    FILE *output = fopen("out.dot", "w");
+    debug_stream = output;
+    debug_colorize = 0;
+
     debug("digraph muon {\n  rankdir=\"BT\"\n");
     for (size_t i = 0; i < debug_induce->universe.length; i++) {
       induce_edge_t sub = debug_induce->universe.data[i];
@@ -120,17 +121,20 @@ int main(int argc, char *argv[argc]) {
       if (!sub.direct)
         debug(" [constraint=false,style=dashed]");
 
-      /* if (sub.coercion != NULL && strlen(sub.coercion) != 0) */
-      /*   debug(" [label=\"%s\"]", sub.coercion); */
+      if (sub.tactic != NULL) {
+        debug(" [label=\"");
+        tactic_debug(sub.tactic);
+        debug("\"]");
+      }
       debug(";\n");
     }
     debug("}\n");
+
+    fclose(output);
+    debug_stream = stderr;
+
+    system("dot -Tpng -O out.dot");
   }
-
-  fclose(output);
-  debug_stream = stderr;
-
-  system("dot -Tpng -O out.dot");
 
   return EXIT_SUCCESS;
 
