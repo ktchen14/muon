@@ -46,11 +46,7 @@ struct mu_variable_type_t {
   MU_TYPE_HEADER;
 
   // Debugging
-  const mu_variable_type_t *debug_next;
   size_t number; ///< Used to generate a name
-
-  const mu_variable_type_t *positively_entered_from;
-  const mu_variable_type_t *negatively_entered_from;
 
   // Polymorphism
   mu_variable_type_t *scheme_next;
@@ -160,11 +156,5 @@ enum {
   MU_EACH_TYPE_KIND(MU_EMIT)
 #undef MU_EMIT
 };
-
-static inline _Bool is_significant(const mu_variable_type_t *type) {
-  return 1;
-  return type->positively_entered_from == type && type->negatively_entered_from == type
-    || type->polymorphic_to != NULL;
-}
 
 #endif /* MU_INDUCTOR_TYPE_I */

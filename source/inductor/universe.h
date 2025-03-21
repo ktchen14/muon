@@ -42,9 +42,6 @@ const universe_edge_t *universe_append(
     const mu_type_t *restrict target,
     const tactic_t *tactic);
 
-void mark_type_from_anywhere_first(
-    const universe_t *universe, const mu_type_t *root, type_link_t *link);
-
 typedef universe_edge_t induce_edge_t;
 
 #endif /* MU_INDUCTOR_UNIVERSE_I */

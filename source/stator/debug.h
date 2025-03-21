@@ -54,44 +54,7 @@ static inline void debug_node_type(const mu_node_t *node) {
 
   fprintf(stderr, " ∷ ");
 
-  mu_variable_type_t sentinel;
-  type_link_t link = { .next = &sentinel };
-  mark_type_from_anywhere_first(&debug_induce->universe, type, &link);
-
-  if (link.next != &sentinel) {
-    size_t number = 0;
-    for (const mu_variable_type_t *type = link.next; type != &sentinel; type = type->debug_next) {
-      if (is_significant(type))
-        number++;
-    }
-
-    if (number > 0) {
-      fprintf(stderr, "∃(");
-
-      size_t i = 0;
-      for (const mu_variable_type_t *type = link.next; type != &sentinel; type = type->debug_next) {
-        if (is_significant(type)) {
-          if (i++ > 0)
-            fprintf(stderr, ", ");
-          debug_variable_type_name(type);
-        }
-      }
-
-      fprintf(stderr, ") ");
-    }
-  }
-
   debug_type(type);
-
-  const mu_variable_type_t *next = link.next;
-  while (next != &sentinel) {
-    ((mu_variable_type_t *) next)->negatively_entered_from = NULL;
-    ((mu_variable_type_t *) next)->positively_entered_from = NULL;
-
-    const mu_variable_type_t *real_next = next->debug_next;
-    ((mu_variable_type_t *) next)->debug_next = NULL;
-    next = real_next;
-  }
 }
 
 #endif /* MU_STATOR_DEBUG_I */

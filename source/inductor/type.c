@@ -185,13 +185,11 @@ void debug_type(const mu_type_t *type) {
 
           const mu_variable_type_t *upper_variable_type;
           if ((upper_variable_type = mu_type_cast(edge.upper, upper_variable_type)) != NULL) {
-            if (is_significant(upper_variable_type)) {
-              if (already_printed)
-                fprintf(stderr, " ⊓ ");
-              already_printed = 1;
+            if (already_printed)
+              fprintf(stderr, " ⊓ ");
+            already_printed = 1;
 
-              debug_variable_type_name(upper_variable_type);
-            }
+            debug_variable_type_name(upper_variable_type);
           } else {
             if (already_printed)
               fprintf(stderr, " ⊓ ");
@@ -201,13 +199,9 @@ void debug_type(const mu_type_t *type) {
           }
         }
 
-        if (is_significant(variable_type)) {
-          if (already_printed)
-            fprintf(stderr, " ⊓ ");
-          debug_variable_type_name(variable_type);
-        } else if (!already_printed) {
-          fprintf(stderr, "⊤");
-        }
+        if (already_printed)
+          fprintf(stderr, " ⊓ ");
+        debug_variable_type_name(variable_type);
       } else {
         for (size_t i = 0; i < debug_induce->universe.length; i++) {
           induce_edge_t edge = debug_induce->universe.data[i];
@@ -216,13 +210,11 @@ void debug_type(const mu_type_t *type) {
 
           const mu_variable_type_t *lower_variable_type;
           if ((lower_variable_type = mu_type_cast(edge.lower, lower_variable_type)) != NULL) {
-            if (is_significant(lower_variable_type)) {
-              if (already_printed > 0)
-                fprintf(stderr, " ⊔ ");
-              already_printed = 1;
+            if (already_printed > 0)
+              fprintf(stderr, " ⊔ ");
+            already_printed = 1;
 
-              debug_variable_type_name(lower_variable_type);
-            }
+            debug_variable_type_name(lower_variable_type);
           } else {
             if (already_printed > 0)
               fprintf(stderr, " ⊔ ");
@@ -232,13 +224,9 @@ void debug_type(const mu_type_t *type) {
           }
         }
 
-        if (is_significant(variable_type)) {
           if (already_printed)
             fprintf(stderr, " ⊔ ");
           debug_variable_type_name(variable_type);
-        } else if (!already_printed) {
-          fprintf(stderr, "⊥");
-        }
       }
       break;
     }
