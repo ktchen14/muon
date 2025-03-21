@@ -124,15 +124,15 @@ const record_instance_t *get_record_instance(
 void mu_core_debug(const mu_core_t *core) {
   switch (core->kind) {
     case MU_BOOLEAN_CORE:
-      fprintf(stderr, PRIsKIND, DEBUG_KIND("Boolean")); return;
+      fprintf(stderr, PRIsKIND, DEBUG_CORE_KIND("Boolean")); return;
     case MU_INTEGER_CORE:
-      fprintf(stderr, PRIsKIND, DEBUG_KIND("Integer")); return;
+      fprintf(stderr, PRIsKIND, DEBUG_CORE_KIND("Integer")); return;
     case MU_LAMBDA_CORE:
-      fprintf(stderr, PRIsKIND, DEBUG_KIND("Lambda")); return;
+      fprintf(stderr, PRIsKIND, DEBUG_CORE_KIND("Lambda")); return;
     case MU_VECTOR_CORE:
-      fprintf(stderr, PRIsKIND, DEBUG_KIND("Vector")); return;
+      fprintf(stderr, PRIsKIND, DEBUG_CORE_KIND("Vector")); return;
     case MU_RECORD_CORE:
-      fprintf(stderr, PRIsKIND, DEBUG_KIND("Record")); return;
+      fprintf(stderr, PRIsKIND, DEBUG_CORE_KIND("Record")); return;
     case MU_CUSTOM_CORE:
       mu_name_debug(core->name); return;
   }

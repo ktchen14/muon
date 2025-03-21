@@ -20,6 +20,8 @@ extern _Thread_local _Bool debug_negate;
 #define PRIsKIND "%s%s%s"
 #define DEBUG_KIND(text) \
   debug_colorize ? "\x1b[0;33m" : "", (text), debug_colorize ? "\x1b[0m" : ""
+#define DEBUG_CORE_KIND(text) \
+  debug_colorize ? "\x1b[0;32m" : "", (text), debug_colorize ? "\x1b[0m" : ""
 #define DEBUG_COERCION_KIND(text) \
   debug_colorize ? "\x1b[0;34m" : "", (text), debug_colorize ? "\x1b[0m" : ""
 
