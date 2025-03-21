@@ -95,6 +95,9 @@ int main(int argc, char *argv[argc]) {
 
   mu_node_debug(&sequence_expr->as_node);
 
+  FILE *output = fopen("out.dot", "w");
+  debug_stream = output;
+
   if (getenv("DOT") != NULL) {
     debug("digraph muon {\n  rankdir=\"BT\"\n");
     for (size_t i = 0; i < debug_induce->universe.length; i++) {
@@ -123,6 +126,11 @@ int main(int argc, char *argv[argc]) {
     }
     debug("}\n");
   }
+
+  fclose(output);
+  debug_stream = stderr;
+
+  system("dot -Tpng -O out.dot");
 
   return EXIT_SUCCESS;
 
