@@ -128,46 +128,46 @@ void mu_coercion_debug(const mu_coercion_t *coercion) {
 }
 
 void mu_id_coercion_debug(const mu_id_coercion_t *coercion) {
-  fprintf(stderr, PRIsKIND, DEBUG_COERCION_KIND("Id"));
+  debug(PRIsKIND, DEBUG_COERCION_KIND("Id"));
 }
 
 void mu_variance_coercion_debug(const mu_variance_coercion_t *coercion) {
-  fprintf(stderr, PRIsKIND "(", DEBUG_COERCION_KIND("Variance"));
+  debug(PRIsKIND "(", DEBUG_COERCION_KIND("Variance"));
 
   const mu_core_t *core = coercion->core;
   mu_core_debug(core);
 
   for (size_t i = 0; i < core->argc; i++) {
-    fputs(", ", stderr);
+    debug(", ");
     mu_coercion_debug(coercion->argv[i]);
   }
-  fprintf(stderr, ")");
+  debug(")");
 }
 
 void mu_record_coercion_debug(const mu_record_coercion_t *coercion) {
   const record_instance_t *instance = coercion->instance;
 
-  fprintf(stderr, PRIsKIND "(", DEBUG_COERCION_KIND("Record"));
+  debug(PRIsKIND "(", DEBUG_COERCION_KIND("Record"));
   for (size_t i = 0; i < instance->target->argc; i++) {
     if (i > 0)
-      fprintf(stderr, ", ");
-    fprintf(stderr, "%zu: ", instance->argv[i]);
+      debug(", ");
+    debug("%zu: ", instance->argv[i]);
     mu_coercion_debug(coercion->argv[i]);
   }
-  fprintf(stderr, ")");
+  debug(")");
 }
 
 void mu_join_coercion_debug(const mu_join_coercion_t *coercion) {
-  fprintf(stderr, PRIsKIND "(i = %zu)",
+  debug(PRIsKIND "(i = %zu)",
       DEBUG_COERCION_KIND("Join"), coercion->i);
 }
 
 void mu_unjoin_coercion_debug(const mu_unjoin_coercion_t *coercion) {
-  fprintf(stderr, PRIsKIND "(", DEBUG_COERCION_KIND("Unjoin"));
+  debug(PRIsKIND "(", DEBUG_COERCION_KIND("Unjoin"));
   for (size_t i = 0; i < coercion->argc; i++) {
     if (i > 0)
-      fprintf(stderr, ", ");
+      debug(", ");
     mu_coercion_debug(coercion->argv[i]);
   }
-  fprintf(stderr, ")");
+  debug(")");
 }

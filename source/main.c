@@ -4,6 +4,7 @@
 #include "script.h"
 #include "stator.h"
 #include "status.h"
+#include "stator/debug.h"
 
 #include <assert.h>
 #include <errno.h>
@@ -95,32 +96,32 @@ int main(int argc, char *argv[argc]) {
   mu_node_debug(&sequence_expr->as_node);
 
   if (getenv("DOT") != NULL) {
-    fprintf(stderr, "digraph muon {\n  rankdir=\"BT\"\n");
+    debug("digraph muon {\n  rankdir=\"BT\"\n");
     for (size_t i = 0; i < debug_induce->universe.length; i++) {
       induce_edge_t sub = debug_induce->universe.data[i];
 
-      fprintf(stderr, "%*s", 2, "");
+      debug("%*s", 2, "");
 
-      fprintf(stderr, "\"");
+      debug("\"");
       type_debug(sub.lower, 0);
-      fprintf(stderr, " (%zu)", sub.lower->id);
-      fprintf(stderr, "\"");
+      debug(" (%zu)", sub.lower->id);
+      debug("\"");
 
-      fprintf(stderr, " -> ");
+      debug(" -> ");
 
-      fprintf(stderr, "\"");
+      debug("\"");
       type_debug(sub.upper, 0);
-      fprintf(stderr, " (%zu)", sub.upper->id);
-      fprintf(stderr, "\"");
+      debug(" (%zu)", sub.upper->id);
+      debug("\"");
 
       if (!sub.direct)
-        fprintf(stderr, " [constraint=false,style=dashed]");
+        debug(" [constraint=false,style=dashed]");
 
       /* if (sub.coercion != NULL && strlen(sub.coercion) != 0) */
-      /*   fprintf(stderr, " [label=\"%s\"]", sub.coercion); */
-      fprintf(stderr, ";\n");
+      /*   debug(" [label=\"%s\"]", sub.coercion); */
+      debug(";\n");
     }
-    fprintf(stderr, "}\n");
+    debug("}\n");
   }
 
   return EXIT_SUCCESS;

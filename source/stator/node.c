@@ -457,15 +457,15 @@ static inline int debug_node_coercion(const mu_node_t *node) {
   if (coercion->kind == MU_ID_COERCION)
     return debug_indent;
 
-  fprintf(stderr, "%*s", debug_indent, "");
+  debug("%*s", debug_indent, "");
   mu_coercion_debug(coercion);
 
   if (coercion->target != NULL) {
-    fprintf(stderr, " ∷ ");
+    debug(" ∷ ");
     type_debug(coercion->target, 1);
   }
 
-  fprintf(stderr, "\n");
+  debug("\n");
 
   return debug_indent + 2;
 }
@@ -483,8 +483,8 @@ void mu_node_debug(const mu_node_t *node) {
   int indent = debug_indent;
   debug_indent = debug_node_coercion(node);
 
-  fprintf(stderr, "%*s", debug_indent, "");
-  fprintf(stderr, PRIsKIND "#" PRIuID, DEBUG_KIND(kind), DEBUG_ID(node->id));
+  debug("%*s", debug_indent, "");
+  debug(PRIsKIND "#" PRIuID, DEBUG_KIND(kind), DEBUG_ID(node->id));
 
   switch ON_ABSTRACT_OBJECT(node) {
     case IS_KIND_OF(access_expr):
@@ -529,7 +529,7 @@ void mu_node_debug(const mu_node_t *node) {
   }
 
   debug_node_type(node);
-  putc('\n', stderr);
+  debug("\n");
 
   WITH_DEBUG_INDENT() {
     size_t i = 0;

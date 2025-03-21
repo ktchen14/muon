@@ -17,6 +17,9 @@ extern _Thread_local int debug_indent;
 /// Whether to debug a type as a negative or positive type
 extern _Thread_local _Bool debug_negate;
 
+/// Stream to emit debugging output to (defaults to @c stderr)
+extern FILE *debug_stream;
+
 #define PRIsKIND "%s%s%s"
 #define DEBUG_KIND(text) \
   debug_colorize ? "\x1b[0;33m" : "", (text), debug_colorize ? "\x1b[0m" : ""
@@ -37,12 +40,7 @@ extern _Thread_local _Bool debug_negate;
 #define WITH_DEBUG_NEGATE() \
   for (_Bool _n = (debug_negate = !debug_negate); debug_negate == _n; debug_negate = !debug_negate)
 
-static inline void debug(const char *restrict format, ...) {
-  va_list variadic;
-  va_start(variadic, format);
-  vfprintf(stderr, format, variadic);
-  va_end(variadic);
-}
+#define debug(...) fprintf(debug_stream, ##__VA_ARGS__)
 
 __attribute__((nonnull))
 static inline void debug_node_type(const mu_node_t *node) {
@@ -53,7 +51,7 @@ static inline void debug_node_type(const mu_node_t *node) {
   if ((type = induce_reveal(debug_induce, node)) == NULL)
     return;
 
-  fprintf(stderr, " ∷ ");
+  debug(" ∷ ");
 
   type_debug(type, 1);
 }

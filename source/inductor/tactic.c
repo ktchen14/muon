@@ -58,23 +58,23 @@ void tactic_debug(const tactic_t *tactic) {
 }
 
 void variance_tactic_debug(const variance_tactic_t *tactic) {
-  fprintf(stderr, PRIsKIND "()", DEBUG_KIND("VarianceTactic"));
+  debug(PRIsKIND "()", DEBUG_KIND("VarianceTactic"));
 }
 
 void record_tactic_debug(const record_tactic_t *tactic) {
-  fprintf(stderr, PRIsKIND "(", DEBUG_KIND("RecordTactic"));
+  debug(PRIsKIND "(", DEBUG_KIND("RecordTactic"));
   for (size_t i = 0; i < tactic->instance->target->argc; i++) {
     if (i > 0)
-      fprintf(stderr, ", ");
-    fprintf(stderr, "%zu", tactic->instance->argv[i]);
+      debug(", ");
+    debug("%zu", tactic->instance->argv[i]);
   }
-  fprintf(stderr, ")");
+  debug(")");
 }
 
 void join_tactic_debug(const join_tactic_t *tactic) {
-  fprintf(stderr, PRIsKIND "(i = %zu)", DEBUG_KIND("JoinTactic"), tactic->i);
+  debug(PRIsKIND "(i = %zu)", DEBUG_KIND("JoinTactic"), tactic->i);
 }
 
 void unjoin_tactic_debug(const unjoin_tactic_t *tactic) {
-  fprintf(stderr, PRIsKIND "(length = %zu)", DEBUG_KIND("UnjoinTactic"), tactic->length);
+  debug(PRIsKIND "(length = %zu)", DEBUG_KIND("UnjoinTactic"), tactic->length);
 }

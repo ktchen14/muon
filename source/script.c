@@ -53,7 +53,7 @@ const mu_sequence_expr_t *mu_script_to_sequence_expr_with_prefix(
 #include "stator/debug.h"
 
 void mu_script_debug(const mu_script_t *script) {
-  fprintf(stderr, "Script:\n");
+  debug("Script:\n");
 
   WITH_DEBUG_INDENT() {
     for (size_t i = 0; i < script->argc; i++)

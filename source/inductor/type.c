@@ -97,6 +97,8 @@ const mu_scheme_type_t *scheme_type_activate(
   return assign_type(type->as_type.induce, type);
 }
 
+#include "../stator/debug.h"
+
 void debug_variable_type_name(const mu_variable_type_t *type) {
   static _Atomic size_t next_number = 0;
   static const char *alphabet[] = {
@@ -118,7 +120,7 @@ void debug_variable_type_name(const mu_variable_type_t *type) {
     memcpy(name -= strlen(c), c, strlen(c));
   }
 
-  fprintf(stderr, "%s", name);
+  debug("%s", name);
 }
 
 #include "../stator/debug.h"
@@ -136,29 +138,29 @@ void type_debug(const mu_type_t *type, _Bool expand) {
           break;
 
         case MU_LAMBDA_CORE:
-          fprintf(stderr, "(");
+          debug("(");
           WITH_DEBUG_NEGATE() { type_debug(core_type->argv[0], expand); }
-          fprintf(stderr, " -> ");
+          debug(" -> ");
           type_debug(core_type->argv[1], expand);
-          fprintf(stderr, ")");
+          debug(")");
           break;
 
         case MU_VECTOR_CORE:
-          fprintf(stderr, "[");
+          debug("[");
           type_debug(core_type->argv[0], expand);
-          fprintf(stderr, "]");
+          debug("]");
           break;
 
         case MU_RECORD_CORE:
-          fprintf(stderr, "(");
+          debug("(");
           for (size_t i = 0; i < core->argc; i++) {
             if (i > 0)
-              fprintf(stderr, ", ");
+              debug(", ");
             mu_name_debug(core->argv[i].name);
-            fprintf(stderr, ": ");
+            debug(": ");
             type_debug(core_type->argv[i], expand);
           }
-          fprintf(stderr, ")");
+          debug(")");
           break;
       }
       break;
@@ -178,7 +180,7 @@ void type_debug(const mu_type_t *type, _Bool expand) {
             continue;
 
           if (length++)
-            fprintf(stderr, " ⊓ ");
+            debug(" ⊓ ");
 
           const mu_variable_type_t *upper_variable_type;
           if ((upper_variable_type = mu_type_cast(edge.upper, upper_variable_type)) == NULL)
@@ -188,7 +190,7 @@ void type_debug(const mu_type_t *type, _Bool expand) {
         }
 
         if (length++)
-          fprintf(stderr, " ⊓ ");
+          debug(" ⊓ ");
         debug_variable_type_name(variable_type);
       } else {
         for (size_t i = 0; i < debug_induce->universe.length; i++) {
@@ -197,7 +199,7 @@ void type_debug(const mu_type_t *type, _Bool expand) {
             continue;
 
           if (length++)
-            fprintf(stderr, " ⊔ ");
+            debug(" ⊔ ");
 
           const mu_variable_type_t *lower_variable_type;
           if ((lower_variable_type = mu_type_cast(edge.lower, lower_variable_type)) == NULL)
@@ -207,19 +209,19 @@ void type_debug(const mu_type_t *type, _Bool expand) {
         }
 
         if (length++)
-          fprintf(stderr, " ⊔ ");
+          debug(" ⊔ ");
         debug_variable_type_name(variable_type);
       }
       break;
 
     case IS_KIND_OF(scheme_type):
-      fprintf(stderr, "∀(");
+      debug("∀(");
       for (size_t i = 0; i < scheme_type->argc; i++) {
         if (i > 0)
-          fprintf(stderr, ", ");
+          debug(", ");
         debug_variable_type_name(scheme_type->argv[i]);
       }
-      fprintf(stderr, ") ");
+      debug(") ");
 
       type_debug(scheme_type->matter, expand);
       break;
