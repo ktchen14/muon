@@ -106,15 +106,15 @@ int main(int argc, char *argv[argc]) {
       debug("%*s", 2, "");
 
       debug("\"");
-      type_debug(sub.lower, 0);
-      debug(" (%zu)", sub.lower->id);
+      type_debug(sub.source, 0);
+      debug(" (%zu)", sub.source->id);
       debug("\"");
 
       debug(" -> ");
 
       debug("\"");
-      type_debug(sub.upper, 0);
-      debug(" (%zu)", sub.upper->id);
+      type_debug(sub.target, 0);
+      debug(" (%zu)", sub.target->id);
       debug("\"");
 
       if (!sub.direct)

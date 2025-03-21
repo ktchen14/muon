@@ -7,15 +7,8 @@
 #include <stddef.h>
 
 typedef struct {
-  union {
-    const mu_type_t *source;
-    const mu_type_t *lower;
-  };
-
-  union {
-    const mu_type_t *target;
-    const mu_type_t *upper;
-  };
+  const mu_type_t *source;
+  const mu_type_t *target;
 
   const tactic_t *tactic;
   _Bool direct;

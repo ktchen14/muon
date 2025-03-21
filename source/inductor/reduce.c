@@ -37,7 +37,7 @@ const mu_coercion_t *make_coercion(
 
     for (size_t i = 0; i < induce->universe.length; i++) {
       const induce_edge_t *join_edge = &induce->universe.data[i];
-      if (join_edge->upper != source)
+      if (join_edge->target != source)
         continue;
       assert(join_edge->tactic != NULL);
       assert(join_edge->tactic->kind == JOIN_TACTIC);
@@ -45,7 +45,7 @@ const mu_coercion_t *make_coercion(
       const join_tactic_t *join_tactic = (const join_tactic_t *) join_edge->tactic;
 
       const mu_coercion_t *coercion;
-      if ((coercion = make_coercion(induce, join_edge->lower, target)) == NULL)
+      if ((coercion = make_coercion(induce, join_edge->source, target)) == NULL)
         return NULL;
       allocation->argv[join_tactic->i] = coercion;
     }
@@ -273,8 +273,8 @@ const mu_type_t *reduce_type(induce_t *induce, const mu_type_t *type, _Bool nega
       size_t j = 0;
       for (size_t i = 0; i < induce->universe.length; i++) {
         induce_edge_t *edge = &induce->universe.data[i];
-        if (edge->upper == &variable_type->as_type) {
-          if (reduce_type(induce, edge->lower, negative) == NULL)
+        if (edge->target == &variable_type->as_type) {
+          if (reduce_type(induce, edge->source, negative) == NULL)
             return NULL;
           edge->tactic = &join_tactic_create(j++)->as_tactic;
         }
@@ -282,7 +282,7 @@ const mu_type_t *reduce_type(induce_t *induce, const mu_type_t *type, _Bool nega
 
       for (size_t i = 0; i < induce->universe.length; i++) {
         induce_edge_t *edge = &induce->universe.data[i];
-        if (edge->lower == &variable_type->as_type) {
+        if (edge->source == &variable_type->as_type) {
           edge->tactic = &unjoin_tactic_create(j)->as_tactic;
         }
       }

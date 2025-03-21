@@ -182,9 +182,9 @@ static const tactic_t *restrict_type_internal(
   const mu_variable_type_t *variable_a;
   if ((variable_a = mu_type_cast(a, variable_a)) != NULL) {
     for (size_t i = 0; i < induce->universe.length; i++) {
-      if (induce->universe.data[i].upper != &variable_a->as_type)
+      if (induce->universe.data[i].target != &variable_a->as_type)
         continue;
-      if (restrict_type_semiinternal(induce, induce->universe.data[i].lower, b, direct) == NULL)
+      if (restrict_type_semiinternal(induce, induce->universe.data[i].source, b, direct) == NULL)
         return NULL;
     }
   }
@@ -192,9 +192,9 @@ static const tactic_t *restrict_type_internal(
   const mu_variable_type_t *variable_b;
   if ((variable_b = mu_type_cast(b, variable_b)) != NULL) {
     for (size_t j = 0; j < induce->universe.length; j++) {
-      if (induce->universe.data[j].lower != &variable_b->as_type)
+      if (induce->universe.data[j].source != &variable_b->as_type)
         continue;
-      if (restrict_type_semiinternal(induce, a, induce->universe.data[j].upper, direct) == NULL)
+      if (restrict_type_semiinternal(induce, a, induce->universe.data[j].target, direct) == NULL)
         return NULL;
     }
   }
