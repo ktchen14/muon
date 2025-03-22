@@ -6,14 +6,14 @@
 
 #include "../stator/debug.h"
 
-const mu_coercion_t *mu_edge_coercion(const mu_type_t *source, const mu_type_t *target) {
+const mu_edge_coercion_t *mu_edge_coercion(const mu_type_t *source, const mu_type_t *target) {
   mu_edge_coercion_t *result;
   if ((result = malloc(sizeof(mu_edge_coercion_t))) == NULL)
     return NULL;
   *result = (mu_edge_coercion_t) { .as_coercion = {
     .kind = MU_EDGE_COERCION, .source = source, .target = target,
   } };
-  return &result->as_coercion;
+  return result;
 }
 
 const mu_variance_coercion_t *mu_variance_coercion(
