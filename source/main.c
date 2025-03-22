@@ -16,6 +16,9 @@ unsigned char buffer[4096];
 
 #include "stator.h"
 
+const mu_name_t *vector_access;
+const mu_name_t *vector_join;
+
 int main(int argc, char *argv[argc]) {
   const char *muon_name = argc > 0 ? argv[0] : "muon";
   if (argc < 2) {

@@ -15,9 +15,6 @@
 
 _Thread_local induce_t *debug_induce;
 
-const mu_name_t *vector_access;
-const mu_name_t *vector_join;
-
 /* static const induce_edge_t *restrict_type_semiinternal( */
 /*     induce_t *induce, const mu_type_t *a, const mu_type_t *b, _Bool direct); */
 

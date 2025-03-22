@@ -112,7 +112,4 @@ const induce_edge_t *restrict_type(
     induce_t *induce, const mu_type_t *a, const mu_type_t *b)
   __attribute__((nonnull));
 
-extern const mu_name_t *vector_access;
-extern const mu_name_t *vector_join;
-
 #endif /* MU_INDUCTOR_INDUCE_I */
