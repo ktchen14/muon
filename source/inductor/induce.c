@@ -107,6 +107,11 @@ const mu_coercion_t *ensure_coercion(
     universe_iterator_t iterator;
     const mu_type_t *next_source;
 
+    // The target type isn't a variable type. For each edge:
+    //   next_source => source | next_source isn't a variable type
+    // Ensure that we're able to make the coercion:
+    //   next_source => target
+
     iterator = universe_iterator(&induce->universe, source, 0);
     while ((next_source = universe_next(&iterator)) != NULL) {
       if (next_source->kind == MU_VARIABLE_TYPE)
@@ -114,6 +119,13 @@ const mu_coercion_t *ensure_coercion(
       if (ensure_coercion(induce, next_source, target) == NULL)
         return NULL;
     }
+
+    // Then, for each edge:
+    //   next_source => source | next_source is a variable type
+    // Add the edge:
+    //   next_source => target
+    //
+    // To maintain the transitive closure of variable types.
 
     iterator = universe_iterator(&induce->universe, source, 0);
     while ((next_source = universe_next(&iterator)) != NULL) {
@@ -158,6 +170,14 @@ const mu_coercion_t *ensure_coercion(
     universe_iterator_t target_iterator;
     const mu_type_t *next_source, *next_target;
 
+    // The target type isn't a variable type. For each edge:
+    //   next_source => source | next_source isn't a variable type
+    //
+    // And for each edge:
+    //   target => next_target | next_target isn't a variable type
+    //
+    // Ensure that we're able to make the coercion:
+    //   next_source => next_target
     source_iterator = universe_iterator(&induce->universe, source, 0);
     while ((next_source = universe_next(&source_iterator)) != NULL) {
       if (next_source->kind == MU_VARIABLE_TYPE)
@@ -174,14 +194,12 @@ const mu_coercion_t *ensure_coercion(
     }
 
     source_iterator = universe_iterator(&induce->universe, source, 0);
-    while ((next_source = universe_next(&source_iterator)) != NULL) {
+    while ((next_source = universe_next(&source_iterator)) != NULL)
       append_edge(&induce->universe, next_source, target);
-    }
 
     target_iterator = universe_iterator(&induce->universe, target, 1);
-    while ((next_target = universe_next(&target_iterator)) != NULL) {
+    while ((next_target = universe_next(&target_iterator)) != NULL)
       append_edge(&induce->universe, source, next_target);
-    }
 
     const mu_edge_coercion_t *result;
     if ((result = mu_edge_coercion(source, target)) == NULL)
