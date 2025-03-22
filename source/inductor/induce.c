@@ -1,5 +1,6 @@
 #include "induce.h"
 #include "universe.h"
+#include "../stator/debug.h"
 
 #include "detect.h"
 #include "../stator.h"
@@ -78,10 +79,10 @@ const mu_coercion_t *ensure_coercion(
       return edge->coercion;
 
     // Otherwise, return an edge coercion for the edge
-    const mu_coercion_t *result;
+    const mu_edge_coercion_t *result;
     if ((result = mu_edge_coercion(source, target)) == NULL)
       return NULL;
-    return result;
+    return &result->as_coercion;
   }
 
   // Add the edge now in case of recursion
@@ -154,51 +155,45 @@ const mu_coercion_t *ensure_coercion(
   }
 
   if (source->kind == MU_VARIABLE_TYPE && target->kind == MU_VARIABLE_TYPE) {
-    const mu_variable_type_t *source_variable_type = (const mu_variable_type_t *) source;
-    const mu_variable_type_t *target_variable_type = (const mu_variable_type_t *) target;
+    universe_iterator_t source_iterator;
+    universe_iterator_t target_iterator;
+    const mu_type_t *next_source, *next_target;
 
-    for (size_t i = 0; i < induce->universe.length; i++) {
-      universe_edge_t source_edge = induce->universe.data[i];
-      if (source_edge.target != &source_variable_type->as_type)
-        continue;
-      if (source_edge.target->kind == MU_VARIABLE_TYPE)
+    source_iterator = universe_iterator(&induce->universe, source, 0);
+    while ((next_source = universe_next(&source_iterator)) != NULL) {
+      if (next_source->kind == MU_VARIABLE_TYPE)
         continue;
 
-      for (size_t i = 0; i < induce->universe.length; i++) {
-        universe_edge_t target_edge = induce->universe.data[i];
-        if (target_edge.source != &target_variable_type->as_type)
-          continue;
-        if (target_edge.source->kind == MU_VARIABLE_TYPE)
+      target_iterator = universe_iterator(&induce->universe, target, 1);
+      while ((next_target = universe_next(&target_iterator)) != NULL) {
+        if (next_target->kind == MU_VARIABLE_TYPE)
           continue;
 
-        if (ensure_coercion(induce, source_edge.source, target_edge.target) == NULL)
+        if (ensure_coercion(induce, next_source, next_target) == NULL)
           return NULL;
       }
     }
 
-    for (size_t i = 0; i < induce->universe.length; i++) {
-      universe_edge_t edge = induce->universe.data[i];
-      if (edge.target != &source_variable_type->as_type)
-        continue;
-      if (edge.target->kind != MU_VARIABLE_TYPE)
-        continue;
-
-      for (size_t i = 0; i < induce->universe.length; i++) {
-        universe_edge_t edge = induce->universe.data[i];
-        if (edge.source != &target_variable_type->as_type)
-          continue;
-        if (edge.source->kind != MU_VARIABLE_TYPE)
-          continue;
-        assert(edge.source->kind != MU_SCHEME_TYPE);
-
-        append_edge(&induce->universe, edge.source, edge.target);
+    source_iterator = universe_iterator(&induce->universe, source, 0);
+    while ((next_source = universe_next(&source_iterator)) != NULL) {
+      target_iterator = universe_iterator(&induce->universe, target, 1);
+      while ((next_target = universe_next(&target_iterator)) != NULL) {
+        append_edge(&induce->universe, next_source, next_target);
       }
     }
 
-    const mu_coercion_t *result;
+    target_iterator = universe_iterator(&induce->universe, target, 1);
+    while ((next_target = universe_next(&target_iterator)) != NULL) {
+      source_iterator = universe_iterator(&induce->universe, source, 0);
+      while ((next_source = universe_next(&source_iterator)) != NULL) {
+        append_edge(&induce->universe, next_source, next_target);
+      }
+    }
+
+    const mu_edge_coercion_t *result;
     if ((result = mu_edge_coercion(source, target)) == NULL)
       return NULL;
-    return result;
+    return &result->as_coercion;
   }
 
   abort();

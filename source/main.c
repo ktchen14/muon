@@ -124,12 +124,13 @@ int main(int argc, char *argv[argc]) {
       if (!sub.direct)
         debug(" [constraint=false,style=dashed]");
 
+      debug(";\n");
+
       /* if (sub.tactic != NULL) { */
       /*   debug(" [label=\""); */
       /*   tactic_debug(sub.tactic); */
       /*   debug("\"]"); */
       /* } */
-      /* debug(";\n"); */
     }
     debug("}\n");
 
