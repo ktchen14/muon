@@ -51,15 +51,6 @@ struct induce_t {
   const mu_coercion_t *coercion[2000];
 };
 
-typedef struct open_scheme_t open_scheme_t;
-struct open_scheme_t {
-  induce_t *induce;
-  const mu_node_t *node;
-  open_scheme_t *parent;
-  size_t rank;
-  mu_variable_type_t *link;
-};
-
 extern _Thread_local induce_t *debug_induce;
 
 /// Initialize the @a inductor to handle nodes and types in the @a engine
@@ -89,9 +80,6 @@ const mu_type_t *induce_node(induce_t *inductor, const mu_node_t *node)
   __attribute__((nonnull));
 
 const mu_type_t *reduce_node(induce_t *induce, const mu_node_t *root);
-
-open_scheme_t *open_scheme(open_scheme_t *parent, const mu_node_t *node);
-const mu_variable_type_t *variable_type(induce_t *induce, open_scheme_t *scheme);
 
 /**
  * @brief Restrict type @a a to be a subtype of @a b in the @a induce engine

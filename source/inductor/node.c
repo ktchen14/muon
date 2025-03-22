@@ -59,7 +59,7 @@ const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
 __attribute__((nonnull)) static const mu_type_t *access_expr_induce(
     const mu_access_expr_t *expr, induce_t *induce, open_scheme_t *scheme) {
   const mu_variable_type_t *result;
-  if ((result = variable_type(induce, scheme)) == NULL)
+  if ((result = mu_variable_type(induce, scheme)) == NULL)
     return NULL;
 
   const mu_core_t *core;
@@ -105,7 +105,7 @@ __attribute__((nonnull)) static const mu_type_t *invoke_expr_induce(
   const mu_type_t *argument_type = evince(induce, &expr->argument->as_node);
 
   const mu_variable_type_t *result;
-  if ((result = variable_type(induce, scheme)) == NULL)
+  if ((result = mu_variable_type(induce, scheme)) == NULL)
     return NULL;
 
   const mu_core_type_t *lambda_type;
@@ -135,7 +135,7 @@ __attribute__((nonnull)) static const mu_type_t *name_expr_induce(
   if ((target = detect_evince(induce->detect, &expr->as_node)) == NULL) {
     abort();
     const mu_variable_type_t *result;
-    if ((result = variable_type(induce, scheme)) == NULL)
+    if ((result = mu_variable_type(induce, scheme)) == NULL)
       return NULL;
     return &result->as_type;
   }
@@ -219,7 +219,7 @@ __attribute__((nonnull)) static const mu_type_t *switch_case_induce(
 __attribute__((nonnull)) static const mu_type_t *switch_expr_induce(
     const mu_switch_expr_t *expr, induce_t *induce, open_scheme_t *scheme) {
   const mu_variable_type_t *result;
-  if ((result = variable_type(induce, scheme)) == NULL)
+  if ((result = mu_variable_type(induce, scheme)) == NULL)
     return NULL;
 
   for (size_t i = 0; i < expr->argc; i++) {
@@ -234,7 +234,7 @@ __attribute__((nonnull)) static const mu_type_t *switch_expr_induce(
 __attribute__((nonnull)) static const mu_type_t *sequence_expr_induce(
     const mu_sequence_expr_t *expr, induce_t *induce, open_scheme_t *scheme) {
   const mu_variable_type_t *result;
-  if ((result = variable_type(induce, scheme)) == NULL)
+  if ((result = mu_variable_type(induce, scheme)) == NULL)
     return NULL;
   return &result->as_type;
 }
@@ -242,7 +242,7 @@ __attribute__((nonnull)) static const mu_type_t *sequence_expr_induce(
 __attribute__((nonnull)) static const mu_type_t *vector_expr_induce(
     const mu_vector_expr_t *expr, induce_t *induce, open_scheme_t *scheme) {
   const mu_variable_type_t *matter_type;
-  if ((matter_type = variable_type(induce, scheme)) == NULL)
+  if ((matter_type = mu_variable_type(induce, scheme)) == NULL)
     return NULL;
 
   for (size_t i = 0; i < expr->argc; i++) {
@@ -260,7 +260,7 @@ __attribute__((nonnull)) static const mu_type_t *vector_expr_induce(
 __attribute__((nonnull)) static const mu_type_t *zero_expr_induce(
     const mu_zero_expr_t *expr, induce_t *induce, open_scheme_t *scheme) {
   const mu_variable_type_t *result;
-  if ((result = variable_type(induce, scheme)) == NULL)
+  if ((result = mu_variable_type(induce, scheme)) == NULL)
     return NULL;
   return &result->as_type;
 }
@@ -290,7 +290,7 @@ __attribute__((nonnull)) static const mu_type_t *name_sign_induce(
     return induce_reveal(induce, target);
 
   const mu_variable_type_t *result;
-  if ((result = variable_type(induce, scheme)) == NULL)
+  if ((result = mu_variable_type(induce, scheme)) == NULL)
     return NULL;
   return &result->as_type;
 }
@@ -412,7 +412,7 @@ __attribute__((nonnull, pure)) static const mu_type_t *define_stmt_induce(
 __attribute__((nonnull)) static const mu_type_t *variable_view_induce(
     const mu_variable_view_t *view, induce_t *induce, open_scheme_t *scheme) {
   const mu_variable_type_t *result;
-  if ((result = variable_type(induce, scheme)) == NULL)
+  if ((result = mu_variable_type(induce, scheme)) == NULL)
     return NULL;
   return &result->as_type;
 }
