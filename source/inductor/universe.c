@@ -46,33 +46,3 @@ universe_edge_t *append_edge(universe_t *universe, const mu_type_t *source, cons
   result->direct = 1;
   return result;
 }
-
-/* const universe_edge_t *universe_append( */
-/*     universe_t *universe, */
-/*     const mu_type_t *restrict source, */
-/*     const mu_type_t *restrict target, */
-/*     _Bool direct, */
-/*     const tactic_t *tactic) { */
-/*   if (universe->length >= universe->volume) { */
-/*     size_t volume = universe->volume; */
-/*     if (rare(__builtin_mul_overflow(volume, 2, &volume))) */
-/*       return errno = ENOMEM, NULL; */
-
-/*     size_t size; */
-/*     if (rare(__builtin_mul_overflow(volume, sizeof(universe_edge_t), &size))) */
-/*       return errno = ENOMEM, NULL; */
-
-/*     universe_edge_t *data; */
-/*     if ((data = realloc(universe->data, size)) == NULL) */
-/*       return NULL; */
-/*     universe->data = data; */
-
-/*     universe->volume = volume; */
-/*   } */
-
-/*   universe_edge_t *result = &universe->data[universe->length++]; */
-/*   *result = (universe_edge_t) { */
-/*     .source = source, .target = target, .direct = direct, .tactic = tactic, */
-/*   }; */
-/*   return result; */
-/* } */

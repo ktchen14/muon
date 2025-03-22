@@ -7,11 +7,9 @@ target_sources(muon PRIVATE
   inductor/induce.c
   # inductor/reduce.c
   inductor/type.c
-  inductor/tactic.c
   inductor/universe.c
   inductor/node.c
 
-  # inductor/reduce.c
   script.c
   status.c
 

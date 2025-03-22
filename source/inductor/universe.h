@@ -3,7 +3,6 @@
 
 #include "coercion.h"
 #include "type.h"
-#include "tactic.h"
 
 #include <stddef.h>
 
@@ -13,7 +12,6 @@ typedef struct {
 
   const mu_coercion_t *coercion;
 
-  /* const tactic_t *tactic; */
   _Bool direct;
 } universe_edge_t;
 
@@ -30,14 +28,6 @@ universe_t *universe_initialize(universe_t *universe)
 const universe_edge_t *universe_search(
     const universe_t *universe, const mu_type_t *source, const mu_type_t *target)
   __attribute__((nonnull));
-
-/// Create an edge @a source → @a target in the @a universe
-const universe_edge_t *universe_append(
-    universe_t *universe,
-    const mu_type_t *restrict source,
-    const mu_type_t *restrict target,
-    _Bool direct,
-    const tactic_t *tactic);
 
 universe_edge_t *append_edge(universe_t *universe, const mu_type_t *source, const mu_type_t *target);
 
