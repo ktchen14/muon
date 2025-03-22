@@ -1,6 +1,5 @@
 #include "induce.h"
 #include "universe.h"
-#include "../stator/debug.h"
 
 #include "detect.h"
 #include "../stator.h"
@@ -176,18 +175,12 @@ const mu_coercion_t *ensure_coercion(
 
     source_iterator = universe_iterator(&induce->universe, source, 0);
     while ((next_source = universe_next(&source_iterator)) != NULL) {
-      target_iterator = universe_iterator(&induce->universe, target, 1);
-      while ((next_target = universe_next(&target_iterator)) != NULL) {
-        append_edge(&induce->universe, next_source, next_target);
-      }
+      append_edge(&induce->universe, next_source, target);
     }
 
     target_iterator = universe_iterator(&induce->universe, target, 1);
     while ((next_target = universe_next(&target_iterator)) != NULL) {
-      source_iterator = universe_iterator(&induce->universe, source, 0);
-      while ((next_source = universe_next(&source_iterator)) != NULL) {
-        append_edge(&induce->universe, next_source, next_target);
-      }
+      append_edge(&induce->universe, source, next_target);
     }
 
     const mu_edge_coercion_t *result;

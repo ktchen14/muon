@@ -46,14 +46,17 @@ static inline universe_iterator_t universe_iterator(
   };
 }
 
+#include <stdio.h>
+
 __attribute__((nonnull))
 static inline const mu_type_t *universe_next(universe_iterator_t *iterator) {
   const universe_t *universe = iterator->universe;
-  for (size_t i = iterator->i++; i < universe->length; i++) {
+
+  for (size_t i; (i = iterator->i++) < universe->length;) {
     universe_edge_t edge = universe->data[i];
-    if (!iterator->invert && edge.target == iterator->target)
+    if (iterator->invert == 0 && edge.target == iterator->target)
       return edge.source;
-    if (iterator->invert && edge.source == iterator->target)
+    if (iterator->invert == 1 && edge.source == iterator->target)
       return edge.target;
   }
 
