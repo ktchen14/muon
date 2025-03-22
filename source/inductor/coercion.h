@@ -105,6 +105,10 @@ const mu_unjoin_coercion_t *unjoin_coercion_activate(
     mu_unjoin_coercion_t *coercion)
   __attribute__((nonnull));
 
+const mu_type_t *mu_coercion_target(
+    const mu_coercion_t *coercion, const mu_type_t *source)
+  __attribute__((nonnull, pure, returns_nonnull));
+
 void mu_coercion_debug(const mu_coercion_t *coercion)
   __attribute__((nonnull));
 
@@ -125,5 +129,12 @@ void mu_join_coercion_debug(const mu_join_coercion_t *coercion)
 
 void mu_unjoin_coercion_debug(const mu_unjoin_coercion_t *coercion)
   __attribute__((nonnull));
+
+/// @internal An enumeration over each kind of coercion, e.g. @c _id_coercion_kind
+enum {
+#define MU_EMIT(lower, u, t) _##lower##_coercion_kind,
+  MU_EACH_COERCION_KIND(MU_EMIT)
+#undef MU_EMIT
+};
 
 #endif /* MU_INDUCTOR_COERCION_I */
