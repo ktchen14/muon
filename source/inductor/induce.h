@@ -100,6 +100,19 @@ const induce_edge_t *restrict_type(
     induce_t *induce, const mu_type_t *a, const mu_type_t *b)
   __attribute__((nonnull));
 
+/**
+ * @brief If the coercion source => target is ensured, then return it
+ */
+const mu_coercion_t *retrieve_coercion(
+    induce_t *induce, const mu_type_t *source, const mu_type_t *target)
+  __attribute__((nonnull));
+
+// Ensure that a coercion exists, and will always exist, from source => target.
+// Return that coercion.
+const mu_coercion_t *ensure_coercion(
+    induce_t *induce, const mu_type_t *source, const mu_type_t *target)
+  __attribute__((nonnull));
+
 extern const mu_name_t *vector_access;
 extern const mu_name_t *vector_join;
 

@@ -13,18 +13,49 @@
 
 _Thread_local induce_t *debug_induce;
 
-// If a coercion exists, and will always exist, from source => target, return it
-const mu_coercion_t *retrieve_coercion(
-    induce_t *induce, const mu_type_t *source, const mu_type_t *target)
-  __attribute__((nonnull));
+static const mu_coercion_t NO_COERCION = {0};
 
-// Ensure that a coercion exists, and will always exist, from source => target.
-// Return that coercion.
-const mu_coercion_t *ensure_coercion(
-    induce_t *induce, const mu_type_t *source, const mu_type_t *target)
-  __attribute__((nonnull));
+static inline const mu_coercion_t *retrieve_core_coercion(
+    induce_t *induce, const mu_core_type_t *source, const mu_core_type_t *target) {
+  const mu_core_t *source_core = source->core;
+  const mu_core_t *target_core = target->core;
 
-static inline const mu_coercion_t *make_core_coercion(
+  if (source_core != target_core)
+    return &NO_COERCION;
+
+  const mu_core_t *core = source_core;
+
+  mu_variance_coercion_t *allocation;
+  if ((allocation = variance_coercion_allocate(core)) == NULL)
+    return NULL;
+
+  for (size_t i = 0; i < core->argc; i++) {
+    const mu_type_t *next_source = source->argv[i];
+    const mu_type_t *next_target = target->argv[i];
+
+    mu_variance_t variance = core->argv[i].variance;
+    assert(variance != MU_INVARIANCE);
+    if (variance == MU_CONTRAVARIANCE) {
+      const mu_type_t *t = next_source; next_source = next_target; next_target = t;
+    }
+
+    const mu_coercion_t *coercion;
+    if ((coercion = retrieve_coercion(induce, next_source, next_target)) == NULL)
+      return NULL;
+    if (coercion == &NO_COERCION) {
+      free(allocation);
+      return coercion;
+    }
+    allocation->argv[i] = coercion;
+  }
+
+  const mu_variance_coercion_t *result;
+  if ((result = variance_coercion_activate(allocation)) == NULL)
+    return NULL;
+  return &result->as_coercion;
+}
+
+static inline const mu_coercion_t *ensure_core_coercion(
     induce_t *induce, const mu_core_type_t *source, const mu_core_type_t *target) {
   const mu_core_t *source_core = source->core;
   const mu_core_t *target_core = target->core;
@@ -62,6 +93,40 @@ static inline const mu_coercion_t *make_core_coercion(
   return &result->as_coercion;
 }
 
+const mu_coercion_t *retrieve_coercion(
+    induce_t *induce, const mu_type_t *source, const mu_type_t *target) {
+  assert(source->kind != MU_SCHEME_TYPE && target->kind != MU_SCHEME_TYPE);
+
+  if (source == target)
+    return &induce->id_coercion->as_coercion;
+
+  // If we already have an edge source => target then
+  const universe_edge_t *edge;
+  if ((edge = universe_search(&induce->universe, source, target)) != NULL) {
+    // If the edge has a coercion, return it
+    if (edge->coercion != NULL)
+      return edge->coercion;
+
+    // Otherwise, return an edge coercion for the edge
+    const mu_edge_coercion_t *result;
+    if ((result = mu_edge_coercion(source, target)) == NULL)
+      return NULL;
+    return &result->as_coercion;
+  }
+
+  if (source->kind == MU_CORE_TYPE && target->kind == MU_CORE_TYPE) {
+    const mu_core_type_t *next_source = (const mu_core_type_t *) source;
+    const mu_core_type_t *next_target = (const mu_core_type_t *) target;
+
+    const mu_coercion_t *result;
+    if ((result = retrieve_core_coercion(induce, next_source, next_target)) == NULL)
+      return NULL;
+    return result;
+  }
+
+  return &NO_COERCION;
+}
+
 const mu_coercion_t *ensure_coercion(
     induce_t *induce, const mu_type_t *source, const mu_type_t *target) {
   assert(source->kind != MU_SCHEME_TYPE && target->kind != MU_SCHEME_TYPE);
@@ -84,16 +149,20 @@ const mu_coercion_t *ensure_coercion(
     return &result->as_coercion;
   }
 
-  // Add the edge now in case of recursion
-  if (append_edge(&induce->universe, source, target) == NULL)
-    return NULL;
+  /* // Add the edge now in case of recursion */
+  /* if (append_edge(&induce->universe, source, target) == NULL) */
+  /*   return NULL; */
 
   if (source->kind == MU_CORE_TYPE && target->kind == MU_CORE_TYPE) {
+    // Add the edge now in case of recursion
+    if (append_edge(&induce->universe, source, target) == NULL)
+      return NULL;
+
     const mu_core_type_t *next_source = (const mu_core_type_t *) source;
     const mu_core_type_t *next_target = (const mu_core_type_t *) target;
 
     const mu_coercion_t *result;
-    if ((result = make_core_coercion(induce, next_source, next_target)) == NULL)
+    if ((result = ensure_core_coercion(induce, next_source, next_target)) == NULL)
       return NULL;
 
     universe_edge_t *edge;
@@ -103,7 +172,62 @@ const mu_coercion_t *ensure_coercion(
     return result;
   }
 
+  if (source->kind == MU_CORE_TYPE && target->kind == MU_VARIABLE_TYPE) {
+    universe_iterator_t iterator;
+    const mu_type_t *next_target;
+
+    // First, see if we can put source under one of target's existing sources.
+    iterator = universe_iterator(&induce->universe, target, 0);
+    const mu_type_t *next_source;
+    while ((next_source = universe_next(&iterator)) != NULL) {
+      if (next_source->kind == MU_VARIABLE_TYPE)
+        continue;
+
+      if (next_source == source)
+        return &induce->id_coercion->as_coercion;
+
+      const mu_coercion_t *coercion;
+      if ((coercion = retrieve_coercion(induce, source, next_source)) == NULL)
+        return NULL;
+      if (coercion != &NO_COERCION) {
+        universe_edge_t *edge;
+        edge = append_edge(&induce->universe, source, next_source);
+        assert(edge != NULL);
+        edge->coercion = coercion;
+        return coercion;
+      }
+    }
+
+    // Add the edge now in case of recursion
+    if (append_edge(&induce->universe, source, target) == NULL)
+      return NULL;
+
+    iterator = universe_iterator(&induce->universe, target, 1);
+    while ((next_target = universe_next(&iterator)) != NULL) {
+      if (next_target->kind == MU_VARIABLE_TYPE)
+        continue;
+      if (ensure_coercion(induce, next_target, source) == NULL)
+        return NULL;
+    }
+
+    iterator = universe_iterator(&induce->universe, target, 1);
+    while ((next_target = universe_next(&iterator)) != NULL) {
+      if (next_target->kind != MU_VARIABLE_TYPE)
+        continue;
+      append_edge(&induce->universe, next_target, source);
+    }
+
+    const mu_edge_coercion_t *result;
+    if ((result = mu_edge_coercion(source, target)) == NULL)
+      return NULL;
+    return &result->as_coercion;
+  }
+
   if (source->kind == MU_VARIABLE_TYPE && target->kind == MU_CORE_TYPE) {
+    // Add the edge now in case of recursion
+    if (append_edge(&induce->universe, source, target) == NULL)
+      return NULL;
+
     universe_iterator_t iterator;
     const mu_type_t *next_source;
 
@@ -140,32 +264,11 @@ const mu_coercion_t *ensure_coercion(
     return &result->as_coercion;
   }
 
-  if (source->kind == MU_CORE_TYPE && target->kind == MU_VARIABLE_TYPE) {
-    universe_iterator_t iterator;
-    const mu_type_t *next_target;
-
-    iterator = universe_iterator(&induce->universe, target, 1);
-    while ((next_target = universe_next(&iterator)) != NULL) {
-      if (next_target->kind == MU_VARIABLE_TYPE)
-        continue;
-      if (ensure_coercion(induce, next_target, source) == NULL)
-        return NULL;
-    }
-
-    iterator = universe_iterator(&induce->universe, target, 1);
-    while ((next_target = universe_next(&iterator)) != NULL) {
-      if (next_target->kind != MU_VARIABLE_TYPE)
-        continue;
-      append_edge(&induce->universe, next_target, source);
-    }
-
-    const mu_edge_coercion_t *result;
-    if ((result = mu_edge_coercion(source, target)) == NULL)
-      return NULL;
-    return &result->as_coercion;
-  }
-
   if (source->kind == MU_VARIABLE_TYPE && target->kind == MU_VARIABLE_TYPE) {
+    // Add the edge now in case of recursion
+    if (append_edge(&induce->universe, source, target) == NULL)
+      return NULL;
+
     universe_iterator_t source_iterator;
     universe_iterator_t target_iterator;
     const mu_type_t *next_source, *next_target;
@@ -207,7 +310,7 @@ const mu_coercion_t *ensure_coercion(
     return &result->as_coercion;
   }
 
-  abort();
+  __builtin_unreachable();
 }
 
 const induce_edge_t *restrict_type(
@@ -217,7 +320,7 @@ const induce_edge_t *restrict_type(
   if ((coercion = ensure_coercion(induce, source, target)) == NULL)
     return NULL;
 
-  return universe_search(&induce->universe, source, target);
+  return (const induce_edge_t *) coercion;
 }
 
 
