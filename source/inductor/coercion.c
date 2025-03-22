@@ -10,9 +10,10 @@ const mu_edge_coercion_t *mu_edge_coercion(const mu_type_t *source, const mu_typ
   mu_edge_coercion_t *result;
   if ((result = malloc(sizeof(mu_edge_coercion_t))) == NULL)
     return NULL;
-  *result = (mu_edge_coercion_t) { .as_coercion = {
-    .kind = MU_EDGE_COERCION, .source = source, .target = target,
-  } };
+  *result = (mu_edge_coercion_t) {
+    .as_coercion = { .kind = MU_EDGE_COERCION, .target = target, },
+    .source = source,
+  };
   return result;
 }
 

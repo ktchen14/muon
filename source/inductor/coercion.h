@@ -25,7 +25,6 @@ typedef enum {
 /// An abstract coercion
 typedef struct mu_coercion_t {
   mu_coercion_kind_t kind;
-  const mu_type_t *source;
   const mu_type_t *target;
 } mu_coercion_t;
 
@@ -38,6 +37,7 @@ typedef struct {
 
 typedef struct {
   MU_COERCION_HEADER;
+  const mu_type_t *source;
 } mu_edge_coercion_t;
 
 typedef struct {
