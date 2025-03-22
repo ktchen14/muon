@@ -11,8 +11,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define evince induce_reveal
-
 _Thread_local induce_t *debug_induce;
 
 /* static const induce_edge_t *restrict_type_semiinternal( */

@@ -13,10 +13,10 @@ universe_t *universe_initialize(universe_t *universe) {
   return universe;
 }
 
-const universe_edge_t *universe_search(
+universe_edge_t *universe_search(
     const universe_t *universe, const mu_type_t *source, const mu_type_t *target) {
   for (size_t i = 0; i < universe->length; i++) {
-    const universe_edge_t *edge = &universe->data[i];
+    universe_edge_t *edge = &universe->data[i];
     if (edge->source == source && edge->target == target)
       return edge;
   }
