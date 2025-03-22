@@ -9,6 +9,7 @@
 /// Expands to emit(lower, upper, title, ...) for each kind of coercion
 #define MU_EACH_COERCION_KIND(emit, ...) \
   emit(id, ID, Id, ##__VA_ARGS__) \
+  emit(edge, EDGE, Edge, ##__VA_ARGS__) \
   emit(variance, VARIANCE, Variance, ##__VA_ARGS__) \
   emit(record, RECORD, Record, ##__VA_ARGS__) \
   emit(join, JOIN, Join, ##__VA_ARGS__) \
@@ -24,6 +25,7 @@ typedef enum {
 /// An abstract coercion
 typedef struct mu_coercion_t {
   mu_coercion_kind_t kind;
+  const mu_type_t *source;
   const mu_type_t *target;
 } mu_coercion_t;
 
@@ -33,6 +35,10 @@ typedef struct mu_coercion_t {
 typedef struct {
   MU_COERCION_HEADER;
 } mu_id_coercion_t;
+
+typedef struct {
+  MU_COERCION_HEADER;
+} mu_edge_coercion_t;
 
 typedef struct {
   MU_COERCION_HEADER;
@@ -99,6 +105,9 @@ void mu_coercion_debug(const mu_coercion_t *coercion)
   __attribute__((nonnull));
 
 void mu_id_coercion_debug(const mu_id_coercion_t *coercion)
+  __attribute__((nonnull));
+
+void mu_edge_coercion_debug(const mu_edge_coercion_t *coercion)
   __attribute__((nonnull));
 
 void mu_variance_coercion_debug(const mu_variance_coercion_t *coercion)

@@ -18,8 +18,8 @@ _Thread_local induce_t *debug_induce;
 const mu_name_t *vector_access;
 const mu_name_t *vector_join;
 
-static const induce_edge_t *restrict_type_semiinternal(
-    induce_t *induce, const mu_type_t *a, const mu_type_t *b, _Bool direct);
+/* static const induce_edge_t *restrict_type_semiinternal( */
+/*     induce_t *induce, const mu_type_t *a, const mu_type_t *b, _Bool direct); */
 
 const mu_variable_type_t *variable_type(induce_t *induce, open_scheme_t *scheme) {
   mu_variable_type_t *result;
@@ -114,116 +114,328 @@ induce_t *induce_initialize(
   return induce;
 }
 
-static const tactic_t no_tactic = {0};
+const mu_coercion_t *edge_coercion(const mu_type_t *source, const mu_type_t *target) {
+  mu_edge_coercion_t *result;
+  if ((result = malloc(sizeof(mu_edge_coercion_t))) == NULL)
+    return NULL;
+  *result = (mu_edge_coercion_t) { .as_coercion = {
+    .kind = MU_EDGE_COERCION, .source = source, .target = target,
+  } };
+  return &result->as_coercion;
+}
 
-static const tactic_t *restrict_type_internal(
-    induce_t *induce, const mu_type_t *a, const mu_type_t *b, _Bool direct) {
-  assert(a->kind != MU_SCHEME_TYPE && b->kind != MU_SCHEME_TYPE);
+const mu_coercion_t *universe_get_coercion(
+    const universe_t *universe, const mu_type_t *source, const mu_type_t *target) {
+  const universe_edge_t *edge;
+  if ((edge = universe_search(universe, source, target)) == NULL)
+    return NULL;
+  return edge->coercion;
+}
 
-  if (a->kind == MU_CORE_TYPE && b->kind == MU_CORE_TYPE) {
-    const mu_core_type_t *core_type_a = (const mu_core_type_t *) a;
-    const mu_core_t *core_a = core_type_a->core;
+const mu_coercion_t *make_coercion(
+    induce_t *induce, const mu_type_t *source, const mu_type_t *target);
 
-    const mu_core_type_t *core_type_b = (const mu_core_type_t *) b;
-    const mu_core_t *core_b = core_type_b->core;
+universe_edge_t *append_edge(universe_t *universe, const mu_type_t *source, const mu_type_t *target);
 
-    if (core_a->kind == MU_RECORD_CORE && core_b->kind == MU_RECORD_CORE) {
-      const record_instance_t *instance;
-      if (rare((instance = get_record_instance(induce, core_a, core_b)) == NULL))
-        return NULL;
+static inline const mu_coercion_t *make_core_coercion(
+    induce_t *induce, const mu_core_type_t *source, const mu_core_type_t *target) {
+  const mu_core_t *source_core = source->core;
+  const mu_core_t *target_core = target->core;
 
-      for (size_t j = 0; j < core_b->argc; j++) {
-        size_t i = instance->argv[j];
-        if (restrict_type_semiinternal(induce, core_type_a->argv[i], core_type_b->argv[j], direct) == NULL)
-          return NULL;
-      }
-
-      const record_tactic_t *result;
-      if ((result = record_tactic_create(instance)) == NULL)
-        return NULL;
-      return &result->as_tactic;
-    }
-
-    if (core_type_a->core != core_type_b->core) {
-      fprintf(stderr, "Type mismatch\n");
-      abort();
-    }
-
-    const mu_core_t *core = core_type_a->core;
-
-    for (size_t i = 0; i < core->argc; i++) {
-      const mu_type_t *source = core_type_a->argv[i];
-      const mu_type_t *target = core_type_b->argv[i];
-
-      mu_variance_t variance = core->argv[i].variance;
-      assert(variance != MU_INVARIANCE);
-      if (variance == MU_CONTRAVARIANCE) {
-        const mu_type_t *t = source; source = target; target = t;
-      }
-
-      if (restrict_type_semiinternal(induce, source, target, direct) == NULL)
-        return NULL;
-    }
-
-    const variance_tactic_t *result;
-    if ((result = variance_tactic_create(core)) == NULL)
-      return NULL;
-    return &result->as_tactic;
-  }
-
-  if (a->kind != MU_VARIABLE_TYPE && b->kind != MU_VARIABLE_TYPE) {
+  if (source_core != target_core) {
     fprintf(stderr, "Type mismatch\n");
     abort();
   }
 
-  if (a->kind == MU_VARIABLE_TYPE && b->kind == MU_VARIABLE_TYPE)
-    direct = 0;
+  const mu_core_t *core = source_core;
 
-  const mu_variable_type_t *variable_a;
-  if ((variable_a = mu_type_cast(a, variable_a)) != NULL) {
-    for (size_t i = 0; i < induce->universe.length; i++) {
-      if (induce->universe.data[i].target != &variable_a->as_type)
-        continue;
-      if (restrict_type_semiinternal(induce, induce->universe.data[i].source, b, direct) == NULL)
-        return NULL;
+  mu_variance_coercion_t *allocation;
+  if ((allocation = variance_coercion_allocate(core)) == NULL)
+    return NULL;
+
+  for (size_t i = 0; i < core->argc; i++) {
+    const mu_type_t *next_source = source->argv[i];
+    const mu_type_t *next_target = target->argv[i];
+
+    mu_variance_t variance = core->argv[i].variance;
+    assert(variance != MU_INVARIANCE);
+    if (variance == MU_CONTRAVARIANCE) {
+      const mu_type_t *t = next_source; next_source = next_target; next_target = t;
     }
+
+    const mu_coercion_t *coercion;
+    if ((coercion = make_coercion(induce, next_source, next_target)) == NULL)
+      return NULL;
+    allocation->argv[i] = coercion;
   }
 
-  const mu_variable_type_t *variable_b;
-  if ((variable_b = mu_type_cast(b, variable_b)) != NULL) {
-    for (size_t j = 0; j < induce->universe.length; j++) {
-      if (induce->universe.data[j].source != &variable_b->as_type)
-        continue;
-      if (restrict_type_semiinternal(induce, a, induce->universe.data[j].target, direct) == NULL)
-        return NULL;
-    }
-  }
-
-  return &no_tactic;
+  const mu_variance_coercion_t *result;
+  if ((result = variance_coercion_activate(allocation)) == NULL)
+    return NULL;
+  return &result->as_coercion;
 }
 
-const induce_edge_t SELF = {0};
+const mu_coercion_t *make_coercion(
+    induce_t *induce, const mu_type_t *source, const mu_type_t *target) {
+  assert(source->kind != MU_SCHEME_TYPE && target->kind != MU_SCHEME_TYPE);
 
-static const induce_edge_t *restrict_type_semiinternal(
-    induce_t *induce, const mu_type_t *a, const mu_type_t *b, _Bool direct) {
-  if (a == b)
-    return &SELF;
+  if (source == target) {
+  }
 
-  // If we already have an edge a -> b then just return it
-  const induce_edge_t *edge;
-  if ((edge = universe_search(&induce->universe, a, b)) != NULL)
-    return edge;
+  // If we already have a coercion source => target, then just return it
+  const mu_coercion_t *result;
+  if ((result = universe_get_coercion(&induce->universe, source, target)) != NULL)
+    return result;
 
-  const tactic_t *tactic;
-  if ((tactic = restrict_type_internal(induce, a, b, direct)) == NULL)
+  if (append_edge(&induce->universe, source, target) == NULL)
     return NULL;
-  if (tactic == &no_tactic)
-    tactic = NULL;
 
-  return universe_append(&induce->universe, a, b, direct, tactic);
+  if (source->kind == MU_CORE_TYPE && target->kind == MU_CORE_TYPE) {
+    const mu_core_type_t *next_source = (const mu_core_type_t *) source;
+    const mu_core_type_t *next_target = (const mu_core_type_t *) target;
+
+    const mu_coercion_t *result;
+    if ((result = make_core_coercion(induce, next_source, next_target)) == NULL)
+      return NULL;
+
+    universe_edge_t *edge;
+    edge = universe_search(&induce->universe, source, target);
+    assert(edge != NULL);
+    edge->coercion = result;
+    return result;
+  }
+
+  if (source->kind == MU_VARIABLE_TYPE && target->kind == MU_CORE_TYPE) {
+    const mu_variable_type_t *source_variable_type = (const mu_variable_type_t *) source;
+
+    for (size_t i = 0; i < induce->universe.length; i++) {
+      universe_edge_t edge = induce->universe.data[i];
+      if (edge.target != &source_variable_type->as_type)
+        continue;
+      if (edge.source->kind == MU_VARIABLE_TYPE)
+        continue;
+
+      if (make_coercion(induce, edge.source, target) == NULL)
+        return NULL;
+    }
+
+    for (size_t i = 0; i < induce->universe.length; i++) {
+      universe_edge_t edge = induce->universe.data[i];
+      if (edge.target != &source_variable_type->as_type)
+        continue;
+      if (edge.source->kind != MU_VARIABLE_TYPE)
+        continue;
+
+      append_edge(&induce->universe, edge.source, target);
+    }
+
+    const mu_coercion_t *result;
+    if ((result = edge_coercion(source, target)) == NULL)
+      return NULL;
+    return result;
+  }
+
+  if (source->kind == MU_CORE_TYPE && target->kind == MU_VARIABLE_TYPE) {
+    const mu_variable_type_t *target_variable_type = (const mu_variable_type_t *) target;
+
+    for (size_t i = 0; i < induce->universe.length; i++) {
+      universe_edge_t edge = induce->universe.data[i];
+      if (edge.source != &target_variable_type->as_type)
+        continue;
+      if (edge.target->kind == MU_VARIABLE_TYPE)
+        continue;
+
+      if (make_coercion(induce, source, edge.target) == NULL)
+        return NULL;
+    }
+
+    for (size_t i = 0; i < induce->universe.length; i++) {
+      universe_edge_t edge = induce->universe.data[i];
+      if (edge.source != &target_variable_type->as_type)
+        continue;
+      if (edge.target->kind != MU_VARIABLE_TYPE)
+        continue;
+
+      append_edge(&induce->universe, source, edge.target);
+    }
+
+    const mu_coercion_t *result;
+    if ((result = edge_coercion(source, target)) == NULL)
+      return NULL;
+    return result;
+  }
+
+  if (source->kind == MU_VARIABLE_TYPE && target->kind == MU_VARIABLE_TYPE) {
+    const mu_variable_type_t *source_variable_type = (const mu_variable_type_t *) source;
+    const mu_variable_type_t *target_variable_type = (const mu_variable_type_t *) target;
+
+    for (size_t i = 0; i < induce->universe.length; i++) {
+      universe_edge_t source_edge = induce->universe.data[i];
+      if (source_edge.target != &source_variable_type->as_type)
+        continue;
+      if (source_edge.target->kind == MU_VARIABLE_TYPE)
+        continue;
+
+      for (size_t i = 0; i < induce->universe.length; i++) {
+        universe_edge_t target_edge = induce->universe.data[i];
+        if (target_edge.source != &target_variable_type->as_type)
+          continue;
+        if (target_edge.source->kind == MU_VARIABLE_TYPE)
+          continue;
+
+        if (make_coercion(induce, source_edge.source, target_edge.target) == NULL)
+          return NULL;
+      }
+    }
+
+    for (size_t i = 0; i < induce->universe.length; i++) {
+      universe_edge_t edge = induce->universe.data[i];
+      if (edge.target != &source_variable_type->as_type)
+        continue;
+      if (edge.target->kind != MU_VARIABLE_TYPE)
+        continue;
+
+      for (size_t i = 0; i < induce->universe.length; i++) {
+        universe_edge_t edge = induce->universe.data[i];
+        if (edge.source != &target_variable_type->as_type)
+          continue;
+        if (edge.source->kind != MU_VARIABLE_TYPE)
+          continue;
+        assert(edge.source->kind != MU_SCHEME_TYPE);
+
+        append_edge(&induce->universe, edge.source, edge.target);
+      }
+    }
+
+    const mu_coercion_t *result;
+    if ((result = edge_coercion(source, target)) == NULL)
+      return NULL;
+    return result;
+  }
+
+  abort();
 }
 
 const induce_edge_t *restrict_type(
-    induce_t *induce, const mu_type_t *a, const mu_type_t *b) {
-  return restrict_type_semiinternal(induce, a, b, 1);
+    induce_t *induce, const mu_type_t *source, const mu_type_t *target) {
+
+  const mu_coercion_t *coercion;
+  if ((coercion = make_coercion(induce, source, target)) == NULL)
+    return NULL;
+
+  return universe_search(&induce->universe, source, target);
 }
+
+/* static const tactic_t no_tactic = {0}; */
+
+/* static const tactic_t *restrict_type_internal( */
+/*     induce_t *induce, const mu_type_t *a, const mu_type_t *b, _Bool direct) { */
+/*   assert(a->kind != MU_SCHEME_TYPE && b->kind != MU_SCHEME_TYPE); */
+
+/*   if (a->kind == MU_CORE_TYPE && b->kind == MU_CORE_TYPE) { */
+/*     const mu_core_type_t *core_type_a = (const mu_core_type_t *) a; */
+/*     const mu_core_t *core_a = core_type_a->core; */
+
+/*     const mu_core_type_t *core_type_b = (const mu_core_type_t *) b; */
+/*     const mu_core_t *core_b = core_type_b->core; */
+
+/*     if (core_a->kind == MU_RECORD_CORE && core_b->kind == MU_RECORD_CORE) { */
+/*       const record_instance_t *instance; */
+/*       if (rare((instance = get_record_instance(induce, core_a, core_b)) == NULL)) */
+/*         return NULL; */
+
+/*       for (size_t j = 0; j < core_b->argc; j++) { */
+/*         size_t i = instance->argv[j]; */
+/*         if (restrict_type_semiinternal(induce, core_type_a->argv[i], core_type_b->argv[j], direct) == NULL) */
+/*           return NULL; */
+/*       } */
+
+/*       const record_tactic_t *result; */
+/*       if ((result = record_tactic_create(instance)) == NULL) */
+/*         return NULL; */
+/*       return &result->as_tactic; */
+/*     } */
+
+/*     if (core_type_a->core != core_type_b->core) { */
+/*       fprintf(stderr, "Type mismatch\n"); */
+/*       abort(); */
+/*     } */
+
+/*     const mu_core_t *core = core_type_a->core; */
+
+/*     for (size_t i = 0; i < core->argc; i++) { */
+/*       const mu_type_t *source = core_type_a->argv[i]; */
+/*       const mu_type_t *target = core_type_b->argv[i]; */
+
+/*       mu_variance_t variance = core->argv[i].variance; */
+/*       assert(variance != MU_INVARIANCE); */
+/*       if (variance == MU_CONTRAVARIANCE) { */
+/*         const mu_type_t *t = source; source = target; target = t; */
+/*       } */
+
+/*       if (restrict_type_semiinternal(induce, source, target, direct) == NULL) */
+/*         return NULL; */
+/*     } */
+
+/*     const variance_tactic_t *result; */
+/*     if ((result = variance_tactic_create(core)) == NULL) */
+/*       return NULL; */
+/*     return &result->as_tactic; */
+/*   } */
+
+/*   if (a->kind != MU_VARIABLE_TYPE && b->kind != MU_VARIABLE_TYPE) { */
+/*     fprintf(stderr, "Type mismatch\n"); */
+/*     abort(); */
+/*   } */
+
+/*   if (a->kind == MU_VARIABLE_TYPE && b->kind == MU_VARIABLE_TYPE) */
+/*     direct = 0; */
+
+/*   const mu_variable_type_t *variable_a; */
+/*   if ((variable_a = mu_type_cast(a, variable_a)) != NULL) { */
+/*     for (size_t i = 0; i < induce->universe.length; i++) { */
+/*       if (induce->universe.data[i].target != &variable_a->as_type) */
+/*         continue; */
+/*       if (restrict_type_semiinternal(induce, induce->universe.data[i].source, b, direct) == NULL) */
+/*         return NULL; */
+/*     } */
+/*   } */
+
+/*   const mu_variable_type_t *variable_b; */
+/*   if ((variable_b = mu_type_cast(b, variable_b)) != NULL) { */
+/*     for (size_t j = 0; j < induce->universe.length; j++) { */
+/*       if (induce->universe.data[j].source != &variable_b->as_type) */
+/*         continue; */
+/*       if (restrict_type_semiinternal(induce, a, induce->universe.data[j].target, direct) == NULL) */
+/*         return NULL; */
+/*     } */
+/*   } */
+
+/*   return &no_tactic; */
+/* } */
+
+/* const induce_edge_t SELF = {0}; */
+
+/* static const induce_edge_t *restrict_type_semiinternal( */
+/*     induce_t *induce, const mu_type_t *a, const mu_type_t *b, _Bool direct) { */
+/*   if (a == b) */
+/*     return &SELF; */
+
+/*   // If we already have an edge a -> b then just return it */
+/*   const induce_edge_t *edge; */
+/*   if ((edge = universe_search(&induce->universe, a, b)) != NULL) */
+/*     return edge; */
+
+/*   const tactic_t *tactic; */
+/*   if ((tactic = restrict_type_internal(induce, a, b, direct)) == NULL) */
+/*     return NULL; */
+/*   if (tactic == &no_tactic) */
+/*     tactic = NULL; */
+
+/*   return universe_append(&induce->universe, a, b, direct, tactic); */
+/* } */
+
+/* const induce_edge_t *restrict_type( */
+/*     induce_t *induce, const mu_type_t *a, const mu_type_t *b) { */
+/*   return restrict_type_semiinternal(induce, a, b, 1); */
+/* } */

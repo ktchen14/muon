@@ -5,7 +5,7 @@ target_sources(muon PRIVATE
   inductor/core.c
   inductor/detect.c
   inductor/induce.c
-  inductor/reduce.c
+  # inductor/reduce.c
   inductor/type.c
   inductor/tactic.c
   inductor/universe.c

@@ -1,6 +1,7 @@
 #ifndef MU_INDUCTOR_UNIVERSE_I
 #define MU_INDUCTOR_UNIVERSE_I
 
+#include "coercion.h"
 #include "type.h"
 #include "tactic.h"
 
@@ -10,7 +11,9 @@ typedef struct {
   const mu_type_t *source;
   const mu_type_t *target;
 
-  const tactic_t *tactic;
+  const mu_coercion_t *coercion;
+
+  /* const tactic_t *tactic; */
   _Bool direct;
 } universe_edge_t;
 
@@ -35,6 +38,8 @@ const universe_edge_t *universe_append(
     const mu_type_t *restrict target,
     _Bool direct,
     const tactic_t *tactic);
+
+universe_edge_t *append_edge(universe_t *universe, const mu_type_t *source, const mu_type_t *target);
 
 typedef universe_edge_t induce_edge_t;
 

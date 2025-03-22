@@ -131,6 +131,10 @@ void mu_id_coercion_debug(const mu_id_coercion_t *coercion) {
   debug(PRIsKIND, DEBUG_COERCION_KIND("Id"));
 }
 
+void mu_edge_coercion_debug(const mu_edge_coercion_t *coercion) {
+  debug(PRIsKIND, DEBUG_COERCION_KIND("Edge"));
+}
+
 void mu_variance_coercion_debug(const mu_variance_coercion_t *coercion) {
   debug(PRIsKIND "(", DEBUG_COERCION_KIND("Variance"));
 
