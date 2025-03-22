@@ -114,16 +114,6 @@ induce_t *induce_initialize(
   return induce;
 }
 
-const mu_coercion_t *edge_coercion(const mu_type_t *source, const mu_type_t *target) {
-  mu_edge_coercion_t *result;
-  if ((result = malloc(sizeof(mu_edge_coercion_t))) == NULL)
-    return NULL;
-  *result = (mu_edge_coercion_t) { .as_coercion = {
-    .kind = MU_EDGE_COERCION, .source = source, .target = target,
-  } };
-  return &result->as_coercion;
-}
-
 const mu_coercion_t *universe_get_coercion(
     const universe_t *universe, const mu_type_t *source, const mu_type_t *target) {
   const universe_edge_t *edge;
@@ -230,7 +220,7 @@ const mu_coercion_t *make_coercion(
     }
 
     const mu_coercion_t *result;
-    if ((result = edge_coercion(source, target)) == NULL)
+    if ((result = mu_edge_coercion(source, target)) == NULL)
       return NULL;
     return result;
   }
@@ -260,7 +250,7 @@ const mu_coercion_t *make_coercion(
     }
 
     const mu_coercion_t *result;
-    if ((result = edge_coercion(source, target)) == NULL)
+    if ((result = mu_edge_coercion(source, target)) == NULL)
       return NULL;
     return result;
   }
@@ -308,7 +298,7 @@ const mu_coercion_t *make_coercion(
     }
 
     const mu_coercion_t *result;
-    if ((result = edge_coercion(source, target)) == NULL)
+    if ((result = mu_edge_coercion(source, target)) == NULL)
       return NULL;
     return result;
   }
