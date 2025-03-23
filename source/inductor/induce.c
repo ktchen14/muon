@@ -164,7 +164,10 @@ const mu_coercion_t *ensure_coercion(
           return NULL;
         edge->indirect = 1;
 
-        return coercion;
+        const mu_edge_coercion_t *result;
+        if ((result = mu_edge_coercion(source, target)) == NULL)
+          return NULL;
+        return &result->as_coercion;
       }
     }
 

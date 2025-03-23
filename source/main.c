@@ -111,14 +111,14 @@ int main(int argc, char *argv[argc]) {
 
       debug("\"");
       type_debug(edge.source, 0);
-      debug(" (%zu)", edge.source->id);
+      debug(" #%zu", edge.source->id);
       debug("\"");
 
       debug(" -> ");
 
       debug("\"");
       type_debug(edge.target, 0);
-      debug(" (%zu)", edge.target->id);
+      debug(" #%zu", edge.target->id);
       debug("\"");
 
       if (edge.indirect)
