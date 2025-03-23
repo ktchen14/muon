@@ -229,8 +229,11 @@ __attribute__((nonnull)) static const mu_type_t *switch_expr_induce(
 
   for (size_t i = 0; i < expr->argc; i++) {
     const mu_type_t *type = induce_reveal(induce, &expr->argv[i]->as_node);
-    if (restrict_type(induce, type, &result->as_type) == NULL)
+
+    const mu_coercion_t *coercion;
+    if ((coercion = ensure_coercion(induce, type, &result->as_type)) == NULL)
       return NULL;
+    induce->coercion[expr->argv[i]->as_node.id] = coercion;
   }
 
   return &result->as_type;
@@ -252,8 +255,11 @@ __attribute__((nonnull)) static const mu_type_t *vector_expr_induce(
 
   for (size_t i = 0; i < expr->argc; i++) {
     const mu_type_t *type = induce_reveal(induce, &expr->argv[i]->as_node);
-    if (restrict_type(induce, type, &matter_type->as_type) == NULL)
+
+    const mu_coercion_t *coercion;
+    if ((coercion = ensure_coercion(induce, type, &matter_type->as_type)) == NULL)
       return NULL;
+    induce->coercion[expr->argv[i]->as_node.id] = coercion;
   }
 
   const mu_core_type_t *result;

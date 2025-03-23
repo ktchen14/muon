@@ -275,16 +275,6 @@ static inline const mu_coercion_t *ensure_core_coercion(
   return &result->as_coercion;
 }
 
-const induce_edge_t *restrict_type(
-    induce_t *induce, const mu_type_t *source, const mu_type_t *target) {
-
-  const mu_coercion_t *coercion;
-  if ((coercion = ensure_coercion(induce, source, target)) == NULL)
-    return NULL;
-
-  return (const induce_edge_t *) coercion;
-}
-
 static inline const mu_coercion_t *ensure_cv(
     induce_t *induce, const mu_type_t *source, const mu_type_t *target) {
   universe_iterator_t iterator;
