@@ -286,34 +286,38 @@ const induce_edge_t *restrict_type(
 }
 
 static inline const mu_coercion_t *ensure_cv(
-    induce_t *induce,
-    const mu_type_t *source,
-    const mu_type_t *target) {
+    induce_t *induce, const mu_type_t *source, const mu_type_t *target) {
   universe_iterator_t iterator;
   const mu_type_t *next_target;
 
-  // First, see if we can put source under one of target's existing sources.
+  // If source => next_source for any next_source in the target's sources, then
+  // just do that.
+  //
+  // Skip indirect edges. If we need to coerce source => target, we don't want
+  // to go through an arbitrary source variable.
   iterator = universe_iterator(&induce->universe, target, 0);
-  const mu_type_t *next_source;
-  while ((next_source = universe_next(&iterator)) != NULL) {
-    if (next_source->kind == MU_VARIABLE_TYPE)
+  universe_edge_t *next_edge;
+  while ((next_edge = universe_next_edge(&iterator)) != NULL) {
+    if (next_edge->indirect)
+      continue;
+    if (next_edge->source->kind == MU_VARIABLE_TYPE)
       continue;
 
-    if (next_source == source)
+    if (next_edge->source == source)
       return &induce->id_coercion->as_coercion;
 
     const mu_coercion_t *coercion;
-    if ((coercion = retrieve_coercion(induce, source, next_source)) == NULL)
+    if ((coercion = retrieve_coercion(induce, source, next_edge->source)) == NULL)
       return NULL;
     if (coercion != &NO_COERCION) {
       universe_edge_t *edge;
-      if ((edge = append_edge(&induce->universe, source, next_source)) == NULL)
+      if ((edge = append_edge(&induce->universe, source, next_edge->source)) == NULL)
         return NULL;
       edge->coercion = coercion;
 
-      if ((edge = append_edge(&induce->universe, source, target)) == NULL)
-        return NULL;
-      edge->indirect = 1;
+      /* if ((edge = append_edge(&induce->universe, source, target)) == NULL) */
+      /*   return NULL; */
+      /* edge->indirect = 1; */
 
       const mu_edge_coercion_t *result;
       if ((result = mu_edge_coercion(source, target)) == NULL)
@@ -326,6 +330,10 @@ static inline const mu_coercion_t *ensure_cv(
   if (append_edge(&induce->universe, source, target) == NULL)
     return NULL;
 
+  // Ensure the coercion:
+  //   source => next_target
+  // Where next_target is each (direct and indirect) target of the variable
+  // type.
   iterator = universe_iterator(&induce->universe, target, 1);
   while ((next_target = universe_next(&iterator)) != NULL) {
     if (next_target->kind == MU_VARIABLE_TYPE)
@@ -343,7 +351,6 @@ static inline const mu_coercion_t *ensure_cv(
 
   // Now, check to see if we can put an existing edge to this type
   iterator = universe_iterator(&induce->universe, target, 0);
-  universe_edge_t *next_edge;
   while ((next_edge = universe_next_edge(&iterator)) != NULL) {
     if (next_edge->indirect)
       continue;

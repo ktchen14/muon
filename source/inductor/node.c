@@ -78,8 +78,11 @@ __attribute__((nonnull)) static const mu_type_t *access_expr_induce(
   induce->aux[expr->as_node.id] = &record_type->as_type;
 
   const mu_type_t *matter_type = induce_reveal(induce, &expr->matter->as_node);
-  if (restrict_type(induce, matter_type, &record_type->as_type) == NULL)
+
+  const mu_coercion_t *coercion;
+  if ((coercion = ensure_coercion(induce, matter_type, &record_type->as_type)) == NULL)
     return NULL;
+  induce->coercion[expr->matter->as_node.id] = coercion;
   return &result->as_type;
 }
 

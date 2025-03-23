@@ -114,24 +114,6 @@ const mu_type_t *mu_coercion_target(
 void mu_coercion_debug(const mu_coercion_t *coercion)
   __attribute__((nonnull));
 
-void mu_id_coercion_debug(const mu_id_coercion_t *coercion)
-  __attribute__((nonnull));
-
-void mu_edge_coercion_debug(const mu_edge_coercion_t *coercion)
-  __attribute__((nonnull));
-
-void mu_variance_coercion_debug(const mu_variance_coercion_t *coercion)
-  __attribute__((nonnull));
-
-void mu_record_coercion_debug(const mu_record_coercion_t *coercion)
-  __attribute__((nonnull));
-
-void mu_join_coercion_debug(const mu_join_coercion_t *coercion)
-  __attribute__((nonnull));
-
-void mu_unjoin_coercion_debug(const mu_unjoin_coercion_t *coercion)
-  __attribute__((nonnull));
-
 /// @internal An enumeration over each kind of coercion, e.g. @c _id_coercion_kind
 enum {
 #define MU_EMIT(lower, u, t) _##lower##_coercion_kind,

@@ -134,62 +134,54 @@ const mu_type_t *mu_coercion_target(
 }
 
 void mu_coercion_debug(const mu_coercion_t *coercion) {
-  switch (coercion->kind) {
-#define MU_EMIT(lower, upper, t) \
-    case MU_##upper##_COERCION: \
-      mu_##lower##_coercion_debug((const mu_##lower##_coercion_t *) coercion); \
+  switch ON_ABSTRACT_OBJECT(coercion) {
+    case MU_ID_COERCION:
+      debug(PRIsKIND, DEBUG_COERCION_KIND("Id")); return;
+
+    case MU_EDGE_COERCION:
+      debug(PRIsKIND, DEBUG_COERCION_KIND("Edge")); return;
+
+    case IS_KIND_OF(variance_coercion):
+      debug(PRIsKIND "(", DEBUG_COERCION_KIND("∇"));
+
+      const mu_core_t *core = variance_coercion->core;
+      mu_core_debug(core);
+
+      for (size_t i = 0; i < core->argc; i++) {
+        debug(", ");
+        mu_coercion_debug(variance_coercion->argv[i]);
+      }
+      debug(")");
+
       return;
-    MU_EACH_COERCION_KIND(MU_EMIT)
-#undef MU_EMIT
+
+    case IS_KIND_OF(record_coercion): {
+      const record_instance_t *instance = record_coercion->instance;
+
+      debug(PRIsKIND "(", DEBUG_COERCION_KIND("Record"));
+      for (size_t i = 0; i < instance->target->argc; i++) {
+        if (i > 0)
+          debug(", ");
+        debug("%zu: ", instance->argv[i]);
+        mu_coercion_debug(record_coercion->argv[i]);
+      }
+      debug(")");
+      return;
+    }
+
+    case IS_KIND_OF(join_coercion):
+      debug(PRIsKIND "(i = %zu)", DEBUG_COERCION_KIND("Join"), join_coercion->i);
+      return;
+
+    case IS_KIND_OF(unjoin_coercion):
+      debug(PRIsKIND "(", DEBUG_COERCION_KIND("Unjoin"));
+      for (size_t i = 0; i < unjoin_coercion->argc; i++) {
+        if (i > 0)
+          debug(", ");
+        mu_coercion_debug(unjoin_coercion->argv[i]);
+      }
+      debug(")");
+      return;
   }
   __builtin_unreachable();
-}
-
-void mu_id_coercion_debug(const mu_id_coercion_t *coercion) {
-  debug(PRIsKIND, DEBUG_COERCION_KIND("Id"));
-}
-
-void mu_edge_coercion_debug(const mu_edge_coercion_t *coercion) {
-  debug(PRIsKIND, DEBUG_COERCION_KIND("Edge"));
-}
-
-void mu_variance_coercion_debug(const mu_variance_coercion_t *coercion) {
-  debug(PRIsKIND "(", DEBUG_COERCION_KIND("∇"));
-
-  const mu_core_t *core = coercion->core;
-  mu_core_debug(core);
-
-  for (size_t i = 0; i < core->argc; i++) {
-    debug(", ");
-    mu_coercion_debug(coercion->argv[i]);
-  }
-  debug(")");
-}
-
-void mu_record_coercion_debug(const mu_record_coercion_t *coercion) {
-  const record_instance_t *instance = coercion->instance;
-
-  debug(PRIsKIND "(", DEBUG_COERCION_KIND("Record"));
-  for (size_t i = 0; i < instance->target->argc; i++) {
-    if (i > 0)
-      debug(", ");
-    debug("%zu: ", instance->argv[i]);
-    mu_coercion_debug(coercion->argv[i]);
-  }
-  debug(")");
-}
-
-void mu_join_coercion_debug(const mu_join_coercion_t *coercion) {
-  debug(PRIsKIND "(i = %zu)",
-      DEBUG_COERCION_KIND("Join"), coercion->i);
-}
-
-void mu_unjoin_coercion_debug(const mu_unjoin_coercion_t *coercion) {
-  debug(PRIsKIND "(", DEBUG_COERCION_KIND("Unjoin"));
-  for (size_t i = 0; i < coercion->argc; i++) {
-    if (i > 0)
-      debug(", ");
-    mu_coercion_debug(coercion->argv[i]);
-  }
-  debug(")");
 }
