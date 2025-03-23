@@ -128,7 +128,7 @@ void mu_core_debug(const mu_core_t *core) {
     case MU_INTEGER_CORE:
       debug(PRIsKIND, DEBUG_CORE_KIND("Integer")); return;
     case MU_LAMBDA_CORE:
-      debug(PRIsKIND, DEBUG_CORE_KIND("Lambda")); return;
+      debug(PRIsKIND, DEBUG_CORE_KIND("λ")); return;
     case MU_VECTOR_CORE:
       debug(PRIsKIND, DEBUG_CORE_KIND("Vector")); return;
     case MU_RECORD_CORE:
