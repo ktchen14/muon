@@ -23,10 +23,11 @@ typedef enum {
 } mu_coercion_kind_t;
 
 /// An abstract coercion
-typedef struct mu_coercion_t {
+typedef struct mu_coercion_t mu_coercion_t;
+struct mu_coercion_t {
   mu_coercion_kind_t kind;
   const mu_type_t *target;
-} mu_coercion_t;
+};
 
 /// The header that each concrete coercion must have
 #define MU_COERCION_HEADER mu_coercion_t as_coercion
@@ -37,6 +38,7 @@ typedef struct {
 
 typedef struct {
   MU_COERCION_HEADER;
+  const mu_coercion_t *prev;
   const mu_type_t *source;
 } mu_edge_coercion_t;
 

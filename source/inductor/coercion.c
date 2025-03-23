@@ -128,12 +128,9 @@ const mu_unjoin_coercion_t *unjoin_coercion_activate(
 
 const mu_type_t *mu_coercion_target(
     const mu_coercion_t *coercion, const mu_type_t *source) {
-  switch ON_ABSTRACT_OBJECT(coercion) {
-    case IS_KIND_OF(id_coercion):
-      return source;
-    default:
-      return coercion->target;
-  }
+  if (coercion->kind == MU_ID_COERCION)
+    return source;
+  return coercion->target;
 }
 
 void mu_coercion_debug(const mu_coercion_t *coercion) {
