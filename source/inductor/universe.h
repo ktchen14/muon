@@ -7,8 +7,14 @@
 #include <stddef.h>
 
 typedef struct {
-  const mu_type_t *source;
-  const mu_type_t *target;
+  union {
+    __attribute__((packed)) struct {
+      const mu_type_t *source;
+      const mu_type_t *target;
+    };
+
+    const mu_type_t *vertex[2];
+  };
 
   const mu_coercion_t *coercion;
 
@@ -58,6 +64,21 @@ static inline const mu_type_t *universe_next(universe_iterator_t *iterator) {
       return edge.source;
     if (iterator->invert == 1 && edge.source == iterator->target)
       return edge.target;
+  }
+
+  return NULL;
+}
+
+__attribute__((nonnull))
+static inline universe_edge_t *universe_next_edge(universe_iterator_t *iterator) {
+  const universe_t *universe = iterator->universe;
+
+  for (size_t i; (i = iterator->i++) < universe->length;) {
+    universe_edge_t *edge = &universe->data[i];
+    if (iterator->invert == 0 && edge->target == iterator->target)
+      return edge;
+    if (iterator->invert == 1 && edge->source == iterator->target)
+      return edge;
   }
 
   return NULL;
