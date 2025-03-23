@@ -66,7 +66,7 @@ const mu_coercion_t *retrieve_coercion(
   assert(source->kind != MU_SCHEME_TYPE && target->kind != MU_SCHEME_TYPE);
 
   if (source == target)
-    return &induce->id_coercion->as_coercion;
+    return induce->id_coercion;
 
   // If we already have an edge source => target then
   const universe_edge_t *edge;
@@ -99,9 +99,8 @@ const mu_coercion_t *ensure_coercion(
     induce_t *induce, const mu_type_t *source, const mu_type_t *target) {
   assert(source->kind != MU_SCHEME_TYPE && target->kind != MU_SCHEME_TYPE);
 
-  if (source == target) {
-    return &induce->id_coercion->as_coercion;
-  }
+  if (source == target)
+    return induce->id_coercion;
 
   // If we already have an edge source => target then
   const universe_edge_t *edge;
@@ -293,7 +292,7 @@ static inline const mu_coercion_t *ensure_cv(
       continue;
 
     if (next_edge->source == source)
-      return &induce->id_coercion->as_coercion;
+      return induce->id_coercion;
 
     const mu_coercion_t *coercion;
     if ((coercion = retrieve_coercion(induce, source, next_edge->source)) == NULL)
@@ -389,10 +388,10 @@ induce_t *induce_initialize(
   if (rare(universe_initialize(&universe) == NULL))
     return NULL;
 
-  mu_id_coercion_t *id_coercion;
-  if ((id_coercion = malloc(sizeof(mu_id_coercion_t))) == NULL)
+  mu_coercion_t *id_coercion;
+  if ((id_coercion = malloc(sizeof(mu_coercion_t))) == NULL)
     return NULL;
-  *id_coercion = (mu_id_coercion_t) { .as_coercion.kind = MU_ID_COERCION };
+  *id_coercion = (mu_coercion_t) { .kind = MU_ID_COERCION };
 
   mu_core_t *boolean_core;
   if ((boolean_core = malloc(sizeof(mu_core_t))) == NULL)

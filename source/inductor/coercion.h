@@ -34,10 +34,6 @@ struct mu_coercion_t {
 
 typedef struct {
   MU_COERCION_HEADER;
-} mu_id_coercion_t;
-
-typedef struct {
-  MU_COERCION_HEADER;
   const mu_coercion_t *prev;
   const mu_type_t *source;
 } mu_edge_coercion_t;
