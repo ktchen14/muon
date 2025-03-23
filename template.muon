@@ -4,7 +4,7 @@ define foo = lambda x = Foo1
 
 define x = 1
 define y = 2
-define list = [x, y, true]
+define list = [true, false, x]
 define x = list
 
 define id1 = lambda x = x
