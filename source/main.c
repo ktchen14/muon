@@ -125,7 +125,7 @@ int main(int argc, char *argv[argc]) {
         debug(" [constraint=false,style=dashed]");
 
       if (edge.coercion != NULL) {
-        debug(" [label=\"");
+        debug(" [label=\" ");
         mu_coercion_debug(edge.coercion);
         debug("\"]");
       }
