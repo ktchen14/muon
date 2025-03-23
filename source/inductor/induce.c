@@ -15,6 +15,9 @@ _Thread_local induce_t *debug_induce;
 
 static const mu_coercion_t NO_COERCION = {0};
 
+static inline const mu_coercion_t *ensure_core_coercion(
+    induce_t *induce, const mu_core_type_t *source, const mu_core_type_t *target);
+
 static inline const mu_coercion_t *retrieve_core_coercion(
     induce_t *induce, const mu_core_type_t *source, const mu_core_type_t *target) {
   const mu_core_t *source_core = source->core;
@@ -46,44 +49,6 @@ static inline const mu_coercion_t *retrieve_core_coercion(
       free(allocation);
       return coercion;
     }
-    allocation->argv[i] = coercion;
-  }
-
-  const mu_variance_coercion_t *result;
-  if ((result = variance_coercion_activate(allocation)) == NULL)
-    return NULL;
-  return &result->as_coercion;
-}
-
-static inline const mu_coercion_t *ensure_core_coercion(
-    induce_t *induce, const mu_core_type_t *source, const mu_core_type_t *target) {
-  const mu_core_t *source_core = source->core;
-  const mu_core_t *target_core = target->core;
-
-  if (source_core != target_core) {
-    fprintf(stderr, "Type mismatch\n");
-    abort();
-  }
-
-  const mu_core_t *core = source_core;
-
-  mu_variance_coercion_t *allocation;
-  if ((allocation = variance_coercion_allocate(core)) == NULL)
-    return NULL;
-
-  for (size_t i = 0; i < core->argc; i++) {
-    const mu_type_t *next_source = source->argv[i];
-    const mu_type_t *next_target = target->argv[i];
-
-    mu_variance_t variance = core->argv[i].variance;
-    assert(variance != MU_INVARIANCE);
-    if (variance == MU_CONTRAVARIANCE) {
-      const mu_type_t *t = next_source; next_source = next_target; next_target = t;
-    }
-
-    const mu_coercion_t *coercion;
-    if ((coercion = ensure_coercion(induce, next_source, next_target)) == NULL)
-      return NULL;
     allocation->argv[i] = coercion;
   }
 
@@ -191,9 +156,14 @@ const mu_coercion_t *ensure_coercion(
         return NULL;
       if (coercion != &NO_COERCION) {
         universe_edge_t *edge;
-        edge = append_edge(&induce->universe, source, next_source);
-        assert(edge != NULL);
+        if ((edge = append_edge(&induce->universe, source, next_source)) == NULL)
+          return NULL;
         edge->coercion = coercion;
+
+        if ((edge = append_edge(&induce->universe, source, target)) == NULL)
+          return NULL;
+        edge->indirect = 1;
+
         return coercion;
       }
     }
@@ -311,6 +281,44 @@ const mu_coercion_t *ensure_coercion(
   }
 
   __builtin_unreachable();
+}
+
+static inline const mu_coercion_t *ensure_core_coercion(
+    induce_t *induce, const mu_core_type_t *source, const mu_core_type_t *target) {
+  const mu_core_t *source_core = source->core;
+  const mu_core_t *target_core = target->core;
+
+  if (source_core != target_core) {
+    fprintf(stderr, "Type mismatch\n");
+    abort();
+  }
+
+  const mu_core_t *core = source_core;
+
+  mu_variance_coercion_t *allocation;
+  if ((allocation = variance_coercion_allocate(core)) == NULL)
+    return NULL;
+
+  for (size_t i = 0; i < core->argc; i++) {
+    const mu_type_t *next_source = source->argv[i];
+    const mu_type_t *next_target = target->argv[i];
+
+    mu_variance_t variance = core->argv[i].variance;
+    assert(variance != MU_INVARIANCE);
+    if (variance == MU_CONTRAVARIANCE) {
+      const mu_type_t *t = next_source; next_source = next_target; next_target = t;
+    }
+
+    const mu_coercion_t *coercion;
+    if ((coercion = ensure_coercion(induce, next_source, next_target)) == NULL)
+      return NULL;
+    allocation->argv[i] = coercion;
+  }
+
+  const mu_variance_coercion_t *result;
+  if ((result = variance_coercion_activate(allocation)) == NULL)
+    return NULL;
+  return &result->as_coercion;
 }
 
 const induce_edge_t *restrict_type(

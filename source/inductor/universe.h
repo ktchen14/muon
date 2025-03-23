@@ -12,7 +12,7 @@ typedef struct {
 
   const mu_coercion_t *coercion;
 
-  _Bool direct;
+  _Bool indirect;
 } universe_edge_t;
 
 typedef struct {

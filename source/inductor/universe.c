@@ -43,6 +43,5 @@ universe_edge_t *append_edge(universe_t *universe, const mu_type_t *source, cons
 
   universe_edge_t *result = &universe->data[universe->length++];
   *result = (universe_edge_t) { .source = source, .target = target };
-  result->direct = 1;
   return result;
 }

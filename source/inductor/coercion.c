@@ -154,7 +154,7 @@ void mu_edge_coercion_debug(const mu_edge_coercion_t *coercion) {
 }
 
 void mu_variance_coercion_debug(const mu_variance_coercion_t *coercion) {
-  debug(PRIsKIND "(", DEBUG_COERCION_KIND("Variance"));
+  debug(PRIsKIND "(", DEBUG_COERCION_KIND("∇"));
 
   const mu_core_t *core = coercion->core;
   mu_core_debug(core);

@@ -105,32 +105,32 @@ int main(int argc, char *argv[argc]) {
 
     debug("digraph muon {\n  rankdir=\"BT\"\n");
     for (size_t i = 0; i < debug_induce->universe.length; i++) {
-      induce_edge_t sub = debug_induce->universe.data[i];
+      induce_edge_t edge = debug_induce->universe.data[i];
 
       debug("%*s", 2, "");
 
       debug("\"");
-      type_debug(sub.source, 0);
-      debug(" (%zu)", sub.source->id);
+      type_debug(edge.source, 0);
+      debug(" (%zu)", edge.source->id);
       debug("\"");
 
       debug(" -> ");
 
       debug("\"");
-      type_debug(sub.target, 0);
-      debug(" (%zu)", sub.target->id);
+      type_debug(edge.target, 0);
+      debug(" (%zu)", edge.target->id);
       debug("\"");
 
-      if (!sub.direct)
+      if (edge.indirect)
         debug(" [constraint=false,style=dashed]");
 
-      debug(";\n");
+      if (edge.coercion != NULL) {
+        debug(" [label=\"");
+        mu_coercion_debug(edge.coercion);
+        debug("\"]");
+      }
 
-      /* if (sub.tactic != NULL) { */
-      /*   debug(" [label=\""); */
-      /*   tactic_debug(sub.tactic); */
-      /*   debug("\"]"); */
-      /* } */
+      debug(";\n");
     }
     debug("}\n");
 

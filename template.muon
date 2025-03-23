@@ -14,5 +14,5 @@ define id4 = lambda x = x
 
 define b = id1 (id2 (id3 id4))
 
-define sw = switch (case Foo1 = 1, case Foo2 = true)
+define sw = switch (case Foo1 = 1, case Foo1 = 3, case Foo2 = true)
 define rs = sw Foo1
