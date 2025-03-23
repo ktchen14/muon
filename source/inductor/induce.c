@@ -13,7 +13,7 @@
 
 _Thread_local induce_t *debug_induce;
 
-static const mu_coercion_t NO_COERCION = {0};
+static const mu_coercion_t NO_SUCH_COERCION = {0};
 
 static inline const mu_coercion_t *ensure_core_coercion(
     induce_t *induce, const mu_core_type_t *source, const mu_core_type_t *target);
@@ -26,11 +26,8 @@ static inline const mu_coercion_t *retrieve_core_coercion(
   const mu_core_t *source_core = source->core;
   const mu_core_t *target_core = target->core;
 
-  if (source_core->kind == MU_BOOLEAN_CORE && target_core->kind == MU_INTEGER_CORE)
-    return &induce->id_coercion->as_coercion;
-
   if (source_core != target_core)
-    return &NO_COERCION;
+    return &NO_SUCH_COERCION;
 
   const mu_core_t *core = source_core;
 
@@ -51,7 +48,7 @@ static inline const mu_coercion_t *retrieve_core_coercion(
     const mu_coercion_t *coercion;
     if ((coercion = retrieve_coercion(induce, next_source, next_target)) == NULL)
       return NULL;
-    if (coercion == &NO_COERCION) {
+    if (coercion == &NO_SUCH_COERCION) {
       free(allocation);
       return coercion;
     }
@@ -95,7 +92,7 @@ const mu_coercion_t *retrieve_coercion(
     return result;
   }
 
-  return &NO_COERCION;
+  return &NO_SUCH_COERCION;
 }
 
 const mu_coercion_t *ensure_coercion(
@@ -301,7 +298,7 @@ static inline const mu_coercion_t *ensure_cv(
     const mu_coercion_t *coercion;
     if ((coercion = retrieve_coercion(induce, source, next_edge->source)) == NULL)
       return NULL;
-    if (coercion != &NO_COERCION) {
+    if (coercion != &NO_SUCH_COERCION) {
       universe_edge_t *edge;
       if ((edge = append_edge(&induce->universe, source, next_edge->source)) == NULL)
         return NULL;
@@ -355,7 +352,7 @@ static inline const mu_coercion_t *ensure_cv(
     const mu_coercion_t *coercion;
     if ((coercion = retrieve_coercion(induce, next_edge->source, source)) == NULL)
       return NULL;
-    if (coercion == &NO_COERCION)
+    if (coercion == &NO_SUCH_COERCION)
       continue;
     next_edge->indirect = 1;
 
