@@ -134,16 +134,30 @@ const mu_type_t *mu_coercion_target(
 }
 
 void mu_coercion_debug(const mu_coercion_t *coercion) {
-  switch ON_ABSTRACT_OBJECT(coercion) {
-    case MU_ID_COERCION:
-      debug(PRIsKIND, DEBUG_COERCION_KIND("Id")); return;
+  // Kind -> Text, e.g. [MU_ID_COERCION] = "Id"
+  static const char *KIND_TEXT[] = {
+#define MU_EMIT(l, upper, title) [MU_##upper##_COERCION] = #title,
+    MU_EACH_COERCION_KIND(MU_EMIT)
+#undef MU_EMIT
+  };
+  KIND_TEXT[MU_VARIANCE_COERCION] = "∇";
+  const char *kind = KIND_TEXT[coercion->kind];
 
-    case MU_EDGE_COERCION:
-      debug(PRIsKIND, DEBUG_COERCION_KIND("Edge")); return;
+  debug(PRIsKIND, DEBUG_COERCION_KIND(kind));
+
+  switch ON_ABSTRACT_OBJECT(coercion) {
+    case MU_ID_COERCION: return;
+
+    case IS_KIND_OF(edge_coercion):
+      debug("(");
+      type_debug(edge_coercion->source, 0);
+      debug(" ⇒ ");
+      type_debug(edge_coercion->as_coercion.target, 0);
+      debug(")");
+      return;
 
     case IS_KIND_OF(variance_coercion):
-      debug(PRIsKIND "(", DEBUG_COERCION_KIND("∇"));
-
+      debug("(");
       const mu_core_t *core = variance_coercion->core;
       mu_core_debug(core);
 
@@ -152,13 +166,12 @@ void mu_coercion_debug(const mu_coercion_t *coercion) {
         mu_coercion_debug(variance_coercion->argv[i]);
       }
       debug(")");
-
       return;
 
     case IS_KIND_OF(record_coercion): {
       const record_instance_t *instance = record_coercion->instance;
 
-      debug(PRIsKIND "(", DEBUG_COERCION_KIND("Record"));
+      debug("(");
       for (size_t i = 0; i < instance->target->argc; i++) {
         if (i > 0)
           debug(", ");
@@ -170,11 +183,11 @@ void mu_coercion_debug(const mu_coercion_t *coercion) {
     }
 
     case IS_KIND_OF(join_coercion):
-      debug(PRIsKIND "(i = %zu)", DEBUG_COERCION_KIND("Join"), join_coercion->i);
+      debug(" (i = %zu)", join_coercion->i);
       return;
 
     case IS_KIND_OF(unjoin_coercion):
-      debug(PRIsKIND "(", DEBUG_COERCION_KIND("Unjoin"));
+      debug("(");
       for (size_t i = 0; i < unjoin_coercion->argc; i++) {
         if (i > 0)
           debug(", ");

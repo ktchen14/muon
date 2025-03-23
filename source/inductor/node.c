@@ -114,10 +114,12 @@ __attribute__((nonnull)) static const mu_type_t *invoke_expr_induce(
   const mu_core_type_t *lambda_type;
   if ((lambda_type = mu_lambda_type(induce, argument_type, &result->as_type)) == NULL)
     return NULL;
-  induce->aux[expr->as_node.id] = &lambda_type->as_type;
 
-  if (restrict_type(induce, operator_type, &lambda_type->as_type) == NULL)
+  const mu_coercion_t *coercion;
+  if ((coercion = ensure_coercion(induce, operator_type, &lambda_type->as_type)) == NULL)
     return NULL;
+  induce->coercion[expr->operator->as_node.id] = coercion;
+
   return &result->as_type;
 }
 
