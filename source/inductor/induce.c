@@ -290,6 +290,8 @@ static inline const mu_coercion_t *ensure_cv(
   universe_iterator_t iterator;
   const mu_type_t *next_target;
 
+  // For each edge ⟨next_source ⇒ target⟩
+
   // If source => next_source for any next_source in the target's sources, then
   // just do that.
   //

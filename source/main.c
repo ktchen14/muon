@@ -103,7 +103,7 @@ int main(int argc, char *argv[argc]) {
     debug_stream = output;
     debug_colorize = 0;
 
-    debug("digraph muon {\n  rankdir=\"BT\"\n");
+    debug("digraph muon {\n  rankdir=\"BT\";\n  dpi=300;\n");
     for (size_t i = 0; i < debug_induce->universe.length; i++) {
       induce_edge_t edge = debug_induce->universe.data[i];
 

@@ -165,7 +165,7 @@ void type_debug(const mu_type_t *type, _Bool expand) {
         case MU_LAMBDA_CORE:
           debug("(");
           WITH_DEBUG_NEGATE() { type_debug(core_type->argv[0], expand); }
-          debug(" -> ");
+          debug(" → ");
           type_debug(core_type->argv[1], expand);
           debug(")");
           break;
