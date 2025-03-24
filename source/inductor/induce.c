@@ -181,11 +181,11 @@ const mu_coercion_t *ensure_coercion(
 
     source_iterator = universe_iterator(&induce->universe, source, 0);
     while ((next_source = universe_next_type(&source_iterator)) != NULL)
-      append_edge(&induce->universe, next_source, target);
+      append_edge(&induce->universe, next_source, target)->indirect = 1;
 
     target_iterator = universe_iterator(&induce->universe, target, 1);
     while ((next_target = universe_next_type(&target_iterator)) != NULL)
-      append_edge(&induce->universe, source, next_target);
+      append_edge(&induce->universe, source, next_target)->indirect = 1;
 
     const mu_edge_coercion_t *result;
     if ((result = mu_edge_coercion(source, target)) == NULL)
@@ -308,7 +308,11 @@ static const mu_coercion_t *ensure_cv(
     const mu_type_t *next_target = edge->target;
     if (next_target->kind != MU_VARIABLE_TYPE)
       continue;
-    append_edge(&induce->universe, source, next_target);
+
+    edge_t *next_edge;
+    if ((next_edge = append_edge(&induce->universe, source, next_target)) == NULL)
+      return NULL;
+    next_edge->indirect = 1;
   }
 
   const mu_edge_coercion_t *result;
@@ -395,7 +399,11 @@ static const mu_coercion_t *ensure_vc(
     const mu_type_t *next_source = edge->source;
     if (next_source->kind != MU_VARIABLE_TYPE)
       continue;
-    append_edge(&induce->universe, next_source, target);
+
+    edge_t *next_edge;
+    if ((next_edge = append_edge(&induce->universe, next_source, target)) == NULL)
+      return NULL;
+    next_edge->indirect = 1;
   }
 
   const mu_edge_coercion_t *result;
