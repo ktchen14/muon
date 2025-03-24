@@ -1,6 +1,7 @@
 #ifndef MU_INDUCTOR_COERCION_I
 #define MU_INDUCTOR_COERCION_I
 
+#include "../common.h"
 #include "core.h"
 #include "type.h"
 
@@ -10,6 +11,7 @@
 #define MU_EACH_COERCION_KIND(emit, ...) \
   emit(id, ID, Id, ##__VA_ARGS__) \
   emit(edge, EDGE, Edge, ##__VA_ARGS__) \
+  emit(indirect, INDIRECT, Indirect, ##__VA_ARGS__) \
   emit(variance, VARIANCE, Variance, ##__VA_ARGS__) \
   emit(record, RECORD, Record, ##__VA_ARGS__) \
   emit(join, JOIN, Join, ##__VA_ARGS__) \
@@ -34,9 +36,14 @@ struct mu_coercion_t {
 
 typedef struct {
   MU_COERCION_HEADER;
-  const mu_coercion_t *prev;
   const mu_type_t *source;
 } mu_edge_coercion_t;
+
+typedef struct {
+  MU_COERCION_HEADER;
+  const mu_coercion_t *head;
+  const mu_coercion_t *tail;
+} mu_indirect_coercion_t;
 
 typedef struct {
   MU_COERCION_HEADER;
@@ -66,9 +73,20 @@ typedef struct {
 
 extern const mu_coercion_t *const NO_SUCH_COERCION;
 
+/// @internal An enumeration over each kind of coercion, e.g. @c _id_coercion_kind
+enum {
+#define MU_EMIT(lower, u, t) _##lower##_coercion_kind,
+  MU_EACH_COERCION_KIND(MU_EMIT)
+#undef MU_EMIT
+};
+
 const mu_edge_coercion_t *mu_edge_coercion(
     const mu_type_t *source, const mu_type_t *target)
-  __attribute__((nonnull));
+  __attribute__((malloc, nonnull));
+
+const mu_indirect_coercion_t *mu_indirect_coercion(
+    const mu_coercion_t *head, const mu_coercion_t *tail)
+  __attribute__((malloc, nonnull));
 
 const mu_variance_coercion_t *mu_variance_coercion(
     const mu_core_t *core, const mu_coercion_t *argv[/* core->argc */])
@@ -105,18 +123,23 @@ const mu_unjoin_coercion_t *unjoin_coercion_activate(
     mu_unjoin_coercion_t *coercion)
   __attribute__((nonnull));
 
-const mu_type_t *mu_coercion_target(
-    const mu_coercion_t *coercion, const mu_type_t *source)
-  __attribute__((nonnull, pure, returns_nonnull));
+__attribute__((nonnull, pure, returns_nonnull))
+static inline const mu_type_t *mu_coercion_target(
+    const mu_coercion_t *coercion, const mu_type_t *source) {
+  switch ON_ABSTRACT_OBJECT(coercion) {
+    case MU_ID_COERCION:
+      return source;
+
+    case IS_KIND_OF(indirect_coercion):
+      return mu_coercion_target(indirect_coercion->tail, source);
+
+    default:
+      return coercion->target;
+  }
+  return coercion->target;
+}
 
 void mu_coercion_debug(const mu_coercion_t *coercion)
   __attribute__((nonnull));
-
-/// @internal An enumeration over each kind of coercion, e.g. @c _id_coercion_kind
-enum {
-#define MU_EMIT(lower, u, t) _##lower##_coercion_kind,
-  MU_EACH_COERCION_KIND(MU_EMIT)
-#undef MU_EMIT
-};
 
 #endif /* MU_INDUCTOR_COERCION_I */

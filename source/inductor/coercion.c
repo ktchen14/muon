@@ -23,6 +23,19 @@ const mu_edge_coercion_t *mu_edge_coercion(const mu_type_t *source, const mu_typ
   return result;
 }
 
+const mu_indirect_coercion_t *mu_indirect_coercion(
+    const mu_coercion_t *head, const mu_coercion_t *tail) {
+  mu_indirect_coercion_t *result;
+  if ((result = malloc(sizeof(mu_indirect_coercion_t))) == NULL)
+    return NULL;
+  *result = (mu_indirect_coercion_t) {
+    .as_coercion = { .kind = MU_INDIRECT_COERCION, },
+    .head = head,
+    .tail = tail,
+  };
+  return result;
+}
+
 const mu_variance_coercion_t *mu_variance_coercion(
     const mu_core_t *core, const mu_coercion_t *argv[/* core->argc */]) {
   assert(core->argc == 0 && argv == NULL || core->argc != 0 && argv != NULL);
@@ -132,13 +145,6 @@ const mu_unjoin_coercion_t *unjoin_coercion_activate(
   return coercion;
 }
 
-const mu_type_t *mu_coercion_target(
-    const mu_coercion_t *coercion, const mu_type_t *source) {
-  if (coercion->kind == MU_ID_COERCION)
-    return source;
-  return coercion->target;
-}
-
 void mu_coercion_debug(const mu_coercion_t *coercion) {
   // Kind -> Text, e.g. [MU_ID_COERCION] = "Id"
   static const char *KIND_TEXT[] = {
@@ -163,6 +169,12 @@ void mu_coercion_debug(const mu_coercion_t *coercion) {
       debug(" ");
       type_debug(edge_coercion->as_coercion.target, 0);
       debug(PRIsKIND, DEBUG_COERCION_KIND("⟩"));
+      return;
+
+    case IS_KIND_OF(indirect_coercion):
+      mu_coercion_debug(indirect_coercion->head);
+      debug(PRIsKIND, DEBUG_COERCION_KIND("∘"));
+      mu_coercion_debug(indirect_coercion->tail);
       return;
 
     case IS_KIND_OF(variance_coercion):
