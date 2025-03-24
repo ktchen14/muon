@@ -124,6 +124,25 @@ const record_instance_t *get_record_instance(
 }
 
 void mu_core_debug(const mu_core_t *core) {
+  if (debug_shortcore) {
+    switch (core->kind) {
+      case MU_BOOLEAN_CORE:
+        debug(PRIsKIND, DEBUG_CORE_KIND("𝔹")); return;
+      case MU_INTEGER_CORE:
+        debug(PRIsKIND, DEBUG_CORE_KIND("𝕀")); return;
+      case MU_LAMBDA_CORE:
+        debug(PRIsKIND, DEBUG_CORE_KIND("λ")); return;
+      case MU_VECTOR_CORE:
+        debug(PRIsKIND, DEBUG_CORE_KIND("𝕍")); return;
+      case MU_RECORD_CORE:
+        debug(PRIsKIND, DEBUG_CORE_KIND("ℝ")); return;
+      case MU_CUSTOM_CORE:
+        debug(PRIsKIND, DEBUG_CORE_KIND(DEBUG_NAME(core->name)));
+        return;
+    }
+    __builtin_unreachable();
+  }
+
   switch (core->kind) {
     case MU_BOOLEAN_CORE:
       debug(PRIsKIND, DEBUG_CORE_KIND("Boolean")); return;

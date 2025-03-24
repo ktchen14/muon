@@ -133,6 +133,8 @@ extern _Thread_local int debug_indent;
 /// Whether to debug a type as a negative or positive type
 extern _Thread_local _Bool debug_negate;
 
+extern _Thread_local _Bool debug_shortcore;
+
 /// Stream to emit debugging output to (defaults to @c stderr)
 extern FILE *debug_stream;
 

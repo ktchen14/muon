@@ -103,6 +103,7 @@ int main(int argc, char *argv[argc]) {
     FILE *output = fopen("out.dot", "w");
     debug_stream = output;
     debug_colorize = 0;
+    debug_shortcore = 1;
 
     debug("digraph muon {\n  rankdir=\"BT\";\n  dpi=192;\n");
     for (size_t i = 0; i < debug_induce->universe.length; i++) {
