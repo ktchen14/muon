@@ -40,6 +40,8 @@ const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
       scheme = open_scheme(scheme, node);
     }
 
+    debug("node_induce(%zu)\n", node->id);
+
     // Induce the type of the node
     const mu_type_t *type;
     if ((type = node_induce(node, induce, scheme)) == NULL)

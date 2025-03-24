@@ -104,7 +104,7 @@ int main(int argc, char *argv[argc]) {
     debug_stream = output;
     debug_colorize = 0;
 
-    debug("digraph muon {\n  rankdir=\"BT\";\n  dpi=300;\n");
+    debug("digraph muon {\n  rankdir=\"BT\";\n  dpi=192;\n");
     for (size_t i = 0; i < debug_induce->universe.length; i++) {
       induce_edge_t edge = debug_induce->universe.data[i];
 
@@ -122,8 +122,12 @@ int main(int argc, char *argv[argc]) {
       debug(" #%zu", edge.target->id);
       debug("\"");
 
-      if (edge.indirect)
+      if (edge.indirect == 2)
+        debug(" [constraint=false,style=dashed,color=darkgreen]");
+      else if (edge.indirect == 1)
         debug(" [constraint=false,style=dashed]");
+      else
+        ;
 
       if (edge.coercion != NULL) {
         debug(" [label=\" ");
