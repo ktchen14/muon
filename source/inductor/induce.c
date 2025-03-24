@@ -176,6 +176,8 @@ const mu_coercion_t *ensure_coercion(
 
         if (ensure_coercion(induce, next_source, next_target) == NULL)
           return NULL;
+
+        universe_search(&induce->universe, next_source, next_target)->indirect = 2;
       }
     }
 
@@ -385,6 +387,7 @@ static const mu_coercion_t *ensure_vc(
       continue;
     if (ensure_coercion(induce, next_source, target) == NULL)
       return NULL;
+    universe_search(&induce->universe, next_source, target)->indirect = 2;
   }
 
   // Then, for each edge:
