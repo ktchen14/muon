@@ -4,6 +4,7 @@
 #include "core.h"
 
 #include <assert.h>
+#include <stddef.h>
 
 /// Expands to emit(lower, upper, title, ...) for each kind of type
 #define MU_EACH_TYPE_KIND(emit, ...) \

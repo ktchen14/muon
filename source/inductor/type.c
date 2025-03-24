@@ -1,11 +1,13 @@
 #include "type.h"
-#include "induce.h"
 
 #include "../common.h"
+#include "core.h"
+#include "induce.h"
 
+#include <assert.h>
 #include <errno.h>
-#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 /// @internal Assign the abstract @a type to the @a induce instance
 __attribute__((nonnull, returns_nonnull))

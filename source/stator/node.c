@@ -1,6 +1,7 @@
+#include "node.h"
+
 #include "engine.h"
 #include "name.h"
-#include "node.h"
 
 #include "../common.h"
 
@@ -8,7 +9,8 @@
 #include <errno.h>
 #include <inttypes.h>
 #include <stddef.h>
-#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
 
 /// @internal Allocate a node of size @a size in the @a engine
 __attribute__((malloc, nonnull))
@@ -446,7 +448,7 @@ const mu_variable_view_t *mu_variable_view(
   return assign_node(engine, result);
 }
 
-#include "../inductor/induce.h"
+#include "../inductor.h"
 
 __attribute__((nonnull))
 static inline void debug_node_type(const mu_node_t *node) {

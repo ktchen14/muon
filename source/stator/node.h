@@ -4,6 +4,7 @@
 #include <muon/stator/node.h>  // IWYU pragma: export
 
 #include "../common.h"
+#include "name.h"
 
 #include <assert.h>
 #include <stddef.h>

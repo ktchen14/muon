@@ -2,7 +2,9 @@
 #include "induce.h"
 
 #include "../common.h"
+#include "../stator/name.h"
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 

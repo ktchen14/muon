@@ -3,7 +3,6 @@
 
 #include <muon/script.h>  // IWYU pragma: export
 
-#include "common.h"
 #include "stator.h"
 #include "status.h"
 

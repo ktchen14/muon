@@ -1,5 +1,8 @@
 #include "universe.h"
 
+#include "../common.h"
+#include "type.h"
+
 #include <errno.h>
 #include <stddef.h>
 #include <stdlib.h>

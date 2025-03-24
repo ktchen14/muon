@@ -1,9 +1,13 @@
 #include "induce.h"
-#include "universe.h"
 
-#include "detect.h"
+#include "../common.h"
 #include "../stator.h"
 #include "../status.h"
+#include "coercion.h"
+#include "core.h"
+#include "detect.h"
+#include "type.h"
+#include "universe.h"
 
 #include <assert.h>
 #include <stddef.h>

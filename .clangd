@@ -3,9 +3,7 @@ CompileFlags:
   CompilationDatabase: build
 
 Diagnostics:
-  Includes:
-    IgnoreHeader: common\.h
-  # MissingIncludes: Strict
+  MissingIncludes: Strict
   UnusedIncludes: Strict
   Suppress:
   - logical-op-parentheses

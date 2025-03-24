@@ -1,6 +1,10 @@
-#include "../common.h"
 #include "coercion.h"
 
+#include "../common.h"
+#include "core.h"
+#include "type.h"
+
+#include <assert.h>
 #include <errno.h>
 #include <stddef.h>
 #include <stdlib.h>

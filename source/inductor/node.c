@@ -1,7 +1,10 @@
-#include "induce.h"
-
-#include "detect.h"
+#include "../common.h"
 #include "../stator.h"
+#include "coercion.h"
+#include "core.h"
+#include "detect.h"
+#include "induce.h"
+#include "type.h"
 
 #include <assert.h>
 #include <stddef.h>
