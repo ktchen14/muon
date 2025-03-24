@@ -239,10 +239,21 @@ static const mu_coercion_t *ensure_cv(
   typedef universe_edge_t edge_t;
   universe_iterator_t iterator;
 
-  // Test if the coercion source ⇒ next_source is able to be made, for each
-  // ⟨next_source ⇒ target⟩.
-  // Skip indirect edges. If we need to coerce source ⇒ target, we don't want
-  // to go through some unrelated variable.
+  // If source <: x <: target, then:
+  //
+  //   (source ⇒ target) = (source ⇒ x) ∘ (x ⇒ target)
+  //
+  // In this case, record ⟨source ⇒ target⟩ as an indirect edge with an indirect
+  // coercion through x.
+  //
+  // This allows us to skip adding source to the lower bound of target at all,
+  // so that future calls to ensure_coercion(induce, target, something_else)
+  // don't have to check another type, simplifies reduction, etc.
+  //
+  // We'll skip any subtype x of target that's also a variable type, as well as
+  // if ⟨x ⇒ target⟩ is an indirect edge. This is because we don't want the
+  // coercion source ⇒ target to occur through some variable type unrelated to
+  // the context in which we're ensuring this coercion.
   iterator = universe_iterator(&induce->universe, target, 0);
   for (const edge_t *edge; (edge = universe_next(&iterator)) != NULL;) {
     if (edge->indirect || edge->source->kind == MU_VARIABLE_TYPE)
@@ -271,15 +282,13 @@ static const mu_coercion_t *ensure_cv(
     return edge->coercion = &result->as_coercion;
   }
 
-  // Add the edge now in case of recursion
+  // First, add ⟨source ⇒ target⟩ in case of recursion
   edge_t *result_edge;
   if ((result_edge = append_edge(&induce->universe, source, target)) == NULL)
     return NULL;
 
-  // Ensure the coercion:
+  // Then, ∀(next_target) | ∃⟨target ⇒ next_target⟩, ensure the coercion:
   //   source ⇒ next_target
-  // Where next_target is each (direct and indirect) target of the variable
-  // type.
   iterator = universe_iterator(&induce->universe, target, 1);
   for (const edge_t *edge; (edge = universe_next(&iterator)) != NULL;) {
     const mu_type_t *next_target = edge->target;
@@ -291,6 +300,9 @@ static const mu_coercion_t *ensure_cv(
     universe_search(&induce->universe, source, next_target)->indirect = 2;
   }
 
+  // Then, ∀(next_target) | ∃⟨target ⇒ next_target⟩ where next_target is a
+  // variable type, add ⟨source ⇒ next_target⟩ to maintain the transitive
+  // closure of variable types in the universe.
   iterator = universe_iterator(&induce->universe, target, 1);
   for (const edge_t *edge; (edge = universe_next(&iterator)) != NULL;) {
     const mu_type_t *next_target = edge->target;
