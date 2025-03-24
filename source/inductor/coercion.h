@@ -64,6 +64,8 @@ typedef struct {
   const mu_coercion_t *argv[/* argc */];
 } mu_unjoin_coercion_t;
 
+extern const mu_coercion_t *const NO_SUCH_COERCION;
+
 const mu_edge_coercion_t *mu_edge_coercion(
     const mu_type_t *source, const mu_type_t *target)
   __attribute__((nonnull));
