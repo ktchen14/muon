@@ -117,27 +117,10 @@ const mu_coercion_t *ensure_coercion(
   if ((edge = universe_search(&induce->universe, source, target)) != NULL)
     return edge_to_coercion(edge);
 
-  /* // Add the edge now in case of recursion */
-  /* if (append_edge(&induce->universe, source, target) == NULL) */
-  /*   return NULL; */
-
   if (source->kind == MU_CORE_TYPE && target->kind == MU_CORE_TYPE) {
-    // Add the edge now in case of recursion
-    if (append_edge(&induce->universe, source, target) == NULL)
-      return NULL;
-
     const mu_core_type_t *next_source = (const mu_core_type_t *) source;
     const mu_core_type_t *next_target = (const mu_core_type_t *) target;
-
-    const mu_coercion_t *result;
-    if ((result = ensure_cc(induce, next_source, next_target)) == NULL)
-      return NULL;
-
-    universe_edge_t *edge;
-    edge = universe_search(&induce->universe, source, target);
-    assert(edge != NULL);
-    edge->coercion = result;
-    return result;
+    return ensure_cc(induce, next_source, next_target);
   }
 
   if (source->kind == MU_CORE_TYPE && target->kind == MU_VARIABLE_TYPE)
@@ -200,6 +183,11 @@ const mu_coercion_t *ensure_coercion(
 
 static const mu_coercion_t *ensure_cc(
     induce_t *induce, const mu_core_type_t *source, const mu_core_type_t *target) {
+  // Add the edge now in case of recursion
+  universe_edge_t *result_edge;
+  if ((result_edge = append_edge(&induce->universe, &source->as_type, &target->as_type)) == NULL)
+    return NULL;
+
   const mu_core_t *source_core = source->core;
   const mu_core_t *target_core = target->core;
 
@@ -233,7 +221,7 @@ static const mu_coercion_t *ensure_cc(
   const mu_variance_coercion_t *result;
   if ((result = variance_coercion_activate(allocation)) == NULL)
     return NULL;
-  return &result->as_coercion;
+  return result_edge->coercion = &result->as_coercion;
 }
 
 static const mu_coercion_t *ensure_cv(
