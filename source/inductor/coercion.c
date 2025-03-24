@@ -1,10 +1,9 @@
+#include "../common.h"
 #include "coercion.h"
 
 #include <errno.h>
 #include <stddef.h>
 #include <stdlib.h>
-
-#include "../stator/debug.h"
 
 const mu_edge_coercion_t *mu_edge_coercion(const mu_type_t *source, const mu_type_t *target) {
   mu_edge_coercion_t *result;
@@ -152,7 +151,9 @@ void mu_coercion_debug(const mu_coercion_t *coercion) {
     case IS_KIND_OF(edge_coercion):
       debug(PRIsKIND, DEBUG_COERCION_KIND("⟨"));
       type_debug(edge_coercion->source, 0);
-      debug(" ⇒ ");
+      debug(" ");
+      debug(PRIsKIND, DEBUG_COERCION_KIND("⇒"));
+      debug(" ");
       type_debug(edge_coercion->as_coercion.target, 0);
       debug(PRIsKIND, DEBUG_COERCION_KIND("⟩"));
       return;

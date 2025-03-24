@@ -1,7 +1,8 @@
-#include "debug.h"
 #include "engine.h"
 #include "name.h"
 #include "node.h"
+
+#include "../common.h"
 
 #include <assert.h>
 #include <errno.h>
@@ -499,49 +500,51 @@ void mu_node_debug(const mu_node_t *node) {
   debug_indent = debug_node_coercion(node);
 
   debug("%*s", debug_indent, "");
-  debug(PRIsKIND "#" PRIuID, DEBUG_KIND(kind), DEBUG_ID(node->id));
+  debug(PRIsKIND, DEBUG_NODE_KIND(kind));
 
   switch ON_ABSTRACT_OBJECT(node) {
     case IS_KIND_OF(access_expr):
-      debug(" (name = " PRIsNAME ")", DEBUG_NAME(access_expr->name)); break;
+      debug("(name = " PRIsNAME ")", DEBUG_NAME(access_expr->name)); break;
 
     case IS_KIND_OF(boolean_expr):
-      debug(" (data = %s)", boolean_expr->data ? "true" : "false"); break;
+      debug("(data = %s)", boolean_expr->data ? "true" : "false"); break;
 
     case IS_KIND_OF(integer_expr):
-      debug(" (data = %" PRIu64 ")", integer_expr->data); break;
+      debug("(data = %" PRIu64 ")", integer_expr->data); break;
 
     case IS_KIND_OF(name_expr):
-      debug(" (name = " PRIsNAME ")", DEBUG_NAME(name_expr->name)); break;
+      debug("(name = " PRIsNAME ")", DEBUG_NAME(name_expr->name)); break;
 
     case IS_KIND_OF(native_expr):
-      debug(" (name = " PRIsNAME ")", DEBUG_NAME(native_expr->name)); break;
+      debug("(name = " PRIsNAME ")", DEBUG_NAME(native_expr->name)); break;
 
     case IS_KIND_OF(expr_member):
       if (expr_member->name != NULL)
-        debug(" (name = " PRIsNAME ")", DEBUG_NAME(expr_member->name));
+        debug("(name = " PRIsNAME ")", DEBUG_NAME(expr_member->name));
       break;
 
     case IS_KIND_OF(switch_case):
-      debug(" (name = " PRIsNAME ")", DEBUG_NAME(switch_case->name)); break;
+      debug("(name = " PRIsNAME ")", DEBUG_NAME(switch_case->name)); break;
 
     case IS_KIND_OF(name_sign):
-      debug(" (name = " PRIsNAME ")", DEBUG_NAME(name_sign->name)); break;
+      debug("(name = " PRIsNAME ")", DEBUG_NAME(name_sign->name)); break;
 
     case IS_KIND_OF(datatype_option):
-      debug(" (name = " PRIsNAME ")", DEBUG_NAME(datatype_option->name)); break;
+      debug("(name = " PRIsNAME ")", DEBUG_NAME(datatype_option->name)); break;
 
     case IS_KIND_OF(datatype_stmt):
-      debug(" (name = " PRIsNAME ")", DEBUG_NAME(datatype_stmt->name)); break;
+      debug("(name = " PRIsNAME ")", DEBUG_NAME(datatype_stmt->name)); break;
 
     case IS_KIND_OF(define_stmt):
-      debug(" (name = " PRIsNAME ")", DEBUG_NAME(define_stmt->name)); break;
+      debug("(name = " PRIsNAME ")", DEBUG_NAME(define_stmt->name)); break;
 
     case IS_KIND_OF(variable_view):
-      debug(" (name = " PRIsNAME ")", DEBUG_NAME(variable_view->name)); break;
+      debug("(name = " PRIsNAME ")", DEBUG_NAME(variable_view->name)); break;
 
     default: break;
   }
+
+  debug(" #%zu", node->id);
 
   debug_node_type(node);
   debug("\n");

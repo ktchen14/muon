@@ -1,3 +1,5 @@
+#include "common.h"
+
 #include <stdio.h>
 
 _Thread_local _Bool debug_colorize;

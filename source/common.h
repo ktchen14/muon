@@ -2,6 +2,7 @@
 #define MU_COMMON_I
 
 #include <stddef.h>
+#include <stdio.h>
 
 /// Indicate that @c ... will, in the common case, evaluate to 1
 #define common(...) __builtin_expect((__VA_ARGS__), 1)
@@ -122,5 +123,46 @@ __attribute__((unused)) static _Thread_local const void *_object;
   const mu_##name##_t *name = _object; \
   goto INDIRECT_JOIN(case_on_, __LINE__); \
   INDIRECT_JOIN(case_on_, __LINE__)
+
+/// Whether to colorize the debug output
+extern _Thread_local _Bool debug_colorize;
+
+/// The amount of indentation to insert before each line of debug output
+extern _Thread_local int debug_indent;
+
+/// Whether to debug a type as a negative or positive type
+extern _Thread_local _Bool debug_negate;
+
+/// Stream to emit debugging output to (defaults to @c stderr)
+extern FILE *debug_stream;
+
+/// Literal printf specifier for a kind
+#define PRIsKIND "%s%s%s"
+
+/// Used with PRIsKIND to emit the @a text as a node kind
+#define DEBUG_NODE_KIND(text) \
+  debug_colorize ? "\x1b[0;33m" : "", (text), debug_colorize ? "\x1b[0m" : ""
+
+/// Used with PRIsKIND to emit the @a text as a core kind
+#define DEBUG_CORE_KIND(text) "", (text), ""
+
+/// Used with PRIsKIND to emit the @a text as a coercion kind
+#define DEBUG_COERCION_KIND(text) \
+  debug_colorize ? "\x1b[0;34m" : "", (text), debug_colorize ? "\x1b[0m" : ""
+
+/// Literal printf specifier for a name
+#define PRIsNAME "%s"
+
+/// Used with PRIsNAME to emit the text of the @a name
+#define DEBUG_NAME(name) ((name)->text)
+
+#define WITH_DEBUG_INDENT() \
+  for (int _i = (debug_indent += 2); debug_indent == _i; debug_indent -= 2)
+
+#define WITH_DEBUG_NEGATE() \
+  for (_Bool _n = (debug_negate = !debug_negate); debug_negate == _n; debug_negate = !debug_negate)
+
+/// Equivalent to <tt>printf(debug_stream, ...)</tt>
+#define debug(...) fprintf(debug_stream, ##__VA_ARGS__)
 
 #endif /* MU_COMMON_I */

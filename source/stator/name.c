@@ -42,8 +42,6 @@ const mu_name_t *mu_name(
   return name;
 }
 
-#include "debug.h"
-
 void mu_name_debug(const mu_name_t *name) {
   debug(PRIsNAME, DEBUG_NAME(name));
 }

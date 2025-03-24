@@ -4,7 +4,8 @@
 #include "script.h"
 #include "stator.h"
 #include "status.h"
-#include "stator/debug.h"
+
+#include "common.h"
 
 #include <assert.h>
 #include <errno.h>

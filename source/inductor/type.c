@@ -1,6 +1,8 @@
 #include "type.h"
 #include "induce.h"
 
+#include "../common.h"
+
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -122,8 +124,6 @@ const mu_scheme_type_t *scheme_type_activate(
   return assign_type(type->as_type.induce, type);
 }
 
-#include "../stator/debug.h"
-
 void debug_variable_type_name(const mu_variable_type_t *type) {
   static _Atomic size_t next_number = 0;
   static const char *alphabet[] = {
@@ -147,8 +147,6 @@ void debug_variable_type_name(const mu_variable_type_t *type) {
 
   debug("%s", name);
 }
-
-#include "../stator/debug.h"
 
 void type_debug(const mu_type_t *type, _Bool expand) {
   switch ON_ABSTRACT_OBJECT(type) {

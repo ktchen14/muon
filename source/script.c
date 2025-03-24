@@ -50,8 +50,6 @@ const mu_sequence_expr_t *mu_script_to_sequence_expr_with_prefix(
   return sequence_expr_activate(allocation);
 }
 
-#include "stator/debug.h"
-
 void mu_script_debug(const mu_script_t *script) {
   debug("Script:\n");
 

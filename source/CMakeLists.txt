@@ -1,6 +1,8 @@
 add_subdirectory(script)
 
 target_sources(muon PRIVATE
+  common.c
+
   inductor/coercion.c
   inductor/core.c
   inductor/detect.c
@@ -13,7 +15,6 @@ target_sources(muon PRIVATE
   script.c
   status.c
 
-  stator/debug.c
   stator/name.c
   stator/node.c
 

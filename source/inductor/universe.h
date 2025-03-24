@@ -16,8 +16,7 @@ typedef struct {
     const mu_type_t *vertex[2];
   };
 
-  const mu_coercion_t *coercion;
-
+  const mu_coercion_t *coercion;  // optional
   _Bool indirect;
 } universe_edge_t;
 

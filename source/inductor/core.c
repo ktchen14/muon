@@ -1,6 +1,8 @@
 #include "core.h"
 #include "induce.h"
 
+#include "../common.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -119,8 +121,6 @@ const record_instance_t *get_record_instance(
   return allocation;
 }
 
-#include "../stator/debug.h"
-
 void mu_core_debug(const mu_core_t *core) {
   switch (core->kind) {
     case MU_BOOLEAN_CORE:
@@ -134,7 +134,8 @@ void mu_core_debug(const mu_core_t *core) {
     case MU_RECORD_CORE:
       debug(PRIsKIND, DEBUG_CORE_KIND("Record")); return;
     case MU_CUSTOM_CORE:
-      mu_name_debug(core->name); return;
+      debug(PRIsKIND, DEBUG_CORE_KIND(DEBUG_NAME(core->name)));
+      return;
   }
   __builtin_unreachable();
 }
