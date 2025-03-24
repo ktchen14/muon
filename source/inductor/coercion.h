@@ -34,6 +34,8 @@ struct mu_coercion_t {
 /// The header that each concrete coercion must have
 #define MU_COERCION_HEADER mu_coercion_t as_coercion
 
+typedef mu_coercion_t mu_id_coercion_t;
+
 typedef struct {
   MU_COERCION_HEADER;
   const mu_type_t *source;
@@ -141,5 +143,41 @@ static inline const mu_type_t *mu_coercion_target(
 
 void mu_coercion_debug(const mu_coercion_t *coercion)
   __attribute__((nonnull));
+
+/// @internal Used to emit each branch in mu_coercion_cast()
+#define MU_COERCION_CAST_EMIT(lower, upper, t) \
+  , const mu_##lower##_coercion_t *: _kind == MU_##upper##_COERCION
+
+/**
+ * @brief Downcast the @a abstract coercion to the <tt>typeof(concrete)</tt>
+ *
+ * @a abstract should have type <tt>const mu_coercion_t *</tt>. @a concrete should
+ * be, or have, the type of a pointer to a const qualified concrete coercion. Then
+ * if @a abstract is an instance of that type, it will be cast to that type and
+ * returned. Otherwise, this will return @c NULL.
+ *
+ * @par Example:
+ * @code{.c}
+ *   mu_coercion_t *abstract_coercion = ...;
+ *
+ *   mu_variance_coercion_t *coercion;
+ *   if ((coercion = mu_coercion_cast(abstract_coercion, coercion)) == NULL)
+ *     return ...;
+ * @endcode
+ *
+ * The behavior is undefined if:
+ * - @a abstract is @c NULL
+ * - @a abstract doesn't have type <tt>const mu_coercion_t *</tt>
+ * - @a concrete isn't, or doesn't have, the type of a const qualified pointer
+ *   to a concrete coercion
+ */
+#define mu_coercion_cast(abstract, concrete) __extension__ ({ \
+    const mu_coercion_t *_abstract = (abstract); \
+    typeof(concrete) _concrete; \
+    mu_coercion_kind_t _kind = _abstract->kind; \
+    int _castable = _Generic(_concrete \
+        MU_EACH_COERCION_KIND(MU_COERCION_CAST_EMIT)); \
+    _castable ? (typeof(_concrete)) _abstract : NULL; \
+  })
 
 #endif /* MU_INDUCTOR_COERCION_I */

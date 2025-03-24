@@ -127,7 +127,13 @@ int main(int argc, char *argv[argc]) {
 
       if (edge.coercion != NULL) {
         debug(" [label=\" ");
-        mu_coercion_debug(edge.coercion);
+        const mu_edge_coercion_t *edge_coercion;
+        if ((edge_coercion = mu_coercion_cast(edge.coercion, edge_coercion)) != NULL) {
+          assert(edge_coercion->source == edge.source);
+          assert(edge_coercion->as_coercion.target == edge.target);
+          debug("*");
+        } else
+          mu_coercion_debug(edge.coercion);
         debug("\"]");
       }
 
