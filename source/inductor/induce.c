@@ -275,11 +275,8 @@ static const mu_coercion_t *ensure_cv(
   universe_iterator_t iterator;
   const mu_type_t *next_target;
 
-  // For each edge ⟨next_source ⇒ target⟩
-
-  // If source ⇒ next_source for any next_source in the target's sources, then
-  // just do that.
-  //
+  // Test if the coercion source ⇒ next_source is able to be made, for each
+  // ⟨next_source ⇒ target⟩.
   // Skip indirect edges. If we need to coerce source ⇒ target, we don't want
   // to go through some unrelated variable.
   iterator = universe_iterator(&induce->universe, target, 0);
@@ -312,7 +309,8 @@ static const mu_coercion_t *ensure_cv(
   }
 
   // Add the edge now in case of recursion
-  if ((edge = append_edge(&induce->universe, source, target)) == NULL)
+  universe_edge_t *result_edge;
+  if ((result_edge = append_edge(&induce->universe, source, target)) == NULL)
     return NULL;
 
   // Ensure the coercion:
@@ -323,7 +321,7 @@ static const mu_coercion_t *ensure_cv(
   while ((next_target = universe_next(&iterator)) != NULL) {
     if (next_target->kind == MU_VARIABLE_TYPE)
       continue;
-    if (ensure_coercion(induce, next_target, source) == NULL)
+    if (ensure_coercion(induce, source, next_target) == NULL)
       return NULL;
   }
 
@@ -331,55 +329,54 @@ static const mu_coercion_t *ensure_cv(
   while ((next_target = universe_next(&iterator)) != NULL) {
     if (next_target->kind != MU_VARIABLE_TYPE)
       continue;
-    append_edge(&induce->universe, next_target, source);
+    append_edge(&induce->universe, source, next_target);
   }
 
-  const mu_edge_coercion_t *edge_coercion;
-  if ((edge_coercion = mu_edge_coercion(source, target)) == NULL)
+  const mu_edge_coercion_t *result;
+  if ((result = mu_edge_coercion(source, target)) == NULL)
     return NULL;
-
-  const mu_coercion_t *result;
-  result = edge->coercion = &edge_coercion->as_coercion;
+  result_edge->coercion = &result->as_coercion;
 
   // Once we've committed to ⟨source ⇒ target⟩, try to simplify target:
   //
-  //   ∀(next_source) | ∃⟨next_source ⇒ target⟩
+  //   ∀(next_source) | ∃⟨next_source ⇒ target⟩, next_source ≠ source
   //
-  // Retrieve next_source ⇒ source. If this isn't NO_SUCH_COERCION, then add
+  // Retrieve next_source ⇒ source. If this exists, then add
   // ⟨next_source ⇒ source⟩ and make ⟨next_source ⇒ target⟩ an indirect edge.
   iterator = universe_iterator(&induce->universe, target, 0);
-  universe_edge_t *next_edge;
-  while ((next_edge = universe_next_edge(&iterator)) != NULL) {
-    if (next_edge->source == source)
+  while ((edge = universe_next_edge(&iterator)) != result_edge) {
+    if (edge->indirect || edge->source->kind == MU_VARIABLE_TYPE)
       continue;
-    if (next_edge->indirect)
-      continue;
-    if (next_edge->source->kind == MU_VARIABLE_TYPE)
-      continue;
-    if (next_edge->coercion != NULL && next_edge->coercion->kind != MU_EDGE_COERCION)
+    if (edge->coercion != NULL && edge->coercion->kind != MU_EDGE_COERCION)
       continue;
 
     const mu_coercion_t *coercion;
-    if ((coercion = retrieve_coercion(induce, next_edge->source, source)) == NULL)
+    if ((coercion = retrieve_coercion(induce, edge->source, source)) == NULL)
       return NULL;
+
     if (coercion == NO_SUCH_COERCION)
       continue;
-    next_edge->indirect = 1;
 
-    const mu_indirect_coercion_t *indirect_coercion;
-    if ((indirect_coercion = mu_indirect_coercion(coercion, result)) == NULL)
-      return NULL;
-    if (next_edge->coercion == NULL) {
-      next_edge->coercion = &indirect_coercion->as_coercion;
+    if (edge->coercion == NULL) {
+      const mu_indirect_coercion_t *new;
+      if ((new = mu_indirect_coercion(coercion, &result->as_coercion)) == NULL)
+        return NULL;
+      edge->coercion = &new->as_coercion;
     } else {
-      assert(next_edge->coercion->kind == MU_EDGE_COERCION);
-      mu_edge_coercion_t *original_coercion = (mu_edge_coercion_t *) next_edge->coercion;
-      memcpy(original_coercion, indirect_coercion, sizeof(mu_indirect_coercion_t));
-      free((void *) indirect_coercion);
+      mu_indirect_coercion_t new = {
+        .as_coercion = { .kind = MU_INDIRECT_COERCION, },
+        .head = coercion,
+        .tail = &result->as_coercion,
+      };
+
+      mu_indirect_coercion_t *over = (mu_indirect_coercion_t *) edge->coercion;
+      memcpy(over, &new, sizeof(new));
     }
+
+    edge->indirect = 1;
   }
 
-  return result;
+  return &result->as_coercion;
 }
 
 
