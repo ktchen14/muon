@@ -13,8 +13,13 @@ static const mu_coercion_t zero = {0};
 const mu_coercion_t *const NO_SUCH_COERCION = &zero;
 
 const mu_edge_coercion_t *mu_edge_coercion(const mu_type_t *source, const mu_type_t *target) {
+  typedef union {
+    mu_indirect_coercion_t indirect;
+    mu_edge_coercion_t edge;
+  } edge_coercion_t;
+
   mu_edge_coercion_t *result;
-  if ((result = malloc(sizeof(mu_edge_coercion_t))) == NULL)
+  if ((result = malloc(sizeof(edge_coercion_t))) == NULL)
     return NULL;
   *result = (mu_edge_coercion_t) {
     .as_coercion = { .kind = MU_EDGE_COERCION, .target = target, },
