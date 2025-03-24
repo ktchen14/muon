@@ -56,7 +56,8 @@ static const mu_coercion_t *retrieve_core_coercion(
     mu_variance_t variance = core->argv[i].variance;
     assert(variance != MU_INVARIANCE);
     if (variance == MU_CONTRAVARIANCE) {
-      const mu_type_t *t = next_source; next_source = next_target; next_target = t;
+      const mu_type_t *t;
+      t = next_source; next_source = next_target; next_target = t;
     }
 
     const mu_coercion_t *coercion = retrieve_coercion(induce, next_source, next_target);
@@ -112,7 +113,7 @@ const mu_coercion_t *ensure_coercion(
   if (source == target)
     return induce->id_coercion;
 
-  // If we already have an edge source ⇒ target then
+  // If ∃⟨source ⇒ target⟩, then just return the coercion on that edge
   const universe_edge_t *edge;
   if ((edge = universe_search(&induce->universe, source, target)) != NULL)
     return edge_to_coercion(edge);
@@ -249,30 +250,36 @@ static const mu_coercion_t *ensure_cv(
     if (edge->indirect || edge->source->kind == MU_VARIABLE_TYPE)
       continue;
 
+    // Retrieve the coercion source ⇒ x
     const mu_coercion_t *coercion;
     if ((coercion = retrieve_coercion(induce, source, edge->source)) == NULL)
       return NULL;
 
+    // If we can't make this coercion, then skip this x
     if (coercion == NO_SUCH_COERCION)
       continue;
 
+    // Get the coercion x ⇒ target
     const mu_coercion_t *tail;
     if ((tail = edge_to_coercion(edge)) == NULL)
       return NULL;
 
+    // Create the coercion (source ⇒ x) ∘ (x ⇒ target)
     const mu_indirect_coercion_t *result;
     if ((result = mu_indirect_coercion(coercion, tail)) == NULL)
       return NULL;
 
+    // Make the edge ⟨source ⇒ target⟩
     universe_edge_t *edge;
     if ((edge = append_edge(&induce->universe, source, target)) == NULL)
       return NULL;
     edge->indirect = 2;
 
+    // Record the coercion in the edge
     return edge->coercion = &result->as_coercion;
   }
 
-  // First, add ⟨source ⇒ target⟩ in case of recursion
+  // First, make the edge ⟨source ⇒ target⟩ in case of recursion
   edge_t *result_edge;
   if ((result_edge = append_edge(&induce->universe, source, target)) == NULL)
     return NULL;
