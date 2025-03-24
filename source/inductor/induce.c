@@ -281,40 +281,37 @@ static const mu_coercion_t *ensure_cv(
   // just do that.
   //
   // Skip indirect edges. If we need to coerce source ⇒ target, we don't want
-  // to go through an arbitrary source variable.
+  // to go through some unrelated variable.
   iterator = universe_iterator(&induce->universe, target, 0);
-  universe_edge_t *next_edge;
-  while ((next_edge = universe_next_edge(&iterator)) != NULL) {
-    if (next_edge->indirect)
+  universe_edge_t *edge;
+  while ((edge = universe_next_edge(&iterator)) != NULL) {
+    if (edge->indirect || edge->source->kind == MU_VARIABLE_TYPE)
       continue;
-    if (next_edge->source->kind == MU_VARIABLE_TYPE)
-      continue;
-
-    if (next_edge->source == source)
-      return induce->id_coercion;
 
     const mu_coercion_t *coercion;
-    if ((coercion = retrieve_coercion(induce, source, next_edge->source)) == NULL)
+    if ((coercion = retrieve_coercion(induce, source, edge->source)) == NULL)
       return NULL;
-    if (coercion != NO_SUCH_COERCION) {
-      const mu_coercion_t *next_coercion;
-      if ((next_coercion = edge_to_coercion(next_edge)) == NULL)
-        return NULL;
 
-      universe_edge_t *edge;
-      if ((edge = append_edge(&induce->universe, source, target)) == NULL)
-        return NULL;
-      edge->indirect = 1;
+    if (coercion == NO_SUCH_COERCION)
+      continue;
 
-      const mu_indirect_coercion_t *result;
-      if ((result = mu_indirect_coercion(coercion, next_coercion)) == NULL)
-        return NULL;
-      return edge->coercion = &result->as_coercion;
-    }
+    const mu_coercion_t *tail;
+    if ((tail = edge_to_coercion(edge)) == NULL)
+      return NULL;
+
+    const mu_indirect_coercion_t *result;
+    if ((result = mu_indirect_coercion(coercion, tail)) == NULL)
+      return NULL;
+
+    universe_edge_t *edge;
+    if ((edge = append_edge(&induce->universe, source, target)) == NULL)
+      return NULL;
+    edge->indirect = 1;
+
+    return edge->coercion = &result->as_coercion;
   }
 
   // Add the edge now in case of recursion
-  universe_edge_t *edge;
   if ((edge = append_edge(&induce->universe, source, target)) == NULL)
     return NULL;
 
@@ -351,6 +348,7 @@ static const mu_coercion_t *ensure_cv(
   // Retrieve next_source ⇒ source. If this isn't NO_SUCH_COERCION, then add
   // ⟨next_source ⇒ source⟩ and make ⟨next_source ⇒ target⟩ an indirect edge.
   iterator = universe_iterator(&induce->universe, target, 0);
+  universe_edge_t *next_edge;
   while ((next_edge = universe_next_edge(&iterator)) != NULL) {
     if (next_edge->source == source)
       continue;
