@@ -9,10 +9,10 @@
 
 universe_t *universe_initialize(universe_t *universe) {
   universe_edge_t *data;
-  size_t volume = 1;
+  size_t volume = 1000;
   if ((data = malloc(sizeof(universe_edge_t[volume]))) == NULL)
     return NULL;
-  *universe = (universe_t) { .volume = 1, .data = data };
+  *universe = (universe_t) { .volume = volume, .data = data };
   return universe;
 }
 

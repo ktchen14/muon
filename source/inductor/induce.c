@@ -30,6 +30,9 @@ static const mu_coercion_t *retrieve_core_coercion(
   const mu_core_t *source_core = source->core;
   const mu_core_t *target_core = target->core;
 
+  if (source_core->kind == MU_INTEGER_CORE && target_core->kind == MU_RECORD_CORE)
+    return induce->id_coercion;
+
   if (source_core->kind == MU_BOOLEAN_CORE && target_core->kind == MU_INTEGER_CORE)
     return induce->id_coercion;
 
@@ -310,14 +313,24 @@ static const mu_coercion_t *ensure_cv(
     if ((coercion = retrieve_coercion(induce, source, next_edge->source)) == NULL)
       return NULL;
     if (coercion != NO_SUCH_COERCION) {
-      /* if ((edge = append_edge(&induce->universe, source, target)) == NULL) */
-      /*   return NULL; */
-      /* edge->indirect = 1; */
+      const mu_coercion_t *coercion_on_next_edge = next_edge->coercion;
+      if (coercion_on_next_edge == NULL)
+        coercion_on_next_edge = &mu_edge_coercion(next_edge->source, target)->as_coercion;
 
-      const mu_edge_coercion_t *result;
-      if ((result = mu_edge_coercion(source, target)) == NULL)
+      universe_edge_t *edge;
+      if ((edge = append_edge(&induce->universe, source, target)) == NULL)
         return NULL;
-      return &result->as_coercion;
+      edge->indirect = 1;
+
+      const mu_indirect_coercion_t *result;
+      if ((result = mu_indirect_coercion(coercion, coercion_on_next_edge)) == NULL)
+        return NULL;
+      return edge->coercion = &result->as_coercion;
+
+      /* const mu_edge_coercion_t *result; */
+      /* if ((result = mu_edge_coercion(source, target)) == NULL) */
+      /*   return NULL; */
+      /* return &result->as_coercion; */
     }
   }
 
@@ -365,6 +378,12 @@ static const mu_coercion_t *ensure_cv(
     if (coercion == NO_SUCH_COERCION)
       continue;
     next_edge->indirect = 1;
+
+    const mu_indirect_coercion_t *indirect_coercion;
+    if ((indirect_coercion = mu_indirect_coercion(
+            coercion, &mu_edge_coercion(source, target)->as_coercion)) == NULL)
+      return NULL;
+    next_edge->coercion = &indirect_coercion->as_coercion;
   }
 
   const mu_edge_coercion_t *result;

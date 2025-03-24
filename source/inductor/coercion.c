@@ -152,8 +152,9 @@ void mu_coercion_debug(const mu_coercion_t *coercion) {
     MU_EACH_COERCION_KIND(MU_EMIT)
 #undef MU_EMIT
   };
-  KIND_TEXT[MU_VARIANCE_COERCION] = "∇";
   KIND_TEXT[MU_EDGE_COERCION] = "";
+  KIND_TEXT[MU_INDIRECT_COERCION] = "";
+  KIND_TEXT[MU_VARIANCE_COERCION] = "∇";
   const char *kind = KIND_TEXT[coercion->kind];
 
   debug(PRIsKIND, DEBUG_COERCION_KIND(kind));
@@ -173,7 +174,9 @@ void mu_coercion_debug(const mu_coercion_t *coercion) {
 
     case IS_KIND_OF(indirect_coercion):
       mu_coercion_debug(indirect_coercion->head);
+      debug(" ");
       debug(PRIsKIND, DEBUG_COERCION_KIND("∘"));
+      debug(" ");
       mu_coercion_debug(indirect_coercion->tail);
       return;
 
