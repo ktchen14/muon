@@ -81,6 +81,18 @@ static inline universe_edge_t *universe_next_edge(universe_iterator_t *iterator)
   return NULL;
 }
 
+static inline const mu_coercion_t *edge_to_coercion(const universe_edge_t *edge) {
+  // If the edge has a coercion, return it
+  if (edge->coercion != NULL)
+    return edge->coercion;
+
+  // Otherwise, return an edge coercion for the edge
+  const mu_edge_coercion_t *result;
+  if ((result = mu_edge_coercion(edge->source, edge->target)) == NULL)
+    return NULL;
+  return ((universe_edge_t *) edge)->coercion = &result->as_coercion;
+}
+
 typedef universe_edge_t induce_edge_t;
 
 #endif /* MU_INDUCTOR_UNIVERSE_I */
