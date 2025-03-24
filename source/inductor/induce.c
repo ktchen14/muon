@@ -30,6 +30,9 @@ static const mu_coercion_t *retrieve_core_coercion(
   const mu_core_t *source_core = source->core;
   const mu_core_t *target_core = target->core;
 
+  if (source_core->kind == MU_BOOLEAN_CORE && target_core->kind == MU_INTEGER_CORE)
+    return induce->id_coercion;
+
   if (source_core != target_core)
     return NO_SUCH_COERCION;
 
@@ -49,10 +52,8 @@ static const mu_coercion_t *retrieve_core_coercion(
       const mu_type_t *t = next_source; next_source = next_target; next_target = t;
     }
 
-    const mu_coercion_t *coercion;
-    if ((coercion = retrieve_coercion(induce, next_source, next_target)) == NULL)
-      return NULL;
-    if (coercion == NO_SUCH_COERCION) {
+    const mu_coercion_t *coercion = retrieve_coercion(induce, next_source, next_target);
+    if (coercion == NULL || coercion == NO_SUCH_COERCION) {
       free(allocation);
       return coercion;
     }
@@ -93,6 +94,13 @@ const mu_coercion_t *retrieve_coercion(
     const mu_coercion_t *result;
     if ((result = retrieve_core_coercion(induce, next_source, next_target)) == NULL)
       return NULL;
+
+    if (result != NO_SUCH_COERCION) {
+      universe_edge_t *edge;
+      if ((edge = append_edge(&induce->universe, source, target)) == NULL)
+        return NULL;
+      edge->coercion = result;
+    }
     return result;
   }
 
@@ -302,11 +310,6 @@ static const mu_coercion_t *ensure_cv(
     if ((coercion = retrieve_coercion(induce, source, next_edge->source)) == NULL)
       return NULL;
     if (coercion != NO_SUCH_COERCION) {
-      universe_edge_t *edge;
-      if ((edge = append_edge(&induce->universe, source, next_edge->source)) == NULL)
-        return NULL;
-      edge->coercion = coercion;
-
       /* if ((edge = append_edge(&induce->universe, source, target)) == NULL) */
       /*   return NULL; */
       /* edge->indirect = 1; */
@@ -341,14 +344,18 @@ static const mu_coercion_t *ensure_cv(
     append_edge(&induce->universe, next_target, source);
   }
 
-  // Now, check to see if we can put an existing edge to this type
+  // Once we've committed to ⟨source ⇒ target⟩, try to simplify target:
+  //
+  //   ∀(next_source) | ∃⟨next_source ⇒ target⟩
+  //
+  // Retrieve next_source ⇒ source. If this isn't NO_SUCH_COERCION, then add
+  // ⟨next_source ⇒ source⟩ and make ⟨next_source ⇒ target⟩ an indirect edge.
   iterator = universe_iterator(&induce->universe, target, 0);
   while ((next_edge = universe_next_edge(&iterator)) != NULL) {
-    if (next_edge->indirect)
-      continue;
     if (next_edge->source == source)
       continue;
-
+    if (next_edge->indirect)
+      continue;
     if (next_edge->source->kind == MU_VARIABLE_TYPE)
       continue;
 
@@ -358,11 +365,6 @@ static const mu_coercion_t *ensure_cv(
     if (coercion == NO_SUCH_COERCION)
       continue;
     next_edge->indirect = 1;
-
-    universe_edge_t *edge;
-    if ((edge = append_edge(&induce->universe, next_edge->source, source)) == NULL)
-      return NULL;
-    edge->coercion = coercion;
   }
 
   const mu_edge_coercion_t *result;
