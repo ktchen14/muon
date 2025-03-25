@@ -8,6 +8,7 @@
 #include "universe.h"
 
 #include <assert.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -195,6 +196,100 @@
 /*   assert(0); */
 /* } */
 
+const mu_variable_type_t *reduce_type_to_join(
+    induce_t *induce, const mu_variable_type_t *variable_type) {
+  if (variable_type->join != NULL)
+    return variable_type;
+
+  universe_t *universe = &induce->universe;
+  universe_iterator_t iterator;
+  typedef universe_edge_t edge_t;
+
+  // Determine the length of the join
+  iterator = universe_iterator(universe, &variable_type->as_type, 0);
+  size_t length = 0;
+  for (edge_t *edge; (edge = universe_next(&iterator)) != NULL;) {
+    if (edge->indirect)
+      continue;
+
+    // Ensure that the edge has a "normal" coercion. Either no coercion, or an
+    // edge coercion that maps back to itself.
+    const mu_coercion_t *coercion = edge->coercion;
+    if (coercion != NULL) {
+      const mu_edge_coercion_t *edge_coercion;
+      edge_coercion = mu_coercion_cast(coercion, edge_coercion);
+      assert(edge_coercion != NULL);
+      assert(edge_coercion->source == edge->source);
+      assert(edge_coercion->as_coercion.target == edge->target);
+    }
+
+    // If the edge's source isn't a variable type, then length++
+    const mu_variable_type_t *next_variable;
+    if ((next_variable = mu_type_cast(edge->source, next_variable)) == NULL) {
+      length++;
+      continue;
+    }
+
+    // Otherwise, reduce it. Then add its join length to length.
+    if (reduce_type_to_join(induce, next_variable) == NULL)
+      return NULL;
+    assert(next_variable->join != NULL);
+    length += next_variable->join->argc;
+  }
+
+  // Allocate a join
+  size_t size;
+  if (rare((size = struct_size(mu_join_t, argv, length)) == 0))
+    return errno = ENOMEM, NULL;
+
+  mu_join_t *join;
+  if ((join = malloc(size)) == NULL)
+    return NULL;
+  join->argc = length;
+
+  iterator = universe_iterator(universe, &variable_type->as_type, 0);
+  size_t join_i = 0;
+  for (edge_t *edge; (edge = universe_next(&iterator)) != NULL;) {
+    if (edge->indirect)
+      continue;
+
+    // Handle a normal type
+    const mu_variable_type_t *next_variable;
+    if ((next_variable = mu_type_cast(edge->source, next_variable)) == NULL) {
+      const mu_join_coercion_t *join_coercion;
+      if ((join_coercion = mu_join_coercion(join_i)) == NULL)
+        return NULL;
+      edge->coercion = &join_coercion->as_coercion;
+      join->argv[join_i++] = edge->source;
+      continue;
+    }
+
+    // Okay. We have another variable type. We have make an unjoin coercion into
+    // a join coercion.
+    const mu_join_t *source_join = next_variable->join;
+
+    mu_unjoin_coercion_t *allocation;
+    if ((allocation = unjoin_coercion_allocate(source_join->argc)) == NULL)
+      return NULL;
+
+    for (size_t i = 0; i < source_join->argc; i++) {
+      const mu_join_coercion_t *join_coercion;
+      if ((join_coercion = mu_join_coercion(join_i)) == NULL)
+        return NULL;
+      allocation->argv[i] = &join_coercion->as_coercion;
+      join->argv[join_i++] = source_join->argv[i];
+    }
+
+    const mu_unjoin_coercion_t *unjoin_coercion;
+    if ((unjoin_coercion = unjoin_coercion_activate(allocation)) == NULL)
+      return NULL;
+    edge->coercion = &unjoin_coercion->as_coercion;
+  }
+
+  ((mu_variable_type_t *) variable_type)->join = join;
+  return variable_type;
+}
+
 const mu_coercion_t *reduce_coercion(
     induce_t *induce, const mu_coercion_t *coercion) {
   switch ON_ABSTRACT_OBJECT(coercion) {
@@ -212,6 +307,46 @@ const mu_coercion_t *reduce_coercion(
 
       if (next_coercion != &edge_coercion->as_coercion)
         return reduce_coercion(induce, next_coercion);
+
+      if (source->kind == MU_VARIABLE_TYPE) {
+        const mu_variable_type_t *v;
+        v = reduce_type_to_join(induce, (const mu_variable_type_t *) source);
+        assert(v != NULL);
+      }
+
+      if (target->kind == MU_VARIABLE_TYPE) {
+        const mu_variable_type_t *v;
+        v = reduce_type_to_join(induce, (const mu_variable_type_t *) target);
+        assert(v != NULL);
+      }
+
+      if (source->kind == MU_VARIABLE_TYPE && target->kind != MU_VARIABLE_TYPE) {
+        const mu_variable_type_t *source_variable = (const mu_variable_type_t *) source;
+        const mu_join_t *source_join = source_variable->join;
+        assert(source_join != NULL);
+
+        mu_unjoin_coercion_t *allocation;
+        if ((allocation = unjoin_coercion_allocate(source_join->argc)) == NULL)
+          return NULL;
+
+        for (size_t i = 0; i < source_join->argc; i++) {
+          const universe_edge_t *item_edge;
+          item_edge = universe_search(&induce->universe, source_join->argv[i], target);
+          assert(item_edge != NULL);
+
+          const mu_coercion_t *item_coercion = item_edge->coercion;
+          assert(item_coercion != NULL);
+
+          allocation->argv[i] = reduce_coercion(induce, item_coercion);
+        }
+
+        const mu_unjoin_coercion_t *result;
+        if ((result = unjoin_coercion_activate(allocation)) == NULL)
+          return NULL;
+        return &result->as_coercion;
+      }
+
+      abort();
 
       // TODO
       return coercion;

@@ -42,10 +42,17 @@ typedef struct {
 typedef struct mu_scheme_type_t mu_scheme_type_t;
 typedef struct open_scheme_t open_scheme_t;
 
+typedef struct {
+  size_t argc;
+  const mu_type_t *argv[/* argc */];
+} mu_join_t;
+
 /// A variable type
 typedef struct mu_variable_type_t mu_variable_type_t;
 struct mu_variable_type_t {
   MU_TYPE_HEADER;
+
+  const mu_join_t *join;
 
   // Debugging
   size_t number; ///< Used to generate a name
