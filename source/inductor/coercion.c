@@ -167,7 +167,7 @@ void mu_coercion_debug(const mu_coercion_t *coercion) {
   switch ON_ABSTRACT_OBJECT(coercion) {
     case MU_ID_COERCION: return;
 
-    case IS_KIND_OF(edge_coercion):
+    case IS_KIND_OF(edge_coercion): {
       debug(PRIsKIND, DEBUG_COERCION_KIND("⟨"));
       type_debug(edge_coercion->source, 0);
       debug(" ");
@@ -176,6 +176,7 @@ void mu_coercion_debug(const mu_coercion_t *coercion) {
       type_debug(edge_coercion->as_coercion.target, 0);
       debug(PRIsKIND, DEBUG_COERCION_KIND("⟩"));
       return;
+    }
 
     case IS_KIND_OF(indirect_coercion):
       mu_coercion_debug(indirect_coercion->head);
