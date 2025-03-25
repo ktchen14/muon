@@ -212,7 +212,7 @@ void mu_coercion_debug(const mu_coercion_t *coercion) {
     }
 
     case IS_KIND_OF(join_coercion):
-      debug(" (i = %zu)", join_coercion->i);
+      debug("(%zu)", join_coercion->i);
       return;
 
     case IS_KIND_OF(unjoin_coercion):
