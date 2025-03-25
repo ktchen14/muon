@@ -1,313 +1,199 @@
 #include "induce.h"
 
+#include "../stator/node.h"
+#include "coercion.h"
+#include "type.h"
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #define evince induce_reveal
 
-const mu_type_t *reduce_type(induce_t *induce, const mu_type_t *type, _Bool negative);
+/* const mu_type_t *reduce_type(induce_t *induce, const mu_type_t *type, _Bool negative); */
 
-const mu_coercion_t *make_coercion(
-    induce_t *induce, const mu_type_t *source, const mu_type_t *target) {
-  assert(source->kind != MU_SCHEME_TYPE);
-  assert(target->kind != MU_SCHEME_TYPE);
+/* const mu_coercion_t *make_coercion( */
+/*     induce_t *induce, const mu_type_t *source, const mu_type_t *target) { */
+/*   assert(source->kind != MU_SCHEME_TYPE); */
+/*   assert(target->kind != MU_SCHEME_TYPE); */
 
-  if (source == target)
-    return &induce->id_coercion->as_coercion;
+/*   if (source == target) */
+/*     return &induce->id_coercion->as_coercion; */
 
-  fprintf(stderr, "Making coercion from ");
-  type_debug(source, 0);
-  fprintf(stderr, " to ");
-  type_debug(target, 0);
-  fprintf(stderr, "\n");
+/*   fprintf(stderr, "Making coercion from "); */
+/*   type_debug(source, 0); */
+/*   fprintf(stderr, " to "); */
+/*   type_debug(target, 0); */
+/*   fprintf(stderr, "\n"); */
 
-  const induce_edge_t *edge = universe_search(&induce->universe, source, target);
-  assert(edge != NULL);
-  assert(edge->tactic != NULL);
+/*   const induce_edge_t *edge = universe_search(&induce->universe, source, target); */
+/*   assert(edge != NULL); */
+/*   assert(edge->tactic != NULL); */
 
-  // If the source type is a join type, then return an unjoin coercion with a
-  // coercion for each discriminant in the join type
-  if (edge->tactic->kind == UNJOIN_TACTIC) {
-    const unjoin_tactic_t *tactic = (const unjoin_tactic_t *) edge->tactic;
+/*   // If the source type is a join type, then return an unjoin coercion with a */
+/*   // coercion for each discriminant in the join type */
+/*   if (edge->tactic->kind == UNJOIN_TACTIC) { */
+/*     const unjoin_tactic_t *tactic = (const unjoin_tactic_t *) edge->tactic; */
 
-    mu_unjoin_coercion_t *allocation;
-    if ((allocation = unjoin_coercion_allocate(tactic->length)) == NULL)
-      return NULL;
+/*     mu_unjoin_coercion_t *allocation; */
+/*     if ((allocation = unjoin_coercion_allocate(tactic->length)) == NULL) */
+/*       return NULL; */
 
-    for (size_t i = 0; i < induce->universe.length; i++) {
-      const induce_edge_t *join_edge = &induce->universe.data[i];
-      if (join_edge->target != source)
-        continue;
-      assert(join_edge->tactic != NULL);
-      assert(join_edge->tactic->kind == JOIN_TACTIC);
+/*     for (size_t i = 0; i < induce->universe.length; i++) { */
+/*       const induce_edge_t *join_edge = &induce->universe.data[i]; */
+/*       if (join_edge->target != source) */
+/*         continue; */
+/*       assert(join_edge->tactic != NULL); */
+/*       assert(join_edge->tactic->kind == JOIN_TACTIC); */
 
-      const join_tactic_t *join_tactic = (const join_tactic_t *) join_edge->tactic;
+/*       const join_tactic_t *join_tactic = (const join_tactic_t *) join_edge->tactic; */
 
-      const mu_coercion_t *coercion;
-      if ((coercion = make_coercion(induce, join_edge->source, target)) == NULL)
-        return NULL;
-      allocation->argv[join_tactic->i] = coercion;
-    }
+/*       const mu_coercion_t *coercion; */
+/*       if ((coercion = make_coercion(induce, join_edge->source, target)) == NULL) */
+/*         return NULL; */
+/*       allocation->argv[join_tactic->i] = coercion; */
+/*     } */
 
-    const mu_unjoin_coercion_t *result;
-    if ((result = unjoin_coercion_activate(allocation)) == NULL)
-      return NULL;
-    ((mu_coercion_t *) result)->target = target;
-    return &result->as_coercion;
-  }
+/*     const mu_unjoin_coercion_t *result; */
+/*     if ((result = unjoin_coercion_activate(allocation)) == NULL) */
+/*       return NULL; */
+/*     ((mu_coercion_t *) result)->target = target; */
+/*     return &result->as_coercion; */
+/*   } */
 
-  // If the target type is a join type
-  if (edge->tactic->kind == JOIN_TACTIC) {
-    join_tactic_t *tactic = (join_tactic_t *) edge->tactic;
+/*   // If the target type is a join type */
+/*   if (edge->tactic->kind == JOIN_TACTIC) { */
+/*     join_tactic_t *tactic = (join_tactic_t *) edge->tactic; */
 
-    const mu_join_coercion_t *result;
-    if ((result = mu_join_coercion(tactic->i)) == NULL)
-      return NULL;
-    ((mu_coercion_t *) result)->target = target;
-    return &result->as_coercion;
-  }
+/*     const mu_join_coercion_t *result; */
+/*     if ((result = mu_join_coercion(tactic->i)) == NULL) */
+/*       return NULL; */
+/*     ((mu_coercion_t *) result)->target = target; */
+/*     return &result->as_coercion; */
+/*   } */
 
-  const tactic_t *tactic = edge->tactic;
-  if (tactic == NULL)
-    return &induce->id_coercion->as_coercion;
+/*   const tactic_t *tactic = edge->tactic; */
+/*   if (tactic == NULL) */
+/*     return &induce->id_coercion->as_coercion; */
 
-  if (tactic->kind == RECORD_TACTIC) {
-    const record_tactic_t *record_tactic = (const record_tactic_t *) tactic;
-    const record_instance_t *instance = record_tactic->instance;
+/*   if (tactic->kind == RECORD_TACTIC) { */
+/*     const record_tactic_t *record_tactic = (const record_tactic_t *) tactic; */
+/*     const record_instance_t *instance = record_tactic->instance; */
 
-    assert(source->kind == MU_CORE_TYPE && target->kind == MU_CORE_TYPE);
-    const mu_core_type_t *source_core_type = (const mu_core_type_t *) source;
-    const mu_core_type_t *target_core_type = (const mu_core_type_t *) target;
+/*     assert(source->kind == MU_CORE_TYPE && target->kind == MU_CORE_TYPE); */
+/*     const mu_core_type_t *source_core_type = (const mu_core_type_t *) source; */
+/*     const mu_core_type_t *target_core_type = (const mu_core_type_t *) target; */
 
-    mu_record_coercion_t *allocation;
-    if ((allocation = record_coercion_allocate(instance)) == NULL)
-      return NULL;
+/*     mu_record_coercion_t *allocation; */
+/*     if ((allocation = record_coercion_allocate(instance)) == NULL) */
+/*       return NULL; */
 
-    for (size_t i = 0; i < instance->target->argc; i++) {
-      const mu_type_t *next_target = target_core_type->argv[i];
-      const mu_type_t *next_source = source_core_type->argv[instance->argv[i]];
+/*     for (size_t i = 0; i < instance->target->argc; i++) { */
+/*       const mu_type_t *next_target = target_core_type->argv[i]; */
+/*       const mu_type_t *next_source = source_core_type->argv[instance->argv[i]]; */
 
-      const mu_coercion_t *coercion;
-      if ((coercion = make_coercion(induce, next_source, next_target)) == NULL)
-        return NULL;
-      allocation->argv[i] = coercion;
-    }
+/*       const mu_coercion_t *coercion; */
+/*       if ((coercion = make_coercion(induce, next_source, next_target)) == NULL) */
+/*         return NULL; */
+/*       allocation->argv[i] = coercion; */
+/*     } */
 
-    const mu_record_coercion_t *result;
-    if ((result = record_coercion_activate(allocation)) == NULL)
-      return NULL;
+/*     const mu_record_coercion_t *result; */
+/*     if ((result = record_coercion_activate(allocation)) == NULL) */
+/*       return NULL; */
 
-    ((mu_coercion_t *) result)->target = target;
-    return &result->as_coercion;
-  }
+/*     ((mu_coercion_t *) result)->target = target; */
+/*     return &result->as_coercion; */
+/*   } */
 
-  assert(source->kind == MU_CORE_TYPE && target->kind == MU_CORE_TYPE);
-  const mu_core_type_t *source_core_type = (const mu_core_type_t *) source;
-  const mu_core_t *source_core = source_core_type->core;
-  const mu_core_type_t *target_core_type = (const mu_core_type_t *) target;
-  const mu_core_t *target_core = target_core_type->core;
+/*   assert(source->kind == MU_CORE_TYPE && target->kind == MU_CORE_TYPE); */
+/*   const mu_core_type_t *source_core_type = (const mu_core_type_t *) source; */
+/*   const mu_core_t *source_core = source_core_type->core; */
+/*   const mu_core_type_t *target_core_type = (const mu_core_type_t *) target; */
+/*   const mu_core_t *target_core = target_core_type->core; */
 
-  assert(source_core == target_core);
+/*   assert(source_core == target_core); */
 
-  const mu_core_t *core = source_core;
+/*   const mu_core_t *core = source_core; */
 
-  mu_variance_coercion_t *allocation;
-  if ((allocation = variance_coercion_allocate(core)) == NULL)
-    return NULL;
+/*   mu_variance_coercion_t *allocation; */
+/*   if ((allocation = variance_coercion_allocate(core)) == NULL) */
+/*     return NULL; */
 
-  for (size_t i = 0; i < core->argc; i++) {
-    const mu_type_t *next_source = source_core_type->argv[i];
-    const mu_type_t *next_target = target_core_type->argv[i];
+/*   for (size_t i = 0; i < core->argc; i++) { */
+/*     const mu_type_t *next_source = source_core_type->argv[i]; */
+/*     const mu_type_t *next_target = target_core_type->argv[i]; */
 
-    assert(core->argv[i].variance != MU_INVARIANCE);
-    if (core->argv[i].variance == MU_CONTRAVARIANCE) {
-      const mu_type_t *t = next_source; next_source = next_target; next_target = t;
-    }
-    allocation->argv[i] = make_coercion(induce, next_source, next_target);
-  }
+/*     assert(core->argv[i].variance != MU_INVARIANCE); */
+/*     if (core->argv[i].variance == MU_CONTRAVARIANCE) { */
+/*       const mu_type_t *t = next_source; next_source = next_target; next_target = t; */
+/*     } */
+/*     allocation->argv[i] = make_coercion(induce, next_source, next_target); */
+/*   } */
 
-  const mu_variance_coercion_t *result;
-  if ((result = variance_coercion_activate(allocation)) == NULL)
-    return NULL;
-  ((mu_coercion_t *) result)->target = target;
-  return &result->as_coercion;
-}
+/*   const mu_variance_coercion_t *result; */
+/*   if ((result = variance_coercion_activate(allocation)) == NULL) */
+/*     return NULL; */
+/*   ((mu_coercion_t *) result)->target = target; */
+/*   return &result->as_coercion; */
+/* } */
 
-__attribute__((nonnull)) static const mu_type_t *access_expr_reduce(
-    const mu_access_expr_t *expr, induce_t *induce, const mu_type_t *type) {
-  const mu_type_t *aux_type = induce->aux[expr->as_node.id];
-  assert(aux_type != NULL);
+/* const mu_type_t *reduce_type(induce_t *induce, const mu_type_t *type, _Bool negative) { */
+/*   assert(type->kind != MU_SCHEME_TYPE); */
 
-  if ((aux_type = reduce_type(induce, aux_type, 0)) == NULL)
-    return NULL;
+/*   const mu_core_type_t *core_type; */
+/*   if ((core_type = mu_type_cast(type, core_type)) != NULL) { */
+/*     const mu_core_t *core = core_type->core; */
 
-  const mu_type_t *matter_type = evince(induce, &expr->matter->as_node);
+/*     for (size_t i = 0; i < core->argc; i++) { */
+/*       const mu_type_t *argument = core_type->argv[i]; */
 
-  const mu_coercion_t *coercion;
-  if ((coercion = make_coercion(induce, matter_type, aux_type)) == NULL)
-    return NULL;
-  induce->coercion[expr->matter->as_node.id] = coercion;
+/*       _Bool argument_negative = negative; */
+/*       mu_variance_t variance = core->argv[i].variance; */
+/*       assert(variance != MU_INVARIANCE); */
+/*       if (variance == MU_CONTRAVARIANCE) */
+/*         argument_negative = !argument_negative; */
 
-  const mu_core_type_t *core_type = mu_type_cast(aux_type, core_type);
-  assert(core_type != NULL);
-  assert(core_type->core->kind == MU_RECORD_CORE);
-  assert(core_type->core->argc == 1);
-  assert(core_type->core->argv[0].name == expr->name);
+/*       const mu_type_t *assignment; */
+/*       if ((assignment = reduce_type(induce, argument, argument_negative)) == NULL) */
+/*         return NULL; */
+/*     } */
 
-  return core_type->argv[0];
-}
+/*     return &core_type->as_type; */
+/*   } */
 
-__attribute__((nonnull)) static const mu_type_t *boolean_expr_reduce(
-    const mu_boolean_expr_t *expr, induce_t *induce, const mu_type_t *type) {
-  return type;
-}
+/*   const mu_variable_type_t *variable_type; */
+/*   if ((variable_type = mu_type_cast(type, variable_type)) != NULL) { */
+/*     /1* if (!negative) { *1/ */
+/*       // Reduce each subtype of the variable type */
+/*       size_t j = 0; */
+/*       for (size_t i = 0; i < induce->universe.length; i++) { */
+/*         induce_edge_t *edge = &induce->universe.data[i]; */
+/*         if (edge->target == &variable_type->as_type) { */
+/*           if (reduce_type(induce, edge->source, negative) == NULL) */
+/*             return NULL; */
+/*           edge->tactic = &join_tactic_create(j++)->as_tactic; */
+/*         } */
+/*       } */
 
-__attribute__((nonnull)) static const mu_type_t *integer_expr_reduce(
-    const mu_integer_expr_t *expr, induce_t *induce, const mu_type_t *type) {
-  return type;
-}
+/*       for (size_t i = 0; i < induce->universe.length; i++) { */
+/*         induce_edge_t *edge = &induce->universe.data[i]; */
+/*         if (edge->source == &variable_type->as_type) { */
+/*           edge->tactic = &unjoin_tactic_create(j)->as_tactic; */
+/*         } */
+/*       } */
 
-__attribute__((nonnull)) static const mu_type_t *invoke_expr_reduce(
-    const mu_invoke_expr_t *expr, induce_t *induce, const mu_type_t *type) {
-  const mu_type_t *aux_type = induce->aux[expr->as_node.id];
-  assert(aux_type != NULL);
-  if ((aux_type = reduce_type(induce, aux_type, 0)) == NULL)
-    return NULL;
+/*       return &variable_type->as_type; */
+/*     /1* } else { *1/ */
+/*     /1*   assert(!"Unimplemented reduction of negative variable"); *1/ */
+/*     /1* } *1/ */
+/*   } */
 
-  const mu_type_t *operator_type = evince(induce, &expr->operator->as_node);
+/*   assert(0); */
+/* } */
 
-  const mu_coercion_t *coercion;
-  if ((coercion = make_coercion(induce, operator_type, aux_type)) == NULL)
-    return NULL;
-  induce->coercion[expr->operator->as_node.id] = coercion;
-
-  return reduce_type(induce, type, 0);
-}
-
-__attribute__((nonnull)) static const mu_type_t *lambda_expr_reduce(
-    const mu_lambda_expr_t *expr, induce_t *induce, const mu_type_t *type) {
-  return reduce_type(induce, type, 0);
-}
-
-__attribute__((nonnull)) static const mu_type_t *name_expr_reduce(
-    const mu_name_expr_t *expr, induce_t *induce, const mu_type_t *type) {
-  return reduce_type(induce, type, 0);
-}
-
-__attribute__((nonnull)) static const mu_type_t *native_expr_reduce(
-    const mu_native_expr_t *expr, induce_t *induce, const mu_type_t *type) {
-  return reduce_type(induce, type, 0);
-}
-
-__attribute__((nonnull)) static const mu_type_t *record_expr_reduce(
-    const mu_record_expr_t *expr, induce_t *induce, const mu_type_t *type) {
-  return reduce_type(induce, type, 0);
-}
-
-__attribute__((nonnull)) static const mu_type_t *sequence_expr_reduce(
-    const mu_sequence_expr_t *expr, induce_t *induce, const mu_type_t *type) {
-  return reduce_type(induce, type, 0);
-}
-
-__attribute__((nonnull)) static const mu_type_t *switch_expr_reduce(
-    const mu_switch_expr_t *expr, induce_t *induce, const mu_type_t *type) {
-  return reduce_type(induce, type, 0);
-}
-
-__attribute__((nonnull)) static const mu_type_t *vector_expr_reduce(
-    const mu_vector_expr_t *expr, induce_t *induce, const mu_type_t *type) {
-  if ((type = reduce_type(induce, type, 0)) == NULL)
-    return NULL;
-
-  const mu_core_type_t *vector_type = mu_type_cast(type, vector_type);
-  assert(vector_type != NULL);
-  const mu_type_t *matter_type = vector_type->argv[0];
-
-  for (size_t i = 0; i < expr->argc; i++) {
-    const mu_expr_t *argument = expr->argv[i];
-    const mu_type_t *argument_type = evince(induce, &argument->as_node);
-
-    const mu_coercion_t *coercion;
-    if ((coercion = make_coercion(induce, argument_type, matter_type)) == NULL)
-      return NULL;
-    induce->coercion[argument->as_node.id] = coercion;
-  }
-
-  return type;
-}
-
-__attribute__((nonnull)) static const mu_type_t *zero_expr_reduce(
-    const mu_zero_expr_t *expr, induce_t *induce, const mu_type_t *type) {
-  return reduce_type(induce, type, 0);
-}
-
-const mu_type_t *reduce_type(induce_t *induce, const mu_type_t *type, _Bool negative) {
-  assert(type->kind != MU_SCHEME_TYPE);
-
-  const mu_core_type_t *core_type;
-  if ((core_type = mu_type_cast(type, core_type)) != NULL) {
-    const mu_core_t *core = core_type->core;
-
-    for (size_t i = 0; i < core->argc; i++) {
-      const mu_type_t *argument = core_type->argv[i];
-
-      _Bool argument_negative = negative;
-      mu_variance_t variance = core->argv[i].variance;
-      assert(variance != MU_INVARIANCE);
-      if (variance == MU_CONTRAVARIANCE)
-        argument_negative = !argument_negative;
-
-      const mu_type_t *assignment;
-      if ((assignment = reduce_type(induce, argument, argument_negative)) == NULL)
-        return NULL;
-    }
-
-    return &core_type->as_type;
-  }
-
-  const mu_variable_type_t *variable_type;
-  if ((variable_type = mu_type_cast(type, variable_type)) != NULL) {
-    /* if (!negative) { */
-      // Reduce each subtype of the variable type
-      size_t j = 0;
-      for (size_t i = 0; i < induce->universe.length; i++) {
-        induce_edge_t *edge = &induce->universe.data[i];
-        if (edge->target == &variable_type->as_type) {
-          if (reduce_type(induce, edge->source, negative) == NULL)
-            return NULL;
-          edge->tactic = &join_tactic_create(j++)->as_tactic;
-        }
-      }
-
-      for (size_t i = 0; i < induce->universe.length; i++) {
-        induce_edge_t *edge = &induce->universe.data[i];
-        if (edge->source == &variable_type->as_type) {
-          edge->tactic = &unjoin_tactic_create(j)->as_tactic;
-        }
-      }
-
-      return &variable_type->as_type;
-    /* } else { */
-    /*   assert(!"Unimplemented reduction of negative variable"); */
-    /* } */
-  }
-
-  assert(0);
-}
-
-__attribute__((nonnull)) static const mu_type_t *expr_reduce(
-    const mu_expr_t *expr, induce_t *induce, const mu_type_t *type) {
-  fprintf(stderr, "Reducing expr %zu\n", expr->as_node.id);
-
-  switch (expr->kind) {
-#define MU_EMIT(lower, upper, t) \
-    case MU_##upper##_EXPR: \
-      return lower##_expr_reduce((const mu_##lower##_expr_t *) expr, induce, type);
-    MU_EACH_EXPR_KIND(MU_EMIT)
-#undef MU_EMIT
-  }
-  __builtin_unreachable();
+const mu_coercion_t *reduce_coercion(const mu_coercion_t *coercion, const mu_type_t *source) {
+  return coercion;
 }
 
 const mu_type_t *reduce_node(induce_t *induce, const mu_node_t *root) {
@@ -318,26 +204,17 @@ const mu_type_t *reduce_node(induce_t *induce, const mu_node_t *root) {
     while ((next = node_at(node, node_cursor(node)->i++)) != NULL)
       node = node_continue(node, next);
 
-    const mu_expr_t *expr;
-    if ((expr = mu_node_cast(node, expr)) == NULL) {
-      const mu_variable_view_t *view;
-      if ((view = mu_node_cast(node, view)) == NULL)
-        continue;
+    const mu_coercion_t *coercion;
+    if ((coercion = induce->coercion[node->id]) == NULL)
       continue;
 
-      /* const mu_type_t *type = evince(induce, &view->as_node); */
-      /* assert(type != NULL); */
-      /* if ((type = reduce_type(induce, type, 1)) == NULL) */
-      /*   return NULL; */
-      /* induce->node_to_type[node->id] = type; */
-    }
+    const mu_type_t *source = evince(induce, node);
+    assert(source != NULL);
 
-    const mu_type_t *type = evince(induce, &expr->as_node);
-    assert(type != NULL);
-
-    if ((type = expr_reduce(expr, induce, type)) == NULL)
+    const mu_coercion_t *result;
+    if ((result = reduce_coercion(coercion, source)) == NULL)
       return NULL;
-    induce->node_to_type[node->id] = type;
+    induce->coercion[node->id] = result;
   } while ((node = node_return(node)) != NULL);
 
   return evince(induce, root);
