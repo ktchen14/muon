@@ -8,6 +8,7 @@ stop = [\x00];
 
 <normal> [ \t]              { return ' '; }
 <normal> [\n\r]+ [ \t\n\r]* { return '\n'; }
+<normal> "#" [ \t] [^\n\r\x00]* [\n\r]+ [ \t\n\r]* { continue; }
 <normal> stop               { break; }
 
 // ================================ Keyword ====================================
