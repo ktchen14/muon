@@ -1,8 +1,11 @@
+#include "../common.h"
+#include "core.h"
 #include "induce.h"
 
 #include "../stator/node.h"
 #include "coercion.h"
 #include "type.h"
+#include "universe.h"
 
 #include <assert.h>
 #include <stdio.h>
@@ -192,8 +195,80 @@
 /*   assert(0); */
 /* } */
 
-const mu_coercion_t *reduce_coercion(const mu_coercion_t *coercion, const mu_type_t *source) {
-  return coercion;
+const mu_coercion_t *reduce_coercion(
+    induce_t *induce, const mu_coercion_t *coercion) {
+  switch ON_ABSTRACT_OBJECT(coercion) {
+    case MU_ID_COERCION:
+      return coercion;
+
+    case IS_KIND_OF(edge_coercion): {
+      const mu_type_t *source = edge_coercion->source;
+      const mu_type_t *target = edge_coercion->as_coercion.target;
+
+      universe_edge_t *edge = universe_search(&induce->universe, source, target);
+      assert(edge != NULL);
+
+      const mu_coercion_t *next_coercion = edge->coercion;
+
+      if (next_coercion != &edge_coercion->as_coercion)
+        return reduce_coercion(induce, next_coercion);
+
+      // TODO
+      return coercion;
+    }
+
+    case IS_KIND_OF(indirect_coercion): {
+      const mu_coercion_t *head = indirect_coercion->head;
+      head = reduce_coercion(induce, head);
+
+      const mu_coercion_t *tail = indirect_coercion->tail;
+      tail = reduce_coercion(induce, tail);
+
+      const mu_indirect_coercion_t *result;
+      if ((result = mu_indirect_coercion(head, tail)) == NULL)
+        return NULL;
+      return &result->as_coercion;
+    }
+
+    case IS_KIND_OF(variance_coercion): {
+      const mu_core_t *core = variance_coercion->core;
+
+      mu_variance_coercion_t *allocation;
+      if ((allocation = variance_coercion_allocate(core)) == NULL)
+        return NULL;
+
+      for (size_t i = 0; i < core->argc; i++)
+        allocation->argv[i] = reduce_coercion(induce, variance_coercion->argv[i]);
+
+      const mu_variance_coercion_t *result;
+      if ((result = variance_coercion_activate(allocation)) == NULL)
+        return NULL;
+      return &result->as_coercion;
+    }
+
+    case MU_RECORD_COERCION:
+      abort();
+
+    case MU_JOIN_COERCION:
+      return coercion;
+
+    case IS_KIND_OF(unjoin_coercion): {
+      size_t argc = unjoin_coercion->argc;
+
+      mu_unjoin_coercion_t *allocation;
+      if ((allocation = unjoin_coercion_allocate(argc)) == NULL)
+        return NULL;
+
+      for (size_t i = 0; i < argc; i++)
+        allocation->argv[i] = reduce_coercion(induce, unjoin_coercion->argv[i]);
+
+      const mu_unjoin_coercion_t *result;
+      if ((result = unjoin_coercion_activate(allocation)) == NULL)
+        return NULL;
+      return &result->as_coercion;
+    }
+  }
+  __builtin_unreachable();
 }
 
 const mu_type_t *reduce_node(induce_t *induce, const mu_node_t *root) {
@@ -212,7 +287,7 @@ const mu_type_t *reduce_node(induce_t *induce, const mu_node_t *root) {
     assert(source != NULL);
 
     const mu_coercion_t *result;
-    if ((result = reduce_coercion(coercion, source)) == NULL)
+    if ((result = reduce_coercion(induce, coercion)) == NULL)
       return NULL;
     induce->coercion[node->id] = result;
   } while ((node = node_return(node)) != NULL);
