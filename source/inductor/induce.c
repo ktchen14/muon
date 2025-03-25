@@ -33,11 +33,11 @@ static const mu_coercion_t *retrieve_core_coercion(
   const mu_core_t *source_core = source->core;
   const mu_core_t *target_core = target->core;
 
-  if (source_core->kind == MU_INTEGER_CORE && target_core->kind == MU_RECORD_CORE)
-    return induce->id_coercion;
+  /* if (source_core->kind == MU_INTEGER_CORE && target_core->kind == MU_RECORD_CORE) */
+  /*   return induce->id_coercion; */
 
-  if (source_core->kind == MU_BOOLEAN_CORE && target_core->kind == MU_INTEGER_CORE)
-    return induce->id_coercion;
+  /* if (source_core->kind == MU_BOOLEAN_CORE && target_core->kind == MU_INTEGER_CORE) */
+  /*   return induce->id_coercion; */
 
   if (source_core != target_core)
     return NO_SUCH_COERCION;

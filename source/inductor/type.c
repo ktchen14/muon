@@ -194,14 +194,16 @@ void type_debug(const mu_type_t *type, _Bool expand) {
     case IS_KIND_OF(variable_type): {
       const mu_join_t *join;
       if ((join = variable_type->join) != NULL) {
-        debug("Join(");
-        for (size_t i = 0; i < join->argc; i++) {
-          if (i > 0)
-            debug(", ");
-          type_debug(join->argv[i], expand);
+        if (expand) {
+          debug("Join(");
+          for (size_t i = 0; i < join->argc; i++) {
+            if (i > 0)
+              debug(", ");
+            type_debug(join->argv[i], expand);
+          }
+          debug(")");
+          break;
         }
-        debug(")");
-        break;
       }
 
       if (!expand || debug_induce == NULL) {
