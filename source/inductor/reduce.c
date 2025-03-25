@@ -271,6 +271,22 @@ const mu_coercion_t *reduce_coercion(
   __builtin_unreachable();
 }
 
+const mu_coercion_t *reduce_coercion_external(
+    induce_t *induce, const mu_coercion_t *coercion) {
+  debug("Reducing coercion ");
+  mu_coercion_debug(coercion);
+
+  const mu_coercion_t *result;
+  if ((result = reduce_coercion(induce, coercion)) == NULL)
+    return NULL;
+
+  debug(" to ");
+  mu_coercion_debug(result);
+  debug("\n");
+
+  return result;
+}
+
 const mu_type_t *reduce_node(induce_t *induce, const mu_node_t *root) {
   assert(root->id < induce->node_length);
 
@@ -287,7 +303,7 @@ const mu_type_t *reduce_node(induce_t *induce, const mu_node_t *root) {
     assert(source != NULL);
 
     const mu_coercion_t *result;
-    if ((result = reduce_coercion(induce, coercion)) == NULL)
+    if ((result = reduce_coercion_external(induce, coercion)) == NULL)
       return NULL;
     induce->coercion[node->id] = result;
   } while ((node = node_return(node)) != NULL);
