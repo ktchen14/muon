@@ -84,7 +84,7 @@ int main(int argc, char *argv[argc]) {
     assert(0);
 
   induce_t induce;
-  if (induce_initialize(&induce, &engine, &status, &detect) == NULL)
+  if (induce_initialize(&induce, &engine, &detect) == NULL)
     assert(0);
 
   if (induce_node(&induce, &sequence_expr->as_node) == NULL)

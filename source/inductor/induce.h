@@ -9,7 +9,6 @@
 #include "universe.h"
 
 #include "detect.h"
-#include "../status.h"
 
 #include <assert.h>
 #include <stddef.h>
@@ -18,7 +17,6 @@
 typedef struct induce_t induce_t;
 struct induce_t {
   mu_engine_t *engine;
-  mu_status_t *status;
 
   const detect_result_t *detect;
 
@@ -55,10 +53,7 @@ extern _Thread_local induce_t *debug_induce;
 
 /// Initialize the @a inductor to handle nodes and types in the @a engine
 induce_t *induce_initialize(
-    induce_t *induce,
-    mu_engine_t *engine,
-    mu_status_t *status,
-    const detect_t *detect)
+    induce_t *induce, mu_engine_t *engine, const detect_t *detect)
   __attribute__((nonnull));
 
 __attribute__((nonnull, pure, returns_nonnull))

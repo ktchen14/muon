@@ -2,7 +2,6 @@
 
 #include "../common.h"
 #include "../stator.h"
-#include "../status.h"
 #include "coercion.h"
 #include "core.h"
 #include "detect.h"
@@ -414,10 +413,7 @@ static const mu_coercion_t *ensure_vc(
 
 
 induce_t *induce_initialize(
-    induce_t *induce,
-    mu_engine_t *engine,
-    mu_status_t *status,
-    const detect_t *detect) {
+    induce_t *induce, mu_engine_t *engine, const detect_t *detect) {
   assert(detect_result(detect)->engine == engine);
 
   size_t node_length = engine->node_number;
@@ -465,7 +461,6 @@ induce_t *induce_initialize(
 
   *induce = (induce_t) {
     .engine = engine,
-    .status = status,
     .detect = detect_result(detect),
     .node_length = node_length,
     .node_to_type = node_to_type,
