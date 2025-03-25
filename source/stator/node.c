@@ -478,9 +478,13 @@ static inline int debug_node_coercion(const mu_node_t *node) {
   debug("%*s", debug_indent, "");
   mu_coercion_debug(coercion);
 
-  if (coercion->target != NULL) {
-    debug(" ∷ ");
-    type_debug(coercion->target, 1);
+  const mu_type_t *source_type;
+  if ((source_type = induce_reveal(debug_induce, node)) != NULL) {
+    const mu_type_t *target_type;
+    if ((target_type = mu_coercion_target(coercion, source_type)) != NULL) {
+      debug(" ∷ ");
+      type_debug(target_type, 0);
+    }
   }
 
   debug("\n");

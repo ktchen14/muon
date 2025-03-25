@@ -125,7 +125,7 @@ const mu_unjoin_coercion_t *unjoin_coercion_activate(
     mu_unjoin_coercion_t *coercion)
   __attribute__((nonnull));
 
-__attribute__((nonnull, pure, returns_nonnull))
+__attribute__((nonnull, pure))
 static inline const mu_type_t *mu_coercion_target(
     const mu_coercion_t *coercion, const mu_type_t *source) {
   switch ON_ABSTRACT_OBJECT(coercion) {
