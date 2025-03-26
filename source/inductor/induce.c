@@ -98,6 +98,7 @@ const mu_coercion_t *retrieve_coercion(
       if ((edge = append_edge(&induce->universe, source, target)) == NULL)
         return NULL;
       edge->coercion = result;
+      edge->indirect = 2;
     }
     return result;
   }
