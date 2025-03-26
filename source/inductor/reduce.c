@@ -73,47 +73,57 @@ const mu_solution_t *reduce_type_to_join(
   // At this point, each edge into the variable type results in a potential
   // join discriminant. Hopefully, we can make sure that the only edges left
   // into the variable type are those types that actually flow into it.
-  universe_iterator_t it;
+  universe_iterator_t it, jt, kt;
   it = universe_iterator(universe, &variable_type->as_type, 0);
-  for (edge_t *edge; (edge = universe_next(&it)) != NULL;) {
-    if (edge->source->kind == MU_VARIABLE_TYPE)
-      continue;
-    if (edge->indirect == 2)
+  for (edge_t *a; (a = universe_next(&it)) != NULL;) {
+    if (a->indirect > 1 || a->source->kind == MU_VARIABLE_TYPE)
       continue;
 
-    const mu_coercion_t *tail = NULL;
+    const mu_type_t *source = a->source;
 
-    universe_iterator_t jt = it;
-    for (edge_t *next_edge; (next_edge = universe_next(&jt)) != NULL;) {
-      if (next_edge->source->kind == MU_VARIABLE_TYPE)
+    jt = universe_iterator(universe, &variable_type->as_type, 0);
+    for (edge_t *b; (b = universe_next(&jt)) != NULL;) {
+      if (a == b)
         continue;
-      if (edge->coercion != NULL && edge->coercion->kind != MU_EDGE_COERCION)
+      if (b->indirect > 1 || b->source->kind == MU_VARIABLE_TYPE)
         continue;
+
+      const mu_type_t *next_source = b->source;
 
       const mu_coercion_t *coercion;
-      edge_t *newedge = universe_search(&induce->universe, next_edge->source, edge->source);
-      if (newedge != NULL) {
-        coercion = newedge->coercion;
-      } else {
-        if ((coercion = retrieve_coercion(induce, next_edge->source, edge->source)) == NULL)
-          return NULL;
-        if (coercion == NO_SUCH_COERCION)
+      if ((coercion = retrieve_coercion(induce, next_source, source)) == NULL)
+        return NULL;
+      if (coercion == NO_SUCH_COERCION)
+        continue;
+
+      const mu_coercion_t *tail;
+      if ((tail = edge_to_coercion(a)) == NULL)
+        return NULL;
+
+      const mu_indirect_coercion_t *result;
+      if ((result = mu_indirect_coercion(coercion, tail)) == NULL)
+        return NULL;
+      b->coercion = &result->as_coercion;
+      b->indirect = 2;
+
+      kt = universe_iterator(universe, &variable_type->as_type, 1);
+      for (edge_t *c; (c = universe_next(&kt)) != NULL;) {
+        if (c->target->kind != MU_VARIABLE_TYPE)
           continue;
-        newedge = universe_search(&induce->universe, next_edge->source, edge->source);
-        newedge->coercion = coercion;
+
+        edge_t *edge = universe_search(&induce->universe, next_source, c->target);
+        assert(edge != NULL);
+
+        const mu_coercion_t *tail;
+        if ((tail = edge_to_coercion(edge)) == NULL)
+          return NULL;
+
+        const mu_indirect_coercion_t *result;
+        if ((result = mu_indirect_coercion(coercion, tail)) == NULL)
+          return NULL;
+        edge->coercion = &result->as_coercion;
+        edge->indirect = 2;
       }
-
-      newedge->indirect = 0;
-      /* newedge->indirect = 2; */
-
-      if (tail == NULL && (tail = edge_to_coercion(edge)) == NULL)
-        return NULL;
-
-      const mu_indirect_coercion_t *indirect_coercion;
-      if ((indirect_coercion = mu_indirect_coercion(coercion, tail)) == NULL)
-        return NULL;
-      next_edge->coercion = &indirect_coercion->as_coercion;
-      next_edge->indirect = 2;
     }
   }
 
@@ -336,12 +346,12 @@ const mu_type_t *reduce_node(induce_t *induce, const mu_node_t *root) {
     while ((next = node_at(node, node_cursor(node)->i++)) != NULL)
       node = node_continue(node, next);
 
+    const mu_type_t *source = evince(induce, node);
+    assert(source != NULL);
+
     const mu_coercion_t *coercion;
     if ((coercion = induce->node_to_coercion[node->id]) == NULL)
       continue;
-
-    const mu_type_t *source = evince(induce, node);
-    assert(source != NULL);
 
     const mu_coercion_t *result;
     if ((result = reduce_coercion_external(induce, coercion)) == NULL)
