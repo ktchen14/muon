@@ -73,34 +73,38 @@ const mu_solution_t *reduce_type_to_join(
   // At this point, each edge into the variable type results in a potential
   // join discriminant. Hopefully, we can make sure that the only edges left
   // into the variable type are those types that actually flow into it.
-  iterator = universe_iterator(universe, &variable_type->as_type, 0);
-  for (edge_t *edge; (edge = universe_next(&iterator)) != NULL;) {
+  universe_iterator_t it;
+  it = universe_iterator(universe, &variable_type->as_type, 0);
+  for (edge_t *edge; (edge = universe_next(&it)) != NULL;) {
     if (edge->source->kind == MU_VARIABLE_TYPE)
       continue;
     if (edge->indirect == 2)
       continue;
 
-    universe_iterator_t iterator2 = iterator;
-
     const mu_coercion_t *tail = NULL;
 
-    for (edge_t *another; (another = universe_next(&iterator2)) != NULL;) {
-      if (another->source->kind == MU_VARIABLE_TYPE)
+    universe_iterator_t jt = it;
+    for (edge_t *next_edge; (next_edge = universe_next(&jt)) != NULL;) {
+      if (next_edge->source->kind == MU_VARIABLE_TYPE)
         continue;
       if (edge->coercion != NULL && edge->coercion->kind != MU_EDGE_COERCION)
         continue;
 
       const mu_coercion_t *coercion;
-      if ((coercion = retrieve_coercion(induce, another->source, edge->source)) == NULL)
-        return NULL;
-      if (coercion == NO_SUCH_COERCION)
-        continue;
+      edge_t *newedge = universe_search(&induce->universe, next_edge->source, edge->source);
+      if (newedge != NULL) {
+        coercion = newedge->coercion;
+      } else {
+        if ((coercion = retrieve_coercion(induce, next_edge->source, edge->source)) == NULL)
+          return NULL;
+        if (coercion == NO_SUCH_COERCION)
+          continue;
+        newedge = universe_search(&induce->universe, next_edge->source, edge->source);
+        newedge->coercion = coercion;
+      }
 
-      edge_t *newedge = universe_search(&induce->universe, another->source, edge->source);
-      if (newedge == NULL)
-        newedge = append_edge(&induce->universe, another->source, edge->source);
-      newedge->coercion = coercion;
-      newedge->indirect = 2;
+      newedge->indirect = 0;
+      /* newedge->indirect = 2; */
 
       if (tail == NULL && (tail = edge_to_coercion(edge)) == NULL)
         return NULL;
@@ -108,8 +112,8 @@ const mu_solution_t *reduce_type_to_join(
       const mu_indirect_coercion_t *indirect_coercion;
       if ((indirect_coercion = mu_indirect_coercion(coercion, tail)) == NULL)
         return NULL;
-      another->coercion = &indirect_coercion->as_coercion;
-      another->indirect = 2;
+      next_edge->coercion = &indirect_coercion->as_coercion;
+      next_edge->indirect = 2;
     }
   }
 
