@@ -8,7 +8,6 @@
 #include "universe.h"
 
 #include <assert.h>
-#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -31,10 +30,10 @@ const mu_coercion_t *mu_edge_coercion_load(
   return next_coercion;
 }
 
-const mu_variable_type_t *reduce_type_to_join(
+const mu_solution_t *reduce_type_to_join(
     induce_t *induce, const mu_variable_type_t *variable_type) {
   if (variable_type->join != NULL)
-    return variable_type;
+    return &variable_type->join->as_solution;
 
   universe_t *universe = &induce->universe;
   universe_iterator_t iterator;
@@ -73,12 +72,8 @@ const mu_variable_type_t *reduce_type_to_join(
   }
 
   // Allocate a join
-  size_t size;
-  if (rare((size = struct_size(mu_join_t, argv, length)) == 0))
-    return errno = ENOMEM, NULL;
-
   mu_join_t *join;
-  if ((join = malloc(size)) == NULL)
+  if ((join = join_allocate(induce, length)) == NULL)
     return NULL;
 
   iterator = universe_iterator(universe, &variable_type->as_type, 0);
@@ -143,8 +138,12 @@ const mu_variable_type_t *reduce_type_to_join(
   }
   join->argc = join_i;
 
-  ((mu_variable_type_t *) variable_type)->join = join;
-  return variable_type;
+  const mu_join_t *result;
+  if ((result = join_activate(join)) == NULL)
+    return NULL;
+  ((mu_variable_type_t *) variable_type)->join = result;
+
+  return &result->as_solution;
 }
 
 const mu_coercion_t *reduce_coercion(
