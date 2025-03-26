@@ -30,6 +30,37 @@ const mu_coercion_t *mu_edge_coercion_load(
   return next_coercion;
 }
 
+/// Return the coercion from @a type to the @a join. Adds the @a type to the
+/// join if necessary.
+const mu_coercion_t *join_append(mu_join_t *join, const mu_type_t *type) {
+  induce_t *induce = (induce_t *) join->induce;
+
+  for (size_t i = 0; i < join->argc; i++) {
+    const mu_coercion_t *coercion;
+    if ((coercion = retrieve_coercion(induce, type, join->argv[i])) == NULL)
+      return NULL;
+
+    if (coercion == NO_SUCH_COERCION)
+      continue;
+
+    const mu_join_coercion_t *join_coercion;
+    if ((join_coercion = mu_join_coercion(i)) == NULL)
+      return NULL;
+
+    const mu_indirect_coercion_t *result;
+    if ((result = mu_indirect_coercion(coercion, &join_coercion->as_coercion)) == NULL)
+      return NULL;
+    return &result->as_coercion;
+  }
+
+  const mu_join_coercion_t *join_coercion;
+  if ((join_coercion = mu_join_coercion(join->argc)) == NULL)
+    return NULL;
+  join->argv[join->argc++] = type;
+
+  return &join_coercion->as_coercion;
+}
+
 const mu_solution_t *reduce_type_to_join(
     induce_t *induce, const mu_variable_type_t *variable_type) {
   if (variable_type->join != NULL)
@@ -81,34 +112,13 @@ const mu_solution_t *reduce_type_to_join(
     if (edge->indirect)
       continue;
 
-    const mu_type_t *source = edge->source;
-
-    // Handle a normal type
     const mu_variable_type_t *next_variable;
-    if ((next_variable = mu_type_cast(source, next_variable)) == NULL) {
-      for (size_t i = 0; i < join->argc; i++) {
-        const mu_coercion_t *coercion;
-        if ((coercion = retrieve_coercion(induce, source, join->argv[i])) == NULL)
-          return NULL;
-        if (coercion == NO_SUCH_COERCION)
-          continue;
-
-        const mu_join_coercion_t *join_coercion;
-        if ((join_coercion = mu_join_coercion(i)) == NULL)
-          return NULL;
-
-        const mu_indirect_coercion_t *result;
-        if ((result = mu_indirect_coercion(coercion, &join_coercion->as_coercion)) == NULL)
-          return NULL;
-        edge->coercion = &result->as_coercion;
-        goto next_source;
-      }
-
-      const mu_join_coercion_t *join_coercion;
-      if ((join_coercion = mu_join_coercion(join->argc)) == NULL)
+    if ((next_variable = mu_type_cast(edge->source, next_variable)) == NULL) {
+      // Handle a normal type
+      const mu_coercion_t *coercion;
+      if ((coercion = join_append(join, edge->source)) == NULL)
         return NULL;
-      edge->coercion = &join_coercion->as_coercion;
-      join->argv[join->argc++] = edge->source;
+      edge->coercion = coercion;
       continue;
     }
 
@@ -121,19 +131,19 @@ const mu_solution_t *reduce_type_to_join(
       return NULL;
 
     for (size_t i = 0; i < source_join->argc; i++) {
-      const mu_join_coercion_t *join_coercion;
-      if ((join_coercion = mu_join_coercion(join->argc)) == NULL)
+      const mu_type_t *source = source_join->argv[i];
+
+      const mu_coercion_t *coercion;
+      if ((coercion = join_append(join, source)) == NULL)
         return NULL;
-      allocation->argv[i] = &join_coercion->as_coercion;
-      join->argv[join->argc++] = source_join->argv[i];
+
+      allocation->argv[i] = coercion;
     }
 
     const mu_unjoin_coercion_t *unjoin_coercion;
     if ((unjoin_coercion = unjoin_coercion_activate(allocation)) == NULL)
       return NULL;
     edge->coercion = &unjoin_coercion->as_coercion;
-
-  next_source:;
   }
 
   const mu_join_t *result;

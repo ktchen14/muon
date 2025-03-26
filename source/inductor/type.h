@@ -64,6 +64,7 @@ typedef struct open_scheme_t open_scheme_t;
 /// A join solution
 typedef struct {
   MU_SOLUTION_HEADER;
+  const induce_t *induce;
   size_t argc;
   const mu_type_t *argv[/* argc */];
 } mu_join_t;

@@ -134,7 +134,7 @@ mu_join_t *join_allocate(induce_t *induce, size_t argc) {
   mu_join_t *result;
   if ((result = malloc(size)) == NULL)
     return NULL;
-  *result = (mu_join_t) { .argc = argc };
+  *result = (mu_join_t) { .induce = induce, .argc = argc };
   return result;
 }
 
