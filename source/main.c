@@ -109,8 +109,8 @@ int main(int argc, char *argv[argc]) {
     for (size_t i = 0; i < debug_induce->universe.length; i++) {
       induce_edge_t edge = debug_induce->universe.data[i];
 
-      if (edge.indirect == 1)
-        continue;
+      /* if (edge.indirect == 1) */
+      /*   continue; */
 
       debug("%*s", 2, "");
 
