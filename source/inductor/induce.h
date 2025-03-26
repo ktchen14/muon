@@ -25,6 +25,7 @@ struct induce_t {
   size_t node_length;
 
   const mu_type_t **node_to_type; /* const type_t *[node_length] */
+  const mu_coercion_t **coercion;
 
   universe_t universe;
 
@@ -44,8 +45,6 @@ struct induce_t {
   size_t record_instance_length;
 
   const mu_coercion_t *id_coercion;
-
-  const mu_coercion_t *coercion[2000];
 };
 
 extern _Thread_local induce_t *debug_induce;
