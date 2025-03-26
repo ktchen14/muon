@@ -92,10 +92,10 @@ static inline size_t extant_size(
 
 __attribute__((unused)) static _Thread_local const void *_object;
 
-#define JOIN(a, b) a##b
+#define INTERNAL_JOIN(a, b) a##b
 
 /// Join @a a and @a b with a level of indirection
-#define INDIRECT_JOIN(a, b) JOIN(a, b)
+#define INDIRECT_JOIN(a, b) INTERNAL_JOIN(a, b)
 
 /**
  * @brief Used to switch on the kind of the abstract @a object
