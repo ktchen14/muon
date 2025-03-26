@@ -127,9 +127,9 @@ int main(int argc, char *argv[argc]) {
       debug("\"");
 
       if (edge.indirect == 2)
-        debug(" [constraint=false,style=dashed,color=darkgreen]");
-      else if (edge.indirect == 1)
         debug(" [constraint=false,style=dashed]");
+      else if (edge.indirect == 1)
+        debug(" [constraint=false]");
 
       if (edge.coercion != NULL) {
         debug(" [label=\" ");
