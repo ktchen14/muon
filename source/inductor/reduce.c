@@ -48,10 +48,9 @@ const mu_solution_t *reduce_type_to_join(
 
     // Ensure that the edge has a "normal" coercion. Either no coercion, or an
     // edge coercion that maps back to itself.
-    const mu_coercion_t *coercion = edge->coercion;
-    if (coercion != NULL) {
+    if (edge->coercion != NULL) {
       const mu_edge_coercion_t *edge_coercion;
-      edge_coercion = mu_coercion_cast(coercion, edge_coercion);
+      edge_coercion = mu_coercion_cast(edge->coercion, edge_coercion);
       assert(edge_coercion != NULL);
       assert(edge_coercion->source == edge->source);
       assert(edge_coercion->as_coercion.target == edge->target);
