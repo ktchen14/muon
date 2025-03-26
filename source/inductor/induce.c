@@ -244,6 +244,7 @@ static const mu_coercion_t *ensure_cv(
   // if ⟨x ⇒ target⟩ is an indirect edge. This is because we don't want the
   // coercion source ⇒ target to occur through some variable type unrelated to
   // the context in which we're ensuring this coercion.
+#ifdef OPTIMIZE_EARLY
   iterator = universe_iterator(&induce->universe, target, 0);
   for (const edge_t *edge; (edge = universe_next(&iterator)) != NULL;) {
     if (edge->indirect || edge->source->kind == MU_VARIABLE_TYPE)
@@ -277,6 +278,7 @@ static const mu_coercion_t *ensure_cv(
     // Record the coercion in the edge
     return edge->coercion = &result->as_coercion;
   }
+#endif
 
   // First, make the edge ⟨source ⇒ target⟩ in case of recursion
   edge_t *result_edge;
@@ -322,6 +324,7 @@ static const mu_coercion_t *ensure_cv(
   //
   // Retrieve next_source ⇒ source. If this exists, then add
   // ⟨next_source ⇒ source⟩ and make ⟨next_source ⇒ target⟩ an indirect edge.
+#ifdef OPTIMIZE_EARLY
   iterator = universe_iterator(&induce->universe, target, 0);
   for (edge_t *edge; (edge = universe_next(&iterator)) != result_edge;) {
     if (edge->indirect || edge->source->kind == MU_VARIABLE_TYPE)
@@ -354,6 +357,7 @@ static const mu_coercion_t *ensure_cv(
 
     edge->indirect = 2;
   }
+#endif
 
   return &result->as_coercion;
 }
