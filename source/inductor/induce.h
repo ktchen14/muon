@@ -45,7 +45,6 @@ struct induce_t {
 
   const mu_coercion_t *id_coercion;
 
-  const mu_type_t *aux[2000];
   const mu_coercion_t *coercion[2000];
 };
 

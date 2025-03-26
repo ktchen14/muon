@@ -78,7 +78,6 @@ __attribute__((nonnull)) static const mu_type_t *access_expr_induce(
   const mu_core_type_t *record_type;
   if (rare((record_type = core_type_activate(allocation)) == NULL))
     return NULL;
-  induce->aux[expr->as_node.id] = &record_type->as_type;
 
   const mu_type_t *matter_type = induce_reveal(induce, &expr->matter->as_node);
 
