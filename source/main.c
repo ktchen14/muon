@@ -130,8 +130,6 @@ int main(int argc, char *argv[argc]) {
         debug(" [constraint=false,style=dashed,color=darkgreen]");
       else if (edge.indirect == 1)
         debug(" [constraint=false,style=dashed]");
-      else
-        ;
 
       if (edge.coercion != NULL) {
         debug(" [label=\" ");
