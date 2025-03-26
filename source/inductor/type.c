@@ -126,6 +126,22 @@ const mu_scheme_type_t *scheme_type_activate(
   return assign_type(type->as_type.induce, type);
 }
 
+mu_join_t *join_allocate(induce_t *induce, size_t argc) {
+  size_t size;
+  if (rare((size = struct_size(mu_join_t, argv, argc)) == 0))
+    return errno = ENOMEM, NULL;
+
+  mu_join_t *result;
+  if ((result = malloc(size)) == NULL)
+    return NULL;
+  *result = (mu_join_t) { .argc = argc };
+  return result;
+}
+
+const mu_join_t *join_activate(mu_join_t *join) {
+  return join;
+}
+
 void debug_variable_type_name(const mu_variable_type_t *type) {
   static _Atomic size_t next_number = 0;
   static const char *alphabet[] = {

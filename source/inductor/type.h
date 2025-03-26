@@ -12,25 +12,44 @@
   emit(variable, VARIABLE, Variable, ##__VA_ARGS__) \
   emit(scheme, SCHEME, Scheme, ##__VA_ARGS__)
 
+/// Expands to emit(lower, upper, title, ...) for each kind of solution
+#define MU_EACH_SOLUTION_KIND(emit, ...) \
+  MU_EACH_TYPE_KIND(emit) \
+  emit(join, JOIN, Join, ##__VA_ARGS__)
+
+/// An enumeration over each kind of solution, i.e. @c MU_CORE_SOLUTION
+typedef enum {
+#define MU_EMIT(l, upper, t) MU_##upper##_SOLUTION,
+  MU_EACH_TYPE_KIND(MU_EMIT)
+#undef MU_EMIT
+} mu_solution_kind_t;
+
 /// An enumeration over each kind of type, i.e. @c MU_CORE_TYPE
 typedef enum {
-#define MU_EMIT(l, upper, t) MU_##upper##_TYPE,
+#define MU_EMIT(l, upper, t) MU_##upper##_TYPE = MU_##upper##_SOLUTION,
   MU_EACH_TYPE_KIND(MU_EMIT)
 #undef MU_EMIT
 } mu_type_kind_t;
 
 typedef struct induce_t induce_t;
 
+/// An abstract solution
+typedef struct {
+  mu_solution_kind_t kind;
+} mu_solution_t;
+
+/// The header that each concrete solution must have
+#define MU_SOLUTION_HEADER mu_solution_t as_solution
+
 /// An abstract type
-typedef struct mu_type_t mu_type_t;
-struct mu_type_t {
-  mu_type_kind_t kind;
+typedef struct {
+  union { MU_SOLUTION_HEADER; mu_type_kind_t kind; };
   induce_t *induce;
   size_t id;
-};
+} mu_type_t;
 
 /// The header that each concrete type must have
-#define MU_TYPE_HEADER mu_type_t as_type
+#define MU_TYPE_HEADER union { mu_type_t as_type; mu_solution_t as_solution; }
 
 /// A core type
 typedef struct {
@@ -42,7 +61,9 @@ typedef struct {
 typedef struct mu_scheme_type_t mu_scheme_type_t;
 typedef struct open_scheme_t open_scheme_t;
 
+/// A join solution
 typedef struct {
+  MU_SOLUTION_HEADER;
   size_t argc;
   const mu_type_t *argv[/* argc */];
 } mu_join_t;
@@ -52,6 +73,7 @@ typedef struct mu_variable_type_t mu_variable_type_t;
 struct mu_variable_type_t {
   MU_TYPE_HEADER;
 
+  const mu_solution_t *solution;
   const mu_join_t *join;
 
   // Debugging
@@ -167,6 +189,12 @@ mu_scheme_type_t *scheme_type_allocate(induce_t *induce, size_t argc)
 
 const mu_scheme_type_t *scheme_type_activate(
     mu_scheme_type_t *type, const mu_type_t *matter)
+  __attribute__((nonnull));
+
+mu_join_t *join_allocate(induce_t *induce, size_t argc)
+  __attribute__((malloc, nonnull));
+
+const mu_join_t *join_activate(mu_join_t *join)
   __attribute__((nonnull));
 
 void type_debug(const mu_type_t *type, _Bool expand)
