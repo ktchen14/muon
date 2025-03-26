@@ -98,7 +98,6 @@ const mu_coercion_t *retrieve_coercion(
       if ((edge = append_edge(&induce->universe, source, target)) == NULL)
         return NULL;
       edge->coercion = result;
-      edge->indirect = 2;
     }
     return result;
   }
@@ -160,8 +159,6 @@ const mu_coercion_t *ensure_coercion(
 
         if (ensure_coercion(induce, next_source, next_target) == NULL)
           return NULL;
-
-        universe_search(&induce->universe, next_source, next_target)->indirect = 2;
       }
     }
 
@@ -295,8 +292,6 @@ static const mu_coercion_t *ensure_cv(
       continue;
     if (ensure_coercion(induce, source, next_target) == NULL)
       return NULL;
-    // TODO
-    universe_search(&induce->universe, source, next_target)->indirect = 2;
   }
 
   // Then, ∀(next_target) | ∃⟨target ⇒ next_target⟩ where next_target is a
@@ -386,7 +381,6 @@ static const mu_coercion_t *ensure_vc(
       continue;
     if (ensure_coercion(induce, next_source, target) == NULL)
       return NULL;
-    universe_search(&induce->universe, next_source, target)->indirect = 2;
   }
 
   // Then, for each edge:
