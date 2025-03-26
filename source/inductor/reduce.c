@@ -33,19 +33,6 @@ const mu_coercion_t *mu_edge_coercion_load(
   return next_coercion;
 }
 
-/// Return the coercion from @a type to the @a join. Adds the @a type to the
-/// join if necessary.
-const mu_coercion_t *join_append(mu_join_t *join, const mu_type_t *type) {
-  induce_t *induce = (induce_t *) join->induce;
-
-  const mu_join_coercion_t *join_coercion;
-  if ((join_coercion = mu_join_coercion(join->argc)) == NULL)
-    return NULL;
-  join->argv[join->argc++] = type;
-
-  return &join_coercion->as_coercion;
-}
-
 const mu_solution_t *reduce_type_to_join(
     induce_t *induce, const mu_variable_type_t *variable_type) {
   if (variable_type->join != NULL)
@@ -162,10 +149,12 @@ const mu_solution_t *reduce_type_to_join(
       continue;
 
     // Handle a normal type
-    const mu_coercion_t *coercion;
-    if ((coercion = join_append(join, edge->source)) == NULL)
+    const mu_join_coercion_t *coercion;
+    if ((coercion = mu_join_coercion(join->argc)) == NULL)
       return NULL;
-    edge->coercion = coercion;
+    join->argv[join->argc++] = edge->source;
+
+    edge->coercion = &coercion->as_coercion;
   }
 
   iterator = universe_iterator(universe, &variable_type->as_type, 0);
@@ -289,8 +278,10 @@ const mu_coercion_t *reduce_coercion(
       if ((allocation = variance_coercion_allocate(core)) == NULL)
         return NULL;
 
-      for (size_t i = 0; i < core->argc; i++)
-        allocation->argv[i] = reduce_coercion(induce, variance_coercion->argv[i]);
+      for (size_t i = 0; i < core->argc; i++) {
+        const mu_coercion_t *argument = variance_coercion->argv[i];
+        allocation->argv[i] = reduce_coercion(induce, argument);
+      }
 
       const mu_variance_coercion_t *result;
       if ((result = variance_coercion_activate(allocation)) == NULL)
