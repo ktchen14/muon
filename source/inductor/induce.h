@@ -25,7 +25,7 @@ struct induce_t {
   size_t node_length;
 
   const mu_type_t **node_to_type; /* const type_t *[node_length] */
-  const mu_coercion_t **coercion;
+  const mu_coercion_t **node_to_coercion;
 
   universe_t universe;
 

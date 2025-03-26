@@ -469,7 +469,7 @@ static inline int debug_node_coercion(const mu_node_t *node) {
     return debug_indent;
 
   const mu_coercion_t *coercion;
-  if ((coercion = debug_induce->coercion[node->id]) == NULL)
+  if ((coercion = debug_induce->node_to_coercion[node->id]) == NULL)
     return debug_indent;
 
   if (coercion->kind == MU_ID_COERCION)

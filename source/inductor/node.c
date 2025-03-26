@@ -84,7 +84,7 @@ __attribute__((nonnull)) static const mu_type_t *access_expr_induce(
   const mu_coercion_t *coercion;
   if ((coercion = ensure_coercion(induce, matter_type, &record_type->as_type)) == NULL)
     return NULL;
-  induce->coercion[expr->matter->as_node.id] = coercion;
+  induce->node_to_coercion[expr->matter->as_node.id] = coercion;
   return &result->as_type;
 }
 
@@ -120,7 +120,7 @@ __attribute__((nonnull)) static const mu_type_t *invoke_expr_induce(
   const mu_coercion_t *coercion;
   if ((coercion = ensure_coercion(induce, operator_type, &lambda_type->as_type)) == NULL)
     return NULL;
-  induce->coercion[expr->operator->as_node.id] = coercion;
+  induce->node_to_coercion[expr->operator->as_node.id] = coercion;
 
   return &result->as_type;
 }
@@ -235,7 +235,7 @@ __attribute__((nonnull)) static const mu_type_t *switch_expr_induce(
     const mu_coercion_t *coercion;
     if ((coercion = ensure_coercion(induce, type, &result->as_type)) == NULL)
       return NULL;
-    induce->coercion[expr->argv[i]->as_node.id] = coercion;
+    induce->node_to_coercion[expr->argv[i]->as_node.id] = coercion;
   }
 
   return &result->as_type;
@@ -261,7 +261,7 @@ __attribute__((nonnull)) static const mu_type_t *vector_expr_induce(
     const mu_coercion_t *coercion;
     if ((coercion = ensure_coercion(induce, type, &matter_type->as_type)) == NULL)
       return NULL;
-    induce->coercion[expr->argv[i]->as_node.id] = coercion;
+    induce->node_to_coercion[expr->argv[i]->as_node.id] = coercion;
   }
 
   const mu_core_type_t *result;

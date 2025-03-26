@@ -428,10 +428,10 @@ induce_t *induce_initialize(
     return NULL;
   for (size_t i = 0; i < node_length; node_to_type[i++] = NULL);
 
-  const mu_coercion_t **coercion;
-  if ((coercion = malloc(sizeof(const mu_coercion_t *[node_length]))) == NULL)
+  const mu_coercion_t **node_to_coercion;
+  if ((node_to_coercion = malloc(sizeof(const mu_coercion_t *[node_length]))) == NULL)
     return NULL;
-  for (size_t i = 0; i < node_length; coercion[i++] = NULL);
+  for (size_t i = 0; i < node_length; node_to_coercion[i++] = NULL);
 
   universe_t universe;
   if (rare(universe_initialize(&universe) == NULL))
@@ -474,7 +474,7 @@ induce_t *induce_initialize(
     .detect = detect_result(detect),
     .node_length = node_length,
     .node_to_type = node_to_type,
-    .coercion = coercion,
+    .node_to_coercion = node_to_coercion,
     .universe = universe,
 
     .id_coercion = id_coercion,
