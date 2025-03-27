@@ -131,15 +131,10 @@ int main(int argc, char *argv[argc]) {
       else if (course.indirect == 1)
         debug(" [constraint=false]");
 
-      if (course.coercion != NULL) {
+      const mu_coercion_t *coercion;
+      if ((coercion = course_coercion(&course)) != NULL) {
         debug(" [label=\" ");
-        const mu_edge_coercion_t *edge_coercion;
-        if ((edge_coercion = mu_coercion_cast(course.coercion, edge_coercion)) != NULL) {
-          assert(edge_coercion->source == course.source);
-          assert(edge_coercion->target == course.target);
-          debug("*");
-        } else
-          mu_coercion_debug(course.coercion);
+        mu_coercion_debug(course.coercion);
         debug("\"]");
       }
 

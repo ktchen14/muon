@@ -47,16 +47,6 @@ const mu_solution_t *reduce_type_to_join(
     if (course->indirect > 1)
       continue;
 
-    // Ensure that the course has a "normal" coercion. Either no coercion, or an
-    // course coercion that maps back to itself.
-    if (course->coercion != NULL) {
-      const mu_edge_coercion_t *edge_coercion;
-      edge_coercion = mu_coercion_cast(course->coercion, edge_coercion);
-      assert(edge_coercion != NULL);
-      assert(edge_coercion->source == course->source);
-      assert(edge_coercion->target == course->target);
-    }
-
     // If the course's source isn't a variable type, then length++
     const mu_variable_type_t *next_variable;
     if ((next_variable = mu_type_cast(course->source, next_variable)) == NULL)
@@ -100,8 +90,7 @@ const mu_solution_t *reduce_type_to_join(
       const mu_indirect_coercion_t *result;
       if ((result = mu_indirect_coercion(coercion, tail)) == NULL)
         return NULL;
-      b->coercion = &result->as_coercion;
-      b->indirect = 2;
+      course_assign(b, &result->as_coercion);
 
       kt = universe_iterator(universe, &variable_type->as_type, 1);
       for (course_t *c; (c = universe_next(&kt)) != NULL;) {
@@ -118,8 +107,7 @@ const mu_solution_t *reduce_type_to_join(
         const mu_indirect_coercion_t *result;
         if ((result = mu_indirect_coercion(coercion, tail)) == NULL)
           return NULL;
-        course->coercion = &result->as_coercion;
-        course->indirect = 2;
+        course_assign(course, &result->as_coercion);
       }
     }
   }
@@ -153,7 +141,7 @@ const mu_solution_t *reduce_type_to_join(
       return NULL;
     join->argv[join->argc++] = course->source;
 
-    course->coercion = &coercion->as_coercion;
+    course_assign(course, &coercion->as_coercion);
   }
 
   iterator = universe_iterator(universe, &variable_type->as_type, 0);
@@ -182,7 +170,7 @@ const mu_solution_t *reduce_type_to_join(
       const mu_coercion_t *coercion;
       if ((coercion = reduce_coercion(induce, course->coercion)) == NULL)
         return NULL;
-      course->coercion = coercion;
+      course_assign(course, coercion);
 
       allocation->argv[i] = coercion;
     }
@@ -190,7 +178,7 @@ const mu_solution_t *reduce_type_to_join(
     const mu_unjoin_coercion_t *unjoin_coercion;
     if ((unjoin_coercion = unjoin_coercion_activate(allocation, course->target)) == NULL)
       return NULL;
-    course->coercion = &unjoin_coercion->as_coercion;
+    course_assign(course, &unjoin_coercion->as_coercion);
   }
 
   const mu_join_t *result;
@@ -242,7 +230,7 @@ const mu_coercion_t *reduce_coercion(
           item_edge = course_search(&induce->universe, source_join->argv[i], target);
           assert(item_edge != NULL);
 
-          const mu_coercion_t *item_coercion = item_edge->coercion;
+          const mu_coercion_t *item_coercion = course_coercion(item_edge);
           assert(item_coercion != NULL);
 
           allocation->argv[i] = reduce_coercion(induce, item_coercion);

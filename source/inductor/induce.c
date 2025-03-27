@@ -216,7 +216,7 @@ static const mu_coercion_t *ensure_cc(
   const mu_variance_coercion_t *result;
   if ((result = variance_coercion_activate(allocation)) == NULL)
     return NULL;
-  return result_edge->coercion = &result->as_coercion;
+  return course_assign(result_edge, &result->as_coercion);
 }
 
 static const mu_coercion_t *ensure_cv(
