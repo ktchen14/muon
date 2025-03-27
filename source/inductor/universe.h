@@ -37,7 +37,7 @@ typedef struct {
 universe_t *universe_initialize(universe_t *universe)
   __attribute__((nonnull));
 
-course_t *universe_search(
+course_t *course_search(
     const universe_t *universe, const mu_type_t *source, const mu_type_t *target)
   __attribute__((nonnull));
 

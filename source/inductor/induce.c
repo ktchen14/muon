@@ -82,7 +82,7 @@ const mu_coercion_t *retrieve_coercion(
 
   // If we already have an course source ⇒ target then
   const course_t *course;
-  if ((course = universe_search(&induce->universe, source, target)) != NULL)
+  if ((course = course_search(&induce->universe, source, target)) != NULL)
     return edge_to_coercion(course);
 
   if (source->kind == MU_CORE_TYPE && target->kind == MU_CORE_TYPE) {
@@ -114,7 +114,7 @@ const mu_coercion_t *ensure_coercion(
 
   // If ∃⟨source ⇒ target⟩, then just return the coercion on that course
   const course_t *course;
-  if ((course = universe_search(&induce->universe, source, target)) != NULL)
+  if ((course = course_search(&induce->universe, source, target)) != NULL)
     return edge_to_coercion(course);
 
   if (source->kind == MU_CORE_TYPE && target->kind == MU_CORE_TYPE) {

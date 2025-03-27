@@ -38,7 +38,7 @@ const mu_coercion_t *mu_edge_coercion_load(
   const mu_type_t *source = coercion->source;
   const mu_type_t *target = coercion->target;
 
-  course_t *course = universe_search(universe, source, target);
+  course_t *course = course_search(universe, source, target);
   assert(course != NULL);
 
   const mu_coercion_t *next_coercion;
@@ -122,7 +122,7 @@ const mu_solution_t *reduce_type_to_join(
         if (c->target->kind != MU_VARIABLE_TYPE)
           continue;
 
-        course_t *course = universe_search(&induce->universe, next_source, c->target);
+        course_t *course = course_search(&induce->universe, next_source, c->target);
         assert(course != NULL);
 
         const mu_coercion_t *tail;
@@ -190,7 +190,7 @@ const mu_solution_t *reduce_type_to_join(
     for (size_t i = 0; i < source_join->argc; i++) {
       const mu_type_t *source = source_join->argv[i];
 
-      course_t *course = universe_search(&induce->universe, source, &variable_type->as_type);
+      course_t *course = course_search(&induce->universe, source, &variable_type->as_type);
       assert(course != NULL);
 
       const mu_coercion_t *coercion;
@@ -253,7 +253,7 @@ const mu_coercion_t *reduce_coercion(
 
         for (size_t i = 0; i < source_join->argc; i++) {
           const course_t *item_edge;
-          item_edge = universe_search(&induce->universe, source_join->argv[i], target);
+          item_edge = course_search(&induce->universe, source_join->argv[i], target);
           assert(item_edge != NULL);
 
           const mu_coercion_t *item_coercion = item_edge->coercion;

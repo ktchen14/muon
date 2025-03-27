@@ -16,7 +16,7 @@ universe_t *universe_initialize(universe_t *universe) {
   return universe;
 }
 
-course_t *universe_search(
+course_t *course_search(
     const universe_t *universe, const mu_type_t *source, const mu_type_t *target) {
   for (size_t i = 0; i < universe->length; i++) {
     course_t *course = &universe->data[i];
