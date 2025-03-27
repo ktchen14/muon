@@ -18,12 +18,12 @@ typedef struct {
 
   const mu_coercion_t *coercion;  // optional
   int indirect;
-} universe_edge_t;
+} course_t;
 
 typedef struct {
   size_t length;
   size_t volume;
-  universe_edge_t *data;
+  course_t *data;
 } universe_t;
 
 typedef struct {
@@ -37,11 +37,11 @@ typedef struct {
 universe_t *universe_initialize(universe_t *universe)
   __attribute__((nonnull));
 
-universe_edge_t *universe_search(
+course_t *universe_search(
     const universe_t *universe, const mu_type_t *source, const mu_type_t *target)
   __attribute__((nonnull));
 
-universe_edge_t *append_edge(universe_t *universe, const mu_type_t *source, const mu_type_t *target);
+course_t *append_edge(universe_t *universe, const mu_type_t *source, const mu_type_t *target);
 
 __attribute__((nonnull))
 static inline universe_iterator_t universe_iterator(
@@ -56,43 +56,43 @@ static inline const mu_type_t *universe_next_type(universe_iterator_t *iterator)
   const universe_t *universe = iterator->universe;
 
   for (size_t i; (i = iterator->i++) < universe->length;) {
-    universe_edge_t edge = universe->data[i];
-    if (iterator->invert == 0 && edge.target == iterator->target)
-      return edge.source;
-    if (iterator->invert == 1 && edge.source == iterator->target)
-      return edge.target;
+    course_t course = universe->data[i];
+    if (iterator->invert == 0 && course.target == iterator->target)
+      return course.source;
+    if (iterator->invert == 1 && course.source == iterator->target)
+      return course.target;
   }
 
   return NULL;
 }
 
 __attribute__((nonnull))
-static inline universe_edge_t *universe_next(universe_iterator_t *iterator) {
+static inline course_t *universe_next(universe_iterator_t *iterator) {
   const universe_t *universe = iterator->universe;
 
   for (size_t i; (i = iterator->i++) < universe->length;) {
-    universe_edge_t *edge = &universe->data[i];
-    if (iterator->invert == 0 && edge->target == iterator->target)
-      return edge;
-    if (iterator->invert == 1 && edge->source == iterator->target)
-      return edge;
+    course_t *course = &universe->data[i];
+    if (iterator->invert == 0 && course->target == iterator->target)
+      return course;
+    if (iterator->invert == 1 && course->source == iterator->target)
+      return course;
   }
 
   return NULL;
 }
 
-static inline const mu_coercion_t *edge_to_coercion(const universe_edge_t *edge) {
+static inline const mu_coercion_t *edge_to_coercion(const course_t *course) {
   // If the edge has a coercion, return it
-  if (edge->coercion != NULL)
-    return edge->coercion;
+  if (course->coercion != NULL)
+    return course->coercion;
 
-  // Otherwise, return an edge coercion for the edge
+  // Otherwise, return an edge coercion for the course
   const mu_edge_coercion_t *result;
-  if ((result = mu_edge_coercion(edge->source, edge->target)) == NULL)
+  if ((result = mu_edge_coercion(course->source, course->target)) == NULL)
     return NULL;
-  return ((universe_edge_t *) edge)->coercion = &result->as_coercion;
+  return ((course_t *) course)->coercion = &result->as_coercion;
 }
 
-typedef universe_edge_t induce_edge_t;
+typedef course_t induce_edge_t;
 
 #endif /* MU_INDUCTOR_UNIVERSE_I */
