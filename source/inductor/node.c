@@ -57,8 +57,6 @@ const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
   return induce_reveal(induce, root);
 }
 
-// ---------------------------------- Expr -------------------------------- {{{1
-
 __attribute__((nonnull)) static const mu_type_t *access_expr_induce(
     const mu_access_expr_t *expr, induce_t *induce, open_scheme_t *scheme) {
   const mu_variable_type_t *result;
@@ -279,8 +277,6 @@ __attribute__((nonnull)) static const mu_type_t *zero_expr_induce(
   return &result->as_type;
 }
 
-// ---------------------------------- Sign -------------------------------- {{{1
-
 __attribute__((nonnull)) static const mu_type_t *boolean_sign_induce(
     const mu_boolean_sign_t *sign, induce_t *induce, open_scheme_t *scheme) {
   const mu_core_type_t *result;
@@ -323,8 +319,6 @@ __attribute__((nonnull)) static const mu_type_t *vector_sign_induce(
     return NULL;
   return &result->as_type;
 }
-
-// ---------------------------------- Stmt -------------------------------- {{{1
 
 __attribute__((nonnull)) static const mu_type_t *datatype_option_induce(
     const mu_datatype_option_t *option, induce_t *induce, open_scheme_t *scheme) {
@@ -421,8 +415,6 @@ __attribute__((nonnull, pure)) static const mu_type_t *define_stmt_induce(
   /* return &result->as_type; */
 }
 
-// ---------------------------------- View -------------------------------- {{{1
-
 __attribute__((nonnull)) static const mu_type_t *variable_view_induce(
     const mu_variable_view_t *view, induce_t *induce, open_scheme_t *scheme) {
   const mu_variable_type_t *result;
@@ -430,8 +422,6 @@ __attribute__((nonnull)) static const mu_type_t *variable_view_induce(
     return NULL;
   return &result->as_type;
 }
-
-// -------------------------------- Abstract ------------------------------ {{{1
 
 __attribute__((nonnull)) static const mu_type_t *expr_member_induce(
     const mu_expr_member_t *member, induce_t *induce, open_scheme_t *scheme) {
