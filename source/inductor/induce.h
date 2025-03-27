@@ -58,6 +58,15 @@ static inline const mu_type_t *evince_type(
   return type;
 }
 
+__attribute__((nonnull, pure, returns_nonnull))
+static inline const mu_coercion_t *evince_coercion(
+    const induce_t *induce, const mu_node_t *node) {
+  assert(node->id < induce->node_length);
+  const mu_coercion_t *coercion = induce->node_to_coercion[node->id];
+  assert(coercion != NULL);
+  return coercion;
+}
+
 /**
  * @brief Assign the @a coercion to the @a node
  *
