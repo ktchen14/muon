@@ -66,6 +66,8 @@ typedef struct {
 %token BOOLEAN "Boolean"
 %token INTEGER "Integer"
 
+%token CAST "∷"
+
 %token <integer> INTEGER_LITERAL
 %token <boolean> BOOLEAN_LITERAL
 %token <text>    STRING
@@ -79,6 +81,7 @@ typedef struct {
 
 %type <access_expr> access_expr
 %type <boolean_expr> boolean_expr
+%type <name_expr> cast_expr
 %type <integer_expr> integer_expr
 %type <invoke_expr> invoke_expr
 %type <lambda_expr> lambda_expr
@@ -105,6 +108,7 @@ typedef struct {
 %nonassoc LAMBDA
 %left     INVOKE ' '
 %left     '.'
+%left     "∷"
 
 // ========================= YYLLOC_DEFAULT/yyerror ======================= {{{1
 
@@ -157,6 +161,7 @@ name: NAME {
 expr: '(' expr[matter] ')' { $$ = $matter; } |
   access_expr  { $$ = &$access_expr->as_expr; } |
   boolean_expr { $$ = &$boolean_expr->as_expr; } |
+  cast_expr    { $$ = &$cast_expr->as_expr; } |
   integer_expr { $$ = &$integer_expr->as_expr; } |
   invoke_expr  { $$ = &$invoke_expr->as_expr; } |
   lambda_expr  { $$ = &$lambda_expr->as_expr; } |
@@ -171,6 +176,10 @@ access_expr: '.' name {
 
 boolean_expr: BOOLEAN_LITERAL {
   $$ = mu_boolean_expr(syntax->engine, $1);
+}
+
+cast_expr: expr[matter] CAST sign {
+  $$ = NULL;
 }
 
 integer_expr: INTEGER_LITERAL {

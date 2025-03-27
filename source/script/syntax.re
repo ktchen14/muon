@@ -13,27 +13,28 @@ stop = [\x00];
 
 // ================================ Keyword ====================================
 
-<normal> "case"     { return CASE; }
-<normal> "datatype" { return DATATYPE; }
-<normal> "define"   { return DEFINE; }
-<normal> "instance" { return INSTANCE; }
-<normal> "lambda"   { return LAMBDA; }
-<normal> "switch"   { return SWITCH; }
+<normal> "case"          { return CASE; }
+<normal> "datatype"      { return DATATYPE; }
+<normal> "define"        { return DEFINE; }
+<normal> "instance"      { return INSTANCE; }
+<normal> "lambda" | "λ"  { return LAMBDA; }
+<normal> "switch"        { return SWITCH; }
 
-<normal> "Boolean"  { return BOOLEAN; }
-<normal> "Integer"  { return INTEGER; }
+<normal> "Boolean"       { return BOOLEAN; }
+<normal> "Integer"       { return INTEGER; }
 
 // ================================ Operator ====================================
 
-<normal> "("                { return '('; }
-<normal> ")"                { return ')'; }
-<normal> ","                { return ','; }
-<normal> "."                { return '.'; }
-<normal> ":"                { return ':'; }
-<normal> "="                { return '='; }
-<normal> "["                { return '['; }
-<normal> "]"                { return ']'; }
-<normal> "|"                { return '|'; }
+<normal> "("             { return '('; }
+<normal> ")"             { return ')'; }
+<normal> ","             { return ','; }
+<normal> "."             { return '.'; }
+<normal> ":"             { return ':'; }
+<normal> "::" | "∷"      { return CAST; }
+<normal> "="             { return '='; }
+<normal> "["             { return '['; }
+<normal> "]"             { return ']'; }
+<normal> "|"             { return '|'; }
 
 // ================================ Boolean ====================================
 
