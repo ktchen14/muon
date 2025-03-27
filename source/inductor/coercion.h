@@ -50,8 +50,8 @@ typedef struct {
 
 typedef struct {
   MU_COERCION_HEADER;
-  const mu_core_t *core;
-  const mu_coercion_t *argv[/* core->argc */];
+  const mu_core_type_t *target;
+  const mu_coercion_t *argv[/* target->core->argc */];
 } mu_variance_coercion_t;
 
 typedef struct {
@@ -93,7 +93,7 @@ const mu_indirect_coercion_t *mu_indirect_coercion(
   __attribute__((malloc, nonnull));
 
 const mu_variance_coercion_t *mu_variance_coercion(
-    const mu_core_t *core, const mu_coercion_t *argv[/* core->argc */])
+    const mu_core_type_t *target, const mu_coercion_t *argv[/* target->core->argc */])
   __attribute__((malloc, nonnull(1)));
 
 const mu_record_coercion_t *mu_record_coercion(const record_instance_t *instance)
@@ -107,7 +107,7 @@ const mu_unjoin_coercion_t *mu_unjoin_coercion(
     size_t argc, const mu_coercion_t *argv[/* argc */])
   __attribute__((malloc, nonnull));
 
-mu_variance_coercion_t *variance_coercion_allocate(const mu_core_t *core)
+mu_variance_coercion_t *variance_coercion_allocate(const mu_core_type_t *target)
   __attribute__((malloc));
 
 const mu_variance_coercion_t *variance_coercion_activate(
@@ -140,6 +140,9 @@ static inline const mu_type_t *mu_coercion_target(
 
     case IS_KIND_OF(indirect_coercion):
       return mu_coercion_target(indirect_coercion->tail, source);
+
+    case IS_KIND_OF(variance_coercion):
+      return &variance_coercion->target->as_type;
 
     case IS_KIND_OF(join_coercion):
       return &join_coercion->target->as_type;

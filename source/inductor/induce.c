@@ -45,7 +45,7 @@ static const mu_coercion_t *retrieve_core_coercion(
   const mu_core_t *core = source_core;
 
   mu_variance_coercion_t *allocation;
-  if ((allocation = variance_coercion_allocate(core)) == NULL)
+  if ((allocation = variance_coercion_allocate(target)) == NULL)
     return NULL;
 
   for (size_t i = 0; i < core->argc; i++) {
@@ -197,7 +197,7 @@ static const mu_coercion_t *ensure_cc(
   const mu_core_t *core = source_core;
 
   mu_variance_coercion_t *allocation;
-  if ((allocation = variance_coercion_allocate(core)) == NULL)
+  if ((allocation = variance_coercion_allocate(target)) == NULL)
     return NULL;
 
   for (size_t i = 0; i < core->argc; i++) {
