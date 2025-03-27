@@ -4,6 +4,9 @@
 #include "coercion.h"
 #include "type.h"
 
+#include "../common.h"
+
+#include <assert.h>
 #include <stddef.h>
 
 typedef struct {
@@ -95,11 +98,26 @@ static inline const mu_coercion_t *coerce_as(const course_t *course) {
 }
 
 __attribute__((nonnull, pure))
-const mu_coercion_t *course_coercion(const course_t *course) {
+static inline const mu_coercion_t *course_coercion(const course_t *course) {
   const mu_coercion_t *result;
   if ((result = course->coercion) == NULL || result->kind == MU_EDGE_COERCION)
     return NULL;
   return result;
+}
+
+__attribute__((nonnull))
+static inline void course_assign(
+    course_t *course, const mu_coercion_t *coercion) {
+  assert(coercion->kind != MU_EDGE_COERCION);
+
+  const mu_type_t *target = mu_coercion_target(coercion, course->source);
+  assert(target == course->target);
+
+  if (course->source->kind == MU_VARIABLE_TYPE ||
+      course->target->kind == MU_VARIABLE_TYPE)
+    course->indirect = maximum(course->indirect, 2);
+
+  course->coercion = coercion;
 }
 
 #endif /* MU_INDUCTOR_UNIVERSE_I */
