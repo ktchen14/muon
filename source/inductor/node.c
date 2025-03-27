@@ -10,8 +10,6 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-#define evince induce_reveal
-
 static const mu_type_t *node_induce(const mu_node_t *node, induce_t *induce, open_scheme_t *scheme);
 
 const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
@@ -94,8 +92,8 @@ __attribute__((nonnull)) static const mu_type_t *boolean_expr_induce(
 
 __attribute__((nonnull)) static const mu_type_t *cast_expr_induce(
     const mu_cast_expr_t *expr, induce_t *induce, open_scheme_t *scheme) {
-  const mu_type_t *sign_type = evince(induce, &expr->sign->as_node);
-  const mu_type_t *matter_type = evince(induce, &expr->matter->as_node);
+  const mu_type_t *sign_type = evince_type(induce, &expr->sign->as_node);
+  const mu_type_t *matter_type = evince_type(induce, &expr->matter->as_node);
 
   const mu_coercion_t *coercion;
   if ((coercion = ensure_coercion(induce, matter_type, sign_type)) == NULL)
@@ -115,8 +113,8 @@ __attribute__((nonnull)) static const mu_type_t *integer_expr_induce(
 
 __attribute__((nonnull)) static const mu_type_t *invoke_expr_induce(
     const mu_invoke_expr_t *expr, induce_t *induce, open_scheme_t *scheme) {
-  const mu_type_t *operator_type = evince(induce, &expr->operator->as_node);
-  const mu_type_t *argument_type = evince(induce, &expr->argument->as_node);
+  const mu_type_t *operator_type = evince_type(induce, &expr->operator->as_node);
+  const mu_type_t *argument_type = evince_type(induce, &expr->argument->as_node);
 
   const mu_variable_type_t *result;
   if ((result = mu_variable_type(induce, scheme)) == NULL)
@@ -136,8 +134,8 @@ __attribute__((nonnull)) static const mu_type_t *invoke_expr_induce(
 
 __attribute__((nonnull)) static const mu_type_t *lambda_expr_induce(
     const mu_lambda_expr_t *expr, induce_t *induce, open_scheme_t *scheme) {
-  const mu_type_t *argument_type = evince(induce, &expr->argument->as_node);
-  const mu_type_t *output_type = evince(induce, &expr->matter->as_node);
+  const mu_type_t *argument_type = evince_type(induce, &expr->argument->as_node);
+  const mu_type_t *output_type = evince_type(induce, &expr->matter->as_node);
 
   const mu_core_type_t *result;
   if ((result = mu_lambda_type(induce, argument_type, output_type)) == NULL)
@@ -224,7 +222,7 @@ __attribute__((nonnull)) static const mu_type_t *switch_case_induce(
   const mu_type_t *case_type = evince_type(induce, target);
   assert(case_type->kind != MU_SCHEME_TYPE);
 
-  const mu_type_t *expr_type = evince(induce, &node->expr->as_node);
+  const mu_type_t *expr_type = evince_type(induce, &node->expr->as_node);
 
   const mu_core_type_t *result;
   if ((result = mu_lambda_type(induce, case_type, expr_type)) == NULL)

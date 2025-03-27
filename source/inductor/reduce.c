@@ -11,8 +11,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define evince induce_reveal
-
 const mu_coercion_t *reduce_coercion(
     induce_t *induce, const mu_coercion_t *coercion);
 
@@ -325,7 +323,7 @@ const mu_type_t *reduce_node(induce_t *induce, const mu_node_t *root) {
     while ((next = node_at(node, node_cursor(node)->i++)) != NULL)
       node = node_continue(node, next);
 
-    const mu_type_t *source = evince(induce, node);
+    const mu_type_t *source = evince_type(induce, node);
     assert(source != NULL);
 
     const mu_coercion_t *coercion;
@@ -338,5 +336,5 @@ const mu_type_t *reduce_node(induce_t *induce, const mu_node_t *root) {
     induce->node_to_coercion[node->id] = result;
   } while ((node = node_return(node)) != NULL);
 
-  return evince(induce, root);
+  return evince_type(induce, root);
 }
