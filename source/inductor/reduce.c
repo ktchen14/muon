@@ -16,24 +16,10 @@
 const mu_coercion_t *reduce_coercion(
     induce_t *induce, const mu_coercion_t *coercion);
 
-const mu_coercion_t *load_coercion(const course_t *course) {
-  const mu_coercion_t *coercion;
-  if ((coercion = course->coercion) == NULL)
-    return NULL;
-
-  const mu_edge_coercion_t *edge_coercion;
-  if ((edge_coercion = mu_coercion_cast(coercion, edge_coercion)) == NULL)
-    return coercion;
-
-  assert(edge_coercion->source == course->source);
-  assert(edge_coercion->target == course->target);
-  return NULL;
-}
-
 /// Load the coercion that is assigned to the <em>coercion</em>'s course. If that
 /// coercion is the course @a coercion itself, then return @c NULL.
 __attribute__((nonnull, pure))
-const mu_coercion_t *mu_edge_coercion_load(
+const mu_coercion_t *mu_edge_coercion_reload(
     const universe_t *universe, const mu_edge_coercion_t *coercion) {
   const mu_type_t *source = coercion->source;
   const mu_type_t *target = coercion->target;
@@ -41,10 +27,10 @@ const mu_coercion_t *mu_edge_coercion_load(
   course_t *course = course_search(universe, source, target);
   assert(course != NULL);
 
-  const mu_coercion_t *next_coercion;
-  if ((next_coercion = course->coercion) == &coercion->as_coercion)
+  const mu_coercion_t *result;
+  if ((result = course->coercion) == &coercion->as_coercion)
     return NULL;
-  return next_coercion;
+  return result;
 }
 
 const mu_solution_t *reduce_type_to_join(
@@ -223,7 +209,7 @@ const mu_coercion_t *reduce_coercion(
 
     case IS_KIND_OF(edge_coercion): {
       const mu_coercion_t *next_coercion;
-      if ((next_coercion = mu_edge_coercion_load(&induce->universe, edge_coercion)) != NULL)
+      if ((next_coercion = mu_edge_coercion_reload(&induce->universe, edge_coercion)) != NULL)
         return reduce_coercion(induce, next_coercion);
 
       const mu_type_t *source = edge_coercion->source;
@@ -236,7 +222,7 @@ const mu_coercion_t *reduce_coercion(
         if (reduce_type_to_join(induce, v) == NULL)
           return NULL;
 
-        next_coercion = mu_edge_coercion_load(&induce->universe, edge_coercion);
+        next_coercion = mu_edge_coercion_reload(&induce->universe, edge_coercion);
         assert(next_coercion != NULL);
         return reduce_coercion(induce, next_coercion);
       } else {

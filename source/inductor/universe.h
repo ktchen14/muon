@@ -81,6 +81,7 @@ static inline course_t *universe_next(universe_iterator_t *iterator) {
   return NULL;
 }
 
+__attribute__((nonnull))
 static inline const mu_coercion_t *coerce_as(const course_t *course) {
   // If the edge has a coercion, return it
   if (course->coercion != NULL)
@@ -91,6 +92,14 @@ static inline const mu_coercion_t *coerce_as(const course_t *course) {
   if ((result = mu_edge_coercion(course->source, course->target)) == NULL)
     return NULL;
   return ((course_t *) course)->coercion = &result->as_coercion;
+}
+
+__attribute__((nonnull, pure))
+const mu_coercion_t *course_coercion(const course_t *course) {
+  const mu_coercion_t *result;
+  if ((result = course->coercion) == NULL || result->kind == MU_EDGE_COERCION)
+    return NULL;
+  return result;
 }
 
 #endif /* MU_INDUCTOR_UNIVERSE_I */
