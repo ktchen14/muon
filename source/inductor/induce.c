@@ -227,7 +227,7 @@ static const mu_coercion_t *ensure_cv(
   typedef universe_edge_t edge_t;
   universe_iterator_t iterator;
 
-  // First, make the edge ⟨source ⇒ target⟩ in case of recursion
+  // Make the edge ⟨source ⇒ target⟩ in case of recursion
   edge_t *result_edge;
   if ((result_edge = append_edge(&induce->universe, source, target)) == NULL)
     return NULL;

@@ -64,6 +64,26 @@ static inline const mu_type_t *induce_reveal(
 }
 
 /**
+ * @brief Assign the @a coercion to the @a node
+ *
+ * Logically, the assigned @a coercion occurs to the value returned when the
+ * node is evaluated.
+ *
+ * The behavior is undefined if:
+ * - @a node and @a induce don't have the same @a engine
+ * - @a node was created after @a induce
+ * - a coercion has already been assigned to the @a node
+ */
+__attribute__((nonnull))
+static inline void assign_coercion(
+    induce_t *induce, const mu_node_t *node, const mu_coercion_t *coercion) {
+  assert(node->engine == induce->engine);
+  assert(node->id < induce->node_length);
+  assert(induce->node_to_coercion[node->id] == NULL);
+  induce->node_to_coercion[node->id] = coercion;
+}
+
+/**
  * @brief Return the type of the @a node
  *
  * This will traverse each node reachable from the @a node and will add all
