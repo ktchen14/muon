@@ -226,14 +226,14 @@ const mu_coercion_t *reduce_coercion(
           return NULL;
 
         for (size_t i = 0; i < source_join->argc; i++) {
-          const course_t *item_edge;
-          item_edge = course_search(&induce->universe, source_join->argv[i], target);
-          assert(item_edge != NULL);
+          const course_t *course;
+          course = course_search(&induce->universe, source_join->argv[i], target);
+          assert(course != NULL);
 
-          const mu_coercion_t *item_coercion = course_coercion(item_edge);
-          assert(item_coercion != NULL);
+          const mu_coercion_t *coercion = course_coercion(course);
+          assert(coercion != NULL);
 
-          allocation->argv[i] = reduce_coercion(induce, item_coercion);
+          allocation->argv[i] = reduce_coercion(induce, coercion);
         }
 
         const mu_unjoin_coercion_t *result;
