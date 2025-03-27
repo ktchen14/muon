@@ -108,7 +108,7 @@ const mu_solution_t *reduce_type_to_join(
         continue;
 
       const mu_coercion_t *tail;
-      if ((tail = edge_to_coercion(a)) == NULL)
+      if ((tail = coerce_as(a)) == NULL)
         return NULL;
 
       const mu_indirect_coercion_t *result;
@@ -126,7 +126,7 @@ const mu_solution_t *reduce_type_to_join(
         assert(course != NULL);
 
         const mu_coercion_t *tail;
-        if ((tail = edge_to_coercion(course)) == NULL)
+        if ((tail = coerce_as(course)) == NULL)
           return NULL;
 
         const mu_indirect_coercion_t *result;

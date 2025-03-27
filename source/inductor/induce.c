@@ -80,10 +80,10 @@ const mu_coercion_t *retrieve_coercion(
   if (source == target)
     return induce->id_coercion;
 
-  // If we already have an course source ⇒ target then
+  // If ∃⟨source ⇒ target⟩ then return the coercion on that course
   const course_t *course;
   if ((course = course_search(&induce->universe, source, target)) != NULL)
-    return edge_to_coercion(course);
+    return coerce_as(course);
 
   if (source->kind == MU_CORE_TYPE && target->kind == MU_CORE_TYPE) {
     const mu_core_type_t *next_source = (const mu_core_type_t *) source;
@@ -112,10 +112,10 @@ const mu_coercion_t *ensure_coercion(
   if (source == target)
     return induce->id_coercion;
 
-  // If ∃⟨source ⇒ target⟩, then just return the coercion on that course
+  // If ∃⟨source ⇒ target⟩, then return the coercion on that course
   const course_t *course;
   if ((course = course_search(&induce->universe, source, target)) != NULL)
-    return edge_to_coercion(course);
+    return coerce_as(course);
 
   if (source->kind == MU_CORE_TYPE && target->kind == MU_CORE_TYPE) {
     const mu_core_type_t *next_source = (const mu_core_type_t *) source;
