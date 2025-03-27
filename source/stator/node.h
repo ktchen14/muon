@@ -59,6 +59,7 @@ static inline const mu_node_t *node_return(const mu_node_t *node) {
 /// Return the <em>i</em>th node in the abstract @a node
 static inline const mu_node_t *node_at(const mu_node_t *node, size_t i) {
   switch ON_ABSTRACT_OBJECT(node) {
+    case MU_ACCESS_EXPR:
     case MU_BOOLEAN_EXPR:
     case MU_INTEGER_EXPR:
     case MU_NAME_EXPR:
@@ -70,9 +71,6 @@ static inline const mu_node_t *node_at(const mu_node_t *node, size_t i) {
     case MU_DATATYPE_OPTION:
     case MU_VARIABLE_VIEW:
       return NULL;
-
-    case IS_KIND_OF(access_expr):
-      return (const mu_node_t *[]) { &access_expr->matter->as_node, NULL }[i];
 
     case IS_KIND_OF(invoke_expr):
       return (const mu_node_t *[]) {

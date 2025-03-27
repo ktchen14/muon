@@ -165,8 +165,8 @@ expr: '(' expr[matter] ')' { $$ = $matter; } |
   switch_expr  { $$ = &$switch_expr->as_expr; } |
   vector_expr  { $$ = &$vector_expr->as_expr; }
 
-access_expr: expr[matter] '.' name {
-  $$ = mu_access_expr(syntax->engine, $name, $matter);
+access_expr: '.' name {
+  $$ = mu_access_expr(syntax->engine, $name);
 }
 
 boolean_expr: BOOLEAN_LITERAL {
@@ -179,6 +179,9 @@ integer_expr: INTEGER_LITERAL {
 
 invoke_expr: expr[operator] _ expr[argument] %prec INVOKE {
   $$ = mu_invoke_expr(syntax->engine, $operator, $argument);
+
+} | expr[argument] access_expr[operator] {
+  $$ = mu_invoke_expr(syntax->engine, &$operator->as_expr, $argument);
 }
 
 lambda_expr: "lambda" _ view[argument] _ '=' _ expr[matter] %prec LAMBDA {

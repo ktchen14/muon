@@ -129,7 +129,6 @@ typedef struct {
 typedef struct {
   MU_EXPR_HEADER;
   const mu_name_t *name;
-  const mu_expr_t *matter;
 } mu_access_expr_t;
 
 typedef struct {
@@ -205,7 +204,7 @@ typedef struct {
 } mu_zero_expr_t;
 
 const mu_access_expr_t *mu_access_expr(
-    mu_engine_t *engine, const mu_name_t *name, const mu_expr_t *matter)
+    mu_engine_t *engine, const mu_name_t *name)
   __attribute__((malloc, nonnull));
 
 const mu_boolean_expr_t *mu_boolean_expr(mu_engine_t *engine, _Bool data)

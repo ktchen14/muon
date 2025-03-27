@@ -40,15 +40,14 @@ static inline mu_node_t *assign_node(mu_engine_t *engine, mu_node_t *node) {
 )
 
 const mu_access_expr_t *mu_access_expr(
-    mu_engine_t *engine, const mu_name_t *name, const mu_expr_t *matter) {
+    mu_engine_t *engine, const mu_name_t *name) {
   assert(name->engine == engine);
-  assert(matter->as_node.engine == engine);
 
   mu_access_expr_t *result;
   if ((result = node_allocate(engine, sizeof(mu_access_expr_t))) == NULL)
     return NULL;
   *result = (mu_access_expr_t) {
-    .as_expr.kind = MU_ACCESS_EXPR, .name = name, .matter = matter,
+    .as_expr.kind = MU_ACCESS_EXPR, .name = name,
   };
   return assign_node(engine, result);
 }

@@ -59,8 +59,8 @@ const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
 
 __attribute__((nonnull)) static const mu_type_t *access_expr_induce(
     const mu_access_expr_t *expr, induce_t *induce, open_scheme_t *scheme) {
-  const mu_variable_type_t *result;
-  if ((result = mu_variable_type(induce, scheme)) == NULL)
+  const mu_variable_type_t *variable_type;
+  if ((variable_type = mu_variable_type(induce, scheme)) == NULL)
     return NULL;
 
   const mu_core_t *core;
@@ -71,20 +71,17 @@ __attribute__((nonnull)) static const mu_type_t *access_expr_induce(
   mu_core_type_t *allocation;
   if ((allocation = core_type_allocate(induce, core)) == NULL)
     return NULL;
-  allocation->argv[0] = &result->as_type;
+  allocation->argv[0] = &variable_type->as_type;
 
   const mu_core_type_t *record_type;
   if (rare((record_type = core_type_activate(allocation)) == NULL))
     return NULL;
 
-  const mu_type_t *matter_type = induce_reveal(induce, &expr->matter->as_node);
-
-  const mu_coercion_t *coercion;
-  if ((coercion = ensure_coercion(induce, matter_type, &record_type->as_type)) == NULL)
+  const mu_core_type_t *lambda_type;
+  if ((lambda_type = mu_lambda_type(induce, &record_type->as_type, &variable_type->as_type)) == NULL)
     return NULL;
-  assign_coercion(induce, &expr->matter->as_node, coercion);
 
-  return &result->as_type;
+  return &lambda_type->as_type;
 }
 
 __attribute__((nonnull)) static const mu_type_t *boolean_expr_induce(
