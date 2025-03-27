@@ -71,7 +71,7 @@ const mu_join_coercion_t *mu_join_coercion(
 }
 
 const mu_unjoin_coercion_t *mu_unjoin_coercion(
-    size_t argc, const mu_coercion_t *argv[/* argc */]) {
+    const mu_type_t *target, size_t argc, const mu_coercion_t *argv[/* argc */]) {
   mu_unjoin_coercion_t *allocation;
   if ((allocation = unjoin_coercion_allocate(argc)) == NULL)
     return NULL;
@@ -79,7 +79,7 @@ const mu_unjoin_coercion_t *mu_unjoin_coercion(
   for (size_t i = 0; i < argc; i++)
     allocation->argv[i] = argv[i];
 
-  return unjoin_coercion_activate(allocation);
+  return unjoin_coercion_activate(allocation, target);
 }
 
 mu_variance_coercion_t *variance_coercion_allocate(const mu_core_type_t *target) {
@@ -143,7 +143,8 @@ mu_unjoin_coercion_t *unjoin_coercion_allocate(size_t argc) {
 }
 
 const mu_unjoin_coercion_t *unjoin_coercion_activate(
-    mu_unjoin_coercion_t *coercion) {
+    mu_unjoin_coercion_t *coercion, const mu_type_t *target) {
+  coercion->target = target;
   return coercion;
 }
 

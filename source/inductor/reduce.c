@@ -203,7 +203,7 @@ const mu_solution_t *reduce_type_to_join(
     }
 
     const mu_unjoin_coercion_t *unjoin_coercion;
-    if ((unjoin_coercion = unjoin_coercion_activate(allocation)) == NULL)
+    if ((unjoin_coercion = unjoin_coercion_activate(allocation, edge->target)) == NULL)
       return NULL;
     edge->coercion = &unjoin_coercion->as_coercion;
   }
@@ -264,7 +264,7 @@ const mu_coercion_t *reduce_coercion(
         }
 
         const mu_unjoin_coercion_t *result;
-        if ((result = unjoin_coercion_activate(allocation)) == NULL)
+        if ((result = unjoin_coercion_activate(allocation, target)) == NULL)
           return NULL;
         return &result->as_coercion;
       }
@@ -320,7 +320,7 @@ const mu_coercion_t *reduce_coercion(
         allocation->argv[i] = reduce_coercion(induce, unjoin_coercion->argv[i]);
 
       const mu_unjoin_coercion_t *result;
-      if ((result = unjoin_coercion_activate(allocation)) == NULL)
+      if ((result = unjoin_coercion_activate(allocation, unjoin_coercion->target)) == NULL)
         return NULL;
       return &result->as_coercion;
     }
