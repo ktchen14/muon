@@ -16,6 +16,20 @@
 const mu_coercion_t *reduce_coercion(
     induce_t *induce, const mu_coercion_t *coercion);
 
+const mu_coercion_t *load_coercion(const universe_edge_t *edge) {
+  const mu_coercion_t *coercion;
+  if ((coercion = edge->coercion) == NULL)
+    return NULL;
+
+  const mu_edge_coercion_t *edge_coercion;
+  if ((edge_coercion = mu_coercion_cast(coercion, edge_coercion)) == NULL)
+    return coercion;
+
+  assert(edge_coercion->source == edge->source);
+  assert(edge_coercion->as_coercion.target == edge->target);
+  return NULL;
+}
+
 /// Load the coercion that is assigned to the <em>coercion</em>'s edge. If that
 /// coercion is the edge @a coercion itself, then return @c NULL.
 __attribute__((nonnull, pure))
