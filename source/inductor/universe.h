@@ -93,6 +93,4 @@ static inline const mu_coercion_t *edge_to_coercion(const course_t *course) {
   return ((course_t *) course)->coercion = &result->as_coercion;
 }
 
-typedef course_t induce_edge_t;
-
 #endif /* MU_INDUCTOR_UNIVERSE_I */
