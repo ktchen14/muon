@@ -26,7 +26,7 @@ const mu_coercion_t *load_coercion(const universe_edge_t *edge) {
     return coercion;
 
   assert(edge_coercion->source == edge->source);
-  assert(edge_coercion->as_coercion.target == edge->target);
+  assert(edge_coercion->target == edge->target);
   return NULL;
 }
 
@@ -36,7 +36,7 @@ __attribute__((nonnull, pure))
 const mu_coercion_t *mu_edge_coercion_load(
     const universe_t *universe, const mu_edge_coercion_t *coercion) {
   const mu_type_t *source = coercion->source;
-  const mu_type_t *target = coercion->as_coercion.target;
+  const mu_type_t *target = coercion->target;
 
   universe_edge_t *edge = universe_search(universe, source, target);
   assert(edge != NULL);
@@ -69,7 +69,7 @@ const mu_solution_t *reduce_type_to_join(
       edge_coercion = mu_coercion_cast(edge->coercion, edge_coercion);
       assert(edge_coercion != NULL);
       assert(edge_coercion->source == edge->source);
-      assert(edge_coercion->as_coercion.target == edge->target);
+      assert(edge_coercion->target == edge->target);
     }
 
     // If the edge's source isn't a variable type, then length++
@@ -228,7 +228,7 @@ const mu_coercion_t *reduce_coercion(
         return reduce_coercion(induce, next_coercion);
 
       const mu_type_t *source = edge_coercion->source;
-      const mu_type_t *target = edge_coercion->as_coercion.target;
+      const mu_type_t *target = edge_coercion->target;
 
       assert(target->kind == MU_VARIABLE_TYPE || source->kind == MU_VARIABLE_TYPE);
 

@@ -16,8 +16,7 @@ const mu_edge_coercion_t *mu_edge_coercion(const mu_type_t *source, const mu_typ
   if ((result = malloc(sizeof(mu_edge_coercion_t))) == NULL)
     return NULL;
   *result = (mu_edge_coercion_t) {
-    .as_coercion = { .kind = MU_EDGE_COERCION, .target = target, },
-    .source = source,
+    .as_coercion.kind = MU_EDGE_COERCION, .target = target, .source = source,
   };
   return result;
 }
@@ -168,7 +167,7 @@ void mu_coercion_debug(const mu_coercion_t *coercion) {
       debug(" ");
       debug(PRIsKIND, DEBUG_COERCION_KIND("⇒"));
       debug(" ");
-      type_debug(edge_coercion->as_coercion.target, 0);
+      type_debug(edge_coercion->target, 0);
       debug(PRIsKIND, DEBUG_COERCION_KIND("⟩"));
       return;
     }

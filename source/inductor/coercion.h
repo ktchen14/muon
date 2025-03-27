@@ -38,6 +38,7 @@ typedef mu_coercion_t mu_id_coercion_t;
 
 typedef struct {
   MU_COERCION_HEADER;
+  const mu_type_t *target;
   const mu_type_t *source;
 } mu_edge_coercion_t;
 
@@ -134,6 +135,9 @@ static inline const mu_type_t *mu_coercion_target(
     case MU_ID_COERCION:
       return source;
 
+    case IS_KIND_OF(edge_coercion):
+      return edge_coercion->target;
+
     case IS_KIND_OF(indirect_coercion):
       return mu_coercion_target(indirect_coercion->tail, source);
 
@@ -143,7 +147,7 @@ static inline const mu_type_t *mu_coercion_target(
     default:
       return coercion->target;
   }
-  return coercion->target;
+  __builtin_unreachable();
 }
 
 void mu_coercion_debug(const mu_coercion_t *coercion)
