@@ -170,10 +170,7 @@ const mu_coercion_t *ensure_coercion(
     while ((next_target = universe_next_type(&target_iterator)) != NULL)
       append_edge(&induce->universe, source, next_target)->indirect = 1;
 
-    const mu_edge_coercion_t *result;
-    if ((result = mu_edge_coercion(source, target)) == NULL)
-      return NULL;
-    return course->coercion = &result->as_coercion;
+    return coerce_as(course);
   }
 
   __builtin_unreachable();
@@ -258,12 +255,7 @@ static const mu_coercion_t *ensure_cv(
     next_edge->indirect = 1;
   }
 
-  const mu_edge_coercion_t *result;
-  if ((result = mu_edge_coercion(source, target)) == NULL)
-    return NULL;
-  result_edge->coercion = &result->as_coercion;
-
-  return &result->as_coercion;
+  return coerce_as(result_edge);
 }
 
 static const mu_coercion_t *ensure_vc(
@@ -308,10 +300,7 @@ static const mu_coercion_t *ensure_vc(
     next_edge->indirect = 1;
   }
 
-  const mu_edge_coercion_t *result;
-  if ((result = mu_edge_coercion(source, target)) == NULL)
-    return NULL;
-  return result_edge->coercion = &result->as_coercion;
+  return coerce_as(result_edge);
 }
 
 
