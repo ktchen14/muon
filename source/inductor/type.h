@@ -202,7 +202,6 @@ void type_debug(const mu_type_t *type, _Bool expand)
   __attribute__((nonnull));
 
 void debug_variable_type_name(const mu_variable_type_t *type);
-void debug_just_type(const mu_type_t *type);
 
 /// @internal An enumeration over each kind of type, e.g. @c _core_type_kind
 enum {
