@@ -17,12 +17,10 @@
 typedef struct induce_t induce_t;
 struct induce_t {
   mu_engine_t *engine;
-
-  const detect_result_t *detect;
-
+  size_t node_length;
   size_t type_number;
 
-  size_t node_length;
+  const detect_result_t *detect;
 
   const mu_type_t **node_to_type; /* const type_t *[node_length] */
   const mu_coercion_t **node_to_coercion;
@@ -37,9 +35,6 @@ struct induce_t {
   const mu_core_t *datatype_core;
   const mu_core_t *core[200];
   size_t core_length;
-
-  const mu_core_t *record_core[200];
-  size_t record_core_length;
 
   const record_instance_t *record_instance[200];
   size_t record_instance_length;

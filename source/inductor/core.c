@@ -17,9 +17,10 @@ const mu_core_t *mu_simple_core(induce_t *induce, const mu_name_t *name) {
 }
 
 const mu_core_t *single_record_core(induce_t *induce, const mu_name_t *name) {
-  for (size_t i = 0; i < induce->record_core_length; i++) {
-    const mu_core_t *candidate = induce->record_core[i];
-    assert(candidate->kind == MU_RECORD_CORE);
+  for (size_t i = 0; i < induce->core_length; i++) {
+    const mu_core_t *candidate = induce->core[i];
+    if (candidate->kind != MU_RECORD_CORE)
+      continue;
 
     if (candidate->argc != 1)
       continue;
@@ -37,7 +38,7 @@ const mu_core_t *single_record_core(induce_t *induce, const mu_name_t *name) {
   };
   result->argv[0] = (mu_core_member_t) { .name = name };
 
-  induce->record_core[induce->record_core_length++] = result;
+  induce->core[induce->core_length++] = result;
   return result;
 }
 
@@ -62,9 +63,10 @@ const mu_core_t *record_core_activate(mu_core_t *core) {
 
   induce_t *induce = (induce_t *) core->induce;
 
-  for (size_t i = 0; i < induce->record_core_length; i++) {
-    const mu_core_t *candidate = induce->record_core[i];
-    assert(candidate->kind == MU_RECORD_CORE);
+  for (size_t i = 0; i < induce->core_length; i++) {
+    const mu_core_t *candidate = induce->core[i];
+    if (candidate->kind != MU_RECORD_CORE)
+      continue;
 
     if (core->argc != candidate->argc)
       continue;
@@ -80,7 +82,7 @@ const mu_core_t *record_core_activate(mu_core_t *core) {
   next_record_core:;
   }
 
-  induce->record_core[induce->record_core_length++] = core;
+  induce->core[induce->core_length++] = core;
   return core;
 }
 
