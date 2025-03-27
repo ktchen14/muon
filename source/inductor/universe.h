@@ -113,9 +113,8 @@ static inline void course_assign(
   const mu_type_t *target = mu_coercion_target(coercion, course->source);
   assert(target == course->target);
 
-  if (course->source->kind == MU_VARIABLE_TYPE ||
-      course->target->kind == MU_VARIABLE_TYPE)
-    course->indirect = maximum(course->indirect, 2);
+  if (coercion->kind == MU_INDIRECT_COERCION)
+    course->indirect = 2;
 
   course->coercion = coercion;
 }
