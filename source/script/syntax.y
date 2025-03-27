@@ -196,8 +196,6 @@ name_expr: name {
 
 expr_member: name ':' _ expr {
   $$ = mu_expr_member(syntax->engine, $name, $expr);
-} | expr {
-  $$ = mu_expr_member(syntax->engine, NULL, $expr);
 }
 
 record_expr: '(' record_argv ')' {
