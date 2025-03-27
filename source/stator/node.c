@@ -34,6 +34,16 @@ static inline mu_node_t *assign_node(mu_engine_t *engine, mu_node_t *node) {
   return node;
 }
 
+/* __attribute__((malloc, nonnull)) */
+/* static inline const mu_node_t *node_create( */
+/*     mu_engine_t *engine, size_t size, void *data) { */
+/*   mu_node_t *result; */
+/*   if ((result = node_allocate(engine, size)) == NULL) */
+/*     return NULL; */
+/*   memcpy(result, data, size); */
+/*   return assign_node(engine, result); */
+/* } */
+
 const mu_access_expr_t *mu_access_expr(
     mu_engine_t *engine, const mu_name_t *name) {
   assert(name->engine == engine);
