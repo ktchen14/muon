@@ -73,7 +73,7 @@ typedef struct {
   const mu_coercion_t *argv[/* argc */];
 } mu_unjoin_coercion_t;
 
-extern const mu_coercion_t *const NO_SUCH_COERCION;
+extern const void *const NO_SUCH_COERCION;
 
 /// @internal An enumeration over each kind of coercion, e.g. @c _id_coercion_kind
 enum {

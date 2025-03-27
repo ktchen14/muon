@@ -9,8 +9,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-static const mu_coercion_t zero = {0};
-const mu_coercion_t *const NO_SUCH_COERCION = &zero;
+const void *const NO_SUCH_COERCION = &NO_SUCH_COERCION;
 
 const mu_edge_coercion_t *mu_edge_coercion(const mu_type_t *source, const mu_type_t *target) {
   typedef union {
