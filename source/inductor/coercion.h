@@ -62,6 +62,7 @@ typedef struct {
 /// Coercion of τ to a join type with τ at discriminant @c i
 typedef struct {
   MU_COERCION_HEADER;
+  const mu_variable_type_t *target;
   size_t i;
 } mu_join_coercion_t;
 
@@ -97,7 +98,8 @@ const mu_variance_coercion_t *mu_variance_coercion(
 const mu_record_coercion_t *mu_record_coercion(const record_instance_t *instance)
   __attribute__((malloc, nonnull));
 
-const mu_join_coercion_t *mu_join_coercion(size_t i)
+const mu_join_coercion_t *mu_join_coercion(
+    const mu_variable_type_t *target, size_t i)
   __attribute__((malloc));
 
 const mu_unjoin_coercion_t *mu_unjoin_coercion(
@@ -134,6 +136,9 @@ static inline const mu_type_t *mu_coercion_target(
 
     case IS_KIND_OF(indirect_coercion):
       return mu_coercion_target(indirect_coercion->tail, source);
+
+    case IS_KIND_OF(join_coercion):
+      return &join_coercion->target->as_type;
 
     default:
       return coercion->target;

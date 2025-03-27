@@ -164,7 +164,7 @@ const mu_solution_t *reduce_type_to_join(
 
     // Handle a normal type
     const mu_join_coercion_t *coercion;
-    if ((coercion = mu_join_coercion(join->argc)) == NULL)
+    if ((coercion = mu_join_coercion(variable_type, join->argc)) == NULL)
       return NULL;
     join->argv[join->argc++] = edge->source;
 

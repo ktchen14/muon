@@ -59,12 +59,13 @@ const mu_record_coercion_t *mu_record_coercion(const record_instance_t *instance
   return result;
 }
 
-const mu_join_coercion_t *mu_join_coercion(size_t i) {
+const mu_join_coercion_t *mu_join_coercion(
+    const mu_variable_type_t *target, size_t i) {
   mu_join_coercion_t *result;
   if ((result = malloc(sizeof(mu_join_coercion_t))) == NULL)
     return NULL;
   *result = (mu_join_coercion_t) {
-    .as_coercion.kind = MU_JOIN_COERCION, .i = i,
+    .as_coercion.kind = MU_JOIN_COERCION, .target = target, .i = i,
   };
   return result;
 }
