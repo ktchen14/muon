@@ -93,13 +93,13 @@ const mu_coercion_t *retrieve_coercion(
     if ((result = retrieve_core_coercion(induce, next_source, next_target)) == NULL)
       return NULL;
 
-    if (result != NO_SUCH_COERCION) {
-      course_t *course;
-      if ((course = append_edge(&induce->universe, source, target)) == NULL)
-        return NULL;
-      course->coercion = result;
-    }
-    return result;
+    if (result == NO_SUCH_COERCION)
+      return result;
+
+    course_t *course;
+    if ((course = append_edge(&induce->universe, source, target)) == NULL)
+      return NULL;
+    return course_assign(course, result);
   }
 
   return NO_SUCH_COERCION;

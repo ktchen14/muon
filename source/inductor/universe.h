@@ -106,7 +106,7 @@ static inline const mu_coercion_t *course_coercion(const course_t *course) {
 }
 
 __attribute__((nonnull))
-static inline void course_assign(
+static inline const mu_coercion_t *course_assign(
     course_t *course, const mu_coercion_t *coercion) {
   assert(coercion->kind != MU_EDGE_COERCION);
 
@@ -116,7 +116,7 @@ static inline void course_assign(
   if (coercion->kind == MU_INDIRECT_COERCION)
     course->indirect = 2;
 
-  course->coercion = coercion;
+  return course->coercion = coercion;
 }
 
 #endif /* MU_INDUCTOR_UNIVERSE_I */
