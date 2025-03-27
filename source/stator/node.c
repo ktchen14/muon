@@ -67,6 +67,17 @@ const mu_boolean_expr_t *mu_boolean_expr(mu_engine_t *engine, _Bool data) {
   return assign_node(engine, &result->as_node), result;
 }
 
+const mu_cast_expr_t *mu_cast_expr(
+    mu_engine_t *engine, const mu_sign_t *sign, const mu_expr_t *matter) {
+  mu_cast_expr_t *result;
+  if ((result = node_allocate(engine, sizeof(mu_cast_expr_t))) == NULL)
+    return NULL;
+  *result = (mu_cast_expr_t) {
+    .as_expr.kind = MU_CAST_EXPR, .sign = sign, .matter = matter,
+  };
+  return assign_node(engine, &result->as_node), result;
+}
+
 const mu_integer_expr_t *mu_integer_expr(mu_engine_t *engine, uint64_t data) {
   mu_integer_expr_t *result;
   if ((result = node_allocate(engine, sizeof(mu_integer_expr_t))) == NULL)

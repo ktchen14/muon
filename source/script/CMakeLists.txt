@@ -11,6 +11,7 @@ add_custom_command(
     --depfile "${CMAKE_CURRENT_BINARY_DIR}/scan.d"
     --case-ranges
     --conditions
+    --input-encoding utf8
     --utf8
     -W -Werror
   MAIN_DEPENDENCY "${CMAKE_CURRENT_SOURCE_DIR}/scan.c"

@@ -72,13 +72,15 @@ static inline const mu_node_t *node_at(const mu_node_t *node, size_t i) {
     case MU_VARIABLE_VIEW:
       return NULL;
 
-    case IS_KIND_OF(invoke_expr):
-      return (const mu_node_t *[]) {
+    case IS_KIND_OF(cast_expr): return (const mu_node_t *[]) {
+        &cast_expr->sign->as_node, &cast_expr->matter->as_node, NULL,
+      }[i];
+
+    case IS_KIND_OF(invoke_expr): return (const mu_node_t *[]) {
         &invoke_expr->operator->as_node, &invoke_expr->argument->as_node, NULL,
       }[i];
 
-    case IS_KIND_OF(lambda_expr):
-      return (const mu_node_t *[]) {
+    case IS_KIND_OF(lambda_expr): return (const mu_node_t *[]) {
         &lambda_expr->argument->as_node, &lambda_expr->matter->as_node, NULL,
       }[i];
 

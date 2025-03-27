@@ -81,7 +81,7 @@ typedef struct {
 
 %type <access_expr> access_expr
 %type <boolean_expr> boolean_expr
-%type <name_expr> cast_expr
+%type <cast_expr> cast_expr
 %type <integer_expr> integer_expr
 %type <invoke_expr> invoke_expr
 %type <lambda_expr> lambda_expr
@@ -178,8 +178,8 @@ boolean_expr: BOOLEAN_LITERAL {
   $$ = mu_boolean_expr(syntax->engine, $1);
 }
 
-cast_expr: expr[matter] CAST sign {
-  $$ = NULL;
+cast_expr: expr[matter] _ "∷" _ sign {
+  $$ = mu_cast_expr(syntax->engine, $sign, $matter);
 }
 
 integer_expr: INTEGER_LITERAL {

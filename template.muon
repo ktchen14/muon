@@ -4,7 +4,7 @@ define foo = lambda x = Foo1
 
 define x = 1
 define y = 2
-define list = handle_list [true, false, x]
+define list = handle_list [1, 2, x]
 
 define id1 = lambda x = x
 define id2 = lambda x = x
@@ -15,3 +15,5 @@ define b = id1 (id2 (id3 id4))
 
 define sw = switch (case Foo1 = 1, case Foo1 = 3, case Foo2 = true)
 define rs = sw Foo1
+
+define z = [1] ∷ [Integer]

@@ -10,6 +10,7 @@
 #define MU_EACH_EXPR_KIND(emit, ...) \
   emit(access, ACCESS, Access, ##__VA_ARGS__) \
   emit(boolean, BOOLEAN, Boolean, ##__VA_ARGS__) \
+  emit(cast, CAST, Cast, ##__VA_ARGS__) \
   emit(integer, INTEGER, Integer, ##__VA_ARGS__) \
   emit(invoke, INVOKE, Invoke, ##__VA_ARGS__) \
   emit(lambda, LAMBDA, Lambda, ##__VA_ARGS__) \
@@ -138,6 +139,12 @@ typedef struct {
 
 typedef struct {
   MU_EXPR_HEADER;
+  const mu_sign_t *sign;
+  const mu_expr_t *matter;
+} mu_cast_expr_t;
+
+typedef struct {
+  MU_EXPR_HEADER;
   uint64_t data;
 } mu_integer_expr_t;
 
@@ -208,6 +215,10 @@ const mu_access_expr_t *mu_access_expr(
   __attribute__((malloc, nonnull));
 
 const mu_boolean_expr_t *mu_boolean_expr(mu_engine_t *engine, _Bool data)
+  __attribute__((malloc, nonnull));
+
+const mu_cast_expr_t *mu_cast_expr(
+    mu_engine_t *engine, const mu_sign_t *sign, const mu_expr_t *matter)
   __attribute__((malloc, nonnull));
 
 const mu_integer_expr_t *mu_integer_expr(mu_engine_t *engine, uint64_t data)

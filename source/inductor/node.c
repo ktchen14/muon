@@ -92,6 +92,19 @@ __attribute__((nonnull)) static const mu_type_t *boolean_expr_induce(
   return &result->as_type;
 }
 
+__attribute__((nonnull)) static const mu_type_t *cast_expr_induce(
+    const mu_cast_expr_t *expr, induce_t *induce, open_scheme_t *scheme) {
+  const mu_type_t *sign_type = evince(induce, &expr->sign->as_node);
+  const mu_type_t *matter_type = evince(induce, &expr->matter->as_node);
+
+  const mu_coercion_t *coercion;
+  if ((coercion = ensure_coercion(induce, matter_type, sign_type)) == NULL)
+    return NULL;
+  assign_coercion(induce, &expr->matter->as_node, coercion);
+
+  return sign_type;
+}
+
 __attribute__((nonnull)) static const mu_type_t *integer_expr_induce(
     const mu_integer_expr_t *expr, induce_t *induce, open_scheme_t *scheme) {
   const mu_core_type_t *result;
