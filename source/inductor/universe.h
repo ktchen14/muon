@@ -85,7 +85,7 @@ static inline course_t *universe_next(universe_iterator_t *iterator) {
 }
 
 __attribute__((nonnull))
-static inline const mu_coercion_t *coerce_as(const course_t *course) {
+static inline const mu_coercion_t *coerce_with(const course_t *course) {
   // If the edge has a coercion, return it
   if (course->coercion != NULL)
     return course->coercion;

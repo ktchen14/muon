@@ -83,7 +83,7 @@ const mu_coercion_t *retrieve_coercion(
   // If ∃⟨source ⇒ target⟩ then return the coercion on that course
   const course_t *course;
   if ((course = course_search(&induce->universe, source, target)) != NULL)
-    return coerce_as(course);
+    return coerce_with(course);
 
   if (source->kind == MU_CORE_TYPE && target->kind == MU_CORE_TYPE) {
     const mu_core_type_t *next_source = (const mu_core_type_t *) source;
@@ -115,7 +115,7 @@ const mu_coercion_t *ensure_coercion(
   // If ∃⟨source ⇒ target⟩, then return the coercion on that course
   const course_t *course;
   if ((course = course_search(&induce->universe, source, target)) != NULL)
-    return coerce_as(course);
+    return coerce_with(course);
 
   if (source->kind == MU_CORE_TYPE && target->kind == MU_CORE_TYPE) {
     const mu_core_type_t *next_source = (const mu_core_type_t *) source;
@@ -170,7 +170,7 @@ const mu_coercion_t *ensure_coercion(
     while ((next_target = universe_next_type(&target_iterator)) != NULL)
       append_edge(&induce->universe, source, next_target)->indirect = 1;
 
-    return coerce_as(course);
+    return coerce_with(course);
   }
 
   __builtin_unreachable();
@@ -255,7 +255,7 @@ static const mu_coercion_t *ensure_cv(
     next_edge->indirect = 1;
   }
 
-  return coerce_as(result_edge);
+  return coerce_with(result_edge);
 }
 
 static const mu_coercion_t *ensure_vc(
@@ -300,7 +300,7 @@ static const mu_coercion_t *ensure_vc(
     next_edge->indirect = 1;
   }
 
-  return coerce_as(result_edge);
+  return coerce_with(result_edge);
 }
 
 
