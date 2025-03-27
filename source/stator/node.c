@@ -471,7 +471,7 @@ static inline void debug_node_type(const mu_node_t *node) {
     return;
 
   const mu_type_t *type;
-  if ((type = induce_reveal(debug_induce, node)) == NULL)
+  if ((type = induce_evince(debug_induce, node)) == NULL)
     return;
 
   debug(" ∷ ");
@@ -494,7 +494,7 @@ static inline int debug_node_coercion(const mu_node_t *node) {
   mu_coercion_debug(coercion);
 
   const mu_type_t *source_type;
-  if ((source_type = induce_reveal(debug_induce, node)) != NULL) {
+  if ((source_type = induce_evince(debug_induce, node)) != NULL) {
     const mu_type_t *target_type;
     if ((target_type = mu_coercion_target(coercion, source_type)) != NULL) {
       debug(" ∷ ");

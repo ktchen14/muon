@@ -54,7 +54,7 @@ const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
     induce->node_to_type[node->id] = type;
   } while ((node = node_return(node)) != NULL);
 
-  return induce_reveal(induce, root);
+  return evince_type(induce, root);
 }
 
 __attribute__((nonnull)) static const mu_type_t *access_expr_induce(
@@ -156,7 +156,7 @@ __attribute__((nonnull)) static const mu_type_t *name_expr_induce(
     return &result->as_type;
   }
 
-  const mu_type_t *result = induce_reveal(induce, target);
+  const mu_type_t *result = evince_type(induce, target);
   if (result->kind != MU_SCHEME_TYPE)
     return result;
 
@@ -208,7 +208,7 @@ __attribute__((nonnull)) static const mu_type_t *record_expr_induce(
     return NULL;
 
   for (size_t i = 0; i < expr->argc; i++)
-    type_allocation->argv[i] = induce_reveal(induce, &expr->argv[i]->as_node);
+    type_allocation->argv[i] = evince_type(induce, &expr->argv[i]->as_node);
 
   const mu_core_type_t *result;
   if (rare((result = core_type_activate(type_allocation)) == NULL))
@@ -221,7 +221,7 @@ __attribute__((nonnull)) static const mu_type_t *switch_case_induce(
   const mu_node_t *target;
   if ((target = detect_evince(induce->detect, &node->as_node)) == NULL)
     abort();
-  const mu_type_t *case_type = induce_reveal(induce, target);
+  const mu_type_t *case_type = evince_type(induce, target);
   assert(case_type->kind != MU_SCHEME_TYPE);
 
   const mu_type_t *expr_type = evince(induce, &node->expr->as_node);
@@ -239,7 +239,7 @@ __attribute__((nonnull)) static const mu_type_t *switch_expr_induce(
     return NULL;
 
   for (size_t i = 0; i < expr->argc; i++) {
-    const mu_type_t *type = induce_reveal(induce, &expr->argv[i]->as_node);
+    const mu_type_t *type = evince_type(induce, &expr->argv[i]->as_node);
 
     const mu_coercion_t *coercion;
     if ((coercion = ensure_coercion(induce, type, &result->as_type)) == NULL)
@@ -265,7 +265,7 @@ __attribute__((nonnull)) static const mu_type_t *vector_expr_induce(
     return NULL;
 
   for (size_t i = 0; i < expr->argc; i++) {
-    const mu_type_t *type = induce_reveal(induce, &expr->argv[i]->as_node);
+    const mu_type_t *type = evince_type(induce, &expr->argv[i]->as_node);
 
     const mu_coercion_t *coercion;
     if ((coercion = ensure_coercion(induce, type, &matter_type->as_type)) == NULL)
@@ -307,7 +307,7 @@ __attribute__((nonnull)) static const mu_type_t *name_sign_induce(
     const mu_name_sign_t *sign, induce_t *induce, open_scheme_t *scheme) {
   const mu_node_t *target;
   if ((target = detect_evince(induce->detect, &sign->as_node)) != NULL)
-    return induce_reveal(induce, target);
+    return evince_type(induce, target);
 
   const mu_variable_type_t *result;
   if ((result = mu_variable_type(induce, scheme)) == NULL)
@@ -322,7 +322,7 @@ __attribute__((nonnull)) static const mu_type_t *record_sign_induce(
 
 __attribute__((nonnull)) static const mu_type_t *vector_sign_induce(
     const mu_vector_sign_t *sign, induce_t *induce, open_scheme_t *scheme) {
-  const mu_type_t *matter = induce_reveal(induce, &sign->matter->as_node);
+  const mu_type_t *matter = evince_type(induce, &sign->matter->as_node);
 
   const mu_core_type_t *result;
   if ((result = mu_vector_type(induce, matter)) == NULL)
@@ -354,7 +354,7 @@ __attribute__((nonnull, pure)) static const mu_type_t *define_stmt_induce(
     const mu_define_stmt_t *stmt, induce_t *induce, open_scheme_t *scheme) {
   assert(scheme->node == &stmt->as_node);
 
-  const mu_type_t *expr_type = induce_reveal(induce, &stmt->expr->as_node);
+  const mu_type_t *expr_type = evince_type(induce, &stmt->expr->as_node);
   return expr_type;
   /* mark_type(induce, expr_type, 0, scheme->rank); */
 
@@ -435,7 +435,7 @@ __attribute__((nonnull)) static const mu_type_t *variable_view_induce(
 
 __attribute__((nonnull)) static const mu_type_t *expr_member_induce(
     const mu_expr_member_t *member, induce_t *induce, open_scheme_t *scheme) {
-  return induce_reveal(induce, &member->expr->as_node);
+  return evince_type(induce, &member->expr->as_node);
 }
 
 static const mu_type_t *node_induce(const mu_node_t *node, induce_t *induce, open_scheme_t *scheme) {

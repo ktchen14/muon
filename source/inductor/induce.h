@@ -50,7 +50,7 @@ induce_t *induce_initialize(
   __attribute__((nonnull));
 
 __attribute__((nonnull, pure, returns_nonnull))
-static inline const mu_type_t *induce_reveal(
+static inline const mu_type_t *evince_type(
     const induce_t *induce, const mu_node_t *node) {
   assert(node->id < induce->node_length);
   const mu_type_t *type = induce->node_to_type[node->id];
