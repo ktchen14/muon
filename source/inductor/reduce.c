@@ -315,28 +315,6 @@ const mu_coercion_t *reduce_coercion_external(
   return result;
 }
 
-const mu_type_t *reduce_type(induce_t *induce, const mu_type_t *type) {
-  assert(type->kind != MU_SCHEME_TYPE);
-
-  const mu_variable_type_t *variable_type;
-  if ((variable_type = mu_type_cast(type, variable_type)) != NULL) {
-    if (reduce_type_to_join(induce, variable_type) == NULL)
-      return NULL;
-    return type;
-  }
-
-  const mu_core_type_t *core_type = mu_type_cast(type, core_type);
-  assert(core_type != NULL);
-
-  const mu_core_t *core = core_type->core;
-  for (size_t i = 0; i < core->argc; i++) {
-    if (reduce_type(induce, core_type->argv[i]) == NULL)
-      return NULL;
-  }
-
-  return type;
-}
-
 const mu_type_t *reduce_node(induce_t *induce, const mu_node_t *root) {
   assert(root->id < induce->node_length);
 
@@ -346,7 +324,6 @@ const mu_type_t *reduce_node(induce_t *induce, const mu_node_t *root) {
       node = node_continue(node, next);
 
     const mu_type_t *source = evince_type(induce, node);
-    reduce_type(induce, source);
     assert(source != NULL);
 
     const mu_coercion_t *coercion;
