@@ -31,6 +31,42 @@ const mu_coercion_t *mu_edge_coercion_reload(
   return result;
 }
 
+/**
+ * This should be called when we find a triangular type relationship within the
+ * source side of a type variable v. If we locate a coercion α ⇝ β, and we have
+ * both ⟨α ⇒ v⟩ and ⟨β ⇒ v⟩, then we should make ⟨α ⇒ v⟩ an indirect edge since
+ * α is coercible to v through α ⇝ β ⇝ v.
+ *
+ * Because we maintain the transitive closure of each type variable, we also
+ * know that ∃⟨α ⇒ τ⟩ and ∃⟨β ⇒ τ⟩ if ∃⟨v ⇒ τ⟩. Thus, within the source side of
+ * each type variable τ that v has an edge to, we should also make ⟨α ⇒ τ⟩ an
+ * indirect edge (through α ⇝ β ⇝ τ).
+ *
+ * In this example, origin should be ⟨α ⇒ v⟩ and coercion should be α ⇝ β.
+ */
+void *redirect_up(
+    induce_t *induce, type_edge_t *origin, const mu_coercion_t *coercion) {
+  universe_iterator_t it;
+  it = universe_iterator(&induce->universe, origin->target, 1);
+  for (type_edge_t *c; (c = universe_next(&it)) != NULL;) {
+    if (c->target->kind != MU_VARIABLE_TYPE)
+      continue;
+
+    type_edge_t *edge = universe_search(&induce->universe, origin->source, c->target);
+    assert(edge != NULL);
+
+    const mu_coercion_t *tail;
+    if ((tail = coerce_with(edge)) == NULL)
+      return NULL;
+
+    const mu_indirect_coercion_t *result;
+    if ((result = mu_indirect_coercion(coercion, tail)) == NULL)
+      return NULL;
+    edge_assign(edge, &result->as_coercion);
+  }
+  return induce;
+}
+
 const mu_solution_t *reduce_type_to_join(
     induce_t *induce, const mu_variable_type_t *variable_type) {
   if (variable_type->join != NULL)
@@ -58,7 +94,7 @@ const mu_solution_t *reduce_type_to_join(
 
   // Take each type that we haven't definitely eliminated as a direct source for
   // this variable type (i.e. each edge with indirect = 2), and simplify.
-  universe_iterator_t it, jt, kt;
+  universe_iterator_t it, jt;
   it = universe_iterator(universe, &variable_type->as_type, 0);
   for (type_edge_t *a; (a = universe_next(&it)) != NULL;) {
     if (a->indirect > 1 || a->source->kind == MU_VARIABLE_TYPE)
@@ -90,23 +126,8 @@ const mu_solution_t *reduce_type_to_join(
         return NULL;
       edge_assign(b, &result->as_coercion);
 
-      kt = universe_iterator(universe, &variable_type->as_type, 1);
-      for (type_edge_t *c; (c = universe_next(&kt)) != NULL;) {
-        if (c->target->kind != MU_VARIABLE_TYPE)
-          continue;
-
-        type_edge_t *edge = universe_search(&induce->universe, b_type, c->target);
-        assert(edge != NULL);
-
-        const mu_coercion_t *tail;
-        if ((tail = coerce_with(edge)) == NULL)
-          return NULL;
-
-        const mu_indirect_coercion_t *result;
-        if ((result = mu_indirect_coercion(coercion, tail)) == NULL)
-          return NULL;
-        edge_assign(edge, &result->as_coercion);
-      }
+      if (redirect_up(induce, b, coercion) == NULL)
+        return NULL;
     }
   }
 
