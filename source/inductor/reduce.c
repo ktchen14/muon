@@ -33,37 +33,45 @@ const mu_coercion_t *mu_edge_coercion_reload(
 
 /**
  * This should be called when we find a triangular type relationship within the
- * source side of a type variable v. If we locate a coercion α ⇝ β, and we have
- * both ⟨α ⇒ v⟩ and ⟨β ⇒ v⟩, then we should make ⟨α ⇒ v⟩ an indirect edge since
- * α is coercible to v through α ⇝ β ⇝ v.
+ * source side of a type variable v. If we locate a coercion β ⇝ α, and we have
+ * both ⟨β ⇒ v⟩ and ⟨α ⇒ v⟩, then we should make ⟨β ⇒ v⟩ an indirect edge since
+ * β is coercible to v through β ⇝ α ⇝ v.
  *
  * Because we maintain the transitive closure of each type variable, we also
- * know that ∃⟨α ⇒ τ⟩ and ∃⟨β ⇒ τ⟩ if ∃⟨v ⇒ τ⟩. Thus, within the source side of
- * each type variable τ that v has an edge to, we should also make ⟨α ⇒ τ⟩ an
- * indirect edge (through α ⇝ β ⇝ τ).
+ * know that ∃⟨β ⇒ τ⟩ and ∃⟨α ⇒ τ⟩ if ∃⟨v ⇒ τ⟩. Thus, within the source side of
+ * each type variable τ that v has an edge to, we should also make ⟨β ⇒ τ⟩ an
+ * indirect edge (through β ⇝ α ⇝ τ).
  *
- * In this example, origin should be ⟨α ⇒ v⟩ and coercion should be α ⇝ β.
+ * In this example, origin should be ⟨β ⇒ v⟩ and coercion should be β ⇝ α.
  */
 void *redirect_up(
     induce_t *induce, type_edge_t *origin, const mu_coercion_t *coercion) {
   universe_iterator_t it;
   it = universe_iterator(&induce->universe, origin->target, 1);
-  for (type_edge_t *c; (c = universe_next(&it)) != NULL;) {
-    if (c->target->kind != MU_VARIABLE_TYPE)
+
+  // ∀⟨v ⇒ τ⟩ | τ is a variable type
+  for (type_edge_t *next; (next = universe_next(&it)) != NULL;) {
+    if (next->target->kind != MU_VARIABLE_TYPE)
       continue;
 
-    type_edge_t *edge = universe_search(&induce->universe, origin->source, c->target);
+    // Locate ⟨β ⇒ τ⟩
+    type_edge_t *edge = universe_search(&induce->universe, origin->source, next->target);
     assert(edge != NULL);
 
+    // Retrieve β ⇝ τ
     const mu_coercion_t *tail;
     if ((tail = coerce_with(edge)) == NULL)
       return NULL;
 
+    // Create α ⇝ β ⇝ τ
     const mu_indirect_coercion_t *result;
     if ((result = mu_indirect_coercion(coercion, tail)) == NULL)
       return NULL;
+
+    // Assign the coercion to ⟨α ⇝ τ⟩
     edge_assign(edge, &result->as_coercion);
   }
+
   return induce;
 }
 
@@ -96,37 +104,37 @@ const mu_solution_t *reduce_type_to_join(
   // this variable type (i.e. each edge with indirect = 2), and simplify.
   universe_iterator_t it, jt;
   it = universe_iterator(universe, &variable_type->as_type, 0);
-  for (type_edge_t *a; (a = universe_next(&it)) != NULL;) {
-    if (a->indirect > 1 || a->source->kind == MU_VARIABLE_TYPE)
+  for (type_edge_t *a_edge; (a_edge = universe_next(&it)) != NULL;) {
+    if (a_edge->indirect > 1 || a_edge->source->kind == MU_VARIABLE_TYPE)
       continue;
 
-    const mu_type_t *a_type = a->source;
+    const mu_type_t *a = a_edge->source;
 
     jt = universe_iterator(universe, &variable_type->as_type, 0);
-    for (type_edge_t *b; (b = universe_next(&jt)) != NULL;) {
-      if (a == b)
+    for (type_edge_t *b_edge; (b_edge = universe_next(&jt)) != NULL;) {
+      if (a_edge == b_edge)
         continue;
-      if (b->indirect > 1 || b->source->kind == MU_VARIABLE_TYPE)
+      if (b_edge->indirect > 1 || b_edge->source->kind == MU_VARIABLE_TYPE)
         continue;
 
-      const mu_type_t *b_type = b->source;
+      const mu_type_t *b = b_edge->source;
 
       const mu_coercion_t *coercion;
-      if ((coercion = retrieve_coercion(induce, b_type, a_type)) == NULL)
+      if ((coercion = retrieve_coercion(induce, b, a)) == NULL)
         return NULL;
       if (coercion == NO_SUCH_COERCION)
         continue;
 
       const mu_coercion_t *tail;
-      if ((tail = coerce_with(a)) == NULL)
+      if ((tail = coerce_with(a_edge)) == NULL)
         return NULL;
 
       const mu_indirect_coercion_t *result;
       if ((result = mu_indirect_coercion(coercion, tail)) == NULL)
         return NULL;
-      edge_assign(b, &result->as_coercion);
+      edge_assign(b_edge, &result->as_coercion);
 
-      if (redirect_up(induce, b, coercion) == NULL)
+      if (redirect_up(induce, b_edge, coercion) == NULL)
         return NULL;
     }
   }
