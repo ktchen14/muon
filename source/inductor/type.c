@@ -211,13 +211,17 @@ void type_debug(const mu_type_t *type, _Bool expand) {
       const mu_join_t *join;
       if ((join = variable_type->join) != NULL) {
         if (expand) {
-          debug("Join(");
-          for (size_t i = 0; i < join->argc; i++) {
-            if (i > 0)
-              debug(", ");
-            type_debug(join->argv[i], expand);
+          if (join->argc == 0)
+            debug("⊥");
+          else {
+            debug("Join(");
+            for (size_t i = 0; i < join->argc; i++) {
+              if (i > 0)
+                debug(", ");
+              type_debug(join->argv[i], expand);
+            }
+            debug(")");
           }
-          debug(")");
           break;
         }
       }
