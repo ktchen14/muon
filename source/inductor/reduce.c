@@ -64,7 +64,7 @@ const mu_solution_t *reduce_type_to_join(
     if (a->indirect > 1 || a->source->kind == MU_VARIABLE_TYPE)
       continue;
 
-    const mu_type_t *source = a->source;
+    const mu_type_t *a_type = a->source;
 
     jt = universe_iterator(universe, &variable_type->as_type, 0);
     for (type_edge_t *b; (b = universe_next(&jt)) != NULL;) {
@@ -73,10 +73,10 @@ const mu_solution_t *reduce_type_to_join(
       if (b->indirect > 1 || b->source->kind == MU_VARIABLE_TYPE)
         continue;
 
-      const mu_type_t *next_source = b->source;
+      const mu_type_t *b_type = b->source;
 
       const mu_coercion_t *coercion;
-      if ((coercion = retrieve_coercion(induce, next_source, source)) == NULL)
+      if ((coercion = retrieve_coercion(induce, b_type, a_type)) == NULL)
         return NULL;
       if (coercion == NO_SUCH_COERCION)
         continue;
@@ -95,7 +95,7 @@ const mu_solution_t *reduce_type_to_join(
         if (c->target->kind != MU_VARIABLE_TYPE)
           continue;
 
-        type_edge_t *edge = universe_search(&induce->universe, next_source, c->target);
+        type_edge_t *edge = universe_search(&induce->universe, b_type, c->target);
         assert(edge != NULL);
 
         const mu_coercion_t *tail;
