@@ -142,43 +142,6 @@ const mu_solution_t *reduce_type_to_join(
     edge_assign(edge, &coercion->as_coercion);
   }
 
-  iterator = universe_iterator(universe, &variable_type->as_type, 0);
-  for (type_edge_t *edge; (edge = universe_next(&iterator)) != NULL;) {
-    if (edge->indirect > 1 || edge->source->kind != MU_VARIABLE_TYPE)
-      continue;
-
-    const mu_variable_type_t *next_variable;
-    next_variable = mu_type_cast(edge->source, next_variable);
-    assert(next_variable != NULL);
-
-    // Okay. We have another variable type. We have make an unjoin coercion into
-    // a join coercion.
-    const mu_join_t *source_join = next_variable->join;
-
-    mu_unjoin_coercion_t *allocation;
-    if ((allocation = unjoin_coercion_allocate(source_join->argc)) == NULL)
-      return NULL;
-
-    for (size_t i = 0; i < source_join->argc; i++) {
-      const mu_type_t *source = source_join->argv[i];
-
-      type_edge_t *edge = universe_search(&induce->universe, source, &variable_type->as_type);
-      assert(edge != NULL);
-
-      const mu_coercion_t *coercion;
-      if ((coercion = reduce_coercion(induce, edge->coercion)) == NULL)
-        return NULL;
-      edge_assign(edge, coercion);
-
-      allocation->argv[i] = coercion;
-    }
-
-    const mu_unjoin_coercion_t *unjoin_coercion;
-    if ((unjoin_coercion = unjoin_coercion_activate(allocation, edge->target)) == NULL)
-      return NULL;
-    edge_assign(edge, &unjoin_coercion->as_coercion);
-  }
-
   const mu_join_t *result;
   if ((result = join_activate(join)) == NULL)
     return NULL;
@@ -207,11 +170,12 @@ const mu_coercion_t *reduce_coercion(
         const mu_variable_type_t *v = (const mu_variable_type_t *) target;
         if (reduce_type_to_join(induce, v) == NULL)
           return NULL;
+      }
 
-        next_coercion = mu_edge_coercion_reload(&induce->universe, edge_coercion);
-        assert(next_coercion != NULL);
+      if ((next_coercion = mu_edge_coercion_reload(&induce->universe, edge_coercion)) != NULL)
         return reduce_coercion(induce, next_coercion);
-      } else {
+
+      if (source->kind == MU_VARIABLE_TYPE) {
         const mu_variable_type_t *v = (const mu_variable_type_t *) source;
         if (reduce_type_to_join(induce, v) == NULL)
           return NULL;
