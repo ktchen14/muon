@@ -107,7 +107,7 @@ int main(int argc, char *argv[argc]) {
 
     debug("digraph muon {\n  rankdir=\"BT\";\n  dpi=192;\n");
     for (size_t i = 0; i < debug_induce->universe.length; i++) {
-      course_t course = debug_induce->universe.data[i];
+      type_edge_t edge = debug_induce->universe.data[i];
 
       /* if (edge.indirect == 1) */
       /*   continue; */
@@ -115,26 +115,26 @@ int main(int argc, char *argv[argc]) {
       debug("%*s", 2, "");
 
       debug("\"");
-      type_debug(course.source, 0);
-      debug(" #%zu", course.source->id);
+      type_debug(edge.source, 0);
+      debug(" #%zu", edge.source->id);
       debug("\"");
 
       debug(" -> ");
 
       debug("\"");
-      type_debug(course.target, 0);
-      debug(" #%zu", course.target->id);
+      type_debug(edge.target, 0);
+      debug(" #%zu", edge.target->id);
       debug("\"");
 
-      if (course.indirect == 2)
+      if (edge.indirect == 2)
         debug(" [constraint=false,style=dashed]");
-      else if (course.indirect == 1)
+      else if (edge.indirect == 1)
         debug(" [constraint=false]");
 
       const mu_coercion_t *coercion;
-      if ((coercion = course_coercion(&course)) != NULL) {
+      if ((coercion = course_coercion(&edge)) != NULL) {
         debug(" [label=\" ");
-        mu_coercion_debug(course.coercion);
+        mu_coercion_debug(edge.coercion);
         debug("\"]");
       }
 

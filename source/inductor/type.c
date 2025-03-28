@@ -234,16 +234,16 @@ void type_debug(const mu_type_t *type, _Bool expand) {
       size_t length = 0;
       if (debug_negate) {
         for (size_t i = 0; i < debug_induce->universe.length; i++) {
-          course_t course = debug_induce->universe.data[i];
-          if (course.source != type)
+          type_edge_t edge = debug_induce->universe.data[i];
+          if (edge.source != type)
             continue;
 
           if (length++)
             debug(" ⊓ ");
 
           const mu_variable_type_t *upper_variable_type;
-          if ((upper_variable_type = mu_type_cast(course.target, upper_variable_type)) == NULL)
-            type_debug(course.target, expand);
+          if ((upper_variable_type = mu_type_cast(edge.target, upper_variable_type)) == NULL)
+            type_debug(edge.target, expand);
           else
             debug_variable_type_name(upper_variable_type);
         }
@@ -253,16 +253,16 @@ void type_debug(const mu_type_t *type, _Bool expand) {
         debug_variable_type_name(variable_type);
       } else {
         for (size_t i = 0; i < debug_induce->universe.length; i++) {
-          course_t course = debug_induce->universe.data[i];
-          if (course.target != type)
+          type_edge_t edge = debug_induce->universe.data[i];
+          if (edge.target != type)
             continue;
 
           if (length++)
             debug(" ⊔ ");
 
           const mu_variable_type_t *lower_variable_type;
-          if ((lower_variable_type = mu_type_cast(course.source, lower_variable_type)) == NULL)
-            type_debug(course.source, expand);
+          if ((lower_variable_type = mu_type_cast(edge.source, lower_variable_type)) == NULL)
+            type_debug(edge.source, expand);
           else
             debug_variable_type_name(lower_variable_type);
         }

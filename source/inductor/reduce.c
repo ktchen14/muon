@@ -14,19 +14,19 @@
 const mu_coercion_t *reduce_coercion(
     induce_t *induce, const mu_coercion_t *coercion);
 
-/// Load the coercion that is assigned to the <em>coercion</em>'s course. If that
-/// coercion is the course @a coercion itself, then return @c NULL.
+/// Load the coercion that is assigned to the <em>coercion</em>'s edge. If that
+/// coercion is the edge @a coercion itself, then return @c NULL.
 __attribute__((nonnull, pure))
 const mu_coercion_t *mu_edge_coercion_reload(
     const universe_t *universe, const mu_edge_coercion_t *coercion) {
   const mu_type_t *source = coercion->source;
   const mu_type_t *target = coercion->target;
 
-  course_t *course = course_search(universe, source, target);
-  assert(course != NULL);
+  type_edge_t *edge = universe_search(universe, source, target);
+  assert(edge != NULL);
 
   const mu_coercion_t *result;
-  if ((result = course->coercion) == &coercion->as_coercion)
+  if ((result = edge->coercion) == &coercion->as_coercion)
     return NULL;
   return result;
 }
@@ -41,13 +41,13 @@ const mu_solution_t *reduce_type_to_join(
 
   // Reduce each variable type that's a source to this variable type
   iterator = universe_iterator(universe, &variable_type->as_type, 0);
-  for (course_t *course; (course = universe_next(&iterator)) != NULL;) {
-    if (course->indirect > 1)
+  for (type_edge_t *edge; (edge = universe_next(&iterator)) != NULL;) {
+    if (edge->indirect > 1)
       continue;
 
-    // If the course's source isn't a variable type, then length++
+    // If the edge's source isn't a variable type, then length++
     const mu_variable_type_t *next_variable;
-    if ((next_variable = mu_type_cast(course->source, next_variable)) == NULL)
+    if ((next_variable = mu_type_cast(edge->source, next_variable)) == NULL)
       continue;
 
     // Otherwise, reduce it. Then add its join length to length.
@@ -57,17 +57,17 @@ const mu_solution_t *reduce_type_to_join(
   }
 
   // Take each type that we haven't definitely eliminated as a direct source for
-  // this variable type (i.e. each course with indirect = 2), and simplify.
+  // this variable type (i.e. each edge with indirect = 2), and simplify.
   universe_iterator_t it, jt, kt;
   it = universe_iterator(universe, &variable_type->as_type, 0);
-  for (course_t *a; (a = universe_next(&it)) != NULL;) {
+  for (type_edge_t *a; (a = universe_next(&it)) != NULL;) {
     if (a->indirect > 1 || a->source->kind == MU_VARIABLE_TYPE)
       continue;
 
     const mu_type_t *source = a->source;
 
     jt = universe_iterator(universe, &variable_type->as_type, 0);
-    for (course_t *b; (b = universe_next(&jt)) != NULL;) {
+    for (type_edge_t *b; (b = universe_next(&jt)) != NULL;) {
       if (a == b)
         continue;
       if (b->indirect > 1 || b->source->kind == MU_VARIABLE_TYPE)
@@ -88,36 +88,36 @@ const mu_solution_t *reduce_type_to_join(
       const mu_indirect_coercion_t *result;
       if ((result = mu_indirect_coercion(coercion, tail)) == NULL)
         return NULL;
-      course_assign(b, &result->as_coercion);
+      edge_assign(b, &result->as_coercion);
 
       kt = universe_iterator(universe, &variable_type->as_type, 1);
-      for (course_t *c; (c = universe_next(&kt)) != NULL;) {
+      for (type_edge_t *c; (c = universe_next(&kt)) != NULL;) {
         if (c->target->kind != MU_VARIABLE_TYPE)
           continue;
 
-        course_t *course = course_search(&induce->universe, next_source, c->target);
-        assert(course != NULL);
+        type_edge_t *edge = universe_search(&induce->universe, next_source, c->target);
+        assert(edge != NULL);
 
         const mu_coercion_t *tail;
-        if ((tail = coerce_with(course)) == NULL)
+        if ((tail = coerce_with(edge)) == NULL)
           return NULL;
 
         const mu_indirect_coercion_t *result;
         if ((result = mu_indirect_coercion(coercion, tail)) == NULL)
           return NULL;
-        course_assign(course, &result->as_coercion);
+        edge_assign(edge, &result->as_coercion);
       }
     }
   }
 
-  // At this point, each directish course (indirect <= 1) is an actual type that
+  // At this point, each directish edge (indirect <= 1) is an actual type that
   // should be put into the join.
 
   // Determine the length of the join
   iterator = universe_iterator(universe, &variable_type->as_type, 0);
   size_t length = 0;
-  for (course_t *course; (course = universe_next(&iterator)) != NULL;) {
-    if (course->indirect > 1 || course->source->kind == MU_VARIABLE_TYPE)
+  for (type_edge_t *edge; (edge = universe_next(&iterator)) != NULL;) {
+    if (edge->indirect > 1 || edge->source->kind == MU_VARIABLE_TYPE)
       continue;
     length += 1;
   }
@@ -129,26 +129,26 @@ const mu_solution_t *reduce_type_to_join(
   join->argc = 0;
 
   iterator = universe_iterator(universe, &variable_type->as_type, 0);
-  for (course_t *course; (course = universe_next(&iterator)) != NULL;) {
-    if (course->indirect > 1 || course->source->kind == MU_VARIABLE_TYPE)
+  for (type_edge_t *edge; (edge = universe_next(&iterator)) != NULL;) {
+    if (edge->indirect > 1 || edge->source->kind == MU_VARIABLE_TYPE)
       continue;
 
     // Handle a normal type
     const mu_join_coercion_t *coercion;
     if ((coercion = mu_join_coercion(variable_type, join->argc)) == NULL)
       return NULL;
-    join->argv[join->argc++] = course->source;
+    join->argv[join->argc++] = edge->source;
 
-    course_assign(course, &coercion->as_coercion);
+    edge_assign(edge, &coercion->as_coercion);
   }
 
   iterator = universe_iterator(universe, &variable_type->as_type, 0);
-  for (course_t *course; (course = universe_next(&iterator)) != NULL;) {
-    if (course->indirect > 1 || course->source->kind != MU_VARIABLE_TYPE)
+  for (type_edge_t *edge; (edge = universe_next(&iterator)) != NULL;) {
+    if (edge->indirect > 1 || edge->source->kind != MU_VARIABLE_TYPE)
       continue;
 
     const mu_variable_type_t *next_variable;
-    next_variable = mu_type_cast(course->source, next_variable);
+    next_variable = mu_type_cast(edge->source, next_variable);
     assert(next_variable != NULL);
 
     // Okay. We have another variable type. We have make an unjoin coercion into
@@ -162,21 +162,21 @@ const mu_solution_t *reduce_type_to_join(
     for (size_t i = 0; i < source_join->argc; i++) {
       const mu_type_t *source = source_join->argv[i];
 
-      course_t *course = course_search(&induce->universe, source, &variable_type->as_type);
-      assert(course != NULL);
+      type_edge_t *edge = universe_search(&induce->universe, source, &variable_type->as_type);
+      assert(edge != NULL);
 
       const mu_coercion_t *coercion;
-      if ((coercion = reduce_coercion(induce, course->coercion)) == NULL)
+      if ((coercion = reduce_coercion(induce, edge->coercion)) == NULL)
         return NULL;
-      course_assign(course, coercion);
+      edge_assign(edge, coercion);
 
       allocation->argv[i] = coercion;
     }
 
     const mu_unjoin_coercion_t *unjoin_coercion;
-    if ((unjoin_coercion = unjoin_coercion_activate(allocation, course->target)) == NULL)
+    if ((unjoin_coercion = unjoin_coercion_activate(allocation, edge->target)) == NULL)
       return NULL;
-    course_assign(course, &unjoin_coercion->as_coercion);
+    edge_assign(edge, &unjoin_coercion->as_coercion);
   }
 
   const mu_join_t *result;
@@ -224,11 +224,11 @@ const mu_coercion_t *reduce_coercion(
           return NULL;
 
         for (size_t i = 0; i < source_join->argc; i++) {
-          const course_t *course;
-          course = course_search(&induce->universe, source_join->argv[i], target);
-          assert(course != NULL);
+          const type_edge_t *edge;
+          edge = universe_search(&induce->universe, source_join->argv[i], target);
+          assert(edge != NULL);
 
-          const mu_coercion_t *coercion = course_coercion(course);
+          const mu_coercion_t *coercion = course_coercion(edge);
           assert(coercion != NULL);
 
           allocation->argv[i] = reduce_coercion(induce, coercion);

@@ -4,8 +4,6 @@
 #include "coercion.h"
 #include "type.h"
 
-#include "../common.h"
-
 #include <assert.h>
 #include <stddef.h>
 
@@ -21,12 +19,12 @@ typedef struct {
 
   const mu_coercion_t *coercion;  // optional
   int indirect;
-} course_t;
+} type_edge_t;
 
 typedef struct {
   size_t length;
   size_t volume;
-  course_t *data;
+  type_edge_t *data;
 } universe_t;
 
 typedef struct {
@@ -40,11 +38,11 @@ typedef struct {
 universe_t *universe_initialize(universe_t *universe)
   __attribute__((nonnull));
 
-course_t *course_search(
+type_edge_t *universe_search(
     const universe_t *universe, const mu_type_t *source, const mu_type_t *target)
   __attribute__((nonnull));
 
-course_t *append_edge(universe_t *universe, const mu_type_t *source, const mu_type_t *target);
+type_edge_t *append_edge(universe_t *universe, const mu_type_t *source, const mu_type_t *target);
 
 __attribute__((nonnull))
 static inline universe_iterator_t universe_iterator(
@@ -59,64 +57,64 @@ static inline const mu_type_t *universe_next_type(universe_iterator_t *iterator)
   const universe_t *universe = iterator->universe;
 
   for (size_t i; (i = iterator->i++) < universe->length;) {
-    course_t course = universe->data[i];
-    if (iterator->invert == 0 && course.target == iterator->target)
-      return course.source;
-    if (iterator->invert == 1 && course.source == iterator->target)
-      return course.target;
+    type_edge_t edge = universe->data[i];
+    if (iterator->invert == 0 && edge.target == iterator->target)
+      return edge.source;
+    if (iterator->invert == 1 && edge.source == iterator->target)
+      return edge.target;
   }
 
   return NULL;
 }
 
 __attribute__((nonnull))
-static inline course_t *universe_next(universe_iterator_t *iterator) {
+static inline type_edge_t *universe_next(universe_iterator_t *iterator) {
   const universe_t *universe = iterator->universe;
 
   for (size_t i; (i = iterator->i++) < universe->length;) {
-    course_t *course = &universe->data[i];
-    if (iterator->invert == 0 && course->target == iterator->target)
-      return course;
-    if (iterator->invert == 1 && course->source == iterator->target)
-      return course;
+    type_edge_t *edge = &universe->data[i];
+    if (iterator->invert == 0 && edge->target == iterator->target)
+      return edge;
+    if (iterator->invert == 1 && edge->source == iterator->target)
+      return edge;
   }
 
   return NULL;
 }
 
 __attribute__((nonnull))
-static inline const mu_coercion_t *coerce_with(const course_t *course) {
+static inline const mu_coercion_t *coerce_with(const type_edge_t *edge) {
   // If the edge has a coercion, return it
-  if (course->coercion != NULL)
-    return course->coercion;
+  if (edge->coercion != NULL)
+    return edge->coercion;
 
-  // Otherwise, return an edge coercion for the course
+  // Otherwise, return an edge coercion for the edge
   const mu_edge_coercion_t *result;
-  if ((result = mu_edge_coercion(course->source, course->target)) == NULL)
+  if ((result = mu_edge_coercion(edge->source, edge->target)) == NULL)
     return NULL;
-  return ((course_t *) course)->coercion = &result->as_coercion;
+  return ((type_edge_t *) edge)->coercion = &result->as_coercion;
 }
 
 __attribute__((nonnull, pure))
-static inline const mu_coercion_t *course_coercion(const course_t *course) {
+static inline const mu_coercion_t *course_coercion(const type_edge_t *edge) {
   const mu_coercion_t *result;
-  if ((result = course->coercion) == NULL || result->kind == MU_EDGE_COERCION)
+  if ((result = edge->coercion) == NULL || result->kind == MU_EDGE_COERCION)
     return NULL;
   return result;
 }
 
 __attribute__((nonnull))
-static inline const mu_coercion_t *course_assign(
-    course_t *course, const mu_coercion_t *coercion) {
+static inline const mu_coercion_t *edge_assign(
+    type_edge_t *edge, const mu_coercion_t *coercion) {
   assert(coercion->kind != MU_EDGE_COERCION);
 
-  const mu_type_t *target = mu_coercion_target(coercion, course->source);
-  assert(target == course->target);
+  const mu_type_t *target = mu_coercion_target(coercion, edge->source);
+  assert(target == edge->target);
 
   if (coercion->kind == MU_INDIRECT_COERCION)
-    course->indirect = 2;
+    edge->indirect = 2;
 
-  return course->coercion = coercion;
+  return edge->coercion = coercion;
 }
 
 #endif /* MU_INDUCTOR_UNIVERSE_I */
