@@ -97,10 +97,6 @@ struct mu_variable_type_t {
   _Bool negatively_reachable;
 };
 
-/// @internal Used to emit each branch in mu_type_cast()
-#define MU_TYPE_CAST_EMIT(lower, upper, t) \
-  , const mu_##lower##_type_t *: _kind == MU_##upper##_TYPE
-
 /**
  * @brief Downcast the @a abstract type to the <tt>typeof(concrete)</tt>
  *
@@ -221,6 +217,9 @@ mu_join_t *join_allocate(induce_t *induce, size_t argc)
   __attribute__((malloc, nonnull));
 
 const mu_join_t *join_activate(mu_join_t *join)
+  __attribute__((nonnull));
+
+void mu_solution_debug(const mu_solution_t *solution, _Bool expand)
   __attribute__((nonnull));
 
 void type_debug(const mu_type_t *type, _Bool expand)

@@ -144,6 +144,32 @@ const mu_join_t *join_activate(mu_join_t *join) {
   return join;
 }
 
+void mu_solution_debug(const mu_solution_t *solution, _Bool expand) {
+  switch ON_ABSTRACT_OBJECT(solution) {
+    case IS_KIND_OF(core_type):
+      type_debug(&core_type->as_type, expand);
+      break;
+
+    case IS_KIND_OF(scheme_type):
+      type_debug(&scheme_type->as_type, expand);
+      break;
+
+    case IS_KIND_OF(join):
+      if (join->argc == 0)
+        debug("⊥");
+      else {
+        debug("Join(");
+        for (size_t i = 0; i < join->argc; i++) {
+          if (i > 0)
+            debug(", ");
+          type_debug(join->argv[i], expand);
+        }
+        debug(")");
+      }
+      break;
+  }
+}
+
 void debug_variable_type_name(const mu_variable_type_t *type) {
   static _Atomic size_t next_number = 0;
   static const char *alphabet[] = {
@@ -211,23 +237,8 @@ void type_debug(const mu_type_t *type, _Bool expand) {
 
     case IS_KIND_OF(variable_type): {
       if (variable_type->solution != NULL) {
-        const mu_join_t *join;
-        if ((join = mu_solution_cast(variable_type->solution, join)) != NULL) {
-          if (expand) {
-            if (join->argc == 0)
-              debug("⊥");
-            else {
-              debug("Join(");
-              for (size_t i = 0; i < join->argc; i++) {
-                if (i > 0)
-                  debug(", ");
-                type_debug(join->argv[i], expand);
-              }
-              debug(")");
-            }
-            break;
-          }
-        }
+        mu_solution_debug(variable_type->solution, expand);
+        break;
       }
 
       if (!expand || debug_induce == NULL) {
