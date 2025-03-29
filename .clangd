@@ -8,6 +8,7 @@ Diagnostics:
   Suppress:
   - logical-op-parentheses
   - unused-function
+  - unused-label
   - unused-variable
 
 # vim: set ft=yaml:
