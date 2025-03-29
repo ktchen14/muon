@@ -245,14 +245,13 @@ static const mu_coercion_t *ensure_cv(
   // closure of variable types in the universe.
   iterator = universe_iterator(&induce->universe, target, 1);
   for (const edge_t *edge; (edge = universe_next(&iterator)) != NULL;) {
-    const mu_type_t *next_target = edge->target;
-    if (next_target->kind != MU_VARIABLE_TYPE)
+    if (edge->target->kind != MU_VARIABLE_TYPE)
       continue;
 
-    edge_t *next_edge;
-    if ((next_edge = append_edge(&induce->universe, source, next_target)) == NULL)
+    edge_t *next;
+    if ((next = append_edge(&induce->universe, source, edge->target)) == NULL)
       return NULL;
-    next_edge->transitive = 1;
+    next->transitive = 1;
   }
 
   return coerce_with(result_edge);
