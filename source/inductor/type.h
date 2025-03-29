@@ -233,7 +233,7 @@ enum {
   _core_type_kind = MU_CORE_TYPE,
   _variable_type_kind = MU_VARIABLE_TYPE,
   _scheme_type_kind = MU_SCHEME_TYPE,
-  _join_solution_kind = MU_JOIN_SOLUTION,
+  _join_kind = MU_JOIN_SOLUTION,
   /* _meet_solution_kind = MU_MEET_SOLUTION, */
 };
 

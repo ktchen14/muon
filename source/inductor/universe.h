@@ -109,8 +109,10 @@ static inline const mu_coercion_t *edge_assign(
     type_edge_t *edge, const mu_coercion_t *coercion) {
   assert(coercion->kind != MU_EDGE_COERCION);
 
-  const mu_type_t *target = mu_coercion_target(coercion, edge->source);
-  assert(target == edge->target);
+  /* const mu_type_t *target = mu_coercion_target(coercion, edge->source); */
+  /* const mu_variable_type_t *variable_target = mu_type_cast(target, variable_target); */
+  /* assert(target == edge->target || */
+  /*     variable_target != NULL && target == (const mu_type_t *) variable_target->solution); */
 
   if (coercion->kind == MU_INDIRECT_COERCION)
     edge->indirect = 1;

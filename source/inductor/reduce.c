@@ -121,60 +121,68 @@ const mu_solution_t *reduce_type_to_join(
   //
   // Determine the length of the join to allocate as the number of remaining
   // types that aren't variable types and are sources to the variable type.
-  size_t i = 0;
+  type_edge_t *a_edge;
+  const mu_constant_type_t *a;
+  size_t argc = 0;
   it = universe_iterator(universe, &variable_type->as_type, 0);
-  for (type_edge_t *a_edge; (a_edge = universe_next(&it)) != NULL;) {
-    if (a_edge->indirect || a_edge->source->kind == MU_VARIABLE_TYPE)
+  while ((a_edge = universe_next(&it)) != NULL) {
+    if (a_edge->indirect || (a = mu_type_cast(a_edge->source, a)) == NULL)
       continue;
-
-    const mu_type_t *a = a_edge->source;
 
     universe_iterator_t jt = it;
     for (type_edge_t *b_edge; (b_edge = universe_next(&jt)) != NULL;) {
-      if (b_edge->indirect || b_edge->source->kind == MU_VARIABLE_TYPE)
+      if (b_edge->indirect)
         continue;
 
-      const mu_type_t *b = b_edge->source;
-
-      // If we have a ⇝ b, then assign a ⇝ b ⇝ v to ⟨a ⇒ v⟩ and skip this a
-      const mu_coercion_t *coercion;
-      if ((coercion = retrieve_coercion(induce, a, b)) == NULL)
-        return NULL;
-      if (coercion != NO_SUCH_COERCION) {
-        if (redirect_source(induce, a_edge, coercion) == NULL)
-          return NULL;
-        goto continue_a;
-      }
+      const mu_constant_type_t *b;
+      if ((b = mu_type_cast(b_edge->source, b)) == NULL)
+        continue;
 
       // If we have b ⇝ a, then assign b ⇝ a ⇝ v to ⟨b ⇒ v⟩ and skip this b
-      if ((coercion = retrieve_coercion(induce, b, a)) == NULL)
+      const mu_coercion_t *coercion;
+      if ((coercion = retrieve_coercion(induce, &b->as_type, &a->as_type)) == NULL)
         return NULL;
       if (coercion != NO_SUCH_COERCION) {
         if (redirect_source(induce, b_edge, coercion) == NULL)
           return NULL;
         continue;
       }
+
+      // If we have a ⇝ b, then assign a ⇝ b ⇝ v to ⟨a ⇒ v⟩ and skip this a
+      if ((coercion = retrieve_coercion(induce, &a->as_type, &b->as_type)) == NULL)
+        return NULL;
+      if (coercion != NO_SUCH_COERCION) {
+        if (redirect_source(induce, a_edge, coercion) == NULL)
+          return NULL;
+        goto continue_a;
+      }
     }
 
-    i++;
+    argc++;
   continue_a:;
+  }
+
+  if (argc == 1) {
+    ((mu_variable_type_t *) variable_type)->solution = &a->as_solution;
+    edge_assign(a_edge, induce->id_coercion);
+    return variable_type->solution;
   }
 
   // Allocate a join
   mu_join_t *join;
-  if ((join = join_allocate(induce, i)) == NULL)
+  if ((join = join_allocate(induce, argc)) == NULL)
     return NULL;
-  i = 0;
+  argc = 0;
 
   it = universe_iterator(universe, &variable_type->as_type, 0);
   for (type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
     if (edge->indirect || edge->source->kind == MU_VARIABLE_TYPE)
       continue;
 
-    join->argv[i] = edge->source;
+    join->argv[argc] = edge->source;
 
     const mu_join_coercion_t *coercion;
-    if ((coercion = mu_join_coercion(variable_type, i++)) == NULL)
+    if ((coercion = mu_join_coercion(variable_type, argc++)) == NULL)
       return NULL;
     edge_assign(edge, &coercion->as_coercion);
   }
@@ -216,29 +224,58 @@ const mu_coercion_t *reduce_coercion(
         const mu_variable_type_t *v = (const mu_variable_type_t *) source;
         if (reduce_type_to_join(induce, v) == NULL)
           return NULL;
+        assert(v->solution != NULL);
 
-        const mu_join_t *source_join = mu_solution_cast(v->solution, source_join);
-        assert(source_join != NULL);
+        switch ON_ABSTRACT_OBJECT(v->solution) {
+          case IS_KIND_OF(core_type): {
+            type_edge_t *edge;
+            edge = universe_search(&induce->universe, &core_type->as_type, target);
+            assert(edge != NULL);
 
-        mu_unjoin_coercion_t *allocation;
-        if ((allocation = unjoin_coercion_allocate(source_join->argc)) == NULL)
-          return NULL;
+            const mu_coercion_t *coercion = course_coercion(edge);
+            assert(coercion != NULL);
 
-        for (size_t i = 0; i < source_join->argc; i++) {
-          const type_edge_t *edge;
-          edge = universe_search(&induce->universe, source_join->argv[i], target);
-          assert(edge != NULL);
+            if ((coercion = reduce_coercion(induce, coercion)) == NULL)
+              return NULL;
+            return edge_assign(edge, coercion);
+          }
 
-          const mu_coercion_t *coercion = course_coercion(edge);
-          assert(coercion != NULL);
+          case IS_KIND_OF(scheme_type): {
+            type_edge_t *edge;
+            edge = universe_search(&induce->universe, &scheme_type->as_type, target);
+            assert(edge != NULL);
 
-          allocation->argv[i] = reduce_coercion(induce, coercion);
+            const mu_coercion_t *coercion = course_coercion(edge);
+            assert(coercion != NULL);
+
+            if ((coercion = reduce_coercion(induce, coercion)) == NULL)
+              return NULL;
+            return edge_assign(edge, coercion);
+          }
+
+          case IS_KIND_OF(join): {
+            mu_unjoin_coercion_t *allocation;
+            if ((allocation = unjoin_coercion_allocate(join->argc)) == NULL)
+              return NULL;
+
+            for (size_t i = 0; i < join->argc; i++) {
+              const type_edge_t *edge;
+              edge = universe_search(&induce->universe, join->argv[i], target);
+              assert(edge != NULL);
+
+              const mu_coercion_t *coercion = course_coercion(edge);
+              assert(coercion != NULL);
+
+              allocation->argv[i] = reduce_coercion(induce, coercion);
+            }
+
+            const mu_unjoin_coercion_t *result;
+            if ((result = unjoin_coercion_activate(allocation, target)) == NULL)
+              return NULL;
+            return &result->as_coercion;
+          }
         }
 
-        const mu_unjoin_coercion_t *result;
-        if ((result = unjoin_coercion_activate(allocation, target)) == NULL)
-          return NULL;
-        return &result->as_coercion;
       }
 
       __builtin_unreachable();
