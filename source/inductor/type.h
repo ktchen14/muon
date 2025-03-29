@@ -46,7 +46,8 @@ typedef struct { union {
 
 /// The header that each concrete constant type must have
 #define MU_CONSTANT_TYPE_HEADER union { \
-  MU_TYPE_HEADER; MU_SOLUTION_HEADER; mu_constant_type_t as_constant_type; \
+  MU_TYPE_HEADER; MU_SOLUTION_HEADER; \
+  mu_constant_type_t as_constant_type; \
 }
 
 typedef struct mu_variable_type_t mu_variable_type_t;
@@ -82,7 +83,6 @@ struct mu_variable_type_t {
   MU_TYPE_HEADER;
 
   const mu_solution_t *solution;
-  const mu_join_t *join;
 
   // Debugging
   size_t number; ///< Used to generate a name
@@ -125,15 +125,40 @@ struct mu_variable_type_t {
  *   to a concrete type
  */
 #define mu_type_cast(abstract, concrete) __extension__ ({ \
-    const mu_type_t *_abstract = (abstract); \
-    typeof(concrete) _concrete; \
-    typeof(_abstract->kind) _kind = _abstract->kind; \
-    int _castable = _Generic(_concrete, \
-      const mu_core_type_t *: _kind == MU_CORE_TYPE, \
-      const mu_variable_type_t *: _kind == MU_VARIABLE_TYPE, \
-      const mu_scheme_type_t *: _kind == MU_SCHEME_TYPE); \
-    _castable ? (typeof(_concrete)) _abstract : NULL; \
-  })
+  const mu_type_t *_abstract = (abstract); \
+  typeof(concrete) _concrete; \
+  typeof(_abstract->kind) _kind = _abstract->kind; \
+  int _castable = _Generic(_concrete, \
+    const mu_constant_type_t *: \
+      _kind == MU_CORE_TYPE || _kind == MU_SCHEME_TYPE, \
+    const mu_core_type_t *: _kind == MU_CORE_TYPE, \
+    const mu_scheme_type_t *: _kind == MU_SCHEME_TYPE, \
+    const mu_variable_type_t *: _kind == MU_VARIABLE_TYPE); \
+  _castable ? (typeof(_concrete)) _abstract : NULL; \
+})
+
+#define mu_constant_type_cast(abstract, concrete) __extension__ ({ \
+  const mu_constant_type_t *_abstract = (abstract); \
+  typeof(concrete) _concrete; \
+  typeof(_abstract->kind) _kind = _abstract->kind; \
+  int _castable = _Generic(_concrete, \
+    const mu_core_type_t *: _kind == MU_CORE_TYPE, \
+    const mu_scheme_type_t *: _kind == MU_SCHEME_TYPE); \
+  _castable ? (typeof(_concrete)) _abstract : NULL; \
+})
+
+#define mu_solution_cast(abstract, concrete) __extension__ ({ \
+  const mu_solution_t *_abstract = (abstract); \
+  typeof(concrete) _concrete; \
+  typeof(_abstract->kind) _kind = _abstract->kind; \
+  int _castable = _Generic(_concrete, \
+    const mu_constant_type_t *: \
+      _kind == MU_CORE_SOLUTION || _kind == MU_SCHEME_SOLUTION, \
+    const mu_core_type_t *: _kind == MU_CORE_SOLUTION, \
+    const mu_scheme_type_t *: _kind == MU_SCHEME_SOLUTION, \
+    const mu_join_t *: _kind == MU_JOIN_SOLUTION); \
+  _castable ? (typeof(_concrete)) _abstract : NULL; \
+})
 
 typedef struct open_scheme_t open_scheme_t;
 typedef struct mu_node_t mu_node_t;
@@ -208,6 +233,8 @@ enum {
   _core_type_kind = MU_CORE_TYPE,
   _variable_type_kind = MU_VARIABLE_TYPE,
   _scheme_type_kind = MU_SCHEME_TYPE,
+  _join_solution_kind = MU_JOIN_SOLUTION,
+  /* _meet_solution_kind = MU_MEET_SOLUTION, */
 };
 
 #endif /* MU_INDUCTOR_TYPE_I */

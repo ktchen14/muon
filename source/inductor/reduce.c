@@ -91,8 +91,8 @@ void *redirect_source(
 
 const mu_solution_t *reduce_type_to_join(
     induce_t *induce, const mu_variable_type_t *variable_type) {
-  if (variable_type->join != NULL)
-    return &variable_type->join->as_solution;
+  if (variable_type->solution != NULL)
+    return variable_type->solution;
 
   universe_t *universe = &induce->universe;
   universe_iterator_t it;
@@ -111,7 +111,7 @@ const mu_solution_t *reduce_type_to_join(
     // Otherwise, reduce it. Then add its join length to length.
     if (reduce_type_to_join(induce, next_variable) == NULL)
       return NULL;
-    assert(next_variable->join != NULL);
+    assert(next_variable->solution != NULL);
   }
 
   // For each type pair α and β, where α ≠ β, both are sources to the variable
@@ -182,7 +182,7 @@ const mu_solution_t *reduce_type_to_join(
   const mu_join_t *result;
   if ((result = join_activate(join)) == NULL)
     return NULL;
-  ((mu_variable_type_t *) variable_type)->join = result;
+  ((mu_variable_type_t *) variable_type)->solution = &result->as_solution;
 
   return &result->as_solution;
 }
@@ -217,7 +217,7 @@ const mu_coercion_t *reduce_coercion(
         if (reduce_type_to_join(induce, v) == NULL)
           return NULL;
 
-        const mu_join_t *source_join = v->join;
+        const mu_join_t *source_join = mu_solution_cast(v->solution, source_join);
         assert(source_join != NULL);
 
         mu_unjoin_coercion_t *allocation;

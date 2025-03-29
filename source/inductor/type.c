@@ -134,7 +134,9 @@ mu_join_t *join_allocate(induce_t *induce, size_t argc) {
   mu_join_t *result;
   if ((result = malloc(size)) == NULL)
     return NULL;
-  *result = (mu_join_t) { .induce = induce, .argc = argc };
+  *result = (mu_join_t) {
+    .as_solution.kind = MU_JOIN_SOLUTION, .induce = induce, .argc = argc,
+  };
   return result;
 }
 
@@ -208,21 +210,23 @@ void type_debug(const mu_type_t *type, _Bool expand) {
     }
 
     case IS_KIND_OF(variable_type): {
-      const mu_join_t *join;
-      if ((join = variable_type->join) != NULL) {
-        if (expand) {
-          if (join->argc == 0)
-            debug("⊥");
-          else {
-            debug("Join(");
-            for (size_t i = 0; i < join->argc; i++) {
-              if (i > 0)
-                debug(", ");
-              type_debug(join->argv[i], expand);
+      if (variable_type->solution != NULL) {
+        const mu_join_t *join;
+        if ((join = mu_solution_cast(variable_type->solution, join)) != NULL) {
+          if (expand) {
+            if (join->argc == 0)
+              debug("⊥");
+            else {
+              debug("Join(");
+              for (size_t i = 0; i < join->argc; i++) {
+                if (i > 0)
+                  debug(", ");
+                type_debug(join->argv[i], expand);
+              }
+              debug(")");
             }
-            debug(")");
+            break;
           }
-          break;
         }
       }
 
