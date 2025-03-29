@@ -141,7 +141,7 @@ const mu_solution_t *reduce_type_to_join(
         goto continue_a;
       }
 
-      // If we have b ⇝ a, then assign b ⇝ a ⇝ v to ⟨b ⇝ v⟩ and skip this b
+      // If we have b ⇝ a, then assign b ⇝ a ⇝ v to ⟨b ⇒ v⟩ and skip this b
       if ((coercion = retrieve_coercion(induce, b, a)) == NULL)
         return NULL;
       if (coercion != NO_SUCH_COERCION) {
