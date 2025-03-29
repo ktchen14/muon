@@ -95,11 +95,11 @@ const mu_solution_t *reduce_type_to_join(
     return &variable_type->join->as_solution;
 
   universe_t *universe = &induce->universe;
-  universe_iterator_t iterator;
+  universe_iterator_t it;
 
   // Reduce each variable type that's a source to this variable type
-  iterator = universe_iterator(universe, &variable_type->as_type, 0);
-  for (type_edge_t *edge; (edge = universe_next(&iterator)) != NULL;) {
+  it = universe_iterator(universe, &variable_type->as_type, 0);
+  for (type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
     if (edge->indirect)
       continue;
 
@@ -114,9 +114,14 @@ const mu_solution_t *reduce_type_to_join(
     assert(next_variable->join != NULL);
   }
 
-  // Take each type that we haven't definitely eliminated as a direct source for
-  // this variable type (i.e. each edge with indirect = 2), and simplify.
-  universe_iterator_t it;
+  // For each type pair α and β, where α ≠ β, both are sources to the variable
+  // type, and neither is itself a variable type, attempt the coercion α ⇝ β. If
+  // no such coercion exists, then attempt the coercion β ⇝ α. If we have either
+  // coercion, then make one type indirect.
+  //
+  // Determine the length of the join to allocate as the number of remaining
+  // types that aren't variable types and are sources to the variable type.
+  size_t i = 0;
   it = universe_iterator(universe, &variable_type->as_type, 0);
   for (type_edge_t *a_edge; (a_edge = universe_next(&it)) != NULL;) {
     if (a_edge->indirect || a_edge->source->kind == MU_VARIABLE_TYPE)
@@ -151,37 +156,26 @@ const mu_solution_t *reduce_type_to_join(
       }
     }
 
+    i++;
   continue_a:;
-  }
-
-  // At this point, each directish edge (indirect <= 1) is an actual type that
-  // should be put into the join.
-
-  // Determine the length of the join
-  iterator = universe_iterator(universe, &variable_type->as_type, 0);
-  size_t length = 0;
-  for (type_edge_t *edge; (edge = universe_next(&iterator)) != NULL;) {
-    if (edge->indirect || edge->source->kind == MU_VARIABLE_TYPE)
-      continue;
-    length += 1;
   }
 
   // Allocate a join
   mu_join_t *join;
-  if ((join = join_allocate(induce, length)) == NULL)
+  if ((join = join_allocate(induce, i)) == NULL)
     return NULL;
-  join->argc = 0;
+  i = 0;
 
-  iterator = universe_iterator(universe, &variable_type->as_type, 0);
-  for (type_edge_t *edge; (edge = universe_next(&iterator)) != NULL;) {
+  it = universe_iterator(universe, &variable_type->as_type, 0);
+  for (type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
     if (edge->indirect || edge->source->kind == MU_VARIABLE_TYPE)
       continue;
 
-    const mu_join_coercion_t *coercion;
-    if ((coercion = mu_join_coercion(variable_type, join->argc)) == NULL)
-      return NULL;
-    join->argv[join->argc++] = edge->source;
+    join->argv[i] = edge->source;
 
+    const mu_join_coercion_t *coercion;
+    if ((coercion = mu_join_coercion(variable_type, i++)) == NULL)
+      return NULL;
     edge_assign(edge, &coercion->as_coercion);
   }
 
