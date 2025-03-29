@@ -6,60 +6,68 @@
 #include <assert.h>
 #include <stddef.h>
 
-/// Expands to emit(lower, upper, title, ...) for each kind of type
-#define MU_EACH_TYPE_KIND(emit, ...) \
-  emit(core, CORE, Core, ##__VA_ARGS__) \
-  emit(variable, VARIABLE, Variable, ##__VA_ARGS__) \
-  emit(scheme, SCHEME, Scheme, ##__VA_ARGS__)
-
-/// Expands to emit(lower, upper, title, ...) for each kind of solution
-#define MU_EACH_SOLUTION_KIND(emit, ...) \
-  MU_EACH_TYPE_KIND(emit) \
-  emit(join, JOIN, Join, ##__VA_ARGS__)
-
-/// An enumeration over each kind of solution, i.e. @c MU_CORE_SOLUTION
-typedef enum {
-#define MU_EMIT(l, upper, t) MU_##upper##_SOLUTION,
-  MU_EACH_TYPE_KIND(MU_EMIT)
-#undef MU_EMIT
-} mu_solution_kind_t;
-
-/// An enumeration over each kind of type, i.e. @c MU_CORE_TYPE
-typedef enum {
-#define MU_EMIT(l, upper, t) MU_##upper##_TYPE = MU_##upper##_SOLUTION,
-  MU_EACH_TYPE_KIND(MU_EMIT)
-#undef MU_EMIT
-} mu_type_kind_t;
-
 typedef struct induce_t induce_t;
-
-/// An abstract solution
-typedef struct {
-  mu_solution_kind_t kind;
-} mu_solution_t;
-
-/// The header that each concrete solution must have
-#define MU_SOLUTION_HEADER mu_solution_t as_solution
 
 /// An abstract type
 typedef struct {
-  union { MU_SOLUTION_HEADER; mu_type_kind_t kind; };
+  enum {
+    MU_CORE_TYPE, MU_SCHEME_TYPE, MU_VARIABLE_TYPE,
+  } kind;
   induce_t *induce;
   size_t id;
 } mu_type_t;
 
 /// The header that each concrete type must have
-#define MU_TYPE_HEADER union { mu_type_t as_type; mu_solution_t as_solution; }
+#define MU_TYPE_HEADER mu_type_t as_type
+
+/// An abstract solution
+typedef struct {
+  enum {
+    MU_CORE_SOLUTION = MU_CORE_TYPE,
+    MU_SCHEME_SOLUTION = MU_SCHEME_TYPE,
+    MU_JOIN_SOLUTION,
+    /* MU_MEET_SOLUTION, */
+  } kind;
+} mu_solution_t;
+
+/// The header that each concrete solution must have
+#define MU_SOLUTION_HEADER mu_solution_t as_solution
+
+/// An abstract constant type
+typedef struct { union {
+  MU_TYPE_HEADER;
+  MU_SOLUTION_HEADER;
+
+  enum {
+    MU_CORE_CONSTANT_TYPE = MU_CORE_TYPE,
+    MU_SCHEME_CONSTANT_TYPE = MU_SCHEME_TYPE,
+  } kind;
+}; } mu_constant_type_t;
+
+/// The header that each concrete constant type must have
+#define MU_CONSTANT_TYPE_HEADER union { \
+  MU_TYPE_HEADER; MU_SOLUTION_HEADER; mu_constant_type_t as_constant_type; \
+}
+
+typedef struct mu_variable_type_t mu_variable_type_t;
 
 /// A core type
 typedef struct {
-  MU_TYPE_HEADER;
+  MU_CONSTANT_TYPE_HEADER;
   const mu_core_t *core;
   const mu_type_t *argv[/* core->argc */];
 } mu_core_type_t;
 
-typedef struct mu_scheme_type_t mu_scheme_type_t;
-typedef struct open_scheme_t open_scheme_t;
+/// A scheme type
+typedef struct {
+  MU_CONSTANT_TYPE_HEADER;
+
+  const mu_type_t *matter;
+
+  /// Length of list of polymorphic variables
+  size_t argc;
+  const mu_variable_type_t *argv[/* argc */];
+} mu_scheme_type_t;
 
 /// A join solution
 typedef struct {
@@ -70,7 +78,6 @@ typedef struct {
 } mu_join_t;
 
 /// A variable type
-typedef struct mu_variable_type_t mu_variable_type_t;
 struct mu_variable_type_t {
   MU_TYPE_HEADER;
 
@@ -88,17 +95,6 @@ struct mu_variable_type_t {
 
   _Bool positively_reachable;
   _Bool negatively_reachable;
-};
-
-/// A scheme type
-struct mu_scheme_type_t {
-  MU_TYPE_HEADER;
-
-  const mu_type_t *matter;
-
-  /// Length of list of polymorphic variables
-  size_t argc;
-  const mu_variable_type_t *argv[/* argc */];
 };
 
 /// @internal Used to emit each branch in mu_type_cast()
@@ -131,11 +127,15 @@ struct mu_scheme_type_t {
 #define mu_type_cast(abstract, concrete) __extension__ ({ \
     const mu_type_t *_abstract = (abstract); \
     typeof(concrete) _concrete; \
-    mu_type_kind_t _kind = _abstract->kind; \
-    int _castable = _Generic(_concrete MU_EACH_TYPE_KIND(MU_TYPE_CAST_EMIT)); \
+    typeof(_abstract->kind) _kind = _abstract->kind; \
+    int _castable = _Generic(_concrete, \
+      const mu_core_type_t *: _kind == MU_CORE_TYPE, \
+      const mu_variable_type_t *: _kind == MU_VARIABLE_TYPE, \
+      const mu_scheme_type_t *: _kind == MU_SCHEME_TYPE); \
     _castable ? (typeof(_concrete)) _abstract : NULL; \
   })
 
+typedef struct open_scheme_t open_scheme_t;
 typedef struct mu_node_t mu_node_t;
 struct open_scheme_t {
   induce_t *induce;
@@ -205,9 +205,9 @@ void debug_variable_type_name(const mu_variable_type_t *type);
 
 /// @internal An enumeration over each kind of type, e.g. @c _core_type_kind
 enum {
-#define MU_EMIT(lower, u, t) _##lower##_type_kind,
-  MU_EACH_TYPE_KIND(MU_EMIT)
-#undef MU_EMIT
+  _core_type_kind = MU_CORE_TYPE,
+  _variable_type_kind = MU_VARIABLE_TYPE,
+  _scheme_type_kind = MU_SCHEME_TYPE,
 };
 
 #endif /* MU_INDUCTOR_TYPE_I */
