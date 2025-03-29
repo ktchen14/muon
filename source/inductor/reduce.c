@@ -44,7 +44,7 @@ const mu_coercion_t *mu_edge_coercion_reload(
  *
  * In this example, origin should be ⟨α ⇒ v⟩ and coercion should be α ⇝ β.
  */
-void *redirect_up(
+void *redirect_source(
     induce_t *induce, type_edge_t *origin, const mu_coercion_t *coercion) {
   const mu_type_t *source = origin->source;
 
@@ -136,7 +136,7 @@ const mu_solution_t *reduce_type_to_join(
       if ((coercion = retrieve_coercion(induce, a, b)) == NULL)
         return NULL;
       if (coercion != NO_SUCH_COERCION) {
-        if (redirect_up(induce, a_edge, coercion) == NULL)
+        if (redirect_source(induce, a_edge, coercion) == NULL)
           return NULL;
         goto continue_a;
       }
@@ -145,7 +145,7 @@ const mu_solution_t *reduce_type_to_join(
       if ((coercion = retrieve_coercion(induce, b, a)) == NULL)
         return NULL;
       if (coercion != NO_SUCH_COERCION) {
-        if (redirect_up(induce, b_edge, coercion) == NULL)
+        if (redirect_source(induce, b_edge, coercion) == NULL)
           return NULL;
         continue;
       }
