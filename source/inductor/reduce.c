@@ -100,7 +100,7 @@ const mu_solution_t *reduce_type_to_join(
   // Reduce each variable type that's a source to this variable type
   iterator = universe_iterator(universe, &variable_type->as_type, 0);
   for (type_edge_t *edge; (edge = universe_next(&iterator)) != NULL;) {
-    if (edge->indirect > 1)
+    if (edge->indirect)
       continue;
 
     // If the edge's source isn't a variable type, then length++
@@ -119,14 +119,14 @@ const mu_solution_t *reduce_type_to_join(
   universe_iterator_t it;
   it = universe_iterator(universe, &variable_type->as_type, 0);
   for (type_edge_t *a_edge; (a_edge = universe_next(&it)) != NULL;) {
-    if (a_edge->indirect > 1 || a_edge->source->kind == MU_VARIABLE_TYPE)
+    if (a_edge->indirect || a_edge->source->kind == MU_VARIABLE_TYPE)
       continue;
 
     const mu_type_t *a = a_edge->source;
 
     universe_iterator_t jt = it;
     for (type_edge_t *b_edge; (b_edge = universe_next(&jt)) != NULL;) {
-      if (b_edge->indirect > 1 || b_edge->source->kind == MU_VARIABLE_TYPE)
+      if (b_edge->indirect || b_edge->source->kind == MU_VARIABLE_TYPE)
         continue;
 
       const mu_type_t *b = b_edge->source;
@@ -161,7 +161,7 @@ const mu_solution_t *reduce_type_to_join(
   iterator = universe_iterator(universe, &variable_type->as_type, 0);
   size_t length = 0;
   for (type_edge_t *edge; (edge = universe_next(&iterator)) != NULL;) {
-    if (edge->indirect > 1 || edge->source->kind == MU_VARIABLE_TYPE)
+    if (edge->indirect || edge->source->kind == MU_VARIABLE_TYPE)
       continue;
     length += 1;
   }
@@ -174,7 +174,7 @@ const mu_solution_t *reduce_type_to_join(
 
   iterator = universe_iterator(universe, &variable_type->as_type, 0);
   for (type_edge_t *edge; (edge = universe_next(&iterator)) != NULL;) {
-    if (edge->indirect > 1 || edge->source->kind == MU_VARIABLE_TYPE)
+    if (edge->indirect || edge->source->kind == MU_VARIABLE_TYPE)
       continue;
 
     const mu_join_coercion_t *coercion;

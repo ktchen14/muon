@@ -18,7 +18,8 @@ typedef struct {
   };
 
   const mu_coercion_t *coercion;  // optional
-  int indirect;
+  _Bool indirect : 1;
+  _Bool transitive : 1;
 } type_edge_t;
 
 typedef struct {
@@ -112,7 +113,7 @@ static inline const mu_coercion_t *edge_assign(
   assert(target == edge->target);
 
   if (coercion->kind == MU_INDIRECT_COERCION)
-    edge->indirect = 2;
+    edge->indirect = 1;
 
   return edge->coercion = coercion;
 }

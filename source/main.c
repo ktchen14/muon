@@ -126,10 +126,10 @@ int main(int argc, char *argv[argc]) {
       debug(" #%zu", edge.target->id);
       debug("\"");
 
-      if (edge.indirect == 2)
-        debug(" [constraint=false,style=dashed]");
-      else if (edge.indirect == 1)
+      if (edge.indirect || edge.transitive)
         debug(" [constraint=false]");
+      if (edge.indirect)
+        debug(" [style=dashed]");
 
       const mu_coercion_t *coercion;
       if ((coercion = course_coercion(&edge)) != NULL) {
