@@ -46,36 +46,44 @@ const mu_coercion_t *mu_edge_coercion_reload(
  */
 void *redirect_up(
     induce_t *induce, type_edge_t *origin, const mu_coercion_t *coercion) {
+  const mu_type_t *source = origin->source;
+
+  // Calculate α from β ⇝ a and β
+  const mu_type_t *center = mu_coercion_target(coercion, source);
+
   universe_iterator_t it;
   it = universe_iterator(&induce->universe, origin->target, 1);
 
-  type_edge_t *edge;
-  edge = universe_search(&induce->universe, mu_coercion_target(coercion, origin->source), origin->target);
-  assert(edge != NULL);
-  goto fst;
+  // Jump into the loop with τ = v
+  type_edge_t *next = origin;
+  goto entrance;
 
   // ∀⟨v ⇒ τ⟩ | τ is a variable type
-  for (type_edge_t *next; (next = universe_next(&it)) != NULL;) {
+  for (type_edge_t *direct; (next = universe_next(&it)) != NULL;) {
     if (next->target->kind != MU_VARIABLE_TYPE)
       continue;
 
     // Locate ⟨β ⇒ τ⟩
-    edge = universe_search(&induce->universe, origin->source, next->target);
-    assert(edge != NULL);
+    origin = universe_search(&induce->universe, source, next->target);
+    assert(origin != NULL);
 
-  fst:;
-    // Retrieve β ⇝ τ
-    const mu_coercion_t *tail;
-    if ((tail = coerce_with(edge)) == NULL)
+  entrance:
+    // Locate ⟨α ⇒ τ⟩
+    direct = universe_search(&induce->universe, center, next->target);
+    assert(direct != NULL);
+
+    // Retrieve α ⇝ τ
+    const mu_coercion_t *direct_coercion;
+    if ((direct_coercion = coerce_with(direct)) == NULL)
       return NULL;
 
     // Create β ⇝ α ⇝ τ
     const mu_indirect_coercion_t *result;
-    if ((result = mu_indirect_coercion(coercion, tail)) == NULL)
+    if ((result = mu_indirect_coercion(coercion, direct_coercion)) == NULL)
       return NULL;
 
-    // Assign the coercion to ⟨α ⇝ τ⟩
-    edge_assign(edge, &result->as_coercion);
+    // Assign the β ⇝ α ⇝ τ to ⟨β ⇒ τ⟩
+    edge_assign(origin, &result->as_coercion);
   }
 
   return induce;
@@ -128,26 +136,10 @@ const mu_solution_t *reduce_type_to_join(
       const mu_coercion_t *coercion;
       if ((coercion = retrieve_coercion(induce, b, a)) == NULL)
         return NULL;
-      if (coercion == NO_SUCH_COERCION)
-        continue;
-
-      /* const mu_coercion_t *tail; */
-      /* if ((tail = coerce_with(a_edge)) == NULL) */
-      /*   return NULL; */
-
-      /* const mu_indirect_coercion_t *result; */
-      /* if ((result = mu_indirect_coercion(coercion, tail)) == NULL) */
-      /*   return NULL; */
-      /* edge_assign(b_edge, &result->as_coercion); */
-
-      type_edge_t *z = universe_search(
-          &induce->universe,
-          mu_coercion_target(coercion, b_edge->source),
-          b_edge->target);
-      assert(z == a_edge);
-
-      if (redirect_up(induce, b_edge, coercion) == NULL)
-        return NULL;
+      if (coercion != NO_SUCH_COERCION) {
+        if (redirect_up(induce, b_edge, coercion) == NULL)
+          return NULL;
+      }
     }
   }
 
