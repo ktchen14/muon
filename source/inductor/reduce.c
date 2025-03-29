@@ -121,11 +121,11 @@ const mu_solution_t *reduce_type_to_join(
   //
   // Determine the length of the join to allocate as the number of remaining
   // types that aren't variable types and are sources to the variable type.
-  type_edge_t *a_edge;
+  type_edge_t *single_edge;
   const mu_constant_type_t *a;
   size_t argc = 0;
   it = universe_iterator(universe, &variable_type->as_type, 0);
-  while ((a_edge = universe_next(&it)) != NULL) {
+  for (type_edge_t *a_edge; (a_edge = universe_next(&it)) != NULL;) {
     if (a_edge->indirect || (a = mu_type_cast(a_edge->source, a)) == NULL)
       continue;
 
@@ -158,13 +158,14 @@ const mu_solution_t *reduce_type_to_join(
       }
     }
 
+    single_edge = a_edge;
     argc++;
   continue_a:;
   }
 
   if (argc == 1) {
     ((mu_variable_type_t *) variable_type)->solution = &a->as_solution;
-    edge_assign(a_edge, induce->id_coercion);
+    edge_assign(single_edge, induce->id_coercion);
     return variable_type->solution;
   }
 
