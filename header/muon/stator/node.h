@@ -101,7 +101,7 @@ typedef struct mu_node_t {
   size_t id;
 } mu_node_t;
 
-/// The header that each concrete expr must have
+/// The header that each concrete node must have
 #define MU_NODE_HEADER mu_node_t as_node
 
 /// An abstract expr
