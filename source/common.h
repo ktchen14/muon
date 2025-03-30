@@ -121,7 +121,7 @@ __attribute__((unused)) static _Thread_local const void *_object;
  * that will be set to the abstract object (specified in ON_ABSTRACT_OBJECT()).
  */
 #define IS_KIND_OF(name) _##name##_kind:; \
-  const mu_##name##_t *name = _object; \
+  const mu_##name##_t *name = (const mu_##name##_t *) { _object }; \
   goto INDIRECT_JOIN(case_on_, __LINE__); \
   INDIRECT_JOIN(case_on_, __LINE__)
 
