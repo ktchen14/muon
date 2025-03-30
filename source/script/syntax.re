@@ -4,6 +4,7 @@
   goto yyc_normal;
 }
 
+NL = [\n\r]+ [ \t\n\r]*;
 stop = [\x00];
 
 <normal> [ \t]              { return ' '; }
@@ -25,7 +26,7 @@ stop = [\x00];
 
 // ================================ Operator ====================================
 
-<normal> "("             { return '('; }
+<normal> "(" NL?         { return '('; }
 <normal> ")"             { return ')'; }
 <normal> ","             { return ','; }
 <normal> "->" | "→"      { return TO; }
@@ -34,7 +35,7 @@ stop = [\x00];
 <normal> "::" | "∷"      { return CAST; }
 <normal> "<:"            { return IS_SUBTYPE_OF; }
 <normal> "="             { return '='; }
-<normal> "["             { return '['; }
+<normal> "[" NL?         { return '['; }
 <normal> "]"             { return ']'; }
 <normal> "|"             { return '|'; }
 
