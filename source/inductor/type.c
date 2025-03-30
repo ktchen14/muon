@@ -146,14 +146,16 @@ const mu_join_t *join_activate(mu_join_t *join) {
   return join;
 }
 
-void mu_solution_debug(const mu_solution_t *solution, _Bool expand) {
+static void type_debug_internal(const mu_type_t *type, _Bool expand, unsigned char prec, int assoc);
+
+static void solution_debug_internal(const mu_solution_t *solution, _Bool expand, unsigned char prec, int assoc) {
   switch ON_ABSTRACT_OBJECT(solution) {
     case IS_KIND_OF(core_type):
-      type_debug(&core_type->as_type, expand);
+      type_debug_internal(&core_type->as_type, expand, prec, assoc);
       break;
 
     case IS_KIND_OF(scheme_type):
-      type_debug(&scheme_type->as_type, expand);
+      type_debug_internal(&scheme_type->as_type, expand, prec, assoc);
       break;
 
     case IS_KIND_OF(join):
@@ -164,12 +166,16 @@ void mu_solution_debug(const mu_solution_t *solution, _Bool expand) {
         for (size_t i = 0; i < join->argc; i++) {
           if (i > 0)
             debug(", ");
-          type_debug(join->argv[i], expand);
+          type_debug_internal(join->argv[i], expand, 0, 0);
         }
         debug(")");
       }
       break;
   }
+}
+
+void mu_solution_debug(const mu_solution_t *solution, _Bool expand) {
+  return solution_debug_internal(solution, expand, 0, 0);
 }
 
 void debug_variable_type_name(const mu_variable_type_t *type) {
@@ -196,7 +202,7 @@ void debug_variable_type_name(const mu_variable_type_t *type) {
   debug("%s", name);
 }
 
-void type_debug(const mu_type_t *type, _Bool expand) {
+static void type_debug_internal(const mu_type_t *type, _Bool expand, unsigned char prec, int assoc) {
   switch ON_ABSTRACT_OBJECT(type) {
     case IS_KIND_OF(core_type): {
       const mu_core_t *core = core_type->core;
@@ -209,16 +215,20 @@ void type_debug(const mu_type_t *type, _Bool expand) {
           break;
 
         case MU_LAMBDA_CORE:
-          debug("(");
-          WITH_DEBUG_NEGATE() { type_debug(core_type->argv[0], expand); }
+          if (prec > 1 || prec == 1 && assoc == 1)
+            debug("(");
+
+          WITH_DEBUG_NEGATE() { type_debug_internal(core_type->argv[0], expand, 1, 1); }
           debug(" → ");
-          type_debug(core_type->argv[1], expand);
-          debug(")");
+          type_debug_internal(core_type->argv[1], expand, 1, 1);
+
+          if (prec > 1 || prec == 1 && assoc == 1)
+            debug(")");
           break;
 
         case MU_VECTOR_CORE:
           debug("[");
-          type_debug(core_type->argv[0], expand);
+          type_debug_internal(core_type->argv[0], expand, 0, 0);
           debug("]");
           break;
 
@@ -229,7 +239,7 @@ void type_debug(const mu_type_t *type, _Bool expand) {
               debug(", ");
             mu_name_debug(core->argv[i].name);
             debug(": ");
-            type_debug(core_type->argv[i], expand);
+            type_debug_internal(core_type->argv[i], expand, 0, 0);
           }
           debug(")");
           break;
@@ -239,7 +249,7 @@ void type_debug(const mu_type_t *type, _Bool expand) {
 
     case IS_KIND_OF(variable_type): {
       if (variable_type->solution != NULL) {
-        mu_solution_debug(variable_type->solution, expand);
+        solution_debug_internal(variable_type->solution, expand, prec, assoc);
         break;
       }
 
@@ -247,6 +257,9 @@ void type_debug(const mu_type_t *type, _Bool expand) {
         debug_variable_type_name(variable_type);
         break;
       }
+
+      if (prec > 2 || prec == 2 && assoc != 1)
+        debug("(");
 
       size_t length = 0;
       if (debug_negate) {
@@ -260,7 +273,7 @@ void type_debug(const mu_type_t *type, _Bool expand) {
 
           const mu_variable_type_t *upper_variable_type;
           if ((upper_variable_type = mu_type_cast(edge.target, upper_variable_type)) == NULL)
-            type_debug(edge.target, expand);
+            type_debug_internal(edge.target, expand, 2, 1);
           else
             debug_variable_type_name(upper_variable_type);
         }
@@ -279,7 +292,7 @@ void type_debug(const mu_type_t *type, _Bool expand) {
 
           const mu_variable_type_t *lower_variable_type;
           if ((lower_variable_type = mu_type_cast(edge.source, lower_variable_type)) == NULL)
-            type_debug(edge.source, expand);
+            type_debug_internal(edge.source, expand, 2, 1);
           else
             debug_variable_type_name(lower_variable_type);
         }
@@ -288,6 +301,9 @@ void type_debug(const mu_type_t *type, _Bool expand) {
           debug(" ⊔ ");
         debug_variable_type_name(variable_type);
       }
+
+      if (prec > 2 || prec == 2 && assoc != 1)
+        debug(")");
       break;
     }
 
@@ -300,7 +316,11 @@ void type_debug(const mu_type_t *type, _Bool expand) {
       }
       debug(") ");
 
-      type_debug(scheme_type->matter, expand);
+      type_debug_internal(scheme_type->matter, expand, 0, 0);
       break;
   }
+}
+
+void type_debug(const mu_type_t *type, _Bool expand) {
+  return type_debug_internal(type, expand, 0, 0);
 }
