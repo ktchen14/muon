@@ -33,7 +33,10 @@ struct mu_coercion_t {
 /// The header that each concrete coercion must have
 #define MU_COERCION_HEADER mu_coercion_t as_coercion
 
-typedef mu_coercion_t mu_id_coercion_t;
+typedef struct {
+  MU_COERCION_HEADER;
+  const mu_type_t *target;
+} mu_id_coercion_t;
 
 typedef struct {
   MU_COERCION_HEADER;
@@ -85,6 +88,9 @@ enum {
 #undef MU_EMIT
 };
 
+const mu_id_coercion_t *mu_id_coercion(const mu_type_t *target)
+  __attribute__((malloc, nonnull));
+
 const mu_edge_coercion_t *mu_edge_coercion(
     const mu_type_t *source, const mu_type_t *target)
   __attribute__((malloc, nonnull));
@@ -133,8 +139,8 @@ __attribute__((nonnull, pure))
 static inline const mu_type_t *mu_coercion_target(
     const mu_coercion_t *coercion, const mu_type_t *source) {
   switch ON_ABSTRACT_OBJECT(coercion) {
-    case MU_ID_COERCION:
-      return source;
+    case IS_KIND_OF(id_coercion):
+      return id_coercion->target != NULL ? id_coercion->target : source;
 
     case IS_KIND_OF(edge_coercion):
       return edge_coercion->target;

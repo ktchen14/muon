@@ -170,13 +170,17 @@ const mu_solution_t *reduce_type_to_join(
 
   if (argc == 1) {
     ((mu_variable_type_t *) variable_type)->solution = &single_a->as_solution;
-    edge_assign(single_edge, induce->id_coercion);
+
+    const mu_id_coercion_t *id_coercion;
+    if ((id_coercion = mu_id_coercion(&variable_type->as_type)) == NULL)
+      return NULL;
+    edge_assign(single_edge, &id_coercion->as_coercion);
     return variable_type->solution;
   }
 
   // Allocate a join
-  mu_join_t *join;
-  if ((join = join_allocate(induce, argc)) == NULL)
+  mu_join_t *allocation;
+  if ((allocation = join_allocate(induce, argc)) == NULL)
     return NULL;
   argc = 0;
 
@@ -185,7 +189,7 @@ const mu_solution_t *reduce_type_to_join(
     if (edge->indirect || edge->source->kind == MU_VARIABLE_TYPE)
       continue;
 
-    join->argv[argc] = edge->source;
+    allocation->argv[argc] = edge->source;
 
     const mu_join_coercion_t *coercion;
     if ((coercion = mu_join_coercion(variable_type, argc++)) == NULL)
@@ -193,12 +197,12 @@ const mu_solution_t *reduce_type_to_join(
     edge_assign(edge, &coercion->as_coercion);
   }
 
-  const mu_join_t *result;
-  if ((result = join_activate(join)) == NULL)
+  const mu_join_t *join;
+  if ((join = join_activate(allocation)) == NULL)
     return NULL;
-  ((mu_variable_type_t *) variable_type)->solution = &result->as_solution;
+  ((mu_variable_type_t *) variable_type)->solution = &join->as_solution;
 
-  return &result->as_solution;
+  return &join->as_solution;
 }
 
 const mu_coercion_t *reduce_coercion(

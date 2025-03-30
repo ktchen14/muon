@@ -11,6 +11,16 @@
 
 const void *const NO_SUCH_COERCION = &NO_SUCH_COERCION;
 
+const mu_id_coercion_t *mu_id_coercion(const mu_type_t *target) {
+  mu_id_coercion_t *result;
+  if ((result = malloc(sizeof(mu_id_coercion_t))) == NULL)
+    return NULL;
+  *result = (mu_id_coercion_t) {
+    .as_coercion.kind = MU_ID_COERCION, .target = target,
+  };
+  return result;
+}
+
 const mu_edge_coercion_t *mu_edge_coercion(const mu_type_t *source, const mu_type_t *target) {
   mu_edge_coercion_t *result;
   if ((result = malloc(sizeof(mu_edge_coercion_t))) == NULL)
