@@ -90,15 +90,15 @@ void *redirect_source(
 }
 
 const mu_solution_t *reduce_type_to_join(
-    induce_t *induce, const mu_variable_type_t *variable_type) {
-  if (variable_type->solution != NULL)
-    return variable_type->solution;
+    induce_t *induce, const mu_variable_type_t *target) {
+  if (target->solution != NULL)
+    return target->solution;
 
   universe_t *universe = &induce->universe;
   universe_iterator_t it;
 
   // Reduce each variable type that's a source to this variable type
-  it = universe_iterator(universe, &variable_type->as_type, 0);
+  it = universe_iterator(universe, &target->as_type, 0);
   for (type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
     if (edge->indirect)
       continue;
@@ -124,7 +124,7 @@ const mu_solution_t *reduce_type_to_join(
   type_edge_t *single_edge;
   const mu_constant_type_t *single_a;
   size_t argc = 0;
-  it = universe_iterator(universe, &variable_type->as_type, 0);
+  it = universe_iterator(universe, &target->as_type, 0);
   for (type_edge_t *a_edge; (a_edge = universe_next(&it)) != NULL;) {
     if (a_edge->indirect)
       continue;
@@ -162,6 +162,7 @@ const mu_solution_t *reduce_type_to_join(
       }
     }
 
+    // Record a and a_edge in case we don't need a join and a is the solution
     single_a = a;
     single_edge = a_edge;
     argc++;
@@ -169,13 +170,12 @@ const mu_solution_t *reduce_type_to_join(
   }
 
   if (argc == 1) {
-    ((mu_variable_type_t *) variable_type)->solution = &single_a->as_solution;
-
     const mu_id_coercion_t *id_coercion;
-    if ((id_coercion = mu_id_coercion(&variable_type->as_type)) == NULL)
+    if ((id_coercion = mu_id_coercion(&target->as_type)) == NULL)
       return NULL;
     edge_assign(single_edge, &id_coercion->as_coercion);
-    return variable_type->solution;
+
+    return assign_solution(target, &single_a->as_solution);
   }
 
   // Allocate a join
@@ -184,7 +184,7 @@ const mu_solution_t *reduce_type_to_join(
     return NULL;
   argc = 0;
 
-  it = universe_iterator(universe, &variable_type->as_type, 0);
+  it = universe_iterator(universe, &target->as_type, 0);
   for (type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
     if (edge->indirect || edge->source->kind == MU_VARIABLE_TYPE)
       continue;
@@ -192,17 +192,16 @@ const mu_solution_t *reduce_type_to_join(
     allocation->argv[argc] = edge->source;
 
     const mu_join_coercion_t *coercion;
-    if ((coercion = mu_join_coercion(variable_type, argc++)) == NULL)
+    if ((coercion = mu_join_coercion(target, argc++)) == NULL)
       return NULL;
     edge_assign(edge, &coercion->as_coercion);
   }
+  assert(argc == allocation->argc);
 
   const mu_join_t *join;
   if ((join = join_activate(allocation)) == NULL)
     return NULL;
-  ((mu_variable_type_t *) variable_type)->solution = &join->as_solution;
-
-  return &join->as_solution;
+  return assign_solution(target, &join->as_solution);
 }
 
 const mu_coercion_t *reduce_coercion(

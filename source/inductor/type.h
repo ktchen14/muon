@@ -227,6 +227,12 @@ void type_debug(const mu_type_t *type, _Bool expand)
 
 void debug_variable_type_name(const mu_variable_type_t *type);
 
+__attribute__((nonnull))
+static inline const mu_solution_t *assign_solution(
+    const mu_variable_type_t *variable_type, const mu_solution_t *solution) {
+  return ((mu_variable_type_t *) variable_type)->solution = solution;
+}
+
 /// @internal An enumeration over each kind of type, e.g. @c _core_type_kind
 enum {
   _core_type_kind = MU_CORE_TYPE,
