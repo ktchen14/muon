@@ -24,7 +24,7 @@ static inline mu_type_t *assign_type(induce_t *induce, mu_type_t *type) {
   ((typeof((type))) (assign_type)((induce), &(type)->as_type))
 
 const mu_core_type_t *mu_core_type(
-    induce_t *induce, const mu_core_t *core, const mu_type_t *argv[]) {
+    induce_t *induce, const mu_core_t *core, const mu_type_t *const argv[]) {
   mu_core_type_t *result;
   if ((result = core_type_allocate(induce, core)) == NULL)
     return NULL;

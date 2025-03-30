@@ -177,7 +177,7 @@ const mu_core_type_t *mu_integer_type(induce_t *induce)
   __attribute__((malloc, nonnull));
 
 const mu_core_type_t *mu_core_type(
-    induce_t *induce, const mu_core_t *core, const mu_type_t *argv[])
+    induce_t *induce, const mu_core_t *core, const mu_type_t *const argv[])
   __attribute__((malloc, nonnull(1, 2)));
 
 const mu_core_type_t *mu_lambda_type(

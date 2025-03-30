@@ -66,20 +66,16 @@ __attribute__((nonnull)) static const mu_type_t *access_expr_induce(
     return NULL;
   assert(core->kind == MU_RECORD_CORE);
 
-  mu_core_type_t *allocation;
-  if ((allocation = core_type_allocate(induce, core)) == NULL)
-    return NULL;
-  allocation->argv[0] = &variable_type->as_type;
-
+  const mu_type_t *record_argv[] = { &variable_type->as_type };
   const mu_core_type_t *record_type;
-  if (rare((record_type = core_type_activate(allocation)) == NULL))
+  if ((record_type = mu_core_type(induce, core, record_argv)) == NULL)
     return NULL;
 
-  const mu_core_type_t *lambda_type;
-  if ((lambda_type = mu_lambda_type(induce, &record_type->as_type, &variable_type->as_type)) == NULL)
+  const mu_type_t *argv[] = { &record_type->as_type, &variable_type->as_type };
+  const mu_core_type_t *result;
+  if ((result = mu_lambda_type(induce, argv[0], argv[1])) == NULL)
     return NULL;
-
-  return &lambda_type->as_type;
+  return &result->as_type;
 }
 
 __attribute__((nonnull)) static const mu_type_t *boolean_expr_induce(
@@ -113,19 +109,22 @@ __attribute__((nonnull)) static const mu_type_t *integer_expr_induce(
 
 __attribute__((nonnull)) static const mu_type_t *invoke_expr_induce(
     const mu_invoke_expr_t *expr, induce_t *induce, open_scheme_t *scheme) {
-  const mu_type_t *operator_type = evince_type(induce, &expr->operator->as_node);
-  const mu_type_t *argument_type = evince_type(induce, &expr->argument->as_node);
+  const mu_type_t *operator_type, *argument_type;
+  operator_type = evince_type(induce, &expr->operator->as_node);
+  argument_type = evince_type(induce, &expr->argument->as_node);
 
   const mu_variable_type_t *result;
   if ((result = mu_variable_type(induce, scheme)) == NULL)
     return NULL;
 
+  const mu_type_t *argv[] = { argument_type, &result->as_type };
   const mu_core_type_t *lambda_type;
-  if ((lambda_type = mu_lambda_type(induce, argument_type, &result->as_type)) == NULL)
+  if ((lambda_type = mu_lambda_type(induce, argv[0], argv[1])) == NULL)
     return NULL;
 
+  const mu_type_t *target = &lambda_type->as_type;
   const mu_coercion_t *coercion;
-  if ((coercion = ensure_coercion(induce, operator_type, &lambda_type->as_type)) == NULL)
+  if ((coercion = ensure_coercion(induce, operator_type, target)) == NULL)
     return NULL;
   assign_coercion(induce, &expr->operator->as_node, coercion);
 
