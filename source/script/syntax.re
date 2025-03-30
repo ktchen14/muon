@@ -90,7 +90,10 @@ stop = [\x00];
   return STRING;
 }
 
-<string> stop { return YYerror; }
+<string> stop {
+  fprintf(stderr, "Unexpected end of script\n");
+  return YYerror;
+}
 
 <string> * { return YYerror; }
 
@@ -109,5 +112,14 @@ XID_Continue = [A-Za-z0-9_];
 
 // ================================ Unknown ====================================
 
-<normal> [^] { return YYerror; }
-<normal> * { return YYerror; }
+<normal> [^] {
+  int length = cursor->offset - symbol->offset;
+  const char *text = &buffer[symbol->offset];
+  fprintf(stderr, "Unexpected character %.*s\n", length, text);
+  return YYerror;
+}
+
+<normal> * {
+  fprintf(stderr, "Unexpected character %c\n", buffer[symbol->offset]);
+  return YYerror;
+}
