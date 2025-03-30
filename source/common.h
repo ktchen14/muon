@@ -136,7 +136,7 @@ extern _Thread_local _Bool debug_negate;
 extern _Thread_local _Bool debug_shortcore;
 
 /// Stream to emit debugging output to (defaults to @c stderr)
-extern FILE *debug_stream;
+extern FILE *mu_debug_stream;
 
 /// Literal printf specifier for a kind
 #define PRIsKIND "%s%s%s"
