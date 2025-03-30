@@ -93,8 +93,8 @@ int main(int argc, char *argv[argc]) {
   if (reduce_node(&induce, &sequence_expr->as_node) == NULL)
     assert(0);
 
-  extern _Thread_local _Bool debug_colorize;
-  debug_colorize = 1;
+  extern _Thread_local _Bool mu_debug_colorize;
+  mu_debug_colorize = 1;
   debug_induce = &induce;
 
   mu_node_debug(&sequence_expr->as_node);
@@ -102,7 +102,7 @@ int main(int argc, char *argv[argc]) {
   if (getenv("DOT") != NULL) {
     FILE *output = fopen("out.dot", "w");
     mu_debug_stream = output;
-    debug_colorize = 0;
+    mu_debug_colorize = 0;
     debug_shortcore = 1;
 
     debug("digraph muon {\n  rankdir=\"BT\";\n  dpi=192;\n");

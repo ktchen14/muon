@@ -125,7 +125,7 @@ __attribute__((unused)) static _Thread_local const void *_object;
   INDIRECT_JOIN(case_on_, __LINE__)
 
 /// Whether to colorize the debug output
-extern _Thread_local _Bool debug_colorize;
+extern _Thread_local _Bool mu_debug_colorize;
 
 /// The amount of indentation to insert before each line of debug output
 extern _Thread_local int debug_indent;
