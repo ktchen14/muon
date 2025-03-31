@@ -112,11 +112,17 @@ static inline const mu_node_t *node_at(const mu_node_t *node, size_t i) {
     case IS_KIND_OF(vector_sign):
       return (const mu_node_t *[]) { &vector_sign->matter->as_node, NULL }[i];
 
-    case IS_KIND_OF(define_stmt):
-      return (const mu_node_t *[]) { &define_stmt->expr->as_node, NULL }[i];
+    case IS_KIND_OF(coercion_stmt): return (const mu_node_t *[]) {
+        &coercion_stmt->source->as_node,
+        &coercion_stmt->target->as_node,
+        &coercion_stmt->expr->as_node, NULL,
+      }[i];
 
     case IS_KIND_OF(datatype_stmt):
       return i < datatype_stmt->argc ? &datatype_stmt->argv[i]->as_node : NULL;
+
+    case IS_KIND_OF(define_stmt):
+      return (const mu_node_t *[]) { &define_stmt->expr->as_node, NULL }[i];
   }
   __builtin_unreachable();
 }

@@ -187,7 +187,11 @@ static const mu_coercion_t *ensure_cc(
   const mu_core_t *target_core = target->core;
 
   if (source_core != target_core) {
-    fprintf(stderr, "Type mismatch\n");
+    fprintf(stderr, "Type mismatch. Expected ");
+    mu_core_debug(target_core);
+    fprintf(stderr, " but got ");
+    mu_core_debug(source_core);
+    fprintf(stderr, "\n");
     abort();
   }
 

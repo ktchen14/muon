@@ -33,6 +33,7 @@
 
 /// Expands to emit(lower, upper, title, ...) for each kind of stmt
 #define MU_EACH_STMT_KIND(emit, ...) \
+  emit(coercion, COERCION, Coercion, ##__VA_ARGS__) \
   emit(datatype, DATATYPE, Datatype, ##__VA_ARGS__) \
   emit(define, DEFINE, Define, ##__VA_ARGS__) \
 
@@ -330,6 +331,13 @@ const mu_vector_sign_t *mu_vector_sign(
 #define MU_STMT_HEADER union { mu_stmt_t as_stmt; mu_node_t as_node; }
 
 typedef struct {
+  MU_STMT_HEADER;
+  const mu_sign_t *source;
+  const mu_sign_t *target;
+  const mu_expr_t *expr;
+} mu_coercion_stmt_t;
+
+typedef struct {
   MU_NODE_HEADER;
   const mu_name_t *name;
 } mu_datatype_option_t;
@@ -346,6 +354,13 @@ typedef struct {
   const mu_name_t *name;
   const mu_expr_t *expr;
 } mu_define_stmt_t;
+
+const mu_coercion_stmt_t *mu_coercion_stmt(
+    mu_engine_t *engine,
+    const mu_sign_t *source,
+    const mu_sign_t *target,
+    const mu_expr_t *expr)
+  __attribute__((malloc, nonnull));
 
 const mu_datatype_option_t *mu_datatype_option(
     mu_engine_t *engine, const mu_name_t *name)

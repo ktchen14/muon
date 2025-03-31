@@ -32,6 +32,7 @@ stop = [\x00];
 <normal> "."             { return '.'; }
 <normal> ":"             { return ':'; }
 <normal> "::" | "∷"      { return CAST; }
+<normal> "<:"            { return IS_SUBTYPE_OF; }
 <normal> "="             { return '='; }
 <normal> "["             { return '['; }
 <normal> "]"             { return ']'; }

@@ -396,6 +396,27 @@ const mu_vector_sign_t *mu_vector_sign(
   return assign_node(engine, &result->as_node), result;
 }
 
+const mu_coercion_stmt_t *mu_coercion_stmt(
+    mu_engine_t *engine,
+    const mu_sign_t *source,
+    const mu_sign_t *target,
+    const mu_expr_t *expr) {
+  assert(source->as_node.engine == engine);
+  assert(target->as_node.engine == engine);
+  assert(expr->as_node.engine == engine);
+
+  mu_coercion_stmt_t *result;
+  if ((result = node_allocate(engine, sizeof(mu_coercion_stmt_t))) == NULL)
+    return NULL;
+  *result = (mu_coercion_stmt_t) {
+    .as_stmt.kind = MU_COERCION_STMT,
+    .source = source,
+    .target = target,
+    .expr = expr,
+  };
+  return assign_node(engine, &result->as_node), result;
+}
+
 const mu_datatype_option_t *mu_datatype_option(
     mu_engine_t *engine, const mu_name_t *name) {
   assert(name->engine == engine);

@@ -1,3 +1,7 @@
+datatype MyBoolean = my_true | my_false
+
+instance MyBoolean <: Integer = 1
+
 datatype Foo = Foo1 | Foo2
 
 define foo = lambda x = Foo1

@@ -338,6 +338,25 @@ __attribute__((nonnull)) static const mu_type_t *vector_sign_induce(
   return &result->as_type;
 }
 
+__attribute__((nonnull)) static const mu_type_t *coercion_stmt_induce(
+    const mu_coercion_stmt_t *stmt, induce_t *induce, open_scheme_t *scheme) {
+  const mu_type_t *source_type = evince_type(induce, &stmt->source->as_node);
+  const mu_type_t *target_type = evince_type(induce, &stmt->target->as_node);
+  const mu_type_t *expr_type = evince_type(induce, &stmt->expr->as_node);
+
+  const mu_core_type_t *lambda_type;
+  if ((lambda_type = mu_lambda_type(induce, source_type, target_type)) == NULL)
+    return NULL;
+
+  // TODO: ensure that this isn't tautological
+  const mu_coercion_t *coercion;
+  if ((coercion = ensure_coercion(induce, expr_type, &lambda_type->as_type)) == NULL)
+    return NULL;
+  assign_coercion(induce, &stmt->expr->as_node, coercion);
+
+  return &lambda_type->as_type;
+}
+
 __attribute__((nonnull)) static const mu_type_t *datatype_option_induce(
     const mu_datatype_option_t *option, induce_t *induce, open_scheme_t *scheme) {
   const mu_core_t *core = induce->datatype_core;

@@ -68,6 +68,7 @@ typedef struct {
 
 %token CAST "∷"
 %token TO "→"
+%token IS_SUBTYPE_OF "<:"
 
 %token <integer> INTEGER_LITERAL
 %token <boolean> BOOLEAN_LITERAL
@@ -99,6 +100,7 @@ typedef struct {
 %type <name_sign> name_sign
 %type <vector_sign> vector_sign
 
+%type <coercion_stmt> coercion_stmt
 %type <datatype_option> datatype_option
 %type <datatype_stmt> datatype_stmt
 %type <define_stmt> define_stmt
@@ -301,6 +303,7 @@ vector_sign: '[' sign ']' {
 // ================================== Stmt ================================ {{{1
 
 stmt:
+  coercion_stmt { $$ = &$coercion_stmt->as_stmt; } |
   datatype_stmt { $$ = &$datatype_stmt->as_stmt; } |
   define_stmt   { $$ = &$define_stmt->as_stmt; }
 
@@ -321,6 +324,10 @@ datatype_argv: datatype_option {
 
 datatype_option: name {
   $$ = mu_datatype_option(syntax->engine, $name);
+}
+
+coercion_stmt: "instance" _ sign[source] _ "<:" _ sign[target] _ '=' _ expr '\n' {
+  $$ = mu_coercion_stmt(syntax->engine, $source, $target, $expr);
 }
 
 define_stmt: "define" _ name _ '=' _ expr '\n' {
