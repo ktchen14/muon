@@ -157,8 +157,10 @@ __attribute__((nonnull)) static const mu_type_t *name_expr_induce(
   if (result->kind != MU_SCHEME_TYPE)
     return result;
 
+  const mu_scheme_type_t *scheme_type = (const mu_scheme_type_t *) result;
+
   // Instantiate the polymorphic type
-  /* result = instantiate_scheme(induce, result, scheme); */
+  result = instantiate_scheme(induce, scheme_type, scheme);
   return result;
 }
 
@@ -382,74 +384,7 @@ __attribute__((nonnull, pure)) static const mu_type_t *define_stmt_induce(
   assert(scheme->node == &stmt->as_node);
 
   const mu_type_t *expr_type = evince_type(induce, &stmt->expr->as_node);
-  return expr_type;
-  /* mark_type(induce, expr_type, 0, scheme->rank); */
-
-  size_t polymorphic_length = 0;
-  mu_variable_type_t *polymorphic = NULL;
-
-  mu_variable_type_t *type = scheme->link;
-  while (type != NULL) {
-    assert(type->rank == scheme->rank);
-
-    mu_variable_type_t *next = type->scheme_next;
-
-    /* Does a type have to be both positively reachable and negatively reachable
-     * from the type of the defined expr to be polymorphic? */
-    /* What is a polymorphic type polymorphic to? Just this type scheme? Or all
-     * type schemes above this? Or all type scheme below this? */
-
-    /*
-     * Not sure if this is true, but here are some thoughts:
-     *
-     * A variable type must be constrained somehow to be polymorphically useful.
-     * If we have:
-     *   foo :: a
-     * Then, while theoretically foo is polymorphic, it's not any more useful
-     * than:
-     *   foo :: ⊥
-     *
-     * Similarly, this function:
-     *   bar :: a -> ()
-     * While theoretically polymorphic, is no more useful than:
-     *   bar :: ⊤ -> ()
-     *
-     * A variable can be constrained by either appearing both positively and
-     * negatively, being constrained by bounds, or (in the future) being
-     * constrained by kind. For now, just do this:
-     */
-    if (type->positively_reachable && type->negatively_reachable) {
-      type->scheme_next = polymorphic;
-      polymorphic = type;
-      type->rank = 0;
-      polymorphic_length++;
-    } else {
-      type->scheme_next = scheme->parent->link;
-      scheme->parent->link = type;
-      type->rank--;
-    }
-
-    type = next;
-  }
-
-  if (polymorphic_length == 0)
-    return expr_type;
-  return expr_type;
-
-  /* mu_scheme_type_t *allocation; */
-  /* if ((allocation = scheme_type_allocate(induce, polymorphic_length)) == NULL) */
-  /*   return NULL; */
-
-  /* size_t i = 0; */
-  /* for (mu_variable_type_t *type = polymorphic; type != NULL; type = type->scheme_next) { */
-  /*   allocation->argv[i++] = type; */
-  /*   type->polymorphic_to = allocation; */
-  /* } */
-
-  /* const mu_scheme_type_t *result; */
-  /* if (rare((result = scheme_type_activate(allocation, expr_type)) == NULL)) */
-  /*   return NULL; */
-  /* return &result->as_type; */
+  return generalize_type(induce, expr_type, scheme);
 }
 
 __attribute__((nonnull)) static const mu_type_t *record_view_induce(

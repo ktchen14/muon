@@ -125,6 +125,14 @@ const mu_coercion_t *ensure_coercion(
     induce_t *induce, const mu_type_t *source, const mu_type_t *target)
   __attribute__((nonnull));
 
+const mu_type_t *generalize_type(
+    induce_t *induce, const mu_type_t *type, open_scheme_t *scheme)
+  __attribute__((nonnull));
+
+const mu_type_t *instantiate_scheme(
+    induce_t *induce, const mu_scheme_type_t *scheme_type, open_scheme_t *target_scheme
+);
+
 extern const mu_name_t *vector_access;
 extern const mu_name_t *vector_join;
 

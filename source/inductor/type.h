@@ -93,8 +93,7 @@ struct mu_variable_type_t {
   size_t rank;
   const mu_scheme_type_t *polymorphic_to;
 
-  _Bool positively_reachable;
-  _Bool negatively_reachable;
+  _Bool reachable[2];
 };
 
 /**

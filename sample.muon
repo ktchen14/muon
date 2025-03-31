@@ -10,14 +10,9 @@ define list = handle_list [1, 2, x]
 
 define idi = lambda x = x :: Integer -> Integer
 
-define id1 = lambda x = x
-define id2 = lambda x = x
-define id3 = lambda x = x
-define id4 = lambda x = x
+define id = lambda x = x
 
-define b = id1 (id2 (id3 id4))
-
-define sw = switch (case Foo1 = 1, case Foo1 = 3, case Foo2 = true)
+define sw = switch (case Foo1 = 1, case Foo1 = id 3, case Foo2 = id true)
 define rs = sw Foo1
 
 define z = [1] ∷ [Integer]

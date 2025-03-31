@@ -308,6 +308,205 @@ static const mu_coercion_t *ensure_vc(
 
 
 
+static void mark_type(induce_t *induce, const mu_type_t *type, _Bool negative, size_t rank) {
+  switch ON_ABSTRACT_OBJECT(type) {
+    case IS_KIND_OF(core_type): {
+      const mu_core_t *core = core_type->core;
+
+      for (size_t i = 0; i < core->argc; i++) {
+        const mu_type_t *next = core_type->argv[i];
+
+        _Bool next_negative = negative;
+        mu_variance_t variance = core->argv[i].variance;
+        assert(variance != MU_INVARIANCE);
+        if (variance == MU_CONTRAVARIANCE)
+          next_negative = !next_negative;
+
+        mark_type(induce, next, next_negative, rank);
+      }
+
+      break;
+    }
+
+    case IS_KIND_OF(variable_type):
+      if (variable_type->rank < rank)
+        return;
+
+      ((mu_variable_type_t *) variable_type)->reachable[negative] = 1;
+
+      universe_iterator_t it;
+      it = universe_iterator(&induce->universe, &variable_type->as_type, negative);
+      for (type_edge_t *edge; (edge = universe_next(&it)) != NULL;)
+        mark_type(induce, edge->vertex[negative], negative, rank);
+
+      break;
+
+    case MU_SCHEME_TYPE:
+      abort();
+  }
+}
+
+
+
+const mu_type_t *generalize_type(
+    induce_t *induce, const mu_type_t *matter, open_scheme_t *scheme) {
+  mark_type(induce, matter, 0, scheme->rank);
+
+  size_t polymorphic_length = 0;
+  mu_variable_type_t *polymorphic = NULL;
+
+  mu_variable_type_t *variable_type = scheme->link;
+  while (variable_type != NULL) {
+    assert(variable_type->rank == scheme->rank);
+
+    mu_variable_type_t *next = variable_type->scheme_next;
+
+    /* Does a type have to be both positively reachable and negatively reachable
+     * from the type of the defined expr to be polymorphic? */
+
+    /*
+     * Not sure if this is true, but here are some thoughts:
+     *
+     * A variable type must be constrained somehow to be polymorphically useful.
+     * If we have:
+     *   foo :: a
+     * Then, while theoretically foo is polymorphic, it's not any more useful
+     * than:
+     *   foo :: ⊥
+     *
+     * Similarly, this function:
+     *   bar :: a -> ()
+     * While theoretically polymorphic, is no more useful than:
+     *   bar :: ⊤ -> ()
+     *
+     * A variable can be constrained by either appearing both positively and
+     * negatively, being constrained by bounds, or (in the future) being
+     * constrained by kind. For now, just do this:
+     */
+    if (variable_type->reachable[0] && variable_type->reachable[1]) {
+      variable_type->scheme_next = polymorphic;
+      polymorphic = variable_type;
+      variable_type->rank = 0;
+      polymorphic_length++;
+    } else {
+      variable_type->scheme_next = scheme->parent->link;
+      scheme->parent->link = variable_type;
+      variable_type->rank--;
+    }
+
+    variable_type = next;
+  }
+
+  if (polymorphic_length == 0)
+    return matter;
+
+  mu_scheme_type_t *allocation;
+  if ((allocation = scheme_type_allocate(induce, polymorphic_length)) == NULL)
+    return NULL;
+
+  size_t i = 0;
+  for (mu_variable_type_t *type = polymorphic; type != NULL; type = type->scheme_next) {
+    allocation->argv[i++] = type;
+    type->polymorphic_to = allocation;
+  }
+
+  const mu_scheme_type_t *result;
+  if (rare((result = scheme_type_activate(allocation, matter)) == NULL))
+    return NULL;
+  return &result->as_type;
+}
+
+typedef struct {
+  const mu_type_t *source;
+  const mu_type_t *target;
+} cache_item;
+
+const mu_type_t *instantiate_single_type(
+    induce_t *induce,
+    const mu_type_t *type,
+    const mu_scheme_type_t *scheme,
+    open_scheme_t *target_scheme,
+    cache_item *cache,
+    size_t *cache_i
+) {
+  for (size_t i = 0; i < 100; i++) {
+    if (cache[i].source == type)
+      return cache[i].target;
+  }
+
+  switch ON_ABSTRACT_OBJECT(type) {
+    case IS_KIND_OF(core_type): {
+      const mu_core_t *core = core_type->core;
+
+      if (core->argc == 0) {
+        cache[(*cache_i)++] = (cache_item) { &core_type->as_type, &core_type->as_type };
+        return &core_type->as_type;
+      }
+
+      mu_core_type_t *allocation;
+      if ((allocation = core_type_allocate(induce, core)) == NULL)
+        return NULL;
+
+      _Bool same = 1;
+      for (size_t i = 0; i < core->argc; i++) {
+        allocation->argv[i] = instantiate_single_type(induce, core_type->argv[i], scheme, target_scheme, cache, cache_i);
+        same = same && (allocation->argv[i] == core_type->argv[i]);
+      }
+
+      if (same) {
+        free(allocation);
+        cache[(*cache_i)++] = (cache_item) { &core_type->as_type, &core_type->as_type };
+        return &core_type->as_type;
+      }
+
+      const mu_core_type_t *result = core_type_activate(allocation);
+      cache[(*cache_i)++] = (cache_item) { &core_type->as_type, &result->as_type };
+      return &result->as_type;
+    }
+
+    case IS_KIND_OF(variable_type):
+      if (variable_type->polymorphic_to != scheme) {
+        cache[(*cache_i)++] = (cache_item) { &variable_type->as_type, &variable_type->as_type };
+        return &variable_type->as_type;
+      }
+
+      const mu_variable_type_t *newvar;
+      if ((newvar = mu_variable_type(induce, target_scheme)) == NULL)
+        return NULL;
+      cache[(*cache_i)++] = (cache_item) { &variable_type->as_type, &newvar->as_type };
+
+      universe_iterator_t it;
+      it = universe_iterator(&induce->universe, &variable_type->as_type, 0);
+      for (const type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
+        const mu_type_t *next = instantiate_single_type(induce, edge->source, scheme, target_scheme, cache, cache_i);
+        append_edge(&induce->universe, next, &newvar->as_type);
+      }
+
+      it = universe_iterator(&induce->universe, &variable_type->as_type, 1);
+      for (const type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
+        const mu_type_t *next = instantiate_single_type(induce, edge->target, scheme, target_scheme, cache, cache_i);
+        append_edge(&induce->universe, &newvar->as_type, next);
+      }
+
+      cache[(*cache_i)++] = (cache_item) { &variable_type->as_type, &newvar->as_type };
+      return &newvar->as_type;
+
+    case MU_SCHEME_TYPE:
+      fprintf(stderr, "Unsupported higher rank polymorphism\n");
+      abort();
+  }
+}
+
+const mu_type_t *instantiate_scheme(
+    induce_t *induce, const mu_scheme_type_t *scheme_type, open_scheme_t *target_scheme
+) {
+  cache_item cache[100] = {0};
+  size_t i = 0;
+  return instantiate_single_type(induce, scheme_type->matter, scheme_type, target_scheme, cache, &i);
+}
+
+
+
 
 induce_t *induce_initialize(
     induce_t *induce, mu_engine_t *engine, const detect_t *detect) {
