@@ -155,7 +155,17 @@ void mu_core_debug(const mu_core_t *core) {
     case MU_VECTOR_CORE:
       debug(PRIsKIND, DEBUG_CORE_KIND("Vector")); return;
     case MU_RECORD_CORE:
-      debug(PRIsKIND, DEBUG_CORE_KIND("Record")); return;
+      debug(PRIsKIND, DEBUG_CORE_KIND("("));
+      for (size_t i = 0; i < core->argc; i++) {
+        if (i > 0)
+          debug(", ");
+        mu_variance_t variance = core->argv[i].variance;
+        assert(variance != MU_INVARIANCE);
+        const char *variance_text = variance == MU_COVARIANCE ? "+" : "-";
+        debug(PRIsNAME ": %s", DEBUG_NAME(core->argv[i].name), variance_text);
+      }
+      debug(PRIsKIND, DEBUG_CORE_KIND(")"));
+      return;
     case MU_CUSTOM_CORE:
       debug(PRIsKIND, DEBUG_CORE_KIND(DEBUG_NAME(core->name)));
       return;
