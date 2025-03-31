@@ -99,6 +99,10 @@ static inline const mu_node_t *node_at(const mu_node_t *node, size_t i) {
     case IS_KIND_OF(switch_expr):
       return i < switch_expr->argc ? &switch_expr->argv[i]->as_node : NULL;
 
+    case IS_KIND_OF(lambda_sign): return (const mu_node_t *[]) {
+        &lambda_sign->argument->as_node, &lambda_sign->output->as_node, NULL,
+      }[i];
+
     case IS_KIND_OF(vector_expr):
       return i < vector_expr->argc ? &vector_expr->argv[i]->as_node : NULL;
 

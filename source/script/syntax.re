@@ -28,6 +28,7 @@ stop = [\x00];
 <normal> "("             { return '('; }
 <normal> ")"             { return ')'; }
 <normal> ","             { return ','; }
+<normal> "->" | "→"      { return TO; }
 <normal> "."             { return '.'; }
 <normal> ":"             { return ':'; }
 <normal> "::" | "∷"      { return CAST; }

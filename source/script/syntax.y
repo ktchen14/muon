@@ -67,6 +67,7 @@ typedef struct {
 %token INTEGER "Integer"
 
 %token CAST "∷"
+%token TO "→"
 
 %token <integer> INTEGER_LITERAL
 %token <boolean> BOOLEAN_LITERAL
@@ -94,6 +95,7 @@ typedef struct {
 
 %type <boolean_sign> boolean_sign
 %type <integer_sign> integer_sign
+%type <lambda_sign> lambda_sign
 %type <name_sign> name_sign
 %type <vector_sign> vector_sign
 
@@ -108,6 +110,9 @@ typedef struct {
 %nonassoc LAMBDA
 %left     INVOKE ' '
 %left     '.'
+
+%right    "→"
+
 %left     "∷"
 
 // ========================= YYLLOC_DEFAULT/yyerror ======================= {{{1
@@ -271,6 +276,7 @@ vector_argv: expr {
 sign: '(' sign[matter] ')' { $$ = $matter; } |
   boolean_sign { $$ = &$boolean_sign->as_sign; } |
   integer_sign { $$ = &$integer_sign->as_sign; } |
+  lambda_sign  { $$ = &$lambda_sign->as_sign; } |
   name_sign    { $$ = &$name_sign->as_sign; } |
   vector_sign  { $$ = &$vector_sign->as_sign; }
 
@@ -280,6 +286,10 @@ boolean_sign: "Boolean" {
 
 integer_sign: "Integer" {
   $$ = mu_integer_sign(syntax->engine);
+}
+
+lambda_sign: sign[argument] _ "→" _ sign[output] {
+  $$ = mu_lambda_sign(syntax->engine, $argument, $output);
 }
 
 name_sign: name {

@@ -300,6 +300,17 @@ __attribute__((nonnull)) static const mu_type_t *integer_sign_induce(
   return &result->as_type;
 }
 
+__attribute__((nonnull)) static const mu_type_t *lambda_sign_induce(
+    const mu_lambda_sign_t *sign, induce_t *induce, open_scheme_t *scheme) {
+  const mu_type_t *argument_type = evince_type(induce, &sign->argument->as_node);
+  const mu_type_t *output_type = evince_type(induce, &sign->output->as_node);
+
+  const mu_core_type_t *result;
+  if ((result = mu_lambda_type(induce, argument_type, output_type)) == NULL)
+    return NULL;
+  return &result->as_type;
+}
+
 __attribute__((nonnull)) static const mu_type_t *name_sign_induce(
     const mu_name_sign_t *sign, induce_t *induce, open_scheme_t *scheme) {
   const mu_node_t *target;

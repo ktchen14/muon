@@ -26,6 +26,7 @@
 #define MU_EACH_SIGN_KIND(emit, ...) \
   emit(boolean, BOOLEAN, Boolean, ##__VA_ARGS__) \
   emit(integer, INTEGER, Integer, ##__VA_ARGS__) \
+  emit(lambda, LAMBDA, Lambda, ##__VA_ARGS__) \
   emit(name, NAME, Name, ##__VA_ARGS__) \
   emit(record, RECORD, Record, ##__VA_ARGS__) \
   emit(vector, VECTOR, Vector, ##__VA_ARGS__)
@@ -279,6 +280,12 @@ typedef struct {
 
 typedef struct {
   MU_SIGN_HEADER;
+  const mu_sign_t *argument;
+  const mu_sign_t *output;
+} mu_lambda_sign_t;
+
+typedef struct {
+  MU_SIGN_HEADER;
   const mu_name_t *name;
 } mu_name_sign_t;
 
@@ -302,6 +309,10 @@ const mu_boolean_sign_t *mu_boolean_sign(mu_engine_t *engine)
   __attribute__((malloc, nonnull));
 
 const mu_integer_sign_t *mu_integer_sign(mu_engine_t *engine)
+  __attribute__((malloc, nonnull));
+
+const mu_lambda_sign_t *mu_lambda_sign(
+    mu_engine_t *engine, const mu_sign_t *argument, const mu_sign_t *output)
   __attribute__((malloc, nonnull));
 
 const mu_name_sign_t *mu_name_sign(mu_engine_t *engine, const mu_name_t *name)

@@ -330,6 +330,20 @@ const mu_integer_sign_t *mu_integer_sign(mu_engine_t *engine) {
   return assign_node(engine, &result->as_node), result;
 }
 
+const mu_lambda_sign_t *mu_lambda_sign(
+    mu_engine_t *engine, const mu_sign_t *argument, const mu_sign_t *output) {
+  assert(argument->as_node.engine == engine);
+  assert(output->as_node.engine == engine);
+
+  mu_lambda_sign_t *result;
+  if ((result = node_allocate(engine, sizeof(mu_lambda_sign_t))) == NULL)
+    return NULL;
+  *result = (mu_lambda_sign_t) {
+    .as_sign.kind = MU_LAMBDA_SIGN, .argument = argument, .output = output,
+  };
+  return assign_node(engine, &result->as_node), result;
+}
+
 const mu_name_sign_t *mu_name_sign(mu_engine_t *engine, const mu_name_t *name) {
   assert(name->engine == engine);
 
