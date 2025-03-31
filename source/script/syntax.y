@@ -15,6 +15,8 @@ typedef struct {
   size_t expr_i;
   const mu_expr_member_t *expr_member[800];
   size_t expr_member_i;
+  const mu_view_member_t *view_member[800];
+  size_t view_member_i;
 
   const mu_switch_case_t *switch_case[800];
   size_t switch_case_i;
@@ -105,9 +107,11 @@ typedef struct {
 %type <datatype_stmt> datatype_stmt
 %type <define_stmt> define_stmt
 
+%type <view_member> view_member
+%type <record_view> record_view
 %type <variable_view> variable_view
 
-%type <i> datatype_argv record_argv switch_argv vector_argv
+%type <i> datatype_argv record_argv switch_argv vector_argv record_view_argv
 
 %left CAST
 %right TO
@@ -336,8 +340,35 @@ define_stmt: "define" _ name _ '=' _ expr '\n' {
 
 // ================================== View ================================ {{{1
 
-view:
+view: '(' view[matter] ')' { $$ = $matter; } |
+  record_view   { $$ = &$record_view->as_view; } |
   variable_view { $$ = &$variable_view->as_view; }
+
+view_member: name ':' _ view {
+  $$ = mu_view_member(syntax->engine, $name, $view);
+
+} | name ':' {
+  const mu_variable_view_t *view = mu_variable_view(syntax->engine, $name);
+  $$ = mu_view_member(syntax->engine, $name, &view->as_view);
+}
+
+record_view: '(' record_view_argv ')' {
+  size_t i = $record_view_argv;
+  syntax->view_member_i -= i;
+  $$ = mu_record_view(syntax->engine, i, &syntax->view_member[syntax->view_member_i]);
+
+} | '(' ')' {
+  $$ = mu_record_view(syntax->engine, 0, NULL);
+}
+
+record_view_argv: view_member {
+  syntax->view_member[syntax->view_member_i++] = $view_member;
+  $$ = 1;
+
+} | record_view_argv ',' _ view_member {
+  syntax->view_member[syntax->view_member_i++] = $view_member;
+  $$ = $1 + 1;
+}
 
 variable_view: name {
   $$ = mu_variable_view(syntax->engine, $name);

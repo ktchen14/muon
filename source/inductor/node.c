@@ -452,6 +452,39 @@ __attribute__((nonnull, pure)) static const mu_type_t *define_stmt_induce(
   /* return &result->as_type; */
 }
 
+__attribute__((nonnull)) static const mu_type_t *record_view_induce(
+    const mu_record_view_t *view, induce_t *induce, open_scheme_t *scheme) {
+  mu_core_t *core_allocation;
+  if ((core_allocation = record_core_allocate(induce, view->argc)) == NULL)
+    return NULL;
+
+  for (size_t i = 0; i < view->argc; i++) {
+    const mu_name_t *name = view->argv[i]->name;
+
+    mu_core_member_t member = { .name = name };
+    core_allocation->argv[i] = member;
+  }
+  /* qsort(&core_allocation->argv[j], view->argc - j, sizeof(mu_view_member_t), */
+  /*     type_member_cmp); */
+  // TODO: check for duplicates
+
+  const mu_core_t *core;
+  if (rare((core = record_core_activate(core_allocation)) == NULL))
+    return NULL;
+
+  mu_core_type_t *type_allocation;
+  if ((type_allocation = core_type_allocate(induce, core)) == NULL)
+    return NULL;
+
+  for (size_t i = 0; i < view->argc; i++)
+    type_allocation->argv[i] = evince_type(induce, &view->argv[i]->as_node);
+
+  const mu_core_type_t *result;
+  if (rare((result = core_type_activate(type_allocation)) == NULL))
+    return NULL;
+  return &result->as_type;
+}
+
 __attribute__((nonnull)) static const mu_type_t *variable_view_induce(
     const mu_variable_view_t *view, induce_t *induce, open_scheme_t *scheme) {
   const mu_variable_type_t *result;
@@ -463,6 +496,11 @@ __attribute__((nonnull)) static const mu_type_t *variable_view_induce(
 __attribute__((nonnull)) static const mu_type_t *expr_member_induce(
     const mu_expr_member_t *member, induce_t *induce, open_scheme_t *scheme) {
   return evince_type(induce, &member->expr->as_node);
+}
+
+__attribute__((nonnull)) static const mu_type_t *view_member_induce(
+    const mu_view_member_t *member, induce_t *induce, open_scheme_t *scheme) {
+  return evince_type(induce, &member->view->as_node);
 }
 
 static const mu_type_t *node_induce(const mu_node_t *node, induce_t *induce, open_scheme_t *scheme) {

@@ -39,6 +39,7 @@
 
 /// Expands to emit(lower, upper, title, ...) for each kind of view
 #define MU_EACH_VIEW_KIND(emit, ...) \
+  emit(record, RECORD, Record, ##__VA_ARGS__) \
   emit(variable, VARIABLE, Variable, ##__VA_ARGS__)
 
 /// @internal Used as @c emit in MU_EACH_NODE_KIND
@@ -53,7 +54,8 @@
   MU_EACH_VIEW_KIND(MU_EACH_NODE_EMIT, _view, _VIEW, View, emit, ##__VA_ARGS__) \
   emit(expr_member, EXPR_MEMBER, ExprMember, ##__VA_ARGS__) \
   emit(switch_case, SWITCH_CASE, SwitchCase, ##__VA_ARGS__) \
-  emit(datatype_option, DATATYPE_OPTION, DatatypeOption, ##__VA_ARGS__)
+  emit(datatype_option, DATATYPE_OPTION, DatatypeOption, ##__VA_ARGS__) \
+  emit(view_member, VIEW_MEMBER, ViewMember, ##__VA_ARGS__)
 
 /// An enumeration over each kind of node, e.g. @c MU_ACCESS_EXPR_NODE
 typedef enum {
@@ -381,9 +383,29 @@ const mu_define_stmt_t *mu_define_stmt(
 #define MU_VIEW_HEADER union { mu_view_t as_view; mu_node_t as_node; }
 
 typedef struct {
+  MU_NODE_HEADER;
+  const mu_name_t *name; // optional
+  const mu_view_t *view;
+} mu_view_member_t;
+
+typedef struct {
+  MU_VIEW_HEADER;
+  size_t argc;
+  const mu_view_member_t *argv[/* argc */];
+} mu_record_view_t;
+
+typedef struct {
   MU_VIEW_HEADER;
   const mu_name_t *name;
 } mu_variable_view_t;
+
+const mu_view_member_t *mu_view_member(
+    mu_engine_t *engine, const mu_name_t *name, const mu_view_t *view)
+  __attribute__((malloc, nonnull));
+
+const mu_record_view_t *mu_record_view(
+    mu_engine_t *engine, size_t argc, const mu_view_member_t *argv[/* argc */])
+  __attribute__((malloc, nonnull(1)));
 
 const mu_variable_view_t *mu_variable_view(
     mu_engine_t *engine, const mu_name_t *name)

@@ -487,6 +487,32 @@ const mu_datatype_stmt_t *datatype_stmt_activate(
   return assign_node(engine, &stmt->as_node), stmt;
 }
 
+const mu_view_member_t *mu_view_member(
+    mu_engine_t *engine, const mu_name_t *name, const mu_view_t *view) {
+  assert(name == NULL || name->engine == engine);
+  assert(view->as_node.engine == engine);
+
+  mu_view_member_t *result;
+  if ((result = node_allocate(engine, sizeof(mu_view_member_t))) == NULL)
+    return NULL;
+  *result = (mu_view_member_t) {
+    .as_node.kind = MU_EXPR_MEMBER_NODE, .name = name, .view = view,
+  };
+  return assign_node(engine, &result->as_node), result;
+}
+
+const mu_record_view_t *mu_record_view(
+    mu_engine_t *engine, size_t argc, const mu_view_member_t *argv[]) {
+  assert(argc == 0 || argv != NULL);
+
+  mu_record_view_t *result;
+  if ((result = record_view_allocate(engine, argc)) == NULL)
+    return NULL;
+  for (size_t i = 0; i < argc; i++)
+    result->argv[i] = argv[i];
+  return record_view_activate(result);
+}
+
 const mu_variable_view_t *mu_variable_view(
     mu_engine_t *engine, const mu_name_t *name) {
   mu_variable_view_t *result;
@@ -496,6 +522,33 @@ const mu_variable_view_t *mu_variable_view(
     .as_view.kind = MU_VARIABLE_VIEW, .name = name,
   };
   return assign_node(engine, &result->as_node), result;
+}
+
+mu_record_view_t *record_view_allocate(mu_engine_t *engine, size_t argc) {
+  size_t size;
+  if (rare((size = struct_size(mu_record_view_t, argv, argc)) == 0))
+    return errno = ENOMEM, NULL;
+
+  mu_record_view_t *result;
+  if ((result = node_allocate(engine, size)) == NULL)
+    return NULL;
+  *result = (mu_record_view_t) { .as_node.engine = engine, .argc = argc };
+  return result;
+}
+
+const mu_record_view_t *record_view_activate(mu_record_view_t *view) {
+  mu_engine_t *engine = (mu_engine_t *) view->as_node.engine;
+
+  for (size_t i = 0; i < view->argc; i++) {
+    assert(view->argv[i] != NULL);
+    assert(view->argv[i]->as_node.engine == engine);
+  }
+
+  mu_record_view_t source = {
+    .as_view.kind = MU_RECORD_VIEW, .argc = view->argc
+  };
+  memcpy(view, &source, offsetof(mu_record_view_t, argv));
+  return assign_node(engine, &view->as_node), view;
 }
 
 #include "../inductor.h"
@@ -593,6 +646,11 @@ void mu_node_debug(const mu_node_t *node) {
 
     case IS_KIND_OF(define_stmt):
       debug("(name = " PRIsNAME ")", DEBUG_NAME(define_stmt->name)); break;
+
+    case IS_KIND_OF(view_member):
+      if (view_member->name != NULL)
+        debug("(name = " PRIsNAME ")", DEBUG_NAME(view_member->name));
+      break;
 
     case IS_KIND_OF(variable_view):
       debug("(name = " PRIsNAME ")", DEBUG_NAME(variable_view->name)); break;

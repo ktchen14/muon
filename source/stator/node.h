@@ -123,6 +123,12 @@ static inline const mu_node_t *node_at(const mu_node_t *node, size_t i) {
 
     case IS_KIND_OF(define_stmt):
       return (const mu_node_t *[]) { &define_stmt->expr->as_node, NULL }[i];
+
+    case IS_KIND_OF(view_member):
+      return (const mu_node_t *[]) { &view_member->view->as_node, NULL }[i];
+
+    case IS_KIND_OF(record_view):
+      return i < record_view->argc ? &record_view->argv[i]->as_node : NULL;
   }
   __builtin_unreachable();
 }
@@ -150,6 +156,12 @@ mu_datatype_stmt_t *datatype_stmt_allocate(mu_engine_t *engine, size_t argc)
 
 const mu_datatype_stmt_t *datatype_stmt_activate(
     mu_datatype_stmt_t *stmt, const mu_name_t *name)
+  __attribute__((nonnull));
+
+mu_record_view_t *record_view_allocate(mu_engine_t *engine, size_t argc)
+  __attribute__((malloc, nonnull));
+
+const mu_record_view_t *record_view_activate(mu_record_view_t *view)
   __attribute__((nonnull));
 
 #endif /* MU_STATOR_NODE_I */
