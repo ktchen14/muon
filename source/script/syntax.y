@@ -107,13 +107,11 @@ typedef struct {
 
 %type <i> datatype_argv record_argv switch_argv vector_argv
 
+%left CAST
+%right TO
 %nonassoc LAMBDA
-%left     INVOKE ' '
-%left     '.'
-
-%right    "→"
-
-%left     "∷"
+%left ' '
+%nonassoc '.'
 
 // ========================= YYLLOC_DEFAULT/yyerror ======================= {{{1
 
@@ -175,7 +173,7 @@ expr: '(' expr[matter] ')' { $$ = $matter; } |
   switch_expr  { $$ = &$switch_expr->as_expr; } |
   vector_expr  { $$ = &$vector_expr->as_expr; }
 
-access_expr: '.' name {
+access_expr: '.' name %prec '.' {
   $$ = mu_access_expr(syntax->engine, $name);
 }
 
@@ -183,7 +181,7 @@ boolean_expr: BOOLEAN_LITERAL {
   $$ = mu_boolean_expr(syntax->engine, $1);
 }
 
-cast_expr: expr[matter] _ "∷" _ sign {
+cast_expr: expr[matter] _ CAST _ sign %prec CAST {
   $$ = mu_cast_expr(syntax->engine, $sign, $matter);
 }
 
@@ -191,10 +189,10 @@ integer_expr: INTEGER_LITERAL {
   $$ = mu_integer_expr(syntax->engine, $1);
 }
 
-invoke_expr: expr[operator] _ expr[argument] %prec INVOKE {
+invoke_expr: expr[operator] _ expr[argument] %prec ' ' {
   $$ = mu_invoke_expr(syntax->engine, $operator, $argument);
 
-} | expr[argument] access_expr[operator] {
+} | expr[argument] access_expr[operator] %prec '.' {
   $$ = mu_invoke_expr(syntax->engine, &$operator->as_expr, $argument);
 }
 
@@ -288,7 +286,7 @@ integer_sign: "Integer" {
   $$ = mu_integer_sign(syntax->engine);
 }
 
-lambda_sign: sign[argument] _ "→" _ sign[output] {
+lambda_sign: sign[argument] _ TO _ sign[output] %prec TO {
   $$ = mu_lambda_sign(syntax->engine, $argument, $output);
 }
 
