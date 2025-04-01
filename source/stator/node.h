@@ -133,6 +133,29 @@ static inline const mu_node_t *node_at(const mu_node_t *node, size_t i) {
   __builtin_unreachable();
 }
 
+/// Return the announce length of the abstract @a node
+static inline size_t node_announce_length(const mu_node_t *node) {
+  switch ON_ABSTRACT_OBJECT(node) {
+    case IS_KIND_OF(datatype_stmt):
+      return datatype_stmt->argc + 1;
+
+    case MU_DEFINE_STMT:
+      return 1;
+
+    case IS_KIND_OF(view_member):
+      return view_member->announce_length;
+
+    case IS_KIND_OF(record_view):
+      return record_view->announce_length;
+
+    case MU_VARIABLE_VIEW:
+      return 1;
+
+    default: return 0;
+  }
+  __builtin_unreachable();
+}
+
 mu_record_expr_t *record_expr_allocate(mu_engine_t *engine, size_t argc)
   __attribute__((malloc, nonnull));
 

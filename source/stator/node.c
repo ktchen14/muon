@@ -497,6 +497,7 @@ const mu_view_member_t *mu_view_member(
     return NULL;
   *result = (mu_view_member_t) {
     .as_node.kind = MU_EXPR_MEMBER_NODE, .name = name, .view = view,
+    .announce_length = node_announce_length(&view->as_node),
   };
   return assign_node(engine, &result->as_node), result;
 }
@@ -544,8 +545,16 @@ const mu_record_view_t *record_view_activate(mu_record_view_t *view) {
     assert(view->argv[i]->as_node.engine == engine);
   }
 
+  size_t announce_length = 0;
+  for (size_t i = 0; i < view->argc; i++) {
+    size_t n = node_announce_length(&view->argv[i]->as_node);
+    if (rare(__builtin_add_overflow(announce_length, n, &announce_length)))
+      return NULL;
+  }
+
   mu_record_view_t source = {
-    .as_view.kind = MU_RECORD_VIEW, .argc = view->argc
+    .as_view.kind = MU_RECORD_VIEW, .argc = view->argc,
+    .announce_length = announce_length,
   };
   memcpy(view, &source, offsetof(mu_record_view_t, argv));
   return assign_node(engine, &view->as_node), view;

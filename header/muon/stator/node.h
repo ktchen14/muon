@@ -384,12 +384,14 @@ const mu_define_stmt_t *mu_define_stmt(
 
 typedef struct {
   MU_NODE_HEADER;
+  size_t announce_length;
   const mu_name_t *name; // optional
   const mu_view_t *view;
 } mu_view_member_t;
 
 typedef struct {
   MU_VIEW_HEADER;
+  size_t announce_length;
   size_t argc;
   const mu_view_member_t *argv[/* argc */];
 } mu_record_view_t;
