@@ -16,3 +16,5 @@ define sw = switch (case Foo1 = 1, case Foo1 = id 3, case Foo2 = id true)
 define rs = sw Foo1
 
 define z = [1] ∷ [Integer]
+
+define sw2 = lambda q = (switch (case Foo1 = (lambda y = y), case Foo1 = (lambda z = z)) Foo1) q
