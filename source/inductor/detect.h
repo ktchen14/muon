@@ -28,20 +28,6 @@ static inline const mu_node_t *detect_evince(
 }
 
 __attribute__((nonnull, pure))
-static inline const mu_node_t *detect_at(
-    const detect_result_t *detect, const mu_node_t *node, size_t i) {
-  switch (node->kind) {
-    case MU_NAME_EXPR_NODE:
-    case MU_NAME_SIGN_NODE:
-      if ((node = detect_evince(detect, node)) == NULL)
-        return NULL;
-      return i == 0 ? node : NULL;
-
-    default: return node_at(node, i);
-  }
-}
-
-__attribute__((nonnull, pure))
 static inline const detect_result_t *detect_result(const detect_t *detect) {
   return detect->result;
 }
