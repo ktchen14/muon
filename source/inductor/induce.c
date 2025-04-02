@@ -377,7 +377,7 @@ static void mark_type(induce_t *induce, const mu_type_t *type, _Bool negative, s
 
 
 const mu_type_t *generalize_type(
-    induce_t *induce, const mu_type_t *matter, open_scheme_t *scheme) {
+    induce_t *induce, const mu_type_t *matter, mu_scheme_t *scheme) {
   mark_type(induce, matter, 0, scheme->rank);
 
   size_t polymorphic_length = 0;
@@ -453,7 +453,7 @@ const mu_type_t *instantiate_single_type(
     induce_t *induce,
     const mu_type_t *type,
     const mu_scheme_type_t *scheme,
-    open_scheme_t *target_scheme,
+    mu_scheme_t *target_scheme,
     cache_item *cache,
     size_t *cache_i
 ) {
@@ -526,7 +526,7 @@ const mu_type_t *instantiate_single_type(
 }
 
 const mu_type_t *instantiate_scheme(
-    induce_t *induce, const mu_scheme_type_t *scheme_type, open_scheme_t *target_scheme
+    induce_t *induce, const mu_scheme_type_t *scheme_type, mu_scheme_t *target_scheme
 ) {
   cache_item cache[100] = {0};
   size_t i = 0;

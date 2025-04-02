@@ -53,7 +53,7 @@ const mu_core_type_t *mu_vector_type(
   return mu_core_type(induce, induce->vector_core, argv);
 }
 
-const mu_variable_type_t *mu_variable_type(induce_t *induce, open_scheme_t *scheme) {
+const mu_variable_type_t *mu_variable_type(induce_t *induce, mu_scheme_t *scheme) {
   mu_variable_type_t *result;
   if ((result = malloc(sizeof(mu_variable_type_t))) == NULL)
     return NULL;
@@ -68,11 +68,11 @@ const mu_variable_type_t *mu_variable_type(induce_t *induce, open_scheme_t *sche
   return scheme->link = result;
 }
 
-open_scheme_t *open_scheme(open_scheme_t *parent) {
-  open_scheme_t *result;
-  if ((result = malloc(sizeof(open_scheme_t))) == NULL)
+mu_scheme_t *open_scheme(mu_scheme_t *parent) {
+  mu_scheme_t *result;
+  if ((result = malloc(sizeof(mu_scheme_t))) == NULL)
     return NULL;
-  *result = (open_scheme_t) {
+  *result = (mu_scheme_t) {
     .induce = parent->induce, .parent = parent, .rank = parent->rank + 1,
   };
   return result;

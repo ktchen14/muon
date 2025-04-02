@@ -129,11 +129,11 @@ const mu_coercion_t *ensure_coercion(
   __attribute__((nonnull));
 
 const mu_type_t *generalize_type(
-    induce_t *induce, const mu_type_t *type, open_scheme_t *scheme)
+    induce_t *induce, const mu_type_t *type, mu_scheme_t *scheme)
   __attribute__((nonnull));
 
 const mu_type_t *instantiate_scheme(
-    induce_t *induce, const mu_scheme_type_t *scheme_type, open_scheme_t *target_scheme
+    induce_t *induce, const mu_scheme_type_t *scheme_type, mu_scheme_t *target_scheme
 );
 
 extern const mu_name_t *vector_access;

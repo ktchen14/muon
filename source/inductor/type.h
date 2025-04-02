@@ -78,6 +78,14 @@ typedef struct {
   const mu_type_t *argv[/* argc */];
 } mu_join_t;
 
+typedef struct mu_scheme_t mu_scheme_t;
+struct mu_scheme_t {
+  induce_t *induce;
+  mu_scheme_t *parent;
+  size_t rank;
+  mu_variable_type_t *link;
+};
+
 /// A variable type
 struct mu_variable_type_t {
   MU_TYPE_HEADER;
@@ -155,14 +163,6 @@ struct mu_variable_type_t {
   _castable ? (typeof(_concrete)) _abstract : NULL; \
 })
 
-typedef struct open_scheme_t open_scheme_t;
-struct open_scheme_t {
-  induce_t *induce;
-  open_scheme_t *parent;
-  size_t rank;
-  mu_variable_type_t *link;
-};
-
 const mu_core_type_t *mu_boolean_type(induce_t *induce)
   __attribute__((malloc, nonnull));
 
@@ -188,9 +188,9 @@ const mu_scheme_type_t *mu_scheme_type(
     const mu_variable_type_t *argv[argc])
   __attribute__((malloc, nonnull(1, 2)));
 
-const mu_variable_type_t *mu_variable_type(induce_t *induce, open_scheme_t *scheme);
+const mu_variable_type_t *mu_variable_type(induce_t *induce, mu_scheme_t *scheme);
 
-open_scheme_t *open_scheme(open_scheme_t *parent)
+mu_scheme_t *open_scheme(mu_scheme_t *parent)
   __attribute__((malloc));
 
 mu_core_type_t *core_type_allocate(induce_t *induce, const mu_core_t *core)
