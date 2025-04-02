@@ -163,10 +163,6 @@ struct open_scheme_t {
   mu_variable_type_t *link;
 };
 
-typedef struct {
-  const mu_variable_type_t *next;
-} type_link_t;
-
 const mu_core_type_t *mu_boolean_type(induce_t *induce)
   __attribute__((malloc, nonnull));
 
