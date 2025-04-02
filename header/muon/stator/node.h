@@ -113,9 +113,10 @@ typedef struct mu_node_t {
 #define MU_NODE_HEADER mu_node_t as_node
 
 /// An abstract expr
-typedef struct {
+typedef struct mu_expr_t mu_expr_t;
+struct mu_expr_t {
   union { MU_NODE_HEADER; mu_expr_kind_t kind; };
-} mu_expr_t;
+};
 
 /// An abstract sign
 typedef struct {

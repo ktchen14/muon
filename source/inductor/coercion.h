@@ -12,6 +12,7 @@
   emit(id, ID, Id, ##__VA_ARGS__) \
   emit(edge, EDGE, Edge, ##__VA_ARGS__) \
   emit(indirect, INDIRECT, Indirect, ##__VA_ARGS__) \
+  emit(instance, INSTANCE, Instance, ##__VA_ARGS__) \
   emit(variance, VARIANCE, Variance, ##__VA_ARGS__) \
   emit(record, RECORD, Record, ##__VA_ARGS__) \
   emit(join, JOIN, Join, ##__VA_ARGS__) \
@@ -49,6 +50,12 @@ typedef struct {
   const mu_coercion_t *head;
   const mu_coercion_t *tail;
 } mu_indirect_coercion_t;
+
+typedef struct {
+  MU_COERCION_HEADER;
+  const mu_type_t *target;
+  const mu_instance_t *instance;
+} mu_instance_coercion_t;
 
 typedef struct {
   MU_COERCION_HEADER;
@@ -99,6 +106,10 @@ const mu_indirect_coercion_t *mu_indirect_coercion(
     const mu_coercion_t *head, const mu_coercion_t *tail)
   __attribute__((malloc, nonnull));
 
+const mu_instance_coercion_t *mu_instance_coercion(
+    const mu_instance_t *instance, const mu_type_t *target)
+  __attribute__((malloc, nonnull));
+
 const mu_variance_coercion_t *mu_variance_coercion(
     const mu_core_type_t *target, const mu_coercion_t *argv[/* target->core->argc */])
   __attribute__((malloc, nonnull(1)));
@@ -147,6 +158,9 @@ static inline const mu_type_t *mu_coercion_target(
 
     case IS_KIND_OF(indirect_coercion):
       return mu_coercion_target(indirect_coercion->tail, source);
+
+    case IS_KIND_OF(instance_coercion):
+      return instance_coercion->target;
 
     case IS_KIND_OF(variance_coercion):
       return &variance_coercion->target->as_type;

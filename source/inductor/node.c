@@ -356,6 +356,16 @@ __attribute__((nonnull)) static const mu_type_t *coercion_stmt_induce(
     return NULL;
   assign_coercion(induce, &stmt->expr->as_node, coercion);
 
+  const mu_core_type_t *source_core_type = mu_type_cast(source_type, source_core_type);
+  assert(source_core_type != NULL);
+  const mu_core_type_t *target_core_type = mu_type_cast(target_type, target_core_type);
+  assert(target_core_type != NULL);
+
+  const mu_instance_t *instance;
+  if ((instance = mu_instance(source_core_type->core, target_core_type->core, stmt->expr)) == NULL)
+    return NULL;
+  induce->instance[induce->instance_length++] = instance;
+
   return &lambda_type->as_type;
 }
 

@@ -2,6 +2,12 @@ datatype MyBoolean = MyTrue | MyFalse
 
 instance MyBoolean <: Integer = switch (case MyTrue = 1, case MyFalse = 0)
 
+define mytest = handle_list [MyTrue]
+
+
+
+
+
 datatype Foo = Foo1 | Foo2
 
 define foo = lambda x = Foo1

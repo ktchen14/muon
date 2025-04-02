@@ -42,6 +42,15 @@ const mu_core_t *single_record_core(induce_t *induce, const mu_name_t *name) {
   return result;
 }
 
+const mu_instance_t *mu_instance(
+    const mu_core_t *source, const mu_core_t *target, const mu_expr_t *expr) {
+  mu_instance_t *instance;
+  if ((instance = malloc(sizeof(mu_instance_t))) == NULL)
+    return NULL;
+  *instance = (mu_instance_t) { .source = source, .target = target, .expr = expr };
+  return instance;
+}
+
 mu_core_t *record_core_allocate(induce_t *induce, size_t argc) {
   size_t size;
   if (rare((size = struct_size(mu_core_t, argv, argc)) == 0))
@@ -171,4 +180,12 @@ void mu_core_debug(const mu_core_t *core) {
       return;
   }
   __builtin_unreachable();
+}
+
+void mu_instance_debug(const mu_instance_t *instance) {
+  debug("(");
+  mu_core_debug(instance->source);
+  debug(" → ");
+  mu_core_debug(instance->target);
+  debug(")");
 }

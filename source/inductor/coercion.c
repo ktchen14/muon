@@ -44,6 +44,18 @@ const mu_indirect_coercion_t *mu_indirect_coercion(
   return result;
 }
 
+const mu_instance_coercion_t *mu_instance_coercion(
+    const mu_instance_t *instance, const mu_type_t *target) {
+  mu_instance_coercion_t *result;
+  if ((result = malloc(sizeof(mu_instance_coercion_t))) == NULL)
+    return NULL;
+  *result = (mu_instance_coercion_t) {
+    .as_coercion = { .kind = MU_INSTANCE_COERCION, },
+    .instance = instance, .target = target
+  };
+  return result;
+}
+
 const mu_variance_coercion_t *mu_variance_coercion(
     const mu_core_type_t *target, const mu_coercion_t *argv[/* target->core->argc */]) {
   const mu_core_t *core = target->core;
@@ -192,6 +204,10 @@ void mu_coercion_debug(const mu_coercion_t *coercion) {
       debug(PRIsKIND, DEBUG_COERCION_KIND("∘"));
       debug(" ");
       mu_coercion_debug(indirect_coercion->tail);
+      return;
+
+    case IS_KIND_OF(instance_coercion):
+      mu_instance_debug(instance_coercion->instance);
       return;
 
     case IS_KIND_OF(variance_coercion):

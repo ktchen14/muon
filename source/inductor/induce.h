@@ -39,6 +39,9 @@ struct induce_t {
   const record_instance_t *record_instance[200];
   size_t record_instance_length;
 
+  const mu_instance_t *instance[200];
+  size_t instance_length;
+
   const mu_coercion_t *id_coercion;
 };
 

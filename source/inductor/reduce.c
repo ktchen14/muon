@@ -303,6 +303,9 @@ const mu_coercion_t *reduce_coercion(
       return &result->as_coercion;
     }
 
+    case IS_KIND_OF(instance_coercion):
+      return &instance_coercion->as_coercion;
+
     case IS_KIND_OF(variance_coercion): {
       const mu_core_type_t *target = variance_coercion->target;
 

@@ -36,6 +36,13 @@ typedef struct {
   mu_core_member_t argv[/* argc */];
 } mu_core_t;
 
+typedef struct mu_expr_t mu_expr_t;
+typedef struct {
+  const mu_core_t *source;
+  const mu_core_t *target;
+  const mu_expr_t *expr;
+} mu_instance_t;
+
 typedef struct {
   const mu_core_t *target;
   const mu_core_t *source;
@@ -45,6 +52,10 @@ typedef struct {
 const mu_core_t *mu_simple_core(induce_t *induce, const mu_name_t *name);
 
 const mu_core_t *single_record_core(induce_t *induce, const mu_name_t *name)
+  __attribute__((malloc, nonnull));
+
+const mu_instance_t *mu_instance(
+    const mu_core_t *source, const mu_core_t *target, const mu_expr_t *expr)
   __attribute__((malloc, nonnull));
 
 mu_core_t *record_core_allocate(induce_t *induce, size_t argc)
@@ -65,6 +76,12 @@ static inline int core_member_cmp(const void *a, const void *b) {
   return name_cmp(ra->name, rb->name);
 }
 
-void mu_core_debug(const mu_core_t *core) __attribute__((nonnull));
+/// Emit debugging information on the abstract @a core to the debug stream
+void mu_core_debug(const mu_core_t *core)
+  __attribute__((nonnull));
+
+/// Emit debugging information on the abstract @a instance to the debug stream
+void mu_instance_debug(const mu_instance_t *instance)
+  __attribute__((nonnull));
 
 #endif /* MU_INDUCTOR_CORE_I */

@@ -193,12 +193,28 @@ static const mu_coercion_t *ensure_cc(
   const mu_core_t *target_core = target->core;
 
   if (source_core != target_core) {
+    const mu_instance_t *instance;
+    for (size_t i = 0; i < induce->instance_length; i++) {
+      instance = induce->instance[i];
+      if (instance->source != source_core)
+        continue;
+      if (instance->target != target_core)
+        continue;
+      goto instance_coercion;
+    }
+
     fprintf(stderr, "Type mismatch. Expected ");
     mu_core_debug(target_core);
     fprintf(stderr, " but got ");
     mu_core_debug(source_core);
     fprintf(stderr, "\n");
     abort();
+
+instance_coercion:;
+    const mu_instance_coercion_t *result;
+    if ((result = mu_instance_coercion(instance, &target->as_type)) == NULL)
+      return NULL;
+    return edge_assign(result_edge, &result->as_coercion);
   }
 
   const mu_core_t *core = source_core;
