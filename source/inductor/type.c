@@ -53,7 +53,10 @@ const mu_core_type_t *mu_vector_type(
   return mu_core_type(induce, induce->vector_core, argv);
 }
 
-const mu_variable_type_t *mu_variable_type(induce_t *induce, mu_scheme_t *scheme) {
+const mu_variable_type_t *mu_variable_type(induce_t *induce) {
+  mu_scheme_t *scheme = induce->scheme;
+  assert(scheme != NULL);
+
   mu_variable_type_t *result;
   if ((result = malloc(sizeof(mu_variable_type_t))) == NULL)
     return NULL;

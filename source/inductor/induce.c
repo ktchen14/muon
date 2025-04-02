@@ -453,7 +453,6 @@ const mu_type_t *instantiate_single_type(
     induce_t *induce,
     const mu_type_t *type,
     const mu_scheme_type_t *scheme,
-    mu_scheme_t *target_scheme,
     cache_item *cache,
     size_t *cache_i
 ) {
@@ -477,7 +476,7 @@ const mu_type_t *instantiate_single_type(
 
       _Bool same = 1;
       for (size_t i = 0; i < core->argc; i++) {
-        allocation->argv[i] = instantiate_single_type(induce, core_type->argv[i], scheme, target_scheme, cache, cache_i);
+        allocation->argv[i] = instantiate_single_type(induce, core_type->argv[i], scheme, cache, cache_i);
         same = same && (allocation->argv[i] == core_type->argv[i]);
       }
 
@@ -499,20 +498,20 @@ const mu_type_t *instantiate_single_type(
       }
 
       const mu_variable_type_t *newvar;
-      if ((newvar = mu_variable_type(induce, target_scheme)) == NULL)
+      if ((newvar = mu_variable_type(induce)) == NULL)
         return NULL;
       cache[(*cache_i)++] = (cache_item) { &variable_type->as_type, &newvar->as_type };
 
       universe_iterator_t it;
       it = universe_iterator(&induce->universe, &variable_type->as_type, 0);
       for (const type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
-        const mu_type_t *next = instantiate_single_type(induce, edge->source, scheme, target_scheme, cache, cache_i);
+        const mu_type_t *next = instantiate_single_type(induce, edge->source, scheme, cache, cache_i);
         append_edge(&induce->universe, next, &newvar->as_type);
       }
 
       it = universe_iterator(&induce->universe, &variable_type->as_type, 1);
       for (const type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
-        const mu_type_t *next = instantiate_single_type(induce, edge->target, scheme, target_scheme, cache, cache_i);
+        const mu_type_t *next = instantiate_single_type(induce, edge->target, scheme, cache, cache_i);
         append_edge(&induce->universe, &newvar->as_type, next);
       }
 
@@ -526,11 +525,11 @@ const mu_type_t *instantiate_single_type(
 }
 
 const mu_type_t *instantiate_scheme(
-    induce_t *induce, const mu_scheme_type_t *scheme_type, mu_scheme_t *target_scheme
+    induce_t *induce, const mu_scheme_type_t *scheme_type
 ) {
   cache_item cache[100] = {0};
   size_t i = 0;
-  return instantiate_single_type(induce, scheme_type->matter, scheme_type, target_scheme, cache, &i);
+  return instantiate_single_type(induce, scheme_type->matter, scheme_type, cache, &i);
 }
 
 

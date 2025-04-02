@@ -188,7 +188,7 @@ const mu_scheme_type_t *mu_scheme_type(
     const mu_variable_type_t *argv[argc])
   __attribute__((malloc, nonnull(1, 2)));
 
-const mu_variable_type_t *mu_variable_type(induce_t *induce, mu_scheme_t *scheme);
+const mu_variable_type_t *mu_variable_type(induce_t *induce);
 
 mu_scheme_t *mu_scheme(mu_scheme_t *parent)
   __attribute__((malloc));

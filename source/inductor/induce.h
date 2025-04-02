@@ -135,7 +135,7 @@ const mu_type_t *generalize_type(
   __attribute__((nonnull));
 
 const mu_type_t *instantiate_scheme(
-    induce_t *induce, const mu_scheme_type_t *scheme_type, mu_scheme_t *target_scheme
+    induce_t *induce, const mu_scheme_type_t *scheme_type
 );
 
 extern const mu_name_t *vector_access;
