@@ -80,7 +80,7 @@ typedef struct {
 
 typedef struct mu_scheme_t mu_scheme_t;
 struct mu_scheme_t {
-  induce_t *induce;
+  const induce_t *induce;
   mu_scheme_t *parent;
   size_t rank;
   mu_variable_type_t *link;
