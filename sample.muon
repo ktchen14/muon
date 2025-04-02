@@ -1,4 +1,6 @@
-datatype MyBoolean = my_true | my_false
+datatype MyBoolean = MyTrue | MyFalse
+
+instance MyBoolean <: Integer = switch (case MyTrue = 1, case MyFalse = 0)
 
 datatype Foo = Foo1 | Foo2
 

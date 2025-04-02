@@ -185,6 +185,13 @@ detect_t *detect_node(detect_t *detect, const mu_node_t *root) {
         break;
       }
 
+      case IS_KIND_OF(name_sign): {
+        const mu_node_t *target = roster_search(roster, name_sign->name);
+        assert(target != NULL);
+        detect->result->data[name_sign->as_node.id] = target;
+        break;
+      }
+
       default: break;
     }
   } while ((node = node_return(node)) != NULL);

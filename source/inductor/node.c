@@ -372,9 +372,10 @@ __attribute__((nonnull)) static const mu_type_t *datatype_option_induce(
 
 __attribute__((nonnull)) static const mu_type_t *datatype_stmt_induce(
     const mu_datatype_stmt_t *stmt, induce_t *induce, open_scheme_t *scheme) {
-  // TODO: Fake this
+  // TODO: No arguments supported for now
+  const mu_core_t *core = induce->datatype_core;
   const mu_core_type_t *result;
-  if ((result = mu_integer_type(induce)) == NULL)
+  if ((result = mu_core_type(induce, core, NULL)) == NULL)
     return NULL;
   return &result->as_type;
 }
