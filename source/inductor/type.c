@@ -95,13 +95,15 @@ mu_core_type_t *core_type_allocate(induce_t *induce, const mu_core_t *core) {
 }
 
 const mu_core_type_t *core_type_activate(mu_core_type_t *type) {
+  induce_t *induce = (induce_t *) type->as_type.induce;
+
   for (size_t i = 0; i < type->core->argc; i++) {
     const mu_type_t *argument = type->argv[i];
     assert(argument != NULL);
     assert(argument->induce == type->as_type.induce);
     assert(argument->kind != MU_SCHEME_TYPE);
   }
-  return assign_type(type->as_type.induce, type);
+  return assign_type(induce, type);
 }
 
 mu_scheme_type_t *scheme_type_allocate(induce_t *induce, size_t argc) {
@@ -120,12 +122,15 @@ mu_scheme_type_t *scheme_type_allocate(induce_t *induce, size_t argc) {
 
 const mu_scheme_type_t *scheme_type_activate(
     mu_scheme_type_t *type, const mu_type_t *matter) {
+  induce_t *induce = (induce_t *) type->as_type.induce;
+
   for (size_t i = 0; i < type->argc; i++) {
     assert(type->argv[i]->as_type.induce == type->as_type.induce);
     assert(type->argv[i]->as_type.kind != MU_SCHEME_TYPE);
   }
   type->matter = matter;
-  return assign_type(type->as_type.induce, type);
+
+  return assign_type(induce, type);
 }
 
 mu_join_t *join_allocate(induce_t *induce, size_t argc) {

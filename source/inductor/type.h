@@ -13,7 +13,7 @@ typedef struct {
   enum {
     MU_CORE_TYPE, MU_SCHEME_TYPE, MU_VARIABLE_TYPE,
   } kind;
-  induce_t *induce;
+  const induce_t *induce;
   size_t id;
 } mu_type_t;
 
