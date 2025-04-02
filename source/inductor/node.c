@@ -15,7 +15,7 @@ static const mu_type_t *node_induce(const mu_node_t *node, induce_t *induce, ope
 const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
   assert(root->id < induce->node_length);
 
-  open_scheme_t root_scheme = { .induce = induce, .node = root };
+  open_scheme_t root_scheme = { .induce = induce };
   open_scheme_t *scheme = &root_scheme;
 
   const mu_node_t *node = root, *next;
@@ -35,7 +35,7 @@ const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
       if (node->kind != MU_DEFINE_STMT_NODE)
         continue;
 
-      scheme = open_scheme(scheme, node);
+      scheme = open_scheme(scheme);
     }
 
     // Induce the type of the node
@@ -392,8 +392,6 @@ __attribute__((nonnull)) static const mu_type_t *datatype_stmt_induce(
 
 __attribute__((nonnull, pure)) static const mu_type_t *define_stmt_induce(
     const mu_define_stmt_t *stmt, induce_t *induce, open_scheme_t *scheme) {
-  assert(scheme->node == &stmt->as_node);
-
   const mu_type_t *expr_type = evince_type(induce, &stmt->expr->as_node);
   return generalize_type(induce, expr_type, scheme);
 }

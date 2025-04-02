@@ -68,12 +68,12 @@ const mu_variable_type_t *mu_variable_type(induce_t *induce, open_scheme_t *sche
   return scheme->link = result;
 }
 
-open_scheme_t *open_scheme(open_scheme_t *parent, const mu_node_t *node) {
+open_scheme_t *open_scheme(open_scheme_t *parent) {
   open_scheme_t *result;
   if ((result = malloc(sizeof(open_scheme_t))) == NULL)
     return NULL;
   *result = (open_scheme_t) {
-    .induce = parent->induce, .node = node, .parent = parent, .rank = parent->rank + 1,
+    .induce = parent->induce, .parent = parent, .rank = parent->rank + 1,
   };
   return result;
 }

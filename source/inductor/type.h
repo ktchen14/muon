@@ -156,10 +156,8 @@ struct mu_variable_type_t {
 })
 
 typedef struct open_scheme_t open_scheme_t;
-typedef struct mu_node_t mu_node_t;
 struct open_scheme_t {
   induce_t *induce;
-  const mu_node_t *node;
   open_scheme_t *parent;
   size_t rank;
   mu_variable_type_t *link;
@@ -196,7 +194,7 @@ const mu_scheme_type_t *mu_scheme_type(
 
 const mu_variable_type_t *mu_variable_type(induce_t *induce, open_scheme_t *scheme);
 
-open_scheme_t *open_scheme(open_scheme_t *parent, const mu_node_t *node)
+open_scheme_t *open_scheme(open_scheme_t *parent)
   __attribute__((malloc));
 
 mu_core_type_t *core_type_allocate(induce_t *induce, const mu_core_t *core)
