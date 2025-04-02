@@ -393,7 +393,7 @@ __attribute__((nonnull)) static const mu_type_t *datatype_stmt_induce(
   return &result->as_type;
 }
 
-__attribute__((nonnull, pure)) static const mu_type_t *define_stmt_induce(
+__attribute__((nonnull)) static const mu_type_t *define_stmt_induce(
     const mu_define_stmt_t *stmt, induce_t *induce, mu_scheme_t *scheme) {
   const mu_type_t *expr_type = evince_type(induce, &stmt->expr->as_node);
   return generalize_type(induce, expr_type, scheme);
