@@ -190,7 +190,7 @@ const mu_scheme_type_t *mu_scheme_type(
 
 const mu_variable_type_t *mu_variable_type(induce_t *induce, mu_scheme_t *scheme);
 
-mu_scheme_t *open_scheme(mu_scheme_t *parent)
+mu_scheme_t *mu_scheme(mu_scheme_t *parent)
   __attribute__((malloc));
 
 mu_core_type_t *core_type_allocate(induce_t *induce, const mu_core_t *core)

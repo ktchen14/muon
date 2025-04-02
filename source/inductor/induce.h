@@ -43,6 +43,8 @@ struct induce_t {
   size_t instance_length;
 
   const mu_coercion_t *id_coercion;
+
+  mu_scheme_t *scheme;
 };
 
 extern _Thread_local induce_t *debug_induce;

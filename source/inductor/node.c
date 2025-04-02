@@ -13,9 +13,10 @@
 static const mu_type_t *node_induce(const mu_node_t *node, induce_t *induce, mu_scheme_t *scheme);
 
 const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
-  assert(root->id < induce->node_length);
+  assert(induce->scheme == NULL);
+  induce->scheme = &(mu_scheme_t) { .induce = induce };
 
-  mu_scheme_t *scheme = &(mu_scheme_t) { .induce = induce };
+  assert(root->id < induce->node_length);
 
   const mu_node_t *node = root, *next;
   do {
@@ -34,18 +35,21 @@ const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
       if (node->kind != MU_DEFINE_STMT_NODE)
         continue;
 
-      scheme = open_scheme(scheme);
+      mu_scheme_t *scheme;
+      if ((scheme = mu_scheme(induce->scheme)) == NULL)
+        return NULL;
+      induce->scheme = scheme;
     }
 
     // Induce the type of the node
     const mu_type_t *type;
-    if ((type = node_induce(node, induce, scheme)) == NULL)
+    if ((type = node_induce(node, induce, induce->scheme)) == NULL)
       return NULL;
 
     if (node->kind == MU_DEFINE_STMT_NODE) {
-      mu_scheme_t *parent = scheme->parent;
-      free(scheme);
-      scheme = parent;
+      mu_scheme_t *parent = induce->scheme->parent;
+      free(induce->scheme);
+      induce->scheme = parent;
     }
 
     induce->node_to_type[node->id] = type;

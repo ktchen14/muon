@@ -68,7 +68,7 @@ const mu_variable_type_t *mu_variable_type(induce_t *induce, mu_scheme_t *scheme
   return scheme->link = result;
 }
 
-mu_scheme_t *open_scheme(mu_scheme_t *parent) {
+mu_scheme_t *mu_scheme(mu_scheme_t *parent) {
   mu_scheme_t *result;
   if ((result = malloc(sizeof(mu_scheme_t))) == NULL)
     return NULL;
