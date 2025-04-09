@@ -212,7 +212,7 @@ static const mu_coercion_t *ensure_cc(
 
 instance_coercion:;
     const mu_instance_coercion_t *result;
-    if ((result = mu_instance_coercion(instance, &target->as_type)) == NULL)
+    if ((result = mu_instance_coercion(instance)) == NULL)
       return NULL;
     return edge_assign(result_edge, &result->as_coercion);
   }

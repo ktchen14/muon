@@ -171,11 +171,7 @@ const mu_solution_t *reduce_type_to_join(
   }
 
   if (argc == 1) {
-    const mu_id_coercion_t *id_coercion;
-    if ((id_coercion = mu_id_coercion(&target->as_type)) == NULL)
-      return NULL;
-    edge_assign(single_edge, &id_coercion->as_coercion);
-
+    edge_assign(single_edge, induce->id_coercion);
     return assign_solution(target, &single_a->as_solution);
   }
 
@@ -193,7 +189,7 @@ const mu_solution_t *reduce_type_to_join(
     allocation->argv[argc] = edge->source;
 
     const mu_join_coercion_t *coercion;
-    if ((coercion = mu_join_coercion(target, argc++)) == NULL)
+    if ((coercion = mu_join_coercion(argc++)) == NULL)
       return NULL;
     edge_assign(edge, &coercion->as_coercion);
   }
@@ -280,7 +276,7 @@ const mu_coercion_t *reduce_coercion(
             }
 
             const mu_unjoin_coercion_t *result;
-            if ((result = unjoin_coercion_activate(allocation, target)) == NULL)
+            if ((result = unjoin_coercion_activate(allocation)) == NULL)
               return NULL;
             return &result->as_coercion;
           }
@@ -345,7 +341,7 @@ const mu_coercion_t *reduce_coercion(
         allocation->argv[i] = reduce_coercion(induce, unjoin_coercion->argv[i]);
 
       const mu_unjoin_coercion_t *result;
-      if ((result = unjoin_coercion_activate(allocation, unjoin_coercion->target)) == NULL)
+      if ((result = unjoin_coercion_activate(allocation)) == NULL)
         return NULL;
       return &result->as_coercion;
     }

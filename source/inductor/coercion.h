@@ -1,7 +1,6 @@
 #ifndef MU_INDUCTOR_COERCION_I
 #define MU_INDUCTOR_COERCION_I
 
-#include "../common.h"
 #include "core.h"
 #include "type.h"
 
@@ -37,7 +36,6 @@ struct mu_coercion_t {
 
 typedef struct {
   MU_COERCION_HEADER;
-  const mu_type_t *target;
 } mu_id_coercion_t;
 
 typedef struct {
@@ -54,7 +52,6 @@ typedef struct {
 
 typedef struct {
   MU_COERCION_HEADER;
-  const mu_type_t *target;
   const mu_instance_t *instance;
 } mu_instance_coercion_t;
 
@@ -79,7 +76,6 @@ typedef struct {
 /// Coercion of τ to a join type with τ at discriminant @c i
 typedef struct {
   MU_COERCION_HEADER;
-  const mu_variable_type_t *target;
   size_t i;
 } mu_join_coercion_t;
 
@@ -87,7 +83,6 @@ typedef struct {
 /// coercion to use for that discriminant.
 typedef struct {
   MU_COERCION_HEADER;
-  const mu_type_t *target;
   size_t argc;
   const mu_coercion_t *argv[/* argc */];
 } mu_unjoin_coercion_t;
@@ -101,9 +96,6 @@ enum {
 #undef MU_EMIT
 };
 
-const mu_id_coercion_t *mu_id_coercion(const mu_type_t *target)
-  __attribute__((malloc, nonnull));
-
 const mu_edge_coercion_t *mu_edge_coercion(
     const mu_type_t *source, const mu_type_t *target)
   __attribute__((malloc, nonnull));
@@ -113,7 +105,7 @@ const mu_indirect_coercion_t *mu_indirect_coercion(
   __attribute__((malloc, nonnull));
 
 const mu_instance_coercion_t *mu_instance_coercion(
-    const mu_instance_t *instance, const mu_type_t *target)
+    const mu_instance_t *instance)
   __attribute__((malloc, nonnull));
 
 const mu_variance_coercion_t *mu_variance_coercion(
@@ -123,12 +115,11 @@ const mu_variance_coercion_t *mu_variance_coercion(
 const mu_record_coercion_t *mu_record_coercion(const record_instance_t *instance)
   __attribute__((malloc, nonnull));
 
-const mu_join_coercion_t *mu_join_coercion(
-    const mu_variable_type_t *target, size_t i)
+const mu_join_coercion_t *mu_join_coercion(size_t i)
   __attribute__((malloc));
 
 const mu_unjoin_coercion_t *mu_unjoin_coercion(
-    const mu_type_t *target, size_t argc, const mu_coercion_t *argv[/* argc */])
+    size_t argc, const mu_coercion_t *argv[/* argc */])
   __attribute__((malloc, nonnull));
 
 mu_variance_coercion_t *variance_coercion_allocate(const mu_core_type_t *target)
@@ -149,42 +140,8 @@ mu_unjoin_coercion_t *unjoin_coercion_allocate(size_t argc)
   __attribute__((malloc));
 
 const mu_unjoin_coercion_t *unjoin_coercion_activate(
-    mu_unjoin_coercion_t *coercion, const mu_type_t *target)
+    mu_unjoin_coercion_t *coercion)
   __attribute__((nonnull));
-
-__attribute__((nonnull, pure))
-static inline const mu_type_t *mu_coercion_target(
-    const mu_coercion_t *coercion, const mu_type_t *source) {
-  switch ON_ABSTRACT_OBJECT(coercion) {
-    case IS_KIND_OF(id_coercion):
-      return id_coercion->target != NULL ? id_coercion->target : source;
-
-    case IS_KIND_OF(edge_coercion):
-      return edge_coercion->target;
-
-    case IS_KIND_OF(indirect_coercion):
-      return mu_coercion_target(indirect_coercion->tail, source);
-
-    case IS_KIND_OF(instance_coercion):
-      return instance_coercion->target;
-
-    case IS_KIND_OF(variance_coercion):
-      return &variance_coercion->target->as_type;
-
-    case IS_KIND_OF(record_coercion):
-      return record_coercion->target;
-
-    case IS_KIND_OF(slot_coercion):
-      return slot_coercion->target;
-
-    case IS_KIND_OF(join_coercion):
-      return &join_coercion->target->as_type;
-
-    case IS_KIND_OF(unjoin_coercion):
-      return unjoin_coercion->target;
-  }
-  __builtin_unreachable();
-}
 
 void mu_coercion_debug(const mu_coercion_t *coercion)
   __attribute__((nonnull));
