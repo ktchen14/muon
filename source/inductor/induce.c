@@ -434,9 +434,13 @@ const mu_type_t *generalize_type(
 
   size_t i = 0;
   for (mu_variable_type_t *type = polymorphic; type != NULL; type = type->scheme_next) {
-    allocation->argv[i++] = type;
     type->polymorphic_to = allocation;
+    type->slot = i;
+    allocation->argv[i++] = type;
   }
+
+  for (size_t i = 0; i < allocation->argc; i++)
+    assert(allocation->argv[i]->slot == i);
 
   const mu_scheme_type_t *result;
   if (rare((result = scheme_type_activate(allocation, matter)) == NULL))

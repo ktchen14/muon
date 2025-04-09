@@ -100,6 +100,7 @@ struct mu_variable_type_t {
 
   size_t rank;
   const mu_scheme_type_t *polymorphic_to;
+  size_t slot;
 
   _Bool reachable[2];
 };
