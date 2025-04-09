@@ -580,8 +580,9 @@ static inline int debug_node_coercion(const mu_node_t *node) {
   if (debug_induce == NULL)
     return debug_indent;
 
+  node_coercion_t node_coercion = debug_induce->node_coercion[node->id];
   const mu_coercion_t *coercion;
-  if ((coercion = debug_induce->node_to_coercion[node->id]) == NULL)
+  if ((coercion = node_coercion.coercion) == NULL)
     return debug_indent;
 
   if (coercion->kind == MU_ID_COERCION)
@@ -589,15 +590,8 @@ static inline int debug_node_coercion(const mu_node_t *node) {
 
   debug("%*s", debug_indent, "");
   mu_coercion_debug(coercion);
-
-  const mu_type_t *source_type;
-  if ((source_type = evince_type(debug_induce, node)) != NULL) {
-    const mu_type_t *target_type;
-    if ((target_type = mu_coercion_target(coercion, source_type)) != NULL) {
-      debug(" ∷ ");
-      type_debug(target_type, 0);
-    }
-  }
+  debug(" ∷ ");
+  type_debug(node_coercion.target, 0);
 
   debug("\n");
 

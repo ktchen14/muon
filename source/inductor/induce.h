@@ -14,6 +14,11 @@
 #include <stddef.h>
 #include <string.h>
 
+typedef struct {
+  const mu_coercion_t *coercion;
+  const mu_type_t *target;
+} node_coercion_t;
+
 typedef struct induce_t induce_t;
 struct induce_t {
   mu_engine_t *engine;
@@ -23,7 +28,7 @@ struct induce_t {
   const detect_result_t *detect;
 
   const mu_type_t **node_to_type; /* const type_t *[node_length] */
-  const mu_coercion_t **node_to_coercion;
+  node_coercion_t *node_coercion;
 
   universe_t universe;
 
@@ -65,11 +70,13 @@ static inline const mu_type_t *evince_type(
 
 __attribute__((nonnull, pure, returns_nonnull))
 static inline const mu_coercion_t *evince_coercion(
-    const induce_t *induce, const mu_node_t *node) {
+    const induce_t *induce, const mu_node_t *node, const mu_type_t **target) {
   assert(node->id < induce->node_length);
-  const mu_coercion_t *coercion = induce->node_to_coercion[node->id];
-  assert(coercion != NULL);
-  return coercion;
+  node_coercion_t node_coercion = induce->node_coercion[node->id];
+  assert(node_coercion.coercion != NULL);
+  assert(node_coercion.target != NULL);
+  *target = node_coercion.target;
+  return node_coercion.coercion;
 }
 
 /**
@@ -85,11 +92,18 @@ static inline const mu_coercion_t *evince_coercion(
  */
 __attribute__((nonnull))
 static inline void assign_coercion(
-    induce_t *induce, const mu_node_t *node, const mu_coercion_t *coercion) {
+    induce_t *induce,
+    const mu_node_t *node,
+    const mu_coercion_t *coercion,
+    const mu_type_t *target) {
   assert(node->engine == induce->engine);
   assert(node->id < induce->node_length);
-  assert(induce->node_to_coercion[node->id] == NULL);
-  induce->node_to_coercion[node->id] = coercion;
+
+  node_coercion_t *node_coercion = &induce->node_coercion[node->id];
+  assert(node_coercion->coercion == NULL);
+  assert(node_coercion->target == NULL);
+
+  *node_coercion = (node_coercion_t) { .coercion = coercion, .target = target };
 }
 
 /**

@@ -363,14 +363,15 @@ const mu_type_t *reduce_node(induce_t *induce, const mu_node_t *root) {
     const mu_type_t *source = evince_type(induce, node);
     assert(source != NULL);
 
+    node_coercion_t *node_coercion = &induce->node_coercion[node->id];
     const mu_coercion_t *coercion;
-    if ((coercion = induce->node_to_coercion[node->id]) == NULL)
+    if ((coercion = node_coercion->coercion) == NULL)
       continue;
 
     const mu_coercion_t *result;
     if ((result = reduce_coercion(induce, coercion)) == NULL)
       return NULL;
-    induce->node_to_coercion[node->id] = result;
+    node_coercion->coercion = result;
   } while ((node = node_return(node)) != NULL);
 
   return evince_type(induce, root);
