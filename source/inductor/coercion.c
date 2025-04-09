@@ -59,16 +59,6 @@ const mu_variance_coercion_t *mu_variance_coercion(
   return variance_coercion_activate(allocation);
 }
 
-const mu_record_coercion_t *mu_record_coercion(const record_instance_t *instance) {
-  mu_record_coercion_t *result;
-  if ((result = malloc(sizeof(mu_record_coercion_t))) == NULL)
-    return NULL;
-  *result = (mu_record_coercion_t) {
-    .as_coercion.kind = MU_RECORD_COERCION, .instance = instance,
-  };
-  return result;
-}
-
 const mu_join_coercion_t *mu_join_coercion(size_t i) {
   mu_join_coercion_t *result;
   if ((result = malloc(sizeof(mu_join_coercion_t))) == NULL)
@@ -108,29 +98,6 @@ mu_variance_coercion_t *variance_coercion_allocate(const mu_core_t *core) {
 
 const mu_variance_coercion_t *variance_coercion_activate(
     mu_variance_coercion_t *coercion) {
-  return coercion;
-}
-
-mu_record_coercion_t *record_coercion_allocate(
-    const record_instance_t *instance) {
-  size_t argc = instance->target->argc;
-
-  size_t size;
-  if (rare((size = struct_size(mu_record_coercion_t, argv, argc)) == 0))
-    return errno = ENOMEM, NULL;
-
-  mu_record_coercion_t *allocation;
-  if ((allocation = malloc(size)) == NULL)
-    return NULL;
-
-  *allocation = (mu_record_coercion_t) {
-    .as_coercion.kind = MU_RECORD_COERCION, .instance = instance,
-  };
-  return allocation;
-}
-
-const mu_record_coercion_t *record_coercion_activate(
-    mu_record_coercion_t *coercion) {
   return coercion;
 }
 
@@ -205,20 +172,6 @@ void mu_coercion_debug(const mu_coercion_t *coercion) {
       }
       debug(")");
       return;
-
-    case IS_KIND_OF(record_coercion): {
-      const record_instance_t *instance = record_coercion->instance;
-
-      debug("(");
-      for (size_t i = 0; i < instance->target->argc; i++) {
-        if (i > 0)
-          debug(", ");
-        debug("%zu: ", instance->argv[i]);
-        mu_coercion_debug(record_coercion->argv[i]);
-      }
-      debug(")");
-      return;
-    }
 
     case MU_SLOT_COERCION:
       return;

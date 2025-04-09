@@ -333,9 +333,6 @@ const mu_coercion_t *reduce_coercion(
       return &result->as_coercion;
     }
 
-    case MU_RECORD_COERCION:
-      abort();
-
     case MU_SLOT_COERCION:
       return coercion;
 
