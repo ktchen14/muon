@@ -354,6 +354,25 @@ const mu_coercion_t *reduce_coercion(
         return NULL;
       return &result->as_coercion;
     }
+
+    case IS_KIND_OF(meet_coercion): {
+      size_t argc = meet_coercion->argc;
+
+      mu_meet_coercion_t *allocation;
+      if ((allocation = meet_coercion_allocate(argc)) == NULL)
+        return NULL;
+
+      for (size_t i = 0; i < argc; i++)
+        allocation->argv[i] = reduce_coercion(induce, meet_coercion->argv[i]);
+
+      const mu_meet_coercion_t *result;
+      if ((result = meet_coercion_activate(allocation)) == NULL)
+        return NULL;
+      return &result->as_coercion;
+    }
+
+    case MU_UNMEET_COERCION:
+      return coercion;
   }
   __builtin_unreachable();
 }

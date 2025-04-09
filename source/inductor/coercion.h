@@ -10,12 +10,14 @@
 #define MU_EACH_COERCION_KIND(emit, ...) \
   emit(id, ID, Id, ##__VA_ARGS__) \
   emit(edge, EDGE, Edge, ##__VA_ARGS__) \
-  emit(indirect, INDIRECT, Indirect, ##__VA_ARGS__) \
-  emit(instance, INSTANCE, Instance, ##__VA_ARGS__) \
-  emit(variance, VARIANCE, Variance, ##__VA_ARGS__) \
   emit(slot, SLOT, Slot, ##__VA_ARGS__) \
+  emit(indirect, INDIRECT, Indirect, ##__VA_ARGS__) \
+  emit(variance, VARIANCE, Variance, ##__VA_ARGS__) \
+  emit(instance, INSTANCE, Instance, ##__VA_ARGS__) \
   emit(join, JOIN, Join, ##__VA_ARGS__) \
-  emit(unjoin, UNJOIN, Unjoin, ##__VA_ARGS__)
+  emit(unjoin, UNJOIN, Unjoin, ##__VA_ARGS__) \
+  emit(meet, MEET, Meet, ##__VA_ARGS__) \
+  emit(unmeet, UNMEET, Unmeet, ##__VA_ARGS__)
 
 /// An enumeration over each kind of coercion, e.g. @c MU_ID_COERCION
 typedef enum {
@@ -78,6 +80,20 @@ typedef struct {
   const mu_coercion_t *argv[/* argc */];
 } mu_unjoin_coercion_t;
 
+/// Coercion of τ to a meet type. Each coercion in argv specifies the coercion
+/// of τ to the type at that location.
+typedef struct {
+  MU_COERCION_HEADER;
+  size_t argc;
+  const mu_coercion_t *argv[/* argc */];
+} mu_meet_coercion_t;
+
+/// Coercion of a meet type to type τ, where τ is at index @a i in the meet type
+typedef struct {
+  MU_COERCION_HEADER;
+  size_t i;
+} mu_unmeet_coercion_t;
+
 extern const void *const NO_SUCH_COERCION;
 
 /// @internal An enumeration over each kind of coercion, e.g. @c _id_coercion_kind
@@ -108,7 +124,14 @@ const mu_join_coercion_t *mu_join_coercion(size_t i)
 
 const mu_unjoin_coercion_t *mu_unjoin_coercion(
     size_t argc, const mu_coercion_t *argv[/* argc */])
-  __attribute__((malloc, nonnull));
+  __attribute__((malloc));
+
+const mu_meet_coercion_t *mu_meet_coercion(
+    size_t argc, const mu_coercion_t *argv[/* argc */])
+  __attribute__((malloc));
+
+const mu_unmeet_coercion_t *mu_unmeet_coercion(size_t i)
+  __attribute__((malloc));
 
 mu_variance_coercion_t *variance_coercion_allocate(const mu_core_t *core)
   __attribute__((malloc));
@@ -122,6 +145,13 @@ mu_unjoin_coercion_t *unjoin_coercion_allocate(size_t argc)
 
 const mu_unjoin_coercion_t *unjoin_coercion_activate(
     mu_unjoin_coercion_t *coercion)
+  __attribute__((nonnull));
+
+mu_meet_coercion_t *meet_coercion_allocate(size_t argc)
+  __attribute__((malloc));
+
+const mu_meet_coercion_t *meet_coercion_activate(
+    mu_meet_coercion_t *coercion)
   __attribute__((nonnull));
 
 void mu_coercion_debug(const mu_coercion_t *coercion)
