@@ -48,6 +48,7 @@ struct induce_t {
   size_t instance_length;
 
   const mu_coercion_t *id_coercion;
+  const mu_coercion_t *slot_coercion;
 
   mu_scheme_t *scheme;
 };

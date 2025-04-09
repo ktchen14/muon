@@ -566,6 +566,11 @@ induce_t *induce_initialize(
     return NULL;
   *id_coercion = (mu_id_coercion_t) { .as_coercion.kind = MU_ID_COERCION };
 
+  mu_slot_coercion_t *slot_coercion;
+  if ((slot_coercion = malloc(sizeof(mu_slot_coercion_t))) == NULL)
+    return NULL;
+  *slot_coercion = (mu_slot_coercion_t) { .as_coercion.kind = MU_SLOT_COERCION };
+
   mu_core_t *boolean_core;
   if ((boolean_core = malloc(sizeof(mu_core_t))) == NULL)
     return NULL;
@@ -602,6 +607,7 @@ induce_t *induce_initialize(
     .universe = universe,
 
     .id_coercion = &id_coercion->as_coercion,
+    .slot_coercion = &slot_coercion->as_coercion,
 
     .boolean_core = boolean_core,
     .integer_core = integer_core,
