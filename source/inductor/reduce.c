@@ -90,7 +90,7 @@ void *redirect_source(
   return induce;
 }
 
-const mu_solution_t *reduce_type_to_join(
+const void *reduce_type_to_join(
     induce_t *induce, const mu_variable_type_t *target) {
   if (target->solution != NULL)
     return target->solution;
