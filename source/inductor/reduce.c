@@ -42,14 +42,15 @@ const mu_coercion_t *mu_edge_coercion_reload(
  * each type variable τ that v has an edge to, we should also make ⟨α ⇒ τ⟩ an
  * indirect edge (through α ⇝ β ⇝ τ).
  *
- * In this example, origin should be ⟨α ⇒ v⟩ and coercion should be α ⇝ β.
+ * In this example, origin should be ⟨α ⇒ v⟩, center should be β, and coercion
+ * should be α ⇝ β.
  */
 void *redirect_source(
-    induce_t *induce, type_edge_t *origin, const mu_coercion_t *coercion) {
+    induce_t *induce,
+    type_edge_t *origin,
+    const mu_type_t *center,
+    const mu_coercion_t *coercion) {
   const mu_type_t *source = origin->source;
-
-  // Calculate β from α ⇝ β and α
-  const mu_type_t *center = mu_coercion_target(coercion, source);
 
   universe_iterator_t it;
   it = universe_iterator(&induce->universe, origin->target, 1);
@@ -147,7 +148,7 @@ const mu_solution_t *reduce_type_to_join(
       if ((coercion = retrieve_coercion(induce, &b->as_type, &a->as_type)) == NULL)
         return NULL;
       if (coercion != NO_SUCH_COERCION) {
-        if (redirect_source(induce, b_edge, coercion) == NULL)
+        if (redirect_source(induce, b_edge, &a->as_type, coercion) == NULL)
           return NULL;
         continue;
       }
@@ -156,7 +157,7 @@ const mu_solution_t *reduce_type_to_join(
       if ((coercion = retrieve_coercion(induce, &a->as_type, &b->as_type)) == NULL)
         return NULL;
       if (coercion != NO_SUCH_COERCION) {
-        if (redirect_source(induce, a_edge, coercion) == NULL)
+        if (redirect_source(induce, a_edge, &b->as_type, coercion) == NULL)
           return NULL;
         goto continue_a;
       }
