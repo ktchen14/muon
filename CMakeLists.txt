@@ -28,7 +28,7 @@ target_include_directories(llvmtest PRIVATE ${LLVM_INCLUDE_DIRS})
 separate_arguments(LLVM_DEFINITIONS_LIST NATIVE_COMMAND ${LLVM_DEFINITIONS})
 target_compile_definitions(llvmtest PRIVATE ${LLVM_DEFINITIONS_LIST})
 llvm_map_components_to_libnames(llvm_libs mcjit interpreter native)
-target_link_libraries(llvmtest ${llvm_libs} c++)
+target_link_libraries(llvmtest ${llvm_libs} stdc++)
 
 add_subdirectory(source)
 
