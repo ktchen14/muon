@@ -70,7 +70,6 @@ typedef struct {
 
 typedef struct {
   MU_COERCION_HEADER;
-  const mu_type_t *target;
 } mu_slot_coercion_t;
 
 /// Coercion of τ to a join type with τ at discriminant @c i
