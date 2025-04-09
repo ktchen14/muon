@@ -304,13 +304,13 @@ const mu_coercion_t *reduce_coercion(
       return &instance_coercion->as_coercion;
 
     case IS_KIND_OF(variance_coercion): {
-      const mu_core_type_t *target = variance_coercion->target;
+      const mu_core_t *core = variance_coercion->core;
 
       mu_variance_coercion_t *allocation;
-      if ((allocation = variance_coercion_allocate(target)) == NULL)
+      if ((allocation = variance_coercion_allocate(core)) == NULL)
         return NULL;
 
-      for (size_t i = 0; i < target->core->argc; i++) {
+      for (size_t i = 0; i < core->argc; i++) {
         const mu_coercion_t *argument = variance_coercion->argv[i];
         allocation->argv[i] = reduce_coercion(induce, argument);
       }

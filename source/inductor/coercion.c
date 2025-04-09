@@ -46,12 +46,11 @@ const mu_instance_coercion_t *mu_instance_coercion(
 }
 
 const mu_variance_coercion_t *mu_variance_coercion(
-    const mu_core_type_t *target, const mu_coercion_t *argv[/* target->core->argc */]) {
-  const mu_core_t *core = target->core;
+    const mu_core_t *core, const mu_coercion_t *argv[/* target->core->argc */]) {
   assert(core->argc == 0 || argv != NULL);
 
   mu_variance_coercion_t *allocation;
-  if ((allocation = variance_coercion_allocate(target)) == NULL)
+  if ((allocation = variance_coercion_allocate(core)) == NULL)
     return NULL;
 
   for (size_t i = 0; i < core->argc; i++)
@@ -92,9 +91,7 @@ const mu_unjoin_coercion_t *mu_unjoin_coercion(
   return unjoin_coercion_activate(allocation);
 }
 
-mu_variance_coercion_t *variance_coercion_allocate(const mu_core_type_t *target) {
-  const mu_core_t *core = target->core;
-
+mu_variance_coercion_t *variance_coercion_allocate(const mu_core_t *core) {
   size_t size;
   if (rare((size = struct_size(mu_variance_coercion_t, argv, core->argc)) == 0))
     return errno = ENOMEM, NULL;
@@ -104,7 +101,7 @@ mu_variance_coercion_t *variance_coercion_allocate(const mu_core_type_t *target)
     return NULL;
 
   *allocation = (mu_variance_coercion_t) {
-    .as_coercion.kind = MU_VARIANCE_COERCION, .target = target,
+    .as_coercion.kind = MU_VARIANCE_COERCION, .core = core,
   };
   return allocation;
 }
@@ -199,7 +196,7 @@ void mu_coercion_debug(const mu_coercion_t *coercion) {
 
     case IS_KIND_OF(variance_coercion):
       debug("(");
-      const mu_core_t *core = variance_coercion->target->core;
+      const mu_core_t *core = variance_coercion->core;
       mu_core_debug(core);
 
       for (size_t i = 0; i < core->argc; i++) {
