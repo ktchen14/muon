@@ -95,6 +95,9 @@ const void *reduce_type_to_join(
   if (target->solution != NULL)
     return target->solution;
 
+  if (target->reduced)
+    return target;
+
   universe_t *universe = &induce->universe;
   universe_iterator_t it;
 
@@ -112,7 +115,7 @@ const void *reduce_type_to_join(
     // Otherwise, reduce it. Then add its join length to length.
     if (reduce_type_to_join(induce, next_variable) == NULL)
       return NULL;
-    assert(next_variable->solution != NULL);
+    /* assert(next_variable->solution != NULL); */
   }
 
   // For each type pair α and β, where α ≠ β, both are sources to the variable
@@ -170,6 +173,11 @@ const void *reduce_type_to_join(
   continue_a:;
   }
 
+  if (target->scheme != NULL) {
+    ((mu_variable_type_t *) target)->reduced = 1;
+    return target;
+  }
+
   if (argc == 1) {
     edge_assign(single_edge, induce->id_coercion);
     return assign_solution(target, &single_a->as_solution);
@@ -221,6 +229,9 @@ const mu_coercion_t *reduce_coercion(
         const mu_variable_type_t *v = (const mu_variable_type_t *) target;
         if (reduce_type_to_join(induce, v) == NULL)
           return NULL;
+
+        if (v->scheme != NULL)
+          return induce->slot_coercion;
       }
 
       if ((next_coercion = mu_edge_coercion_reload(&induce->universe, edge_coercion)) != NULL)
@@ -230,7 +241,9 @@ const mu_coercion_t *reduce_coercion(
         const mu_variable_type_t *v = (const mu_variable_type_t *) source;
         if (reduce_type_to_join(induce, v) == NULL)
           return NULL;
-        assert(v->solution != NULL);
+        if (v->scheme != NULL)
+          return induce->slot_coercion;
+        /* assert(v->solution != NULL); */
 
         switch ON_ABSTRACT_OBJECT(v->solution) {
           case IS_KIND_OF(core_type): {
@@ -281,7 +294,6 @@ const mu_coercion_t *reduce_coercion(
             return &result->as_coercion;
           }
         }
-
       }
 
       __builtin_unreachable();

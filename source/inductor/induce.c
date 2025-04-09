@@ -434,7 +434,7 @@ const mu_type_t *generalize_type(
 
   size_t i = 0;
   for (mu_variable_type_t *type = polymorphic; type != NULL; type = type->scheme_next) {
-    type->polymorphic_to = allocation;
+    type->scheme = allocation;
     type->slot = i;
     allocation->argv[i++] = type;
   }
@@ -496,7 +496,7 @@ const mu_type_t *instantiate_single_type(
     }
 
     case IS_KIND_OF(variable_type):
-      if (variable_type->polymorphic_to != scheme) {
+      if (variable_type->scheme != scheme) {
         cache[(*cache_i)++] = (cache_item) { &variable_type->as_type, &variable_type->as_type };
         return &variable_type->as_type;
       }
