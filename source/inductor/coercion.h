@@ -15,6 +15,7 @@
   emit(instance, INSTANCE, Instance, ##__VA_ARGS__) \
   emit(variance, VARIANCE, Variance, ##__VA_ARGS__) \
   emit(record, RECORD, Record, ##__VA_ARGS__) \
+  emit(slot, SLOT, Slot, ##__VA_ARGS__) \
   emit(join, JOIN, Join, ##__VA_ARGS__) \
   emit(unjoin, UNJOIN, Unjoin, ##__VA_ARGS__)
 
@@ -69,6 +70,11 @@ typedef struct {
   const record_instance_t *instance;
   const mu_coercion_t *argv[/* instance->target->argc */];
 } mu_record_coercion_t;
+
+typedef struct {
+  MU_COERCION_HEADER;
+  const mu_type_t *target;
+} mu_slot_coercion_t;
 
 /// Coercion of τ to a join type with τ at discriminant @c i
 typedef struct {
@@ -167,6 +173,9 @@ static inline const mu_type_t *mu_coercion_target(
 
     case IS_KIND_OF(record_coercion):
       return record_coercion->target;
+
+    case IS_KIND_OF(slot_coercion):
+      return slot_coercion->target;
 
     case IS_KIND_OF(join_coercion):
       return &join_coercion->target->as_type;

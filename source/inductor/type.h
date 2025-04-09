@@ -98,6 +98,7 @@ struct mu_variable_type_t {
   // Polymorphism
   mu_variable_type_t *scheme_next;
 
+  _Bool reduced;
   size_t rank;
   const mu_scheme_type_t *polymorphic_to;
   size_t slot;

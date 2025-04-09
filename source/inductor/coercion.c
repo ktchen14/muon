@@ -236,6 +236,9 @@ void mu_coercion_debug(const mu_coercion_t *coercion) {
       return;
     }
 
+    case MU_SLOT_COERCION:
+      return;
+
     case IS_KIND_OF(join_coercion):
       debug("(%zu)", join_coercion->i);
       return;
