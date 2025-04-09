@@ -526,6 +526,7 @@ const mu_type_t *instantiate_single_type(
       fprintf(stderr, "Unsupported higher rank polymorphism\n");
       abort();
   }
+  __builtin_unreachable();
 }
 
 const mu_type_t *instantiate_scheme(
