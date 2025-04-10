@@ -280,7 +280,6 @@ static const mu_coercion_t *ensure_static_coercion(
   if ((scheme_type = mu_static_type_cast(source, scheme_type)) != NULL) {
     // Create an unscheme coercion source ⇝ instance to instantiate the scheme
     // type
-
     const mu_type_t *instance;
     if ((instance = instantiate_scheme(induce, scheme_type)) == NULL)
       return NULL;
@@ -294,8 +293,7 @@ static const mu_coercion_t *ensure_static_coercion(
       return NULL;
     edge->coercion = &head->as_coercion;
 
-    // Then ensure that we're able to coerce instance ⇝ target
-
+    // Ensure that we're able to coerce instance ⇝ target
     const mu_coercion_t *coercion;
     if ((coercion = ensure_coercion(induce, instance, &target->as_type)) == NULL)
       return NULL;
@@ -306,9 +304,7 @@ static const mu_coercion_t *ensure_static_coercion(
     const mu_indirect_coercion_t *result;
     if ((result = mu_indirect_coercion(&head->as_coercion, coercion)) == NULL)
       return NULL;
-
-    // TODO: Don't use edge_assign here since this isn't an indirect edge?
-    return result_edge->coercion = &result->as_coercion;
+    return edge_assign(result_edge, &result->as_coercion);
   }
 
   const mu_core_type_t *core_source = mu_static_type_cast(source, core_source);
