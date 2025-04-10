@@ -565,6 +565,7 @@ static inline void debug_node_type(const mu_node_t *node) {
 
   debug(" ∷ ");
   type_debug(type, 1);
+  debug(" #%zu", type->id);
 }
 
 __attribute__((nonnull))
@@ -584,6 +585,7 @@ static inline int debug_node_coercion(const mu_node_t *node) {
   mu_coercion_debug(coercion);
   debug(" ∷ ");
   type_debug(node_coercion.target, 0);
+  debug(" #%zu", node_coercion.target->id);
 
   debug("\n");
 
