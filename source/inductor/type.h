@@ -147,8 +147,8 @@ struct mu_variable_type_t {
   typeof(concrete) _concrete; \
   typeof(_abstract->kind) _kind = _abstract->kind; \
   int _castable = _Generic(_concrete, \
-    const mu_core_type_t *: _kind == MU_CORE_TYPE, \
-    const mu_scheme_type_t *: _kind == MU_SCHEME_TYPE); \
+    const mu_core_type_t *: _kind == MU_CORE_STATIC_TYPE, \
+    const mu_scheme_type_t *: _kind == MU_SCHEME_STATIC_TYPE); \
   _castable ? (typeof(_concrete)) _abstract : NULL; \
 })
 
@@ -213,11 +213,6 @@ mu_join_t *join_allocate(induce_t *induce, size_t argc)
 
 const mu_join_t *join_activate(mu_join_t *join)
   __attribute__((nonnull));
-
-__attribute__((nonnull, pure))
-static inline _Bool is_variable_type(const mu_type_t *type) {
-  return type->kind == MU_VARIABLE_TYPE;
-}
 
 void mu_solution_debug(const mu_solution_t *solution, _Bool expand)
   __attribute__((nonnull));
