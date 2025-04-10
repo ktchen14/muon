@@ -18,9 +18,7 @@ _Thread_local induce_t *debug_induce;
 
 /// @internal Ensure and return the coercion @a source ⇝ @a target
 static const mu_coercion_t *ensure_static_coercion(
-    induce_t *induce,
-    const mu_static_type_t *source,
-    const mu_static_type_t *target)
+    induce_t *induce, const mu_static_type_t *source, const mu_static_type_t *target)
   __attribute__((nonnull));
 
 static const mu_coercion_t *retrieve_core_coercion(
@@ -264,13 +262,13 @@ static const mu_coercion_t *ensure_static_coercion(
     const mu_static_type_t *target) {
   assert(target->kind != MU_SCHEME_STATIC_TYPE);
 
+  // Make ⟨source ⇒ target⟩ here in case of recursion
+  type_edge_t *result_edge;
+  if ((result_edge = append_edge(&induce->universe, &source->as_type, &target->as_type)) == NULL)
+    return NULL;
+
   const mu_scheme_type_t *scheme_type;
   if ((scheme_type = mu_static_type_cast(source, scheme_type)) != NULL) {
-    // Make ⟨source ⇒ target⟩ here in case of recursion
-    type_edge_t *result_edge;
-    if ((result_edge = append_edge(&induce->universe, &source->as_type, &target->as_type)) == NULL)
-      return NULL;
-
     // Create an unscheme coercion source ⇝ instance to instantiate the scheme
     // type
 
@@ -309,11 +307,6 @@ static const mu_coercion_t *ensure_static_coercion(
 
   const mu_core_type_t *core_target = mu_static_type_cast(target, core_target);
   assert(core_target != NULL);
-
-  // Add the edge now in case of recursion
-  type_edge_t *result_edge;
-  if ((result_edge = append_edge(&induce->universe, &core_source->as_type, &core_target->as_type)) == NULL)
-    return NULL;
 
   const mu_core_t *source_core = core_source->core;
   const mu_core_t *target_core = core_target->core;
