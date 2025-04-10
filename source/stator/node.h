@@ -64,7 +64,6 @@ static inline const mu_node_t *node_at(const mu_node_t *node, size_t i) {
     case MU_INTEGER_EXPR:
     case MU_NAME_EXPR:
     case MU_NATIVE_EXPR:
-    case MU_ZERO_EXPR:
     case MU_BOOLEAN_SIGN:
     case MU_INTEGER_SIGN:
     case MU_NAME_SIGN:

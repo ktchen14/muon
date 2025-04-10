@@ -19,8 +19,7 @@
   emit(record, RECORD, Record, ##__VA_ARGS__) \
   emit(sequence, SEQUENCE, Sequence, ##__VA_ARGS__) \
   emit(switch, SWITCH, Switch, ##__VA_ARGS__) \
-  emit(vector, VECTOR, Vector, ##__VA_ARGS__) \
-  emit(zero, ZERO, Zero, ##__VA_ARGS__)
+  emit(vector, VECTOR, Vector, ##__VA_ARGS__)
 
 /// Expands to emit(lower, upper, title, ...) for each kind of sign
 #define MU_EACH_SIGN_KIND(emit, ...) \
@@ -215,10 +214,6 @@ typedef struct {
   const mu_expr_t *argv[/* argc */];
 } mu_vector_expr_t;
 
-typedef struct {
-  MU_EXPR_HEADER;
-} mu_zero_expr_t;
-
 const mu_access_expr_t *mu_access_expr(
     mu_engine_t *engine, const mu_name_t *name)
   __attribute__((malloc, nonnull));
@@ -271,9 +266,6 @@ const mu_sequence_expr_t *mu_sequence_expr(
 const mu_vector_expr_t *mu_vector_expr(
     mu_engine_t *engine, size_t argc, const mu_expr_t *const argv[/* argc */])
   __attribute__((malloc, nonnull(1)));
-
-const mu_zero_expr_t *mu_zero_expr(mu_engine_t *engine)
-  __attribute__((malloc, nonnull));
 
 /// The header that each concrete sign must have
 #define MU_SIGN_HEADER union { mu_sign_t as_sign; mu_node_t as_node; }

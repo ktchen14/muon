@@ -275,14 +275,6 @@ __attribute__((nonnull)) static const mu_type_t *vector_expr_induce(
   return &result->as_type;
 }
 
-__attribute__((nonnull)) static const mu_type_t *zero_expr_induce(
-    induce_t *induce, const mu_zero_expr_t *expr) {
-  const mu_variable_type_t *result;
-  if ((result = mu_variable_type(induce)) == NULL)
-    return NULL;
-  return &result->as_type;
-}
-
 __attribute__((nonnull)) static const mu_type_t *boolean_sign_induce(
     induce_t *induce, const mu_boolean_sign_t *sign) {
   const mu_core_type_t *result;

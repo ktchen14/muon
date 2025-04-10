@@ -225,14 +225,6 @@ const mu_vector_expr_t *mu_vector_expr(
   return assign_node(engine, &result->as_node), result;
 }
 
-const mu_zero_expr_t *mu_zero_expr(mu_engine_t *engine) {
-  mu_zero_expr_t *result;
-  if ((result = node_allocate(engine, sizeof(mu_zero_expr_t))) == NULL)
-    return NULL;
-  *result = (mu_zero_expr_t) { .as_expr.kind = MU_ZERO_EXPR };
-  return assign_node(engine, &result->as_node), result;
-}
-
 mu_record_expr_t *record_expr_allocate(mu_engine_t *engine, size_t argc) {
   size_t size;
   if (rare((size = struct_size(mu_record_expr_t, argv, argc)) == 0))
