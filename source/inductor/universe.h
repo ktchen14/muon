@@ -55,21 +55,6 @@ static inline universe_iterator_t universe_iterator(
 }
 
 __attribute__((nonnull))
-static inline const mu_type_t *universe_next_type(universe_iterator_t *iterator) {
-  const universe_t *universe = iterator->universe;
-
-  for (size_t i; (i = iterator->i++) < universe->length;) {
-    type_edge_t edge = universe->data[i];
-    if (iterator->invert == 0 && edge.target == iterator->target)
-      return edge.source;
-    if (iterator->invert == 1 && edge.source == iterator->target)
-      return edge.target;
-  }
-
-  return NULL;
-}
-
-__attribute__((nonnull))
 static inline type_edge_t *universe_next(universe_iterator_t *iterator) {
   const universe_t *universe = iterator->universe;
 
