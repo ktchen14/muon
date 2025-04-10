@@ -20,14 +20,6 @@ _Thread_local induce_t *debug_induce;
 static const mu_coercion_t *ensure_cc(
     induce_t *induce, const mu_core_type_t *source, const mu_core_type_t *target);
 
-/// @internal Ensure and return the coercion @a source ⇒ @a target
-static const mu_coercion_t *ensure_cv(
-    induce_t *induce, const mu_type_t *source, const mu_type_t *target);
-
-/// @internal Ensure and return the coercion @a source ⇒ @a target
-static const mu_coercion_t *ensure_vc(
-    induce_t *induce, const mu_type_t *source, const mu_type_t *target);
-
 static const mu_coercion_t *retrieve_core_coercion(
     induce_t *induce, const mu_core_type_t *source, const mu_core_type_t *target) {
   const mu_core_t *source_core = source->core;
@@ -107,15 +99,137 @@ const mu_coercion_t *retrieve_coercion(
 
 const mu_coercion_t *ensure_coercion(
     induce_t *induce, const mu_type_t *source, const mu_type_t *target) {
-  assert(target->kind != MU_SCHEME_TYPE);
-
+  // If source is the same type as target, then just return the id coercion
   if (source == target)
     return induce->id_coercion;
 
-  // If ∃⟨source ⇒ target⟩, then return the coercion on that edge
+  // If ∃⟨source ⇒ target⟩, then just return the coercion on that edge
   const type_edge_t *edge;
   if ((edge = universe_search(&induce->universe, source, target)) != NULL)
     return coerce_with(edge);
+
+  if (source->kind == MU_VARIABLE_TYPE && target->kind != MU_VARIABLE_TYPE) {
+    // Make ⟨source ⇒ target⟩ here in case of recursion
+    type_edge_t *result_edge;
+    if ((result_edge = append_edge(&induce->universe, source, target)) == NULL)
+      return NULL;
+
+    universe_iterator_t it;
+
+    // ∀(τ) | ∃⟨τ ⇒ source⟩ and τ isn't a variable type, ensure that we're able
+    // to coerce τ ⇝ target
+    it = universe_iterator(&induce->universe, source, 0);
+    for (const type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
+      if (edge->indirect || is_variable_type(edge->source))
+        continue;
+      if (ensure_coercion(induce, edge->source, target) == NULL)
+        return NULL;
+    }
+
+    // ∀(τ) | ∃⟨τ ⇒ source⟩ and τ is a variable type, create ⟨τ ⇒ target⟩ to
+    // maintain the target-side transitive closure of τ
+    it = universe_iterator(&induce->universe, source, 0);
+    for (const type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
+      if (edge->indirect || !is_variable_type(edge->source))
+        continue;
+
+      type_edge_t *next_edge;
+      if ((next_edge = edge_define(&induce->universe, edge->source, target)) == NULL)
+        return NULL;
+      next_edge->transitive = 1;
+    }
+
+    return coerce_with(result_edge);
+  }
+
+  if (source->kind != MU_VARIABLE_TYPE && target->kind == MU_VARIABLE_TYPE) {
+    // Make ⟨source ⇒ target⟩ here in case of recursion
+    type_edge_t *result_edge;
+    if ((result_edge = append_edge(&induce->universe, source, target)) == NULL)
+      return NULL;
+
+    universe_iterator_t it;
+
+    // ∀(τ) | ∃⟨target ⇒ τ⟩ and τ isn't a variable type, ensure that we're able
+    // to coerce source ⇝ τ
+    it = universe_iterator(&induce->universe, target, 1);
+    for (const type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
+      if (edge->indirect || is_variable_type(edge->target))
+        continue;
+      if (ensure_coercion(induce, source, edge->target) == NULL)
+        return NULL;
+    }
+
+    // ∀(τ) | ∃⟨target ⇒ τ⟩ and τ is a variable type, create ⟨source ⇒ τ⟩ to
+    // maintain the source-side transitive closure of τ
+    it = universe_iterator(&induce->universe, target, 1);
+    for (const type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
+      if (edge->indirect || !is_variable_type(edge->target))
+        continue;
+
+      type_edge_t *next_edge;
+      if ((next_edge = edge_define(&induce->universe, source, edge->target)) == NULL)
+        return NULL;
+      next_edge->transitive = 1;
+    }
+
+    return coerce_with(result_edge);
+  }
+
+  if (source->kind == MU_VARIABLE_TYPE && target->kind == MU_VARIABLE_TYPE) {
+    // Make ⟨source ⇒ target⟩ here in case of recursion
+    type_edge_t *edge;
+    if ((edge = append_edge(&induce->universe, source, target)) == NULL)
+      return NULL;
+
+    universe_iterator_t it, jt;
+
+    // ∀(α) | ∃⟨α ⇒ source⟩ and α isn't a variable type, ∀(β) | ∃⟨target ⇒ β⟩
+    // and β isn't a variable type, ensure that we're able to coerce α ⇝ β
+    it = universe_iterator(&induce->universe, source, 0);
+    for (const type_edge_t *a_edge; (a_edge = universe_next(&it)) != NULL;) {
+      if (a_edge->indirect || is_variable_type(a_edge->source))
+        continue;
+
+      jt = universe_iterator(&induce->universe, target, 1);
+      for (const type_edge_t *b_edge; (b_edge = universe_next(&jt)) != NULL;) {
+        if (b_edge->indirect || is_variable_type(b_edge->target))
+          continue;
+        if (ensure_coercion(induce, a_edge->source, b_edge->target) == NULL)
+          return NULL;
+      }
+    }
+
+    // ∀(α) | ∃⟨α ⇒ source⟩, create ⟨α ⇒ target⟩ to maintain the target-side
+    // transitive closure of α
+    it = universe_iterator(&induce->universe, source, 0);
+    for (const type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
+      if (edge->indirect)
+        continue;
+
+      type_edge_t *next_edge;
+      if ((next_edge = edge_define(&induce->universe, edge->source, target)) == NULL)
+        return NULL;
+      next_edge->transitive = 1;
+    }
+
+    // ∀(β) | ∃⟨target ⇒ β⟩, create ⟨source ⇒ β⟩ to maintain the source-side
+    // transitive closure of β
+    jt = universe_iterator(&induce->universe, target, 1);
+    for (const type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
+      if (edge->indirect)
+        continue;
+
+      type_edge_t *next_edge;
+      if ((next_edge = edge_define(&induce->universe, source, edge->target)) == NULL)
+        return NULL;
+      next_edge->transitive = 1;
+    }
+
+    return coerce_with(edge);
+  }
+
+  assert(target->kind != MU_SCHEME_TYPE);
 
   if (source->kind == MU_SCHEME_TYPE && target->kind == MU_CORE_TYPE) {
     const mu_scheme_type_t *scheme_type = (const mu_scheme_type_t *) source;
@@ -136,62 +250,6 @@ const mu_coercion_t *ensure_coercion(
     const mu_core_type_t *next_source = (const mu_core_type_t *) source;
     const mu_core_type_t *next_target = (const mu_core_type_t *) target;
     return ensure_cc(induce, next_source, next_target);
-  }
-
-  if (source->kind != MU_VARIABLE_TYPE && target->kind == MU_VARIABLE_TYPE)
-    return ensure_cv(induce, source, target);
-
-  if (source->kind == MU_VARIABLE_TYPE && target->kind != MU_VARIABLE_TYPE)
-    return ensure_vc(induce, source, target);
-
-  if (source->kind == MU_VARIABLE_TYPE && target->kind == MU_VARIABLE_TYPE) {
-    // Add the edge now in case of recursion
-    type_edge_t *edge;
-    if ((edge = append_edge(&induce->universe, source, target)) == NULL)
-      return NULL;
-
-    universe_iterator_t source_iterator;
-    universe_iterator_t target_iterator;
-    const mu_type_t *next_source, *next_target;
-
-    // The target type isn't a variable type. For each edge:
-    //   next_source ⇒ source | next_source isn't a variable type
-    //
-    // And for each edge:
-    //   target ⇒ next_target | next_target isn't a variable type
-    //
-    // Ensure that we're able to make the coercion:
-    //   next_source ⇒ next_target
-    source_iterator = universe_iterator(&induce->universe, source, 0);
-    while ((next_source = universe_next_type(&source_iterator)) != NULL) {
-      if (next_source->kind == MU_VARIABLE_TYPE)
-        continue;
-
-      target_iterator = universe_iterator(&induce->universe, target, 1);
-      while ((next_target = universe_next_type(&target_iterator)) != NULL) {
-        if (next_target->kind == MU_VARIABLE_TYPE)
-          continue;
-
-        if (ensure_coercion(induce, next_source, next_target) == NULL)
-          return NULL;
-      }
-    }
-
-    source_iterator = universe_iterator(&induce->universe, source, 0);
-    while ((next_source = universe_next_type(&source_iterator)) != NULL) {
-      if (universe_search(&induce->universe, next_source, target) != NULL)
-        continue;
-      append_edge(&induce->universe, next_source, target)->transitive = 1;
-    }
-
-    target_iterator = universe_iterator(&induce->universe, target, 1);
-    while ((next_target = universe_next_type(&target_iterator)) != NULL) {
-      if (universe_search(&induce->universe, source, next_target) != NULL)
-        continue;
-      append_edge(&induce->universe, source, next_target)->transitive = 1;
-    }
-
-    return coerce_with(edge);
   }
 
   __builtin_unreachable();
@@ -258,95 +316,6 @@ static const mu_coercion_t *ensure_cc(
   if ((result = variance_coercion_activate(allocation)) == NULL)
     return NULL;
   return edge_assign(result_edge, &result->as_coercion);
-}
-
-static const mu_coercion_t *ensure_cv(
-    induce_t *induce, const mu_type_t *source, const mu_type_t *target) {
-  typedef type_edge_t edge_t;
-  universe_iterator_t iterator;
-
-  // Make the edge ⟨source ⇒ target⟩ in case of recursion
-  edge_t *result_edge;
-  if ((result_edge = append_edge(&induce->universe, source, target)) == NULL)
-    return NULL;
-
-  // Then, ∀(next_target) | ∃⟨target ⇒ next_target⟩, ensure the coercion:
-  //   source ⇒ next_target
-  iterator = universe_iterator(&induce->universe, target, 1);
-  for (const edge_t *edge; (edge = universe_next(&iterator)) != NULL;) {
-    const mu_type_t *next_target = edge->target;
-    if (edge->indirect || next_target->kind == MU_VARIABLE_TYPE)
-      continue;
-    if (ensure_coercion(induce, source, next_target) == NULL)
-      return NULL;
-  }
-
-  // Then, ∀(next_target) | ∃⟨target ⇒ next_target⟩ where next_target is a
-  // variable type, add ⟨source ⇒ next_target⟩ to maintain the transitive
-  // closure of variable types in the universe.
-  iterator = universe_iterator(&induce->universe, target, 1);
-  for (const edge_t *edge; (edge = universe_next(&iterator)) != NULL;) {
-    if (edge->target->kind != MU_VARIABLE_TYPE)
-      continue;
-
-    if (universe_search(&induce->universe, source, edge->target) != NULL)
-      continue;
-
-    edge_t *next;
-    if ((next = append_edge(&induce->universe, source, edge->target)) == NULL)
-      return NULL;
-    next->transitive = 1;
-  }
-
-  return coerce_with(result_edge);
-}
-
-static const mu_coercion_t *ensure_vc(
-    induce_t *induce, const mu_type_t *source, const mu_type_t *target) {
-  // Add the edge now in case of recursion
-  type_edge_t *result_edge;
-  if ((result_edge = append_edge(&induce->universe, source, target)) == NULL)
-    return NULL;
-
-  universe_iterator_t iterator;
-
-  // The target type isn't a variable type. For each edge:
-  //   next_source ⇒ source | next_source isn't a variable type
-  // Ensure that we're able to make the coercion:
-  //   next_source ⇒ target
-
-  iterator = universe_iterator(&induce->universe, source, 0);
-  for (const type_edge_t *edge; (edge = universe_next(&iterator)) != NULL;) {
-    const mu_type_t *next_source = edge->source;
-    if (edge->indirect || next_source->kind == MU_VARIABLE_TYPE)
-      continue;
-    if (ensure_coercion(induce, next_source, target) == NULL)
-      return NULL;
-  }
-
-  // Then, for each edge:
-  //   next_source ⇒ source | next_source is a variable type
-  // Add the edge:
-  //   next_source ⇒ target
-  //
-  // To maintain the transitive closure of variable types.
-
-  iterator = universe_iterator(&induce->universe, source, 0);
-  for (const type_edge_t *edge; (edge = universe_next(&iterator)) != NULL;) {
-    const mu_type_t *next_source = edge->source;
-    if (next_source->kind != MU_VARIABLE_TYPE)
-      continue;
-
-    if (universe_search(&induce->universe, next_source, target) != NULL)
-      continue;
-
-    type_edge_t *next_edge;
-    if ((next_edge = append_edge(&induce->universe, next_source, target)) == NULL)
-      return NULL;
-    next_edge->transitive = 1;
-  }
-
-  return coerce_with(result_edge);
 }
 
 

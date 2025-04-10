@@ -44,6 +44,7 @@ type_edge_t *universe_search(
   __attribute__((nonnull));
 
 type_edge_t *append_edge(universe_t *universe, const mu_type_t *source, const mu_type_t *target);
+type_edge_t *edge_define(universe_t *universe, const mu_type_t *source, const mu_type_t *target);
 
 __attribute__((nonnull))
 static inline universe_iterator_t universe_iterator(

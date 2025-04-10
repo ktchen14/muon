@@ -48,3 +48,11 @@ type_edge_t *append_edge(universe_t *universe, const mu_type_t *source, const mu
   *result = (type_edge_t) { .source = source, .target = target };
   return result;
 }
+
+type_edge_t *edge_define(
+    universe_t *universe, const mu_type_t *source, const mu_type_t *target) {
+  type_edge_t *result;
+  if ((result = universe_search(universe, source, target)) != NULL)
+    return result;
+  return append_edge(universe, source, target);
+}
