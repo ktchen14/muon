@@ -315,7 +315,7 @@ static void type_debug_internal(const mu_type_t *type, _Bool expand, unsigned ch
     }
 
     case IS_KIND_OF(scheme_type):
-      debug("[∀(");
+      debug("{∀(");
       for (size_t i = 0; i < scheme_type->argc; i++) {
         if (i > 0)
           debug(", ");
@@ -324,7 +324,7 @@ static void type_debug_internal(const mu_type_t *type, _Bool expand, unsigned ch
       debug(") ");
 
       type_debug_internal(scheme_type->matter, expand, 0, 0);
-      debug("]");
+      debug("}");
       break;
   }
 }

@@ -426,7 +426,7 @@ const mu_type_t *generalize_type(
      * negatively, being constrained by bounds, or (in the future) being
      * constrained by kind. For now, just do this:
      */
-    if (variable_type->reachable[0] && variable_type->reachable[1]) {
+    if (variable_type->reachable[0] || variable_type->reachable[1]) {
       variable_type->scheme_next = polymorphic;
       polymorphic = variable_type;
       variable_type->rank = 0;
@@ -525,16 +525,23 @@ const mu_type_t *instantiate_single_type(
       it = universe_iterator(&induce->universe, &variable_type->as_type, 0);
       for (const type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
         const mu_type_t *next = instantiate_single_type(induce, edge->source, scheme, cache, cache_i);
+
+        // TODO: make this check unnecessary
+        if (universe_search(&induce->universe, next, &newvar->as_type) != NULL)
+          continue;
         append_edge(&induce->universe, next, &newvar->as_type);
       }
 
       it = universe_iterator(&induce->universe, &variable_type->as_type, 1);
       for (const type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
         const mu_type_t *next = instantiate_single_type(induce, edge->target, scheme, cache, cache_i);
+
+        // TODO: make this check unnecessary
+        if (universe_search(&induce->universe, &newvar->as_type, next) != NULL)
+          continue;
         append_edge(&induce->universe, &newvar->as_type, next);
       }
 
-      cache[(*cache_i)++] = (cache_item) { &variable_type->as_type, &newvar->as_type };
       return &newvar->as_type;
 
     case MU_SCHEME_TYPE:
