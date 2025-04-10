@@ -107,7 +107,7 @@ const mu_coercion_t *retrieve_coercion(
 
 const mu_coercion_t *ensure_coercion(
     induce_t *induce, const mu_type_t *source, const mu_type_t *target) {
-  assert(source->kind != MU_SCHEME_TYPE && target->kind != MU_SCHEME_TYPE);
+  assert(target->kind != MU_SCHEME_TYPE);
 
   if (source == target)
     return induce->id_coercion;
@@ -117,16 +117,31 @@ const mu_coercion_t *ensure_coercion(
   if ((edge = universe_search(&induce->universe, source, target)) != NULL)
     return coerce_with(edge);
 
+  if (source->kind == MU_SCHEME_TYPE && target->kind == MU_CORE_TYPE) {
+    const mu_scheme_type_t *scheme_type = (const mu_scheme_type_t *) source;
+
+    const mu_type_t *instance;
+    if ((instance = instantiate_scheme(induce, scheme_type)) == NULL)
+      return NULL;
+
+    type_edge_t *edge;
+    if ((edge = append_edge(&induce->universe, source, instance)) == NULL)
+      return NULL;
+    edge->coercion = induce->slot_coercion;
+
+    source = instance;
+  }
+
   if (source->kind == MU_CORE_TYPE && target->kind == MU_CORE_TYPE) {
     const mu_core_type_t *next_source = (const mu_core_type_t *) source;
     const mu_core_type_t *next_target = (const mu_core_type_t *) target;
     return ensure_cc(induce, next_source, next_target);
   }
 
-  if (source->kind == MU_CORE_TYPE && target->kind == MU_VARIABLE_TYPE)
+  if (source->kind != MU_VARIABLE_TYPE && target->kind == MU_VARIABLE_TYPE)
     return ensure_cv(induce, source, target);
 
-  if (source->kind == MU_VARIABLE_TYPE && target->kind == MU_CORE_TYPE)
+  if (source->kind == MU_VARIABLE_TYPE && target->kind != MU_VARIABLE_TYPE)
     return ensure_vc(induce, source, target);
 
   if (source->kind == MU_VARIABLE_TYPE && target->kind == MU_VARIABLE_TYPE) {
@@ -370,7 +385,7 @@ static void mark_type(induce_t *induce, const mu_type_t *type, _Bool negative, s
       break;
 
     case MU_SCHEME_TYPE:
-      abort();
+      break;
   }
 }
 

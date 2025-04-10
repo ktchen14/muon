@@ -117,7 +117,7 @@ roster_t *handle_sequence_expr(
         break;
 
       case IS_KIND_OF(define_stmt):
-        announce(roster, define_stmt->name, &define_stmt->expr->as_node);
+        announce(roster, define_stmt->name, &define_stmt->as_node);
         break;
 
       default: break;

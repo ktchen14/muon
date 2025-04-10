@@ -104,7 +104,6 @@ const mu_core_type_t *core_type_activate(mu_core_type_t *type) {
     const mu_type_t *argument = type->argv[i];
     assert(argument != NULL);
     assert(argument->induce == type->as_type.induce);
-    assert(argument->kind != MU_SCHEME_TYPE);
   }
   return assign_type(induce, type);
 }
@@ -128,8 +127,8 @@ const mu_scheme_type_t *scheme_type_activate(
   induce_t *induce = (induce_t *) type->as_type.induce;
 
   for (size_t i = 0; i < type->argc; i++) {
-    assert(type->argv[i]->as_type.induce == type->as_type.induce);
-    assert(type->argv[i]->as_type.kind != MU_SCHEME_TYPE);
+    assert(type->argv[i] != NULL);
+    assert(type->argv[i]->as_type.induce == induce);
   }
   type->matter = matter;
 
@@ -316,7 +315,7 @@ static void type_debug_internal(const mu_type_t *type, _Bool expand, unsigned ch
     }
 
     case IS_KIND_OF(scheme_type):
-      debug("∀(");
+      debug("[∀(");
       for (size_t i = 0; i < scheme_type->argc; i++) {
         if (i > 0)
           debug(", ");
@@ -325,6 +324,7 @@ static void type_debug_internal(const mu_type_t *type, _Bool expand, unsigned ch
       debug(") ");
 
       type_debug_internal(scheme_type->matter, expand, 0, 0);
+      debug("]");
       break;
   }
 }

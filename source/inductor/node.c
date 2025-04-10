@@ -149,16 +149,7 @@ __attribute__((nonnull)) static const mu_type_t *name_expr_induce(
     induce_t *induce, const mu_name_expr_t *expr) {
   const mu_node_t *target = detect_evince(induce->detect, &expr->as_node);
   assert(target != NULL);
-
-  const mu_type_t *result = evince_type(induce, target);
-  if (result->kind != MU_SCHEME_TYPE)
-    return result;
-
-  const mu_scheme_type_t *scheme_type = (const mu_scheme_type_t *) result;
-
-  // Instantiate the polymorphic type
-  result = instantiate_scheme(induce, scheme_type);
-  return result;
+  return evince_type(induce, target);
 }
 
 __attribute__((nonnull)) static const mu_type_t *native_expr_induce(
