@@ -134,6 +134,8 @@ const mu_coercion_t *ensure_coercion(
       if (edge->indirect || (t = mu_type_cast(edge->source, t)) == NULL)
         continue;
 
+      // TODO: ensure_static_coercion doesn't check to see if the coercion
+      // already exists, so calling it directly can cause an infinite loop
       /* if (ensure_static_coercion(induce, t, static_target) == NULL) */
       if (ensure_coercion(induce, &t->as_type, &static_target->as_type) == NULL)
         return NULL;
@@ -568,8 +570,11 @@ const mu_type_t *instantiate_single_type(
       return &newvar->as_type;
 
     case MU_SCHEME_TYPE:
-      fprintf(stderr, "Unsupported higher rank polymorphism\n");
-      abort();
+      // TODO: Almost definitely wrong (too simple)
+      cache[(*cache_i)++] = (cache_item) { type, type };
+      return type;
+      /* fprintf(stderr, "Unsupported higher rank polymorphism\n"); */
+      /* abort(); */
   }
   __builtin_unreachable();
 }
