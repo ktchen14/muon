@@ -147,14 +147,8 @@ __attribute__((nonnull)) static const mu_type_t *lambda_expr_induce(
 
 __attribute__((nonnull)) static const mu_type_t *name_expr_induce(
     induce_t *induce, const mu_name_expr_t *expr) {
-  const mu_node_t *target;
-  if ((target = detect_evince(induce->detect, &expr->as_node)) == NULL) {
-    abort();
-    const mu_variable_type_t *result;
-    if ((result = mu_variable_type(induce)) == NULL)
-      return NULL;
-    return &result->as_type;
-  }
+  const mu_node_t *target = detect_evince(induce->detect, &expr->as_node);
+  assert(target != NULL);
 
   const mu_type_t *result = evince_type(induce, target);
   if (result->kind != MU_SCHEME_TYPE)
@@ -318,14 +312,9 @@ __attribute__((nonnull)) static const mu_type_t *lambda_sign_induce(
 
 __attribute__((nonnull)) static const mu_type_t *name_sign_induce(
     induce_t *induce, const mu_name_sign_t *sign) {
-  const mu_node_t *target;
-  if ((target = detect_evince(induce->detect, &sign->as_node)) != NULL)
-    return evince_type(induce, target);
-
-  const mu_variable_type_t *result;
-  if ((result = mu_variable_type(induce)) == NULL)
-    return NULL;
-  return &result->as_type;
+  const mu_node_t *target = detect_evince(induce->detect, &sign->as_node);
+  assert(target != NULL);
+  return evince_type(induce, target);
 }
 
 __attribute__((nonnull)) static const mu_type_t *record_sign_induce(
