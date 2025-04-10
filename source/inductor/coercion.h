@@ -14,6 +14,7 @@
   emit(indirect, INDIRECT, Indirect, ##__VA_ARGS__) \
   emit(variance, VARIANCE, Variance, ##__VA_ARGS__) \
   emit(instance, INSTANCE, Instance, ##__VA_ARGS__) \
+  emit(unscheme, UNSCHEME, Unscheme, ##__VA_ARGS__) \
   emit(join, JOIN, Join, ##__VA_ARGS__) \
   emit(unjoin, UNJOIN, Unjoin, ##__VA_ARGS__) \
   emit(meet, MEET, Meet, ##__VA_ARGS__) \
@@ -94,6 +95,11 @@ typedef struct {
   size_t i;
 } mu_unmeet_coercion_t;
 
+/// Coercion of a scheme type to an instance of its type
+typedef struct {
+  MU_COERCION_HEADER;
+} mu_unscheme_coercion_t;
+
 extern const void *const NO_SUCH_COERCION;
 
 /// @internal An enumeration over each kind of coercion, e.g. @c _id_coercion_kind
@@ -131,6 +137,9 @@ const mu_meet_coercion_t *mu_meet_coercion(
   __attribute__((malloc));
 
 const mu_unmeet_coercion_t *mu_unmeet_coercion(size_t i)
+  __attribute__((malloc));
+
+const mu_unscheme_coercion_t *mu_unscheme_coercion(void)
   __attribute__((malloc));
 
 mu_variance_coercion_t *variance_coercion_allocate(const mu_core_t *core)

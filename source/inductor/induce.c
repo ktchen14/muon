@@ -99,6 +99,8 @@ const mu_coercion_t *retrieve_coercion(
 
 const mu_coercion_t *ensure_coercion(
     induce_t *induce, const mu_type_t *source, const mu_type_t *target) {
+  assert(target->kind != MU_SCHEME_TYPE);
+
   // If source is the same type as target, then just return the id coercion
   if (source == target)
     return induce->id_coercion;
@@ -229,21 +231,44 @@ const mu_coercion_t *ensure_coercion(
     return coerce_with(edge);
   }
 
-  assert(target->kind != MU_SCHEME_TYPE);
+  const mu_scheme_type_t *scheme_type;
+  if ((scheme_type = mu_type_cast(source, scheme_type)) != NULL) {
+    // Make ⟨source ⇒ target⟩ here in case of recursion
+    type_edge_t *result_edge;
+    if ((result_edge = append_edge(&induce->universe, source, target)) == NULL)
+      return NULL;
 
-  if (source->kind == MU_SCHEME_TYPE && target->kind == MU_CORE_TYPE) {
-    const mu_scheme_type_t *scheme_type = (const mu_scheme_type_t *) source;
+    // Create an unscheme coercion source ⇝ instance to instantiate the scheme
+    // type
 
     const mu_type_t *instance;
     if ((instance = instantiate_scheme(induce, scheme_type)) == NULL)
       return NULL;
 
+    const mu_unscheme_coercion_t *head;
+    if ((head = mu_unscheme_coercion()) == NULL)
+      return NULL;
+
     type_edge_t *edge;
     if ((edge = append_edge(&induce->universe, source, instance)) == NULL)
       return NULL;
-    edge->coercion = induce->slot_coercion;
+    edge->coercion = &head->as_coercion;
 
-    source = instance;
+    // Then ensure that we're able to coerce instance ⇝ target
+
+    const mu_coercion_t *coercion;
+    if ((coercion = ensure_coercion(induce, instance, target)) == NULL)
+      return NULL;
+    if (coercion == NO_SUCH_COERCION)
+      return NO_SUCH_COERCION;
+
+    // Then return the coercion (source ⇝ instance) ∘ (instance ⇝ target)
+    const mu_indirect_coercion_t *result;
+    if ((result = mu_indirect_coercion(&head->as_coercion, coercion)) == NULL)
+      return NULL;
+
+    // TODO: Don't use edge_assign here since this isn't an indirect edge?
+    return result_edge->coercion = &result->as_coercion;
   }
 
   if (source->kind == MU_CORE_TYPE && target->kind == MU_CORE_TYPE) {
@@ -303,7 +328,8 @@ static const mu_coercion_t *ensure_cc(
     mu_variance_t variance = core->argv[i].variance;
     assert(variance != MU_INVARIANCE);
     if (variance == MU_CONTRAVARIANCE) {
-      const mu_type_t *t = next_source; next_source = next_target; next_target = t;
+      const mu_type_t *t;
+      t = next_source; next_source = next_target; next_target = t;
     }
 
     const mu_coercion_t *coercion;

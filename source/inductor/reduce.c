@@ -336,6 +336,9 @@ const mu_coercion_t *reduce_coercion(
     case MU_SLOT_COERCION:
       return coercion;
 
+    case MU_UNSCHEME_COERCION:
+      return coercion;
+
     case MU_JOIN_COERCION:
       return coercion;
 

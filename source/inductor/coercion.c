@@ -96,7 +96,17 @@ const mu_unmeet_coercion_t *mu_unmeet_coercion(size_t i) {
   if ((result = malloc(sizeof(mu_unmeet_coercion_t))) == NULL)
     return NULL;
   *result = (mu_unmeet_coercion_t) {
-    .as_coercion.kind = MU_JOIN_COERCION, .i = i,
+    .as_coercion.kind = MU_UNMEET_COERCION, .i = i,
+  };
+  return result;
+}
+
+const mu_unscheme_coercion_t *mu_unscheme_coercion(void) {
+  mu_unscheme_coercion_t *result;
+  if ((result = malloc(sizeof(mu_unscheme_coercion_t))) == NULL)
+    return NULL;
+  *result = (mu_unscheme_coercion_t) {
+    .as_coercion.kind = MU_UNSCHEME_COERCION,
   };
   return result;
 }
@@ -151,7 +161,7 @@ mu_meet_coercion_t *meet_coercion_allocate(size_t argc) {
     return NULL;
 
   *allocation = (mu_meet_coercion_t) {
-    .as_coercion.kind = MU_UNJOIN_COERCION, .argc = argc,
+    .as_coercion.kind = MU_MEET_COERCION, .argc = argc,
   };
   return allocation;
 }
@@ -214,6 +224,9 @@ void mu_coercion_debug(const mu_coercion_t *coercion) {
       return;
 
     case MU_SLOT_COERCION:
+      return;
+
+    case MU_UNSCHEME_COERCION:
       return;
 
     case IS_KIND_OF(join_coercion):
