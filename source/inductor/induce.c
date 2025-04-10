@@ -16,6 +16,10 @@
 
 _Thread_local induce_t *debug_induce;
 
+static const mu_type_t *instantiate_scheme(
+    induce_t *induce, const mu_scheme_type_t *scheme)
+  __attribute__((nonnull));
+
 /// @internal Ensure and return the coercion @a source ⇝ @a target
 static const mu_coercion_t *ensure_static_coercion(
     induce_t *induce, const mu_static_type_t *source, const mu_static_type_t *target)
@@ -567,12 +571,12 @@ const mu_type_t *instantiate_single_type(
   __builtin_unreachable();
 }
 
-const mu_type_t *instantiate_scheme(
-    induce_t *induce, const mu_scheme_type_t *scheme_type
+static const mu_type_t *instantiate_scheme(
+    induce_t *induce, const mu_scheme_type_t *scheme
 ) {
   cache_item cache[100] = {0};
   size_t i = 0;
-  return instantiate_single_type(induce, scheme_type->matter, scheme_type, cache, &i);
+  return instantiate_single_type(induce, scheme->matter, scheme, cache, &i);
 }
 
 
