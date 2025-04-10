@@ -126,14 +126,14 @@ const void *reduce_type_to_join(
   // Determine the length of the join to allocate as the number of remaining
   // types that aren't variable types and are sources to the variable type.
   type_edge_t *single_edge;
-  const mu_constant_type_t *single_a;
+  const mu_static_type_t *single_a;
   size_t argc = 0;
   it = universe_iterator(universe, &target->as_type, 0);
   for (type_edge_t *a_edge; (a_edge = universe_next(&it)) != NULL;) {
     if (a_edge->indirect)
       continue;
 
-    const mu_constant_type_t *a;
+    const mu_static_type_t *a;
     if ((a = mu_type_cast(a_edge->source, a)) == NULL)
       continue;
 
@@ -142,7 +142,7 @@ const void *reduce_type_to_join(
       if (b_edge->indirect)
         continue;
 
-      const mu_constant_type_t *b;
+      const mu_static_type_t *b;
       if ((b = mu_type_cast(b_edge->source, b)) == NULL)
         continue;
 
