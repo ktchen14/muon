@@ -134,7 +134,8 @@ const mu_coercion_t *ensure_coercion(
       if (edge->indirect || (t = mu_type_cast(edge->source, t)) == NULL)
         continue;
 
-      if (ensure_static_coercion(induce, t, static_target) == NULL)
+      /* if (ensure_static_coercion(induce, t, static_target) == NULL) */
+      if (ensure_coercion(induce, &t->as_type, &static_target->as_type) == NULL)
         return NULL;
     }
 
@@ -173,7 +174,8 @@ const mu_coercion_t *ensure_coercion(
       if (edge->indirect || (t = mu_type_cast(edge->target, t)) == NULL)
         continue;
 
-      if (ensure_static_coercion(induce, static_source, t) == NULL)
+      /* if (ensure_static_coercion(induce, static_source, t) == NULL) */
+      if (ensure_coercion(induce, &static_source->as_type, &t->as_type) == NULL)
         return NULL;
     }
 
@@ -219,7 +221,8 @@ const mu_coercion_t *ensure_coercion(
         if (b_edge->indirect || (b = mu_type_cast(b_edge->target, b)) == NULL)
           continue;
 
-        if (ensure_static_coercion(induce, a, b) == NULL)
+        /* if (ensure_static_coercion(induce, a, b) == NULL) */
+        if (ensure_coercion(induce, &a->as_type, &b->as_type) == NULL)
           return NULL;
       }
     }
