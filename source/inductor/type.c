@@ -81,6 +81,21 @@ mu_scheme_t *mu_scheme(mu_scheme_t *parent) {
   return result;
 }
 
+const mu_scheme_type_t *mu_scheme_type(
+    induce_t *induce,
+    const mu_type_t *matter,
+    size_t argc,
+    const mu_variable_type_t *const argv[argc]) {
+  assert(argc == 0 || argv != NULL);
+
+  mu_scheme_type_t *allocation;
+  if ((allocation = scheme_type_allocate(induce, argc)) == NULL)
+    return NULL;
+  for (size_t i = 0; i < argc; i++)
+    allocation->argv[i] = argv[i];
+  return scheme_type_activate(allocation, matter);
+}
+
 mu_core_type_t *core_type_allocate(induce_t *induce, const mu_core_t *core) {
   assert(core->induce == induce);
 

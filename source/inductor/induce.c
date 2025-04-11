@@ -512,12 +512,25 @@ const mu_type_t *instantiate_single_type(
 
       return &newvar->as_type;
 
-    case MU_SCHEME_TYPE:
-      // TODO: Almost definitely wrong (too simple)
-      cache[(*cache_i)++] = (cache_item) { type, type };
-      return type;
-      /* fprintf(stderr, "Unsupported higher rank polymorphism\n"); */
-      /* abort(); */
+    case IS_KIND_OF(scheme_type): {
+      const mu_type_t *matter;
+      if ((matter = instantiate_single_type(induce, scheme_type->matter, scheme, cache, cache_i)) == NULL)
+        return NULL;
+
+      if (matter == scheme_type->matter) {
+        cache[(*cache_i)++] = (cache_item) { &scheme_type->as_type, &scheme_type->as_type };
+        return &scheme_type->as_type;
+      }
+
+      const mu_scheme_type_t *result;
+      size_t argc = scheme_type->argc;
+      const mu_variable_type_t *const *argv = scheme_type->argv;
+      if ((result = mu_scheme_type(induce, matter, argc, argv)) == NULL)
+        return NULL;
+
+      cache[(*cache_i)++] = (cache_item) { &result->as_type, &result->as_type };
+      return &result->as_type;
+    }
   }
   __builtin_unreachable();
 }
