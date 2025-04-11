@@ -347,12 +347,24 @@ static void mark_type(induce_t *induce, const mu_type_t *type, _Bool negative, s
 
       universe_iterator_t it;
       it = universe_iterator(&induce->universe, &variable_type->as_type, negative);
-      for (type_edge_t *edge; (edge = universe_next(&it)) != NULL;)
-        mark_type(induce, edge->vertex[negative], negative, rank);
+      for (type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
+        const mu_type_t *next_type = edge->vertex[negative];
+
+        const mu_variable_type_t *next_variable;
+        if ((next_variable = mu_type_cast(next_type, next_variable)) != NULL) {
+          if (next_variable->rank < rank)
+            continue;
+          ((mu_variable_type_t *) next_variable)->reachable[negative] = 1;
+          continue;
+        }
+
+        mark_type(induce, next_type, negative, rank);
+      }
 
       break;
 
-    case MU_SCHEME_TYPE:
+    case IS_KIND_OF(scheme_type):
+      mark_type(induce, scheme_type->matter, negative, rank);
       break;
   }
 }
