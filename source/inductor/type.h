@@ -8,11 +8,13 @@
 
 typedef struct induce_t induce_t;
 
+typedef enum {
+  MU_CORE_TYPE, MU_SCHEME_TYPE, MU_VARIABLE_TYPE,
+} mu_type_kind_t;
+
 /// An abstract type
 typedef struct {
-  enum {
-    MU_CORE_TYPE, MU_SCHEME_TYPE, MU_VARIABLE_TYPE,
-  } kind;
+  mu_type_kind_t kind;
   const induce_t *induce;
   size_t id;
 } mu_type_t;
