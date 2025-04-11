@@ -321,7 +321,7 @@ static void type_debug_internal(const mu_type_t *type, _Bool expand, unsigned ch
           debug(", ");
         debug_variable_type_name(scheme_type->argv[i]);
       }
-      debug(") in (");
+      debug(": ");
 
       type_debug_internal(scheme_type->matter, expand, 0, 0);
       debug(")");
