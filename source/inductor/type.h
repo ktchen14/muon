@@ -103,7 +103,6 @@ struct mu_variable_type_t {
   _Bool reduced;
   size_t rank;
   const mu_scheme_type_t *scheme;
-  size_t slot;
 
   _Bool reachable[2];
 };
