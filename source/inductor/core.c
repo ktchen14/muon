@@ -135,6 +135,10 @@ const record_instance_t *get_record_instance(
 }
 
 void mu_core_debug(const mu_core_t *core) {
+  static const char *const VARIANCE_TEXT[] = {
+    [MU_COVARIANCE] = "+", [MU_CONTRAVARIANCE] = "+", [MU_INVARIANCE] = "±",
+  };
+
   if (debug_shortcore) {
     switch (core->kind) {
       case MU_BOOLEAN_CORE:
@@ -165,14 +169,15 @@ void mu_core_debug(const mu_core_t *core) {
       debug(PRIsKIND, DEBUG_CORE_KIND("Vector")); return;
     case MU_RECORD_CORE:
       debug(PRIsKIND, DEBUG_CORE_KIND("("));
+
       for (size_t i = 0; i < core->argc; i++) {
         if (i > 0)
           debug(", ");
-        mu_variance_t variance = core->argv[i].variance;
-        assert(variance != MU_INVARIANCE);
-        const char *variance_text = variance == MU_COVARIANCE ? "+" : "-";
-        debug(PRIsNAME ": %s", DEBUG_NAME(core->argv[i].name), variance_text);
+        const mu_name_t *name = core->argv[i].name;
+        const char *variance = VARIANCE_TEXT[core->argv[i].variance];
+        debug(PRIsNAME ": %s", DEBUG_NAME(name), variance);
       }
+
       debug(PRIsKIND, DEBUG_CORE_KIND(")"));
       return;
     case MU_CUSTOM_CORE:
