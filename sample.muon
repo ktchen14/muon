@@ -1,7 +1,7 @@
 define id = lambda x = x.foo
 
-# define y = (bar: id)
-# define x = y.bar (foo: 1)
+define y = (bar: id)
+define x = y.bar (foo: 1)
 
 # define x = handle_list [1, 2, id (foo: 3)]
 
@@ -11,7 +11,7 @@ define id = lambda x = x.foo
 
 # define mytest = handle_list [MyTrue]
 
-datatype Foo = Foo1 | Foo2
+# datatype Foo = Foo1 | Foo2
 
 # define foo = lambda x = Foo1
 
@@ -28,9 +28,9 @@ datatype Foo = Foo1 | Foo2
 
 # define z = [1] ∷ [Integer]
 
-define a = [1]
+# define a = [1]
 
-define sw2 = lambda q = (
-  switch (case Foo1 = (lambda y = y), case Foo1 = (lambda z = z)) Foo1) q
+# define sw2 = lambda q = (
+#   switch (case Foo1 = (lambda y = y), case Foo1 = (lambda z = z)) Foo1) q
 
-define z = sw2 1
+# define z = sw2 1
