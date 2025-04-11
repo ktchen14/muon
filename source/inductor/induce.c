@@ -325,15 +325,15 @@ static void mark_type(induce_t *induce, const mu_type_t *type, _Bool negative, s
       const mu_core_t *core = core_type->core;
 
       for (size_t i = 0; i < core->argc; i++) {
-        const mu_type_t *next = core_type->argv[i];
+        const mu_type_t *argument = core_type->argv[i];
 
-        _Bool next_negative = negative;
+        _Bool argn = negative;
         mu_variance_t variance = core->argv[i].variance;
         assert(variance != MU_INVARIANCE);
         if (variance == MU_CONTRAVARIANCE)
-          next_negative = !next_negative;
+          argn = !argn;
 
-        mark_type(induce, next, next_negative, rank);
+        mark_type(induce, argument, argn, rank);
       }
 
       break;
@@ -346,19 +346,16 @@ static void mark_type(induce_t *induce, const mu_type_t *type, _Bool negative, s
       ((mu_variable_type_t *) variable_type)->reachable[negative] = 1;
 
       universe_iterator_t it;
-      it = universe_iterator(&induce->universe, &variable_type->as_type, negative);
+
+      it = universe_iterator(&induce->universe, type, negative);
       for (type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
-        const mu_type_t *next_type = edge->vertex[negative];
+        const mu_type_t *vertex = edge->vertex[negative];
 
-        const mu_variable_type_t *next_variable;
-        if ((next_variable = mu_type_cast(next_type, next_variable)) != NULL) {
-          if (next_variable->rank < rank)
-            continue;
-          ((mu_variable_type_t *) next_variable)->reachable[negative] = 1;
-          continue;
-        }
-
-        mark_type(induce, next_type, negative, rank);
+        const mu_variable_type_t *variable_vertex;
+        if ((variable_vertex = mu_type_cast(vertex, variable_vertex)) == NULL)
+          mark_type(induce, vertex, negative, rank);
+        else if (variable_vertex->rank >= rank)
+          ((mu_variable_type_t *) variable_vertex)->reachable[negative] = 1;
       }
 
       break;
