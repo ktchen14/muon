@@ -20,6 +20,12 @@ static const mu_type_t *instantiate_scheme(
     induce_t *induce, const mu_scheme_type_t *scheme)
   __attribute__((nonnull));
 
+/// @internal Ensure and return the coercion @a source ⇝ @a target. Doesn't bail
+/// when source is target, or when ∃⟨source ⇒ target⟩.
+static const mu_coercion_t *ensure_static_coercion_internal(
+    induce_t *induce, const mu_static_type_t *restrict source, const mu_static_type_t *restrict target)
+  __attribute__((nonnull));
+
 /// @internal Ensure and return the coercion @a source ⇝ @a target
 static const mu_coercion_t *ensure_static_coercion(
     induce_t *induce, const mu_static_type_t *source, const mu_static_type_t *target)
@@ -134,10 +140,7 @@ const mu_coercion_t *ensure_coercion(
       if (edge->indirect || (t = mu_type_cast(edge->source, t)) == NULL)
         continue;
 
-      // TODO: ensure_static_coercion doesn't check to see if the coercion
-      // already exists, so calling it directly can cause an infinite loop
-      /* if (ensure_static_coercion(induce, t, static_target) == NULL) */
-      if (ensure_coercion(induce, &t->as_type, &static_target->as_type) == NULL)
+      if (ensure_static_coercion(induce, t, static_target) == NULL)
         return NULL;
     }
 
@@ -176,8 +179,7 @@ const mu_coercion_t *ensure_coercion(
       if (edge->indirect || (t = mu_type_cast(edge->target, t)) == NULL)
         continue;
 
-      /* if (ensure_static_coercion(induce, static_source, t) == NULL) */
-      if (ensure_coercion(induce, &static_source->as_type, &t->as_type) == NULL)
+      if (ensure_static_coercion(induce, static_source, t) == NULL)
         return NULL;
     }
 
@@ -223,8 +225,7 @@ const mu_coercion_t *ensure_coercion(
         if (b_edge->indirect || (b = mu_type_cast(b_edge->target, b)) == NULL)
           continue;
 
-        /* if (ensure_static_coercion(induce, a, b) == NULL) */
-        if (ensure_coercion(induce, &a->as_type, &b->as_type) == NULL)
+        if (ensure_static_coercion(induce, a, b) == NULL)
           return NULL;
       }
     }
@@ -262,13 +263,29 @@ const mu_coercion_t *ensure_coercion(
 
   assert(static_source != NULL);
   assert(static_target != NULL);
-  return ensure_static_coercion(induce, static_source, static_target);
+  return ensure_static_coercion_internal(induce, static_source, static_target);
 }
 
 static const mu_coercion_t *ensure_static_coercion(
     induce_t *induce,
     const mu_static_type_t *source,
     const mu_static_type_t *target) {
+  // If source is the same type as target, then just return the id coercion
+  if (source == target)
+    return induce->id_coercion;
+
+  // If ∃⟨source ⇒ target⟩, then just return the coercion on that edge
+  const type_edge_t *edge;
+  if ((edge = universe_search(&induce->universe, &source->as_type, &target->as_type)) != NULL)
+    return coerce_with(edge);
+
+  return ensure_static_coercion_internal(induce, source, target);
+}
+
+static const mu_coercion_t *ensure_static_coercion_internal(
+    induce_t *induce,
+    const mu_static_type_t *restrict source,
+    const mu_static_type_t *restrict target) {
   assert(target->kind != MU_SCHEME_STATIC_TYPE);
 
   // Make ⟨source ⇒ target⟩ here in case of recursion
