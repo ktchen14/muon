@@ -366,56 +366,99 @@ static void mark_type(induce_t *induce, const mu_type_t *type, _Bool negative, s
   }
 }
 
+static _Bool semipolymorphic(
+    induce_t *induce, const mu_type_t *type, _Bool negative, size_t rank) {
+  switch ON_ABSTRACT_OBJECT(type) {
+    case IS_KIND_OF(core_type): {
+      const mu_core_t *core = core_type->core;
 
+      for (size_t i = 0; i < core->argc; i++) {
+        const mu_type_t *next = core_type->argv[i];
+
+        _Bool next_negative = negative;
+        mu_variance_t variance = core->argv[i].variance;
+        assert(variance != MU_INVARIANCE);
+        if (variance == MU_CONTRAVARIANCE)
+          next_negative = !next_negative;
+
+        if (semipolymorphic(induce, next, next_negative, rank))
+          return 1;
+      }
+
+      return 0;
+    }
+
+    case IS_KIND_OF(variable_type):
+      if (variable_type->rank < rank)
+        return 0;
+
+      if (variable_type->true_polymorphic)
+        return 1;
+
+      universe_iterator_t it;
+      it = universe_iterator(&induce->universe, &variable_type->as_type, negative);
+      for (type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
+        if (semipolymorphic(induce, edge->vertex[negative], negative, rank))
+          return 1;
+      }
+
+      return 0;
+
+    case MU_SCHEME_TYPE:
+      return 0;
+  }
+}
 
 const mu_type_t *generalize_type(
     induce_t *induce, const mu_type_t *matter, mu_scheme_t *scheme) {
+  // Unpack the linked list of variable types into an array
+  mu_variable_type_t *variable[1000] = {0};
+  size_t variable_length = 0;
+
+  for (mu_variable_type_t *v = scheme->link, *next; v != NULL; v = next) {
+    assert(v->rank == scheme->rank);
+
+    next = v->scheme_next;
+    v->scheme_next = NULL;
+    variable[variable_length++] = v;
+  }
+
+  // Next, mark each variable type in the scheme with whether it's accessible
+  // from matter.
   mark_type(induce, matter, 0, scheme->rank);
 
+  mu_variable_type_t *polymorphic[1000] = {0};
   size_t polymorphic_length = 0;
-  mu_variable_type_t *polymorphic = NULL;
 
-  mu_variable_type_t *variable_type = scheme->link;
-  while (variable_type != NULL) {
-    assert(variable_type->rank == scheme->rank);
+  // Each variable type that's both + and - accessible from matter is a
+  // "polymorphic root". However, these aren't the only types that are
+  // polymorphic. For example, in:
+  //
+  //   ∀(β, γ) in (foo: γ) ⊓ β → γ
+  //
+  // γ is a polymorphic root, but β is polymorphic as well. When we instantiate
+  // this type, we have to copy both γ and β.
+  //
+  // So we'll mark each type that can reach a polymorphic root as polymorphic.
 
-    mu_variable_type_t *next = variable_type->scheme_next;
-
-    /* Does a type have to be both positively reachable and negatively reachable
-     * from the type of the defined expr to be polymorphic? */
-
-    /*
-     * Not sure if this is true, but here are some thoughts:
-     *
-     * A variable type must be constrained somehow to be polymorphically useful.
-     * If we have:
-     *   foo :: a
-     * Then, while theoretically foo is polymorphic, it's not any more useful
-     * than:
-     *   foo :: ⊥
-     *
-     * Similarly, this function:
-     *   bar :: a -> ()
-     * While theoretically polymorphic, is no more useful than:
-     *   bar :: ⊤ -> ()
-     *
-     * A variable can be constrained by either appearing both positively and
-     * negatively, being constrained by bounds, or (in the future) being
-     * constrained by kind. For now, just do this:
-     */
-    if (variable_type->reachable[0] || variable_type->reachable[1]) {
-      variable_type->scheme_next = polymorphic;
-      polymorphic = variable_type;
-      variable_type->rank = 0;
-      polymorphic_length++;
-    } else {
-      variable_type->scheme_next = scheme->parent->link;
-      scheme->parent->link = variable_type;
-      variable_type->rank--;
+  for (size_t i = 0; i < variable_length; i++) {
+    mu_variable_type_t *v = variable[i];
+    if (v->reachable[0] || v->reachable[1]) {
+      v->rank = 0;
+      polymorphic[polymorphic_length++] = v;
     }
-
-    variable_type = next;
   }
+
+  /* mu_variable_type_t *variable_type = scheme->link; */
+  /* while (variable_type != NULL) { */
+  /*   mu_variable_type_t *next = variable_type->scheme_next; */
+
+  /*   /1* variable_type->scheme_next = scheme->parent->link; *1/ */
+  /*   /1* scheme->parent->link = variable_type; *1/ */
+  /*   /1* variable_type->rank--; *1/ */
+
+  /*   variable_type = next; */
+  /* } */
 
   if (polymorphic_length == 0)
     return matter;
@@ -425,7 +468,8 @@ const mu_type_t *generalize_type(
     return NULL;
 
   size_t i = 0;
-  for (mu_variable_type_t *type = polymorphic; type != NULL; type = type->scheme_next) {
+  for (size_t j = 0; j < polymorphic_length; j++) {
+    mu_variable_type_t *type = polymorphic[j];
     type->scheme = allocation;
     allocation->argv[i++] = type;
   }
