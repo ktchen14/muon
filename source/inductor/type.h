@@ -17,6 +17,8 @@ typedef struct {
   mu_type_kind_t kind;
   const induce_t *induce;
   size_t id;
+
+  int semipolymorphic;
 } mu_type_t;
 
 /// The header that each concrete type must have
@@ -101,7 +103,9 @@ struct mu_variable_type_t {
   mu_variable_type_t *scheme_next;
 
   _Bool reduced;
+
   size_t rank;
+
   const mu_scheme_type_t *scheme;
 
   _Bool reachable[2];

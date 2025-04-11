@@ -366,37 +366,47 @@ static void mark_type(induce_t *induce, const mu_type_t *type, _Bool negative, s
   }
 }
 
-static _Bool semipolymorphic(
-    induce_t *induce, const mu_type_t *type, _Bool negative, size_t rank) {
+static void collect(
+    induce_t *induce, const mu_type_t *type, _Bool negative, size_t rank,
+    const mu_type_t **buffer, size_t *i) {
   switch ON_ABSTRACT_OBJECT(type) {
     case IS_KIND_OF(core_type): {
       const mu_core_t *core = core_type->core;
 
-      for (size_t i = 0; i < core->argc; i++) {
-        const mu_type_t *next = core_type->argv[i];
+      for (size_t k = 0; k < core->argc; k++) {
+        const mu_type_t *argument = core_type->argv[k];
 
-        _Bool next_negative = negative;
-        mu_variance_t variance = core->argv[i].variance;
-        assert(variance != MU_INVARIANCE);
-        if (variance == MU_CONTRAVARIANCE)
-          next_negative = !next_negative;
+        if (argument->semipolymorphic == 0) {
+          _Bool argn = negative;
+          mu_variance_t variance = core->argv[k].variance;
+          assert(variance != MU_INVARIANCE);
+          if (variance == MU_CONTRAVARIANCE)
+            argn = !argn;
 
-        if (semipolymorphic(induce, next, next_negative, rank))
-          return 1;
+          collect(induce, argument, argn, rank, buffer, i);
+        }
+
+        if (argument->semipolymorphic == 1) {
+          ((mu_type_t *) type)->semipolymorphic = 1;
+          buffer[(*i)++] = type;
+          break;
+        }
       }
 
-      return 0;
+      break;
     }
 
     case IS_KIND_OF(variable_type):
-      if (variable_type->rank < rank)
-        return 0;
-
-      if (variable_type->true_polymorphic)
-        return 1;
+      // This is a polymorphic root. It's already been collected.
+      if (variable_type->rank == rank &&
+          variable_type->reachable[0] &&
+          variable_type->reachable[1]) {
+        return;
+      }
 
       universe_iterator_t it;
-      it = universe_iterator(&induce->universe, &variable_type->as_type, negative);
+
+      it = universe_iterator(&induce->universe, type, negative);
       for (type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
         if (semipolymorphic(induce, edge->vertex[negative], negative, rank))
           return 1;
@@ -427,7 +437,7 @@ const mu_type_t *generalize_type(
   // from matter.
   mark_type(induce, matter, 0, scheme->rank);
 
-  mu_variable_type_t *polymorphic[1000] = {0};
+  mu_variable_type_t *polymorphic[1000];
   size_t polymorphic_length = 0;
 
   // Each variable type that's both + and - accessible from matter is a
@@ -441,13 +451,21 @@ const mu_type_t *generalize_type(
   //
   // So we'll mark each type that can reach a polymorphic root as polymorphic.
 
+  // Here, each polymorphic root is a variable type with reachable[0],
+  // reachable[1], and rank == scheme->rank. Unless all these conditions are
+  // met, a type isn't a polymorphic root!
+
   for (size_t i = 0; i < variable_length; i++) {
     mu_variable_type_t *v = variable[i];
-    if (v->reachable[0] || v->reachable[1]) {
-      v->rank = 0;
+    if (v->reachable[0] || v->reachable[1])
       polymorphic[polymorphic_length++] = v;
-    }
   }
+
+  // Now, we're going to collect each type that's "semipolymorphic", or
+  // polymorphic because it's both reachable from matter, and it can reach a
+  // polymorphic root.
+  const mu_type_t *buffer[1000];
+  size_t buffer_length = 0;
 
   /* mu_variable_type_t *variable_type = scheme->link; */
   /* while (variable_type != NULL) { */
@@ -471,6 +489,7 @@ const mu_type_t *generalize_type(
   for (size_t j = 0; j < polymorphic_length; j++) {
     mu_variable_type_t *type = polymorphic[j];
     type->scheme = allocation;
+    type->rank = 0;
     allocation->argv[i++] = type;
   }
 

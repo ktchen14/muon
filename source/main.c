@@ -91,8 +91,8 @@ int main(int argc, char *argv[argc]) {
   if (induce_node(&induce, &sequence_expr->as_node) == NULL)
     assert(0);
 
-  if (reduce_node(&induce, &sequence_expr->as_node) == NULL)
-    assert(0);
+  /* if (reduce_node(&induce, &sequence_expr->as_node) == NULL) */
+  /*   assert(0); */
 
   extern _Thread_local _Bool mu_debug_colorize;
   mu_debug_colorize = 1;
