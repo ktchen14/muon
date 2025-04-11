@@ -1,28 +1,31 @@
-datatype MyBoolean = MyTrue | MyFalse
+define id = lambda x = x.foo
 
-instance MyBoolean <: Integer = switch (case MyTrue = 1, case MyFalse = 0)
+# define y = (bar: id)
+# define x = y.bar (foo: 1)
 
-define mytest = handle_list [MyTrue]
+# define x = handle_list [1, 2, id (foo: 3)]
 
+# datatype MyBoolean = MyTrue | MyFalse
 
+# instance MyBoolean <: Integer = switch (case MyTrue = 1, case MyFalse = 0)
 
+# define mytest = handle_list [MyTrue]
 
+# datatype Foo = Foo1 | Foo2
 
-datatype Foo = Foo1 | Foo2
+# define foo = lambda x = Foo1
 
-define foo = lambda x = Foo1
+# define x = 1
+# define y = 2
+# define list = handle_list [1, 2, x]
 
-define x = 1
-define y = 2
-define list = handle_list [1, 2, x]
+# define idi = lambda x = x :: Integer -> Integer
 
-define idi = lambda x = x :: Integer -> Integer
+# define id = lambda x = x
 
-define id = lambda x = x
+# define sw = switch (case Foo1 = 1, case Foo1 = id 3, case Foo2 = id true)
+# define rs = sw Foo1
 
-define sw = switch (case Foo1 = 1, case Foo1 = id 3, case Foo2 = id true)
-define rs = sw Foo1
+# define z = [1] ∷ [Integer]
 
-define z = [1] ∷ [Integer]
-
-define sw2 = lambda q = (switch (case Foo1 = (lambda y = y), case Foo1 = (lambda z = z)) Foo1) q
+# define sw2 = lambda q = (switch (case Foo1 = (lambda y = y), case Foo1 = (lambda z = z)) Foo1) q
