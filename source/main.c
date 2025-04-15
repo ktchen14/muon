@@ -105,6 +105,7 @@ int main(int argc, char *argv[argc]) {
     mu_debug_stream = output;
     mu_debug_colorize = 0;
     debug_shortcore = 1;
+    debug_dot = 1;
 
     debug("digraph muon {\n  rankdir=\"BT\";\n  dpi=192;\n");
     for (size_t i = 0; i < debug_induce->universe.length; i++) {

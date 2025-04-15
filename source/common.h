@@ -133,6 +133,8 @@ extern _Thread_local _Bool debug_negate;
 
 extern _Thread_local _Bool debug_shortcore;
 
+extern _Thread_local _Bool debug_dot;
+
 /// Literal printf specifier for a kind
 #define PRIsKIND "%s%s%s"
 

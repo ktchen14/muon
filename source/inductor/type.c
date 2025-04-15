@@ -247,7 +247,7 @@ static void type_debug_internal(const mu_type_t *type, _Bool expand, unsigned ch
     }
 
     case IS_KIND_OF(variable_type): {
-      if (variable_type->solution != NULL) {
+      if (!debug_dot && variable_type->solution != NULL) {
         type_debug_internal(variable_type->solution, expand, prec, assoc);
         break;
       }

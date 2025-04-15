@@ -225,6 +225,13 @@ const void *reduce_type_to_join(
   const mu_join_type_t *join_type;
   if ((join_type = join_type_activate(allocation)) == NULL)
     return NULL;
+
+  type_edge_t *e;
+  e = edge_define(&induce->universe, &target->as_type, &join_type->as_type);
+  edge_assign(e, induce->id_coercion);
+  e = edge_define(&induce->universe, &join_type->as_type, &target->as_type);
+  edge_assign(e, induce->id_coercion);
+
   return assign_solution(target, &join_type->as_type);
 }
 
