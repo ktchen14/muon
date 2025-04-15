@@ -66,17 +66,18 @@ const mu_variable_type_t *mu_variable_type(induce_t *induce) {
     .as_type.induce = induce,
     .as_type.id = induce->type_number++,
     .scheme_next = scheme->link,
-    .rank = scheme->rank,
   };
   return scheme->link = result;
 }
 
 mu_scheme_t *mu_scheme(mu_scheme_t *parent) {
+  const induce_t *induce = parent->induce;
+
   mu_scheme_t *result;
   if ((result = malloc(sizeof(mu_scheme_t))) == NULL)
     return NULL;
   *result = (mu_scheme_t) {
-    .induce = parent->induce, .parent = parent, .rank = parent->rank + 1,
+    .induce = induce, .parent = parent, .id = induce->type_number,
   };
   return result;
 }

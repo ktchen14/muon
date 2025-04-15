@@ -319,7 +319,7 @@ static const mu_coercion_t *ensure_static_coercion_internal(
 
 
 
-static void mark_type(induce_t *induce, const mu_type_t *type, _Bool negative, size_t rank) {
+static void mark_type(induce_t *induce, const mu_type_t *type, _Bool negative) {
   switch ON_ABSTRACT_OBJECT(type) {
     case IS_KIND_OF(core_type): {
       const mu_core_t *core = core_type->core;
@@ -333,14 +333,14 @@ static void mark_type(induce_t *induce, const mu_type_t *type, _Bool negative, s
         if (variance == MU_CONTRAVARIANCE)
           argn = !argn;
 
-        mark_type(induce, argument, argn, rank);
+        mark_type(induce, argument, argn);
       }
 
       break;
     }
 
     case IS_KIND_OF(variable_type):
-      if (variable_type->rank < rank)
+      if (!scheme_owns(induce->scheme, &variable_type->as_type))
         return;
 
       ((mu_variable_type_t *) variable_type)->reachable[negative] = 1;
@@ -353,15 +353,15 @@ static void mark_type(induce_t *induce, const mu_type_t *type, _Bool negative, s
 
         const mu_variable_type_t *variable_vertex;
         if ((variable_vertex = mu_type_cast(vertex, variable_vertex)) == NULL)
-          mark_type(induce, vertex, negative, rank);
-        else if (variable_vertex->rank >= rank)
+          mark_type(induce, vertex, negative);
+        else if (scheme_owns(induce->scheme, &variable_vertex->as_type))
           ((mu_variable_type_t *) variable_vertex)->reachable[negative] = 1;
       }
 
       break;
 
     case IS_KIND_OF(scheme_type):
-      mark_type(induce, scheme_type->matter, negative, rank);
+      mark_type(induce, scheme_type->matter, negative);
       break;
   }
 }
@@ -426,7 +426,7 @@ const mu_type_t *generalize_type(
   size_t variable_length = 0;
 
   for (mu_variable_type_t *v = scheme->link, *next; v != NULL; v = next) {
-    assert(v->rank == scheme->rank);
+    assert(scheme_owns(scheme, &v->as_type));
 
     next = v->scheme_next;
     v->scheme_next = NULL;
@@ -489,7 +489,6 @@ const mu_type_t *generalize_type(
   for (size_t j = 0; j < polymorphic_length; j++) {
     mu_variable_type_t *type = polymorphic[j];
     type->scheme = allocation;
-    type->rank = 0;
     allocation->argv[i++] = type;
   }
 

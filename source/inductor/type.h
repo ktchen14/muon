@@ -86,7 +86,10 @@ typedef struct mu_scheme_t mu_scheme_t;
 struct mu_scheme_t {
   const induce_t *induce;
   mu_scheme_t *parent;
-  size_t rank;
+
+  // The lowest id that a type that's a part of this scheme will have
+  size_t id;
+
   mu_variable_type_t *link;
 };
 
@@ -103,8 +106,6 @@ struct mu_variable_type_t {
   mu_variable_type_t *scheme_next;
 
   _Bool reduced;
-
-  size_t rank;
 
   const mu_scheme_type_t *scheme;
 
@@ -231,6 +232,10 @@ __attribute__((nonnull))
 static inline const mu_solution_t *assign_solution(
     const mu_variable_type_t *variable_type, const mu_solution_t *solution) {
   return ((mu_variable_type_t *) variable_type)->solution = solution;
+}
+
+static inline _Bool scheme_owns(const mu_scheme_t *scheme, const mu_type_t *type) {
+  return type->id >= scheme->id;
 }
 
 /// @internal An enumeration over each kind of type, e.g. @c _core_type_kind
