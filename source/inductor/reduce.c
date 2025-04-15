@@ -126,41 +126,35 @@ const void *reduce_type_to_join(
   // Determine the length of the join to allocate as the number of remaining
   // types that aren't variable types and are sources to the variable type.
   type_edge_t *single_edge;
-  const mu_static_type_t *single_a;
+  const mu_type_t *single_a;
   size_t argc = 0;
   it = universe_iterator(universe, &target->as_type, 0);
   for (type_edge_t *a_edge; (a_edge = universe_next(&it)) != NULL;) {
-    if (a_edge->indirect)
-      continue;
-
-    const mu_static_type_t *a;
-    if ((a = mu_type_cast(a_edge->source, a)) == NULL)
+    const mu_type_t *a;
+    if (a_edge->indirect || (a = a_edge->source)->kind == MU_VARIABLE_TYPE)
       continue;
 
     universe_iterator_t jt = it;
     for (type_edge_t *b_edge; (b_edge = universe_next(&jt)) != NULL;) {
-      if (b_edge->indirect)
-        continue;
-
-      const mu_static_type_t *b;
-      if ((b = mu_type_cast(b_edge->source, b)) == NULL)
+      const mu_type_t *b;
+      if (b_edge->indirect || (b = b_edge->source)->kind == MU_VARIABLE_TYPE)
         continue;
 
       // If we have b ⇝ a, then assign b ⇝ a ⇝ v to ⟨b ⇒ v⟩ and skip this b
       const mu_coercion_t *coercion;
-      if ((coercion = retrieve_coercion(induce, &b->as_type, &a->as_type)) == NULL)
+      if ((coercion = retrieve_coercion(induce, b, a)) == NULL)
         return NULL;
       if (coercion != NO_SUCH_COERCION) {
-        if (redirect_source(induce, b_edge, &a->as_type, coercion) == NULL)
+        if (redirect_source(induce, b_edge, a, coercion) == NULL)
           return NULL;
         continue;
       }
 
       // If we have a ⇝ b, then assign a ⇝ b ⇝ v to ⟨a ⇒ v⟩ and skip this a
-      if ((coercion = retrieve_coercion(induce, &a->as_type, &b->as_type)) == NULL)
+      if ((coercion = retrieve_coercion(induce, a, b)) == NULL)
         return NULL;
       if (coercion != NO_SUCH_COERCION) {
-        if (redirect_source(induce, a_edge, &b->as_type, coercion) == NULL)
+        if (redirect_source(induce, a_edge, b, coercion) == NULL)
           return NULL;
         goto continue_a;
       }
@@ -191,7 +185,7 @@ const void *reduce_type_to_join(
     edge_assign(single_edge, induce->id_coercion);
 
     // Assign α ⇝ β to each ⟨target ⇒ β⟩
-    const mu_type_t *solution = &single_a->as_type;
+    const mu_type_t *solution = single_a;
     it = universe_iterator(universe, &target->as_type, 1);
     for (type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
       const type_edge_t *e;
@@ -201,7 +195,7 @@ const void *reduce_type_to_join(
     }
 
     // Define ⟨target ⇒ α⟩ and assign the id coercion to it
-    type_edge_t *e = edge_define(&induce->universe, &target->as_type, &single_a->as_type);
+    type_edge_t *e = edge_define(&induce->universe, &target->as_type, single_a);
     edge_assign(e, induce->id_coercion);
 
     // Then, assign α as the solution to target and return it.
