@@ -34,6 +34,9 @@ const mu_coercion_t *ensure_coercion(
   if ((result_edge = universe_search(&induce->universe, source, target)) != NULL)
     return coerce_with(result_edge);
 
+  // A join type shouldn't ever appear as a target
+  assert(target->kind != MU_JOIN_TYPE);
+
   // Make ⟨source ⇒ target⟩ here in case of recursion
   if ((result_edge = append_edge(&induce->universe, source, target)) == NULL)
     return NULL;
@@ -155,6 +158,31 @@ const mu_coercion_t *ensure_coercion(
     return coerce_with(result_edge);
   }
 
+  const mu_join_type_t *join_type;
+  if ((join_type = mu_type_cast(source, join_type)) != NULL) {
+    mu_unjoin_coercion_t *allocation;
+    if ((allocation = unjoin_coercion_allocate(join_type->argc)) == NULL)
+      return NULL;
+
+    for (size_t i = 0; i < join_type->argc; i++) {
+      const mu_type_t *argument = join_type->argv[i];
+
+      const mu_coercion_t *coercion;
+      if ((coercion = ensure_coercion(induce, argument, target)) == NULL)
+        return NULL;
+      if (coercion == NO_SUCH_COERCION)
+        return NO_SUCH_COERCION;
+
+      allocation->argv[i] = coercion;
+    }
+
+    const mu_unjoin_coercion_t *result;
+    if ((result = unjoin_coercion_activate(allocation)) == NULL)
+      return NULL;
+    return edge_assign(result_edge, &result->as_coercion);
+  }
+
+  // We can't handle this at this time
   assert(target->kind != MU_SCHEME_TYPE);
 
   const mu_scheme_type_t *scheme_type;

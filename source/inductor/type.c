@@ -159,7 +159,7 @@ mu_join_type_t *join_type_allocate(induce_t *induce, size_t argc) {
   if ((result = malloc(size)) == NULL)
     return NULL;
   *result = (mu_join_type_t) {
-    .as_type.kind = MU_JOIN_TYPE, .induce = induce, .argc = argc,
+    .as_type.kind = MU_JOIN_TYPE, .as_type.induce = induce, .argc = argc,
   };
   return result;
 }

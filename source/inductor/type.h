@@ -79,7 +79,6 @@ typedef struct {
 /// A join type
 typedef struct {
   MU_TYPE_HEADER;
-  const induce_t *induce;
   size_t argc;
   const mu_type_t *argv[/* argc */];
 } mu_join_type_t;
@@ -139,6 +138,7 @@ struct mu_variable_type_t {
     const mu_static_type_t *: \
       _kind == MU_CORE_TYPE || _kind == MU_SCHEME_TYPE, \
     const mu_core_type_t *: _kind == MU_CORE_TYPE, \
+    const mu_join_type_t *: _kind == MU_JOIN_TYPE, \
     const mu_scheme_type_t *: _kind == MU_SCHEME_TYPE, \
     const mu_variable_type_t *: _kind == MU_VARIABLE_TYPE); \
   _castable ? (typeof(_concrete)) _abstract : NULL; \

@@ -178,9 +178,30 @@ const void *reduce_type_to_join(
     return target;
   }
 
+  // If we're left with a single direct edge ⟨α ⇒ target⟩, then we don't have to
+  // assign a join type to target at all. Instead:
+  //
+  // 1. Assign the id coercion to ⟨α ⇒ target⟩
+  // 2. Define ⟨target ⇒ α⟩ and assign the id coercion to it
+  // 3. Assign α as the solution to target
+  //
+  // Then assign the coercion ⟨α ⇒ β⟩ to each edge ⟨target ⇒ β⟩.
   if (argc == 1) {
     edge_assign(single_edge, induce->id_coercion);
-    return assign_solution(target, &single_a->as_solution);
+
+    type_edge_t *e = edge_define(&induce->universe, &target->as_type, &single_a->as_type);
+    edge_assign(e, induce->id_coercion);
+
+    const mu_type_t *solution = &single_a->as_type;
+    assign_solution(target, solution);
+
+    it = universe_iterator(universe, &target->as_type, 1);
+    for (type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
+      const type_edge_t *e;
+      e = universe_search(&induce->universe, solution, edge->target);
+      assert(e != NULL);
+      edge->coercion = coerce_with(e);
+    }
   }
 
   // Allocate a join
@@ -203,10 +224,10 @@ const void *reduce_type_to_join(
   }
   assert(argc == allocation->argc);
 
-  const mu_join_type_t *join;
-  if ((join = join_type_activate(allocation)) == NULL)
+  const mu_join_type_t *join_type;
+  if ((join_type = join_type_activate(allocation)) == NULL)
     return NULL;
-  return assign_solution(target, &join->as_solution);
+  return assign_solution(target, &join_type->as_type);
 }
 
 const mu_coercion_t *reduce_coercion(
@@ -272,14 +293,14 @@ const mu_coercion_t *reduce_coercion(
             return edge_assign(edge, coercion);
           }
 
-          case IS_KIND_OF(join): {
+          case IS_KIND_OF(join_type): {
             mu_unjoin_coercion_t *allocation;
-            if ((allocation = unjoin_coercion_allocate(join->argc)) == NULL)
+            if ((allocation = unjoin_coercion_allocate(join_type->argc)) == NULL)
               return NULL;
 
-            for (size_t i = 0; i < join->argc; i++) {
+            for (size_t i = 0; i < join_type->argc; i++) {
               const type_edge_t *edge;
-              edge = universe_search(&induce->universe, join->argv[i], target);
+              edge = universe_search(&induce->universe, join_type->argv[i], target);
               assert(edge != NULL);
 
               const mu_coercion_t *coercion = course_coercion(edge);
@@ -293,6 +314,10 @@ const mu_coercion_t *reduce_coercion(
               return NULL;
             return &result->as_coercion;
           }
+
+          // TODO: this is incorrect
+          case MU_VARIABLE_TYPE:
+            abort();
         }
       }
 
