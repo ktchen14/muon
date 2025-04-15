@@ -433,7 +433,7 @@ static void collect(induce_t *induce, const mu_type_t *type, _Bool negative) {
 }
 
 const mu_type_t *generalize_type(
-    induce_t *induce, const mu_type_t *matter, mu_scheme_t *scheme) {
+    induce_t *induce, const mu_type_t *matter) {
   // Mark each type in the scheme with whether it's accessible from matter.
   // Also, gather each type accessible from matter.
   const mu_type_t *accessible[1000] = {0};
