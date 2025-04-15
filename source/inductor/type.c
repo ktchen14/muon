@@ -65,9 +65,8 @@ const mu_variable_type_t *mu_variable_type(induce_t *induce) {
     .as_type.kind = MU_VARIABLE_TYPE,
     .as_type.induce = induce,
     .as_type.id = induce->type_number++,
-    .scheme_next = scheme->link,
   };
-  return scheme->link = result;
+  return result;
 }
 
 mu_scheme_t *mu_scheme(mu_scheme_t *parent) {

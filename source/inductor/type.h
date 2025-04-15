@@ -89,8 +89,6 @@ struct mu_scheme_t {
 
   // The lowest id that a type that's a part of this scheme will have
   size_t id;
-
-  mu_variable_type_t *link;
 };
 
 /// A variable type
@@ -103,8 +101,6 @@ struct mu_variable_type_t {
   size_t number; ///< Used to generate a name
 
   // Polymorphism
-  mu_variable_type_t *scheme_next;
-
   _Bool reduced;
 
   const mu_scheme_type_t *scheme;

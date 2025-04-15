@@ -14,7 +14,7 @@ static const mu_type_t *node_induce(induce_t *induce, const mu_node_t *node);
 
 const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
   assert(induce->scheme == NULL);
-  induce->scheme = &(mu_scheme_t) { .induce = induce };
+  induce->scheme = &(mu_scheme_t) { .induce = induce, .id = induce->type_number };
 
   assert(root->id < induce->node_length);
 
