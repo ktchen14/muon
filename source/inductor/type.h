@@ -8,8 +8,17 @@
 
 typedef struct induce_t induce_t;
 
+/// Expands to emit(lower, upper, title, ...) for each kind of type
+#define MU_EACH_TYPE_KIND(emit, ...) \
+  emit(core, CORE, Core, ##__VA_ARGS__) \
+  emit(scheme, SCHEME, Scheme, ##__VA_ARGS__) \
+  emit(variable, VARIABLE, Variable, ##__VA_ARGS__)
+
+/// An enumeration over each kind of type, e.g. @c MU_CORE_TYPE
 typedef enum {
-  MU_CORE_TYPE, MU_SCHEME_TYPE, MU_VARIABLE_TYPE,
+#define MU_EMIT(l, upper, t) MU_##upper##_TYPE,
+  MU_EACH_TYPE_KIND(MU_EMIT)
+#undef MU_EMIT
 } mu_type_kind_t;
 
 /// An abstract type
