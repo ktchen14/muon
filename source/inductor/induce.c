@@ -293,7 +293,6 @@ static void mark_type_flat(
   const mu_type_t *type = root, *next;
   do {
     while ((next = type_next(type)) != NULL) {
-    root:
       if (next->id < scheme_id)
         continue;
 
