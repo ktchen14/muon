@@ -174,6 +174,12 @@ const void *reduce_type_to_join(
   }
 
   if (target->scheme != NULL) {
+    it = universe_iterator(universe, &target->as_type, 0);
+    for (type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
+      if (edge->coercion != NULL)
+        edge->coercion = induce->slot_coercion;
+    }
+
     ((mu_variable_type_t *) target)->reduced = 1;
     return target;
   }

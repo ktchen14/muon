@@ -498,8 +498,17 @@ const mu_type_t *generalize_type(
   size_t j = 0;
   for (size_t i = 0; i < accessible_length; i++) {
     const mu_type_t *type = accessible[i];
-    if (type->polymorphic)
+
+    if (type->polymorphic) {
       allocation->argv[j++] = type;
+
+      const mu_variable_type_t *v;
+      if ((v = mu_type_cast(type, v)) != NULL) {
+        if (v->scheme == NULL)
+          ((mu_variable_type_t *) v)->scheme = allocation;
+      }
+    }
+
     ((mu_type_t *) type)->status = 0;
   }
 
