@@ -41,8 +41,6 @@ typedef struct {
 /// The header that each concrete type must have
 #define MU_TYPE_HEADER mu_type_t as_type
 
-typedef struct mu_variable_type_t mu_variable_type_t;
-
 /// A core type
 typedef struct {
   MU_TYPE_HEADER;
@@ -78,7 +76,7 @@ struct mu_scheme_t {
 };
 
 /// A variable type
-struct mu_variable_type_t {
+typedef struct {
   MU_TYPE_HEADER;
 
   const mu_type_t *solution;
@@ -90,7 +88,7 @@ struct mu_variable_type_t {
   _Bool reduced;
 
   const mu_scheme_type_t *scheme;
-};
+} mu_variable_type_t;
 
 /**
  * @brief Downcast the @a abstract type to the <tt>typeof(concrete)</tt>
