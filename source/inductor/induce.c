@@ -34,12 +34,11 @@ const mu_coercion_t *ensure_coercion(
   if ((result_edge = universe_search(&induce->universe, source, target)) != NULL)
     return coerce_with(result_edge);
 
-  if (source->kind == MU_VARIABLE_TYPE && target->kind != MU_VARIABLE_TYPE) {
-    // Make ⟨source ⇒ target⟩ here in case of recursion
-    type_edge_t *result_edge;
-    if ((result_edge = append_edge(&induce->universe, source, target)) == NULL)
-      return NULL;
+  // Make ⟨source ⇒ target⟩ here in case of recursion
+  if ((result_edge = append_edge(&induce->universe, source, target)) == NULL)
+    return NULL;
 
+  if (source->kind == MU_VARIABLE_TYPE && target->kind != MU_VARIABLE_TYPE) {
     universe_iterator_t it;
 
     // ∀(τ) | ∃⟨τ ⇒ source⟩ and τ isn't a variable type, ensure that we're able
@@ -72,11 +71,6 @@ const mu_coercion_t *ensure_coercion(
   }
 
   if (source->kind != MU_VARIABLE_TYPE && target->kind == MU_VARIABLE_TYPE) {
-    // Make ⟨source ⇒ target⟩ here in case of recursion
-    type_edge_t *result_edge;
-    if ((result_edge = append_edge(&induce->universe, source, target)) == NULL)
-      return NULL;
-
     universe_iterator_t it;
 
     // ∀(τ) | ∃⟨target ⇒ τ⟩ and τ isn't a variable type, ensure that we're able
@@ -109,11 +103,6 @@ const mu_coercion_t *ensure_coercion(
   }
 
   if (source->kind == MU_VARIABLE_TYPE && target->kind == MU_VARIABLE_TYPE) {
-    // Make ⟨source ⇒ target⟩ here in case of recursion
-    type_edge_t *edge;
-    if ((edge = append_edge(&induce->universe, source, target)) == NULL)
-      return NULL;
-
     universe_iterator_t it, jt;
 
     // ∀(α) | ∃⟨α ⇒ source⟩ and α isn't a variable type, ∀(β) | ∃⟨target ⇒ β⟩
@@ -163,14 +152,10 @@ const mu_coercion_t *ensure_coercion(
       next_edge->transitive = 1;
     }
 
-    return coerce_with(edge);
+    return coerce_with(result_edge);
   }
 
   assert(target->kind != MU_SCHEME_TYPE);
-
-  // Make ⟨source ⇒ target⟩ here in case of recursion
-  if ((result_edge = append_edge(&induce->universe, source, target)) == NULL)
-    return NULL;
 
   const mu_scheme_type_t *scheme_type;
   if ((scheme_type = mu_type_cast(source, scheme_type)) != NULL) {
