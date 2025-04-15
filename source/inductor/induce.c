@@ -20,21 +20,6 @@ static const mu_type_t *instantiate_scheme(
     induce_t *induce, const mu_scheme_type_t *scheme)
   __attribute__((nonnull));
 
-/// @internal Ensure and return the coercion @a source ⇝ @a target. Doesn't bail
-/// when source is target, or when ∃⟨source ⇒ target⟩.
-static const mu_coercion_t *ensure_static_coercion_internal(
-    induce_t *induce,
-    const mu_static_type_t *restrict source,
-    const mu_static_type_t *restrict target)
-  __attribute__((nonnull));
-
-/// @internal Ensure and return the coercion @a source ⇝ @a target
-static const mu_coercion_t *ensure_static_coercion(
-    induce_t *induce,
-    const mu_static_type_t *source,
-    const mu_static_type_t *target)
-  __attribute__((nonnull));
-
 static const mu_coercion_t *retrieve_core_coercion(
     induce_t *induce, const mu_core_type_t *source, const mu_core_type_t *target);
 
@@ -49,12 +34,7 @@ const mu_coercion_t *ensure_coercion(
   if ((edge = universe_search(&induce->universe, source, target)) != NULL)
     return coerce_with(edge);
 
-  const mu_static_type_t *static_source = mu_type_cast(source, static_source);
-  const mu_static_type_t *static_target = mu_type_cast(target, static_target);
-
-  if (static_source == NULL && static_target != NULL) {
-    assert(source->kind == MU_VARIABLE_TYPE);
-
+  if (source->kind == MU_VARIABLE_TYPE && target->kind != MU_VARIABLE_TYPE) {
     // Make ⟨source ⇒ target⟩ here in case of recursion
     type_edge_t *result_edge;
     if ((result_edge = append_edge(&induce->universe, source, target)) == NULL)
@@ -66,11 +46,11 @@ const mu_coercion_t *ensure_coercion(
     // to coerce τ ⇝ target
     it = universe_iterator(&induce->universe, source, 0);
     for (const type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
-      const mu_static_type_t *t;
-      if (edge->indirect || (t = mu_type_cast(edge->source, t)) == NULL)
+      const mu_type_t *t;
+      if (edge->indirect || (t = edge->source)->kind == MU_VARIABLE_TYPE)
         continue;
 
-      if (ensure_static_coercion(induce, t, static_target) == NULL)
+      if (ensure_coercion(induce, t, target) == NULL)
         return NULL;
     }
 
@@ -91,9 +71,7 @@ const mu_coercion_t *ensure_coercion(
     return coerce_with(result_edge);
   }
 
-  if (static_source != NULL && static_target == NULL) {
-    assert(target->kind == MU_VARIABLE_TYPE);
-
+  if (source->kind != MU_VARIABLE_TYPE && target->kind == MU_VARIABLE_TYPE) {
     // Make ⟨source ⇒ target⟩ here in case of recursion
     type_edge_t *result_edge;
     if ((result_edge = append_edge(&induce->universe, source, target)) == NULL)
@@ -105,11 +83,11 @@ const mu_coercion_t *ensure_coercion(
     // to coerce source ⇝ τ
     it = universe_iterator(&induce->universe, target, 1);
     for (const type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
-      const mu_static_type_t *t;
-      if (edge->indirect || (t = mu_type_cast(edge->target, t)) == NULL)
+      const mu_type_t *t;
+      if (edge->indirect || (t = edge->target)->kind == MU_VARIABLE_TYPE)
         continue;
 
-      if (ensure_static_coercion(induce, static_source, t) == NULL)
+      if (ensure_coercion(induce, source, t) == NULL)
         return NULL;
     }
 
@@ -130,10 +108,7 @@ const mu_coercion_t *ensure_coercion(
     return coerce_with(result_edge);
   }
 
-  if (static_source == NULL && static_target == NULL) {
-    assert(source->kind == MU_VARIABLE_TYPE);
-    assert(target->kind == MU_VARIABLE_TYPE);
-
+  if (source->kind == MU_VARIABLE_TYPE && target->kind == MU_VARIABLE_TYPE) {
     // Make ⟨source ⇒ target⟩ here in case of recursion
     type_edge_t *edge;
     if ((edge = append_edge(&induce->universe, source, target)) == NULL)
@@ -145,17 +120,17 @@ const mu_coercion_t *ensure_coercion(
     // and β isn't a variable type, ensure that we're able to coerce α ⇝ β
     it = universe_iterator(&induce->universe, source, 0);
     for (const type_edge_t *a_edge; (a_edge = universe_next(&it)) != NULL;) {
-      const mu_static_type_t *a;
-      if (a_edge->indirect || (a = mu_type_cast(a_edge->source, a)) == NULL)
+      const mu_type_t *a;
+      if (a_edge->indirect || (a = a_edge->source)->kind == MU_VARIABLE_TYPE)
         continue;
 
       jt = universe_iterator(&induce->universe, target, 1);
       for (const type_edge_t *b_edge; (b_edge = universe_next(&jt)) != NULL;) {
-        const mu_static_type_t *b;
-        if (b_edge->indirect || (b = mu_type_cast(b_edge->target, b)) == NULL)
+        const mu_type_t *b;
+        if (b_edge->indirect || (b = b_edge->target)->kind == MU_VARIABLE_TYPE)
           continue;
 
-        if (ensure_static_coercion(induce, a, b) == NULL)
+        if (ensure_coercion(induce, a, b) == NULL)
           return NULL;
       }
     }
@@ -191,40 +166,15 @@ const mu_coercion_t *ensure_coercion(
     return coerce_with(edge);
   }
 
-  assert(static_source != NULL);
-  assert(static_target != NULL);
-  return ensure_static_coercion_internal(induce, static_source, static_target);
-}
-
-static const mu_coercion_t *ensure_static_coercion(
-    induce_t *induce,
-    const mu_static_type_t *source,
-    const mu_static_type_t *target) {
-  // If source is the same type as target, then just return the id coercion
-  if (source == target)
-    return induce->id_coercion;
-
-  // If ∃⟨source ⇒ target⟩, then just return the coercion on that edge
-  const type_edge_t *edge;
-  if ((edge = universe_search(&induce->universe, &source->as_type, &target->as_type)) != NULL)
-    return coerce_with(edge);
-
-  return ensure_static_coercion_internal(induce, source, target);
-}
-
-static const mu_coercion_t *ensure_static_coercion_internal(
-    induce_t *induce,
-    const mu_static_type_t *restrict source,
-    const mu_static_type_t *restrict target) {
-  assert(target->kind != MU_SCHEME_STATIC_TYPE);
+  assert(target->kind != MU_SCHEME_TYPE);
 
   // Make ⟨source ⇒ target⟩ here in case of recursion
   type_edge_t *result_edge;
-  if ((result_edge = append_edge(&induce->universe, &source->as_type, &target->as_type)) == NULL)
+  if ((result_edge = append_edge(&induce->universe, source, target)) == NULL)
     return NULL;
 
   const mu_scheme_type_t *scheme_type;
-  if ((scheme_type = mu_static_type_cast(source, scheme_type)) != NULL) {
+  if ((scheme_type = mu_type_cast(source, scheme_type)) != NULL) {
     // Create an unscheme coercion source ⇝ instance to instantiate the scheme
     // type
     const mu_type_t *instance;
@@ -236,13 +186,13 @@ static const mu_coercion_t *ensure_static_coercion_internal(
       return NULL;
 
     type_edge_t *edge;
-    if ((edge = append_edge(&induce->universe, &source->as_type, instance)) == NULL)
+    if ((edge = append_edge(&induce->universe, source, instance)) == NULL)
       return NULL;
     edge->coercion = &head->as_coercion;
 
     // Ensure that we're able to coerce instance ⇝ target
     const mu_coercion_t *coercion;
-    if ((coercion = ensure_coercion(induce, instance, &target->as_type)) == NULL)
+    if ((coercion = ensure_coercion(induce, instance, target)) == NULL)
       return NULL;
     if (coercion == NO_SUCH_COERCION)
       return NO_SUCH_COERCION;
@@ -254,10 +204,10 @@ static const mu_coercion_t *ensure_static_coercion_internal(
     return edge_assign(result_edge, &result->as_coercion);
   }
 
-  const mu_core_type_t *core_source = mu_static_type_cast(source, core_source);
+  const mu_core_type_t *core_source = mu_type_cast(source, core_source);
   assert(core_source != NULL);
 
-  const mu_core_type_t *core_target = mu_static_type_cast(target, core_target);
+  const mu_core_type_t *core_target = mu_type_cast(target, core_target);
   assert(core_target != NULL);
 
   const mu_core_t *source_core = core_source->core;
