@@ -246,9 +246,9 @@ static inline const mu_solution_t *assign_solution(
 
 /// @internal An enumeration over each kind of type, e.g. @c _core_type_kind
 enum {
-  _core_type_kind = MU_CORE_TYPE,
-  _variable_type_kind = MU_VARIABLE_TYPE,
-  _scheme_type_kind = MU_SCHEME_TYPE,
+#define MU_EMIT(lower, upper, t) _##lower##_type_kind = MU_##upper##_TYPE,
+  MU_EACH_TYPE_KIND(MU_EMIT)
+#undef MU_EMIT
   _join_kind = MU_JOIN_SOLUTION,
   /* _meet_solution_kind = MU_MEET_SOLUTION, */
 };

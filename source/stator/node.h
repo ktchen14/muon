@@ -11,7 +11,7 @@
 
 /// @internal An enumeration over each kind of node, e.g. @c _access_expr_kind
 enum {
-#define MU_EMIT(lower, u, t) _##lower##_kind,
+#define MU_EMIT(lower, upper, t) _##lower##_kind = MU_##upper##_NODE,
   MU_EACH_NODE_KIND(MU_EMIT)
 #undef MU_EMIT
 };
