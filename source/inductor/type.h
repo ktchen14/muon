@@ -12,7 +12,8 @@ typedef struct induce_t induce_t;
 #define MU_EACH_TYPE_KIND(emit, ...) \
   emit(core, CORE, Core, ##__VA_ARGS__) \
   emit(scheme, SCHEME, Scheme, ##__VA_ARGS__) \
-  emit(variable, VARIABLE, Variable, ##__VA_ARGS__)
+  emit(variable, VARIABLE, Variable, ##__VA_ARGS__) \
+  emit(join, JOIN, Join, ##__VA_ARGS__)
 
 /// An enumeration over each kind of type, e.g. @c MU_CORE_TYPE
 typedef enum {
@@ -40,23 +41,9 @@ typedef struct {
 /// The header that each concrete type must have
 #define MU_TYPE_HEADER mu_type_t as_type
 
-/// An abstract solution
-typedef struct {
-  enum {
-    MU_CORE_SOLUTION = MU_CORE_TYPE,
-    MU_SCHEME_SOLUTION = MU_SCHEME_TYPE,
-    MU_JOIN_SOLUTION,
-    /* MU_MEET_SOLUTION, */
-  } kind;
-} mu_solution_t;
-
-/// The header that each concrete solution must have
-#define MU_SOLUTION_HEADER mu_solution_t as_solution
-
 /// An abstract static type
 typedef struct { union {
   MU_TYPE_HEADER;
-  MU_SOLUTION_HEADER;
 
   enum {
     MU_CORE_STATIC_TYPE = MU_CORE_TYPE,
@@ -66,8 +53,7 @@ typedef struct { union {
 
 /// The header that each concrete static type must have
 #define MU_STATIC_TYPE_HEADER union { \
-  MU_TYPE_HEADER; MU_SOLUTION_HEADER; \
-  mu_static_type_t as_static_type; \
+  MU_TYPE_HEADER; mu_static_type_t as_static_type; \
 }
 
 typedef struct mu_variable_type_t mu_variable_type_t;
@@ -90,13 +76,13 @@ typedef struct {
   const mu_type_t *argv[/* argc */];
 } mu_scheme_type_t;
 
-/// A join solution
+/// A join type
 typedef struct {
-  MU_SOLUTION_HEADER;
+  MU_TYPE_HEADER;
   const induce_t *induce;
   size_t argc;
   const mu_type_t *argv[/* argc */];
-} mu_join_t;
+} mu_join_type_t;
 
 typedef struct mu_scheme_t mu_scheme_t;
 struct mu_scheme_t {
@@ -111,7 +97,7 @@ struct mu_scheme_t {
 struct mu_variable_type_t {
   MU_TYPE_HEADER;
 
-  const mu_solution_t *solution;
+  const mu_type_t *solution;
 
   // Debugging
   size_t number; ///< Used to generate a name
@@ -168,19 +154,6 @@ struct mu_variable_type_t {
   _castable ? (typeof(_concrete)) _abstract : NULL; \
 })
 
-#define mu_solution_cast(abstract, concrete) __extension__ ({ \
-  const mu_solution_t *_abstract = (abstract); \
-  typeof(concrete) _concrete; \
-  typeof(_abstract->kind) _kind = _abstract->kind; \
-  int _castable = _Generic(_concrete, \
-    const mu_static_type_t *: \
-      _kind == MU_CORE_SOLUTION || _kind == MU_SCHEME_SOLUTION, \
-    const mu_core_type_t *: _kind == MU_CORE_SOLUTION, \
-    const mu_scheme_type_t *: _kind == MU_SCHEME_SOLUTION, \
-    const mu_join_t *: _kind == MU_JOIN_SOLUTION); \
-  _castable ? (typeof(_concrete)) _abstract : NULL; \
-})
-
 const mu_core_type_t *mu_boolean_type(induce_t *induce)
   __attribute__((malloc, nonnull));
 
@@ -224,13 +197,10 @@ const mu_scheme_type_t *scheme_type_activate(
     mu_scheme_type_t *type, const mu_type_t *matter)
   __attribute__((nonnull));
 
-mu_join_t *join_allocate(induce_t *induce, size_t argc)
+mu_join_type_t *join_type_allocate(induce_t *induce, size_t argc)
   __attribute__((malloc, nonnull));
 
-const mu_join_t *join_activate(mu_join_t *join)
-  __attribute__((nonnull));
-
-void mu_solution_debug(const mu_solution_t *solution, _Bool expand)
+const mu_join_type_t *join_type_activate(mu_join_type_t *join)
   __attribute__((nonnull));
 
 void type_debug(const mu_type_t *type, _Bool expand)
@@ -239,8 +209,8 @@ void type_debug(const mu_type_t *type, _Bool expand)
 void debug_variable_type_name(const mu_variable_type_t *type);
 
 __attribute__((nonnull))
-static inline const mu_solution_t *assign_solution(
-    const mu_variable_type_t *variable_type, const mu_solution_t *solution) {
+static inline const mu_type_t *assign_solution(
+    const mu_variable_type_t *variable_type, const mu_type_t *solution) {
   return ((mu_variable_type_t *) variable_type)->solution = solution;
 }
 
@@ -249,8 +219,6 @@ enum {
 #define MU_EMIT(lower, upper, t) _##lower##_type_kind = MU_##upper##_TYPE,
   MU_EACH_TYPE_KIND(MU_EMIT)
 #undef MU_EMIT
-  _join_kind = MU_JOIN_SOLUTION,
-  /* _meet_solution_kind = MU_MEET_SOLUTION, */
 };
 
 #endif /* MU_INDUCTOR_TYPE_I */

@@ -184,8 +184,8 @@ const void *reduce_type_to_join(
   }
 
   // Allocate a join
-  mu_join_t *allocation;
-  if ((allocation = join_allocate(induce, argc)) == NULL)
+  mu_join_type_t *allocation;
+  if ((allocation = join_type_allocate(induce, argc)) == NULL)
     return NULL;
   argc = 0;
 
@@ -203,8 +203,8 @@ const void *reduce_type_to_join(
   }
   assert(argc == allocation->argc);
 
-  const mu_join_t *join;
-  if ((join = join_activate(allocation)) == NULL)
+  const mu_join_type_t *join;
+  if ((join = join_type_activate(allocation)) == NULL)
     return NULL;
   return assign_solution(target, &join->as_solution);
 }

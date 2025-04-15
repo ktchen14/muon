@@ -150,55 +150,32 @@ const mu_scheme_type_t *scheme_type_activate(
   return assign_type(induce, type);
 }
 
-mu_join_t *join_allocate(induce_t *induce, size_t argc) {
+mu_join_type_t *join_type_allocate(induce_t *induce, size_t argc) {
   size_t size;
-  if (rare((size = struct_size(mu_join_t, argv, argc)) == 0))
+  if (rare((size = struct_size(mu_join_type_t, argv, argc)) == 0))
     return errno = ENOMEM, NULL;
 
-  mu_join_t *result;
+  mu_join_type_t *result;
   if ((result = malloc(size)) == NULL)
     return NULL;
-  *result = (mu_join_t) {
-    .as_solution.kind = MU_JOIN_SOLUTION, .induce = induce, .argc = argc,
+  *result = (mu_join_type_t) {
+    .as_type.kind = MU_JOIN_TYPE, .induce = induce, .argc = argc,
   };
   return result;
 }
 
-const mu_join_t *join_activate(mu_join_t *join) {
-  return join;
+const mu_join_type_t *join_type_activate(mu_join_type_t *type) {
+  induce_t *induce = (induce_t *) type->as_type.induce;
+
+  for (size_t i = 0; i < type->argc; i++) {
+    assert(type->argv[i] != NULL);
+    assert(type->argv[i]->induce == induce);
+  }
+
+  return assign_type(induce, type);
 }
 
 static void type_debug_internal(const mu_type_t *type, _Bool expand, unsigned char prec, int assoc);
-
-static void solution_debug_internal(const mu_solution_t *solution, _Bool expand, unsigned char prec, int assoc) {
-  switch ON_ABSTRACT_OBJECT(solution) {
-    case IS_KIND_OF(core_type):
-      type_debug_internal(&core_type->as_type, expand, prec, assoc);
-      break;
-
-    case IS_KIND_OF(scheme_type):
-      type_debug_internal(&scheme_type->as_type, expand, prec, assoc);
-      break;
-
-    case IS_KIND_OF(join):
-      if (join->argc == 0)
-        debug("⊥");
-      else {
-        debug("Join(");
-        for (size_t i = 0; i < join->argc; i++) {
-          if (i > 0)
-            debug(", ");
-          type_debug_internal(join->argv[i], expand, 0, 0);
-        }
-        debug(")");
-      }
-      break;
-  }
-}
-
-void mu_solution_debug(const mu_solution_t *solution, _Bool expand) {
-  return solution_debug_internal(solution, expand, 0, 0);
-}
 
 void debug_variable_type_name(const mu_variable_type_t *type) {
   static _Atomic size_t next_number = 0;
@@ -271,7 +248,7 @@ static void type_debug_internal(const mu_type_t *type, _Bool expand, unsigned ch
 
     case IS_KIND_OF(variable_type): {
       if (variable_type->solution != NULL) {
-        solution_debug_internal(variable_type->solution, expand, prec, assoc);
+        type_debug_internal(variable_type->solution, expand, prec, assoc);
         break;
       }
 
@@ -347,6 +324,20 @@ static void type_debug_internal(const mu_type_t *type, _Bool expand, unsigned ch
 
       type_debug_internal(scheme_type->matter, expand, 0, 0);
       debug(")");
+      break;
+
+    case IS_KIND_OF(join_type):
+      if (join_type->argc == 0)
+        debug("⊥");
+      else {
+        debug("Join(");
+        for (size_t i = 0; i < join_type->argc; i++) {
+          if (i > 0)
+            debug(", ");
+          type_debug_internal(join_type->argv[i], expand, 0, 0);
+        }
+        debug(")");
+      }
       break;
   }
 }

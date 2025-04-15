@@ -287,6 +287,14 @@ static void mark_type(
       mark_type(induce, scheme_type->matter, negative, buffer, length);
       break;
 
+    case IS_KIND_OF(join_type):
+      assert(!negative);
+
+      for (size_t i = 0; i < join_type->argc; i++)
+        mark_type(induce, join_type->argv[i], negative, buffer, length);
+
+      break;
+
     case MU_VARIABLE_TYPE: {
       universe_iterator_t it;
 
@@ -324,11 +332,11 @@ static void collect(induce_t *induce, const mu_type_t *type, _Bool negative) {
     case IS_KIND_OF(core_type): {
       const mu_core_t *core = core_type->core;
 
-      for (size_t k = 0; k < core->argc; k++) {
-        const mu_type_t *argument = core_type->argv[k];
+      for (size_t i = 0; i < core->argc; i++) {
+        const mu_type_t *argument = core_type->argv[i];
 
         _Bool argn = negative;
-        mu_variance_t variance = core->argv[k].variance;
+        mu_variance_t variance = core->argv[i].variance;
         assert(variance != MU_INVARIANCE);
         if (variance == MU_CONTRAVARIANCE)
           argn = !argn;
@@ -346,6 +354,17 @@ static void collect(induce_t *induce, const mu_type_t *type, _Bool negative) {
       if (scheme_type->matter->polymorphic)
         ((mu_type_t *) scheme_type)->polymorphic = 1;
       return;
+
+    case IS_KIND_OF(join_type):
+      assert(!negative);
+
+      for (size_t i = 0; i < join_type->argc; i++) {
+        const mu_type_t *argument = join_type->argv[i];
+        collect(induce, argument, negative);
+        ((mu_type_t *) type)->polymorphic = type->polymorphic || argument->polymorphic;
+      }
+
+      break;
 
     case MU_VARIABLE_TYPE: {
       universe_iterator_t it;
@@ -497,6 +516,14 @@ static const mu_type_t *instantiate_scheme(
         break;
       }
 
+      case IS_KIND_OF(join_type): {
+        mu_join_type_t *allocation;
+        if ((allocation = join_type_allocate(induce, join_type->argc)) == NULL)
+          return NULL;
+        equation[join_type->as_type.id] = &allocation->as_type;
+        break;
+      }
+
       case IS_KIND_OF(variable_type): {
         mu_variable_type_t *result;
         if ((result = (mu_variable_type_t *) mu_variable_type(induce)) == NULL)
@@ -546,6 +573,23 @@ static const mu_type_t *instantiate_scheme(
           matter = equation[scheme_type->matter->id];
 
         if (scheme_type_activate(allocation, matter) == NULL)
+          return NULL;
+        break;
+      }
+
+      case IS_KIND_OF(join_type): {
+        mu_join_type_t *allocation = (mu_join_type_t *) equation[join_type->as_type.id];
+        assert(allocation != NULL);
+
+        for (size_t i = 0; i < join_type->argc; i++) {
+          const mu_type_t *type = join_type->argv[i];
+          if (equation[type->id] == NULL)
+            allocation->argv[i] = type;
+          else
+            allocation->argv[i] = equation[type->id];
+        }
+
+        if (join_type_activate(allocation) == NULL)
           return NULL;
         break;
       }
