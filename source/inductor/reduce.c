@@ -179,22 +179,13 @@ const void *reduce_type_to_join(
   }
 
   // If we're left with a single direct edge ⟨α ⇒ target⟩, then we don't have to
-  // assign a join type to target at all. Instead:
-  //
-  // 1. Assign the id coercion to ⟨α ⇒ target⟩
-  // 2. Define ⟨target ⇒ α⟩ and assign the id coercion to it
-  // 3. Assign α as the solution to target
-  //
-  // Then assign the coercion ⟨α ⇒ β⟩ to each edge ⟨target ⇒ β⟩.
+  // assign a join type to target at all.
   if (argc == 1) {
+    // Assign the id coercion to ⟨α ⇒ target⟩
     edge_assign(single_edge, induce->id_coercion);
 
-    type_edge_t *e = edge_define(&induce->universe, &target->as_type, &single_a->as_type);
-    edge_assign(e, induce->id_coercion);
-
+    // Assign α ⇝ β to each ⟨target ⇒ β⟩
     const mu_type_t *solution = &single_a->as_type;
-    assign_solution(target, solution);
-
     it = universe_iterator(universe, &target->as_type, 1);
     for (type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
       const type_edge_t *e;
@@ -202,6 +193,13 @@ const void *reduce_type_to_join(
       assert(e != NULL);
       edge->coercion = coerce_with(e);
     }
+
+    // Define ⟨target ⇒ α⟩ and assign the id coercion to it
+    type_edge_t *e = edge_define(&induce->universe, &target->as_type, &single_a->as_type);
+    edge_assign(e, induce->id_coercion);
+
+    // Then, assign α as the solution to target and return it.
+    return assign_solution(target, solution);
   }
 
   // Allocate a join
