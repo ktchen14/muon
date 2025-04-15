@@ -30,9 +30,9 @@ const mu_coercion_t *ensure_coercion(
     return induce->id_coercion;
 
   // If ∃⟨source ⇒ target⟩, then just return the coercion on that edge
-  const type_edge_t *edge;
-  if ((edge = universe_search(&induce->universe, source, target)) != NULL)
-    return coerce_with(edge);
+  type_edge_t *result_edge;
+  if ((result_edge = universe_search(&induce->universe, source, target)) != NULL)
+    return coerce_with(result_edge);
 
   if (source->kind == MU_VARIABLE_TYPE && target->kind != MU_VARIABLE_TYPE) {
     // Make ⟨source ⇒ target⟩ here in case of recursion
@@ -169,7 +169,6 @@ const mu_coercion_t *ensure_coercion(
   assert(target->kind != MU_SCHEME_TYPE);
 
   // Make ⟨source ⇒ target⟩ here in case of recursion
-  type_edge_t *result_edge;
   if ((result_edge = append_edge(&induce->universe, source, target)) == NULL)
     return NULL;
 
