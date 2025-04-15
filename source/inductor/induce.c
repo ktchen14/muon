@@ -424,6 +424,8 @@ static void collect(induce_t *induce, const mu_type_t *type, _Bool negative) {
           collect(induce, vertex, negative);
 
         if (vertex->polymorphic) {
+          ((mu_type_t *) type)->polymorphic = 1;
+
           universe_iterator_t jt;
 
           jt = universe_iterator(&induce->universe, type, negative);
@@ -499,6 +501,7 @@ const mu_type_t *generalize_type(
   }
 
   collect(induce, matter, 0);
+  assert(matter->polymorphic);
 
   polymorphic_length = 0;
   for (size_t i = 0; i < accessible_length; i++) {
@@ -530,111 +533,128 @@ typedef struct {
   const mu_type_t *target;
 } cache_item;
 
-const mu_type_t *instantiate_single_type(
-    induce_t *induce,
-    const mu_type_t *type,
-    const mu_scheme_type_t *scheme,
-    cache_item *cache,
-    size_t *cache_i
-) {
-  for (size_t i = 0; i < 100; i++) {
-    if (cache[i].source == type)
-      return cache[i].target;
-  }
-
-  switch ON_ABSTRACT_OBJECT(type) {
-    case IS_KIND_OF(core_type): {
-      const mu_core_t *core = core_type->core;
-
-      if (core->argc == 0) {
-        cache[(*cache_i)++] = (cache_item) { &core_type->as_type, &core_type->as_type };
-        return &core_type->as_type;
-      }
-
-      mu_core_type_t *allocation;
-      if ((allocation = core_type_allocate(induce, core)) == NULL)
-        return NULL;
-
-      _Bool same = 1;
-      for (size_t i = 0; i < core->argc; i++) {
-        allocation->argv[i] = instantiate_single_type(induce, core_type->argv[i], scheme, cache, cache_i);
-        same = same && (allocation->argv[i] == core_type->argv[i]);
-      }
-
-      if (same) {
-        free(allocation);
-        cache[(*cache_i)++] = (cache_item) { &core_type->as_type, &core_type->as_type };
-        return &core_type->as_type;
-      }
-
-      const mu_core_type_t *result = core_type_activate(allocation);
-      cache[(*cache_i)++] = (cache_item) { &core_type->as_type, &result->as_type };
-      return &result->as_type;
-    }
-
-    case IS_KIND_OF(variable_type):
-      if (variable_type->scheme != scheme) {
-        cache[(*cache_i)++] = (cache_item) { &variable_type->as_type, &variable_type->as_type };
-        return &variable_type->as_type;
-      }
-
-      const mu_variable_type_t *newvar;
-      if ((newvar = mu_variable_type(induce)) == NULL)
-        return NULL;
-      cache[(*cache_i)++] = (cache_item) { &variable_type->as_type, &newvar->as_type };
-
-      universe_iterator_t it;
-      it = universe_iterator(&induce->universe, &variable_type->as_type, 0);
-      for (const type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
-        const mu_type_t *next = instantiate_single_type(induce, edge->source, scheme, cache, cache_i);
-
-        // TODO: make this check unnecessary
-        if (universe_search(&induce->universe, next, &newvar->as_type) != NULL)
-          continue;
-        append_edge(&induce->universe, next, &newvar->as_type);
-      }
-
-      it = universe_iterator(&induce->universe, &variable_type->as_type, 1);
-      for (const type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
-        const mu_type_t *next = instantiate_single_type(induce, edge->target, scheme, cache, cache_i);
-
-        // TODO: make this check unnecessary
-        if (universe_search(&induce->universe, &newvar->as_type, next) != NULL)
-          continue;
-        append_edge(&induce->universe, &newvar->as_type, next);
-      }
-
-      return &newvar->as_type;
-
-    case IS_KIND_OF(scheme_type): {
-      const mu_type_t *matter;
-      if ((matter = instantiate_single_type(induce, scheme_type->matter, scheme, cache, cache_i)) == NULL)
-        return NULL;
-
-      if (matter == scheme_type->matter) {
-        cache[(*cache_i)++] = (cache_item) { &scheme_type->as_type, &scheme_type->as_type };
-        return &scheme_type->as_type;
-      }
-
-      const mu_scheme_type_t *result;
-      size_t argc = scheme_type->argc;
-      const mu_variable_type_t *const *argv = scheme_type->argv;
-      if ((result = mu_scheme_type(induce, matter, argc, argv)) == NULL)
-        return NULL;
-
-      cache[(*cache_i)++] = (cache_item) { &result->as_type, &result->as_type };
-      return &result->as_type;
-    }
-  }
-  __builtin_unreachable();
-}
-
 static const mu_type_t *instantiate_scheme(
     induce_t *induce, const mu_scheme_type_t *scheme
 ) {
-  cache_item cache[100] = {0};
-  size_t i = 0;
-  return instantiate_single_type(induce, scheme->matter, scheme, cache, &i);
+  // TODO: wildly inefficient and unsafe
+  size_t length = induce->type_number;
+  mu_type_t **equation;
+  if ((equation = malloc(sizeof(mu_type_t *[length]))) == NULL)
+    return NULL;
+
+  for (size_t i = 0; i < length; i++)
+    equation[i] = NULL;
+
+  for (size_t i = 0; i < scheme->argc; i++) {
+    switch ON_ABSTRACT_OBJECT(scheme->argv[i]) {
+      case IS_KIND_OF(core_type): {
+        mu_core_type_t *allocation;
+        if ((allocation = core_type_allocate(induce, core_type->core)) == NULL)
+          return NULL;
+        equation[core_type->as_type.id] = &allocation->as_type;
+        break;
+      }
+
+      case IS_KIND_OF(scheme_type): {
+        mu_scheme_type_t *allocation;
+        if ((allocation = scheme_type_allocate(induce, scheme_type->argc)) == NULL)
+          return NULL;
+        equation[scheme_type->as_type.id] = &allocation->as_type;
+        break;
+      }
+
+      case IS_KIND_OF(variable_type): {
+        mu_variable_type_t *result;
+        if ((result = (mu_variable_type_t *) mu_variable_type(induce)) == NULL)
+          return NULL;
+        equation[variable_type->as_type.id] = &result->as_type;
+        break;
+      }
+    }
+  }
+
+  for (size_t i = 0; i < scheme->argc; i++) {
+    switch ON_ABSTRACT_OBJECT(scheme->argv[i]) {
+      case IS_KIND_OF(core_type): {
+        mu_core_type_t *allocation = (mu_core_type_t *) equation[core_type->as_type.id];
+        assert(allocation != NULL);
+        assert(allocation->core == core_type->core);
+
+        for (size_t i = 0; i < core_type->core->argc; i++) {
+          const mu_type_t *type = core_type->argv[i];
+          if (equation[type->id] == NULL)
+            allocation->argv[i] = type;
+          else
+            allocation->argv[i] = equation[type->id];
+        }
+
+        if (core_type_activate(allocation) == NULL)
+          return NULL;
+        break;
+      }
+
+      case IS_KIND_OF(scheme_type): {
+        mu_scheme_type_t *allocation = (mu_scheme_type_t *) equation[scheme_type->as_type.id];
+        assert(allocation != NULL);
+
+        for (size_t i = 0; i < scheme_type->argc; i++) {
+          const mu_type_t *type = scheme_type->argv[i];
+          if (equation[type->id] == NULL)
+            allocation->argv[i] = type;
+          else
+            allocation->argv[i] = equation[type->id];
+        }
+
+        const mu_type_t *matter;
+        if (equation[scheme_type->matter->id] == NULL)
+          matter = scheme_type->matter;
+        else
+          matter = equation[scheme_type->matter->id];
+
+        if (scheme_type_activate(allocation, matter) == NULL)
+          return NULL;
+        break;
+      }
+
+      case IS_KIND_OF(variable_type): {
+        const mu_variable_type_t *result = (const mu_variable_type_t *) equation[variable_type->as_type.id];
+        assert(result != NULL);
+
+        universe_iterator_t it;
+        it = universe_iterator(&induce->universe, &variable_type->as_type, 0);
+        for (const type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
+          const mu_type_t *source = edge->source;
+
+          if (equation[source->id] != NULL)
+            source = equation[source->id];
+
+          // TODO: make this check unnecessary
+          if (universe_search(&induce->universe, source, &result->as_type) != NULL)
+            continue;
+          append_edge(&induce->universe, source, &result->as_type);
+        }
+
+        it = universe_iterator(&induce->universe, &variable_type->as_type, 1);
+        for (const type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
+          const mu_type_t *target = edge->target;
+
+          if (equation[target->id] != NULL)
+            target = equation[target->id];
+
+          // TODO: make this check unnecessary
+          if (universe_search(&induce->universe, &result->as_type, target) != NULL)
+            continue;
+          append_edge(&induce->universe, &result->as_type, target);
+        }
+
+        break;
+      }
+    }
+  }
+
+  const mu_type_t *result = equation[scheme->matter->id];
+  assert(result != NULL);
+  return result;
 }
 
 

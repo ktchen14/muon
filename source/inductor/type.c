@@ -85,7 +85,7 @@ const mu_scheme_type_t *mu_scheme_type(
     induce_t *induce,
     const mu_type_t *matter,
     size_t argc,
-    const mu_variable_type_t *const argv[argc]) {
+    const mu_type_t *const argv[argc]) {
   assert(argc == 0 || argv != NULL);
 
   mu_scheme_type_t *allocation;
@@ -143,7 +143,7 @@ const mu_scheme_type_t *scheme_type_activate(
 
   for (size_t i = 0; i < type->argc; i++) {
     assert(type->argv[i] != NULL);
-    assert(type->argv[i]->as_type.induce == induce);
+    assert(type->argv[i]->induce == induce);
   }
   type->matter = matter;
 
@@ -331,10 +331,17 @@ static void type_debug_internal(const mu_type_t *type, _Bool expand, unsigned ch
 
     case IS_KIND_OF(scheme_type):
       debug("∀(");
+
+      _Bool seen = 0;
       for (size_t i = 0; i < scheme_type->argc; i++) {
-        if (i > 0)
+        const mu_variable_type_t *v;
+        if ((v = mu_type_cast(scheme_type->argv[i], v)) == NULL)
+          continue;
+
+        if (seen)
           debug(", ");
-        debug_variable_type_name(scheme_type->argv[i]);
+        seen = 1;
+        debug_variable_type_name(v);
       }
       debug(": ");
 
