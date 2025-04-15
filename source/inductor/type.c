@@ -345,3 +345,43 @@ static void type_debug_internal(const mu_type_t *type, _Bool expand, unsigned ch
 void type_debug(const mu_type_t *type, _Bool expand) {
   return type_debug_internal(type, expand, 0, 0);
 }
+
+const mu_type_t *type_next(const mu_type_t *type) {
+  type_cursor_t *cursor = type_cursor(type);
+  next_charge = charge;
+
+  switch ON_ABSTRACT_OBJECT(type) {
+    case IS_KIND_OF(core_type): {
+      const mu_core_t *core = core_type->core;
+      if (cursor->i < core_type->core->argc) {
+        if (core->argv[cursor->i].variance == MU_CONTRAVARIANCE)
+          next_charge = !next_charge;
+        return core_type->argv[cursor->i++];
+      }
+      return NULL;
+    }
+
+    case IS_KIND_OF(scheme_type):
+      return cursor->i++ == 0 ? scheme_type->matter : NULL;
+
+    case IS_KIND_OF(join_type):
+      assert(charge == 0);
+      return cursor->i < join_type->argc ? join_type->argv[cursor->i++] : NULL;
+
+    case MU_VARIABLE_TYPE: {
+      const universe_t *universe = &type->induce->universe;
+
+      for (size_t i; (i = cursor->i++) < universe->length;) {
+        type_edge_t *edge = &universe->data[i];
+        if (charge == 0 && edge->target == type)
+          return edge->source;
+        if (charge == 1 && edge->source == type)
+          return edge->target;
+      }
+    }
+  }
+  __builtin_unreachable();
+}
+
+_Thread_local _Bool charge;
+_Thread_local _Bool next_charge;

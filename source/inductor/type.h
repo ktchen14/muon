@@ -38,6 +38,7 @@ typedef struct {
   };
 } mu_type_t;
 
+
 /// The header that each concrete type must have
 #define MU_TYPE_HEADER mu_type_t as_type
 
@@ -191,5 +192,59 @@ enum {
   MU_EACH_TYPE_KIND(MU_EMIT)
 #undef MU_EMIT
 };
+
+extern _Thread_local _Bool charge;
+extern _Thread_local _Bool next_charge;
+
+typedef struct {
+  const mu_type_t *anterior;
+  size_t i;
+} type_cursor_t;
+
+typedef struct {
+  type_cursor_t cursor[2];
+  _Alignas(union {
+#define MU_EMIT(lower, u, t) mu_##lower##_type_t lower;
+    MU_EACH_TYPE_KIND(MU_EMIT)
+#undef MU_EMIT
+  }) char data[];
+} type_header_t;
+
+/// Return the cursor attached to the @a type
+__attribute__((const, nonnull, returns_nonnull))
+static inline type_cursor_t *type_cursor(const mu_type_t *type) {
+  type_header_t *header = (type_header_t *) (
+      (char *) type - offsetof(type_header_t, data));
+  return &header->cursor[charge];
+}
+
+/// Continue into the type
+static inline const mu_type_t *type_continue(
+    const mu_type_t *type, const mu_type_t *next) {
+  type_cursor_t *cursor = type_cursor(next);
+  assert(cursor->anterior == NULL && cursor->i == 0);
+  charge = next_charge;
+  cursor->anterior = type;
+  return next;
+}
+
+/// Return from the type
+__attribute__((nonnull))
+static inline const mu_type_t *type_return(const mu_type_t *type) {
+  type_cursor_t *cursor = type_cursor(type);
+  const mu_type_t *anterior = cursor->anterior;
+  *cursor = (type_cursor_t) {0};
+
+  const mu_core_type_t *core_anterior;
+  if ((core_anterior = mu_type_cast(anterior, core_anterior)) != NULL) {
+    cursor = type_cursor(anterior);
+    if (core_anterior->core->argv[cursor->i - 1].variance == MU_CONTRAVARIANCE)
+      charge = !charge;
+  }
+  return anterior;
+}
+
+/// Return the <em>i</em>th type in the abstract @a type
+const mu_type_t *type_next(const mu_type_t *type);
 
 #endif /* MU_INDUCTOR_TYPE_I */

@@ -1,7 +1,7 @@
-define id = lambda x = x.foo
+# define id = lambda x = x.foo
 
-define y = (bar: id)
-define x = y.bar (foo: 1)
+# define y = (bar: id)
+# define x = y.bar (foo: 1)
 
 # define x = handle_list [1, 2, id (foo: 3)]
 
@@ -34,3 +34,4 @@ define x = y.bar (foo: 1)
 #   switch (case Foo1 = (lambda y = y), case Foo1 = (lambda z = z)) Foo1) q
 
 # define z = sw2 1
+# define y = sw2 true
