@@ -56,9 +56,6 @@
   emit(datatype_option, DATATYPE_OPTION, DatatypeOption, ##__VA_ARGS__) \
   emit(view_member, VIEW_MEMBER, ViewMember, ##__VA_ARGS__)
 
-#define MU_NODE_KIND_EMIT(lower, upper, t) , \
-  const mu_##lower##_t *: MU_##upper##_NODE
-
 /// An enumeration over each kind of node, e.g. @c MU_ACCESS_EXPR_NODE
 typedef enum {
 #define MU_EMIT(l, upper, t) MU_##upper##_NODE,
