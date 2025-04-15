@@ -236,6 +236,37 @@ const mu_coercion_t *ensure_coercion(
       goto instance_coercion;
     }
 
+    if (source_core->kind == MU_RECORD_CORE &&
+        target_core->kind == MU_RECORD_CORE) {
+      mu_variance_coercion_t *allocation;
+      if ((allocation = variance_coercion_allocate(target_core)) == NULL)
+        return NULL;
+
+      for (size_t i = 0; i < target_core->argc; i++) {
+        const mu_name_t *name = target_core->argv[i].name;
+
+        for (size_t j = 0; j < source_core->argc; j++) {
+          if (source_core->argv[j].name != name)
+            continue;
+
+          const mu_coercion_t *coercion;
+          if ((coercion = ensure_coercion(induce, core_source->argv[j], core_target->argv[i])) == NULL)
+            return NULL;
+          allocation->argv[i] = coercion;
+          goto next;
+        }
+        goto record_error;
+
+      next:;
+      }
+
+      const mu_variance_coercion_t *result;
+      if ((result = variance_coercion_activate(allocation)) == NULL)
+        return NULL;
+      return edge_assign(result_edge, &result->as_coercion);
+    }
+
+  record_error:;
     fprintf(stderr, "Type mismatch. Expected ");
     mu_core_debug(target_core);
     fprintf(stderr, " but got ");
