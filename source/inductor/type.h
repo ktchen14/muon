@@ -41,33 +41,18 @@ typedef struct {
 /// The header that each concrete type must have
 #define MU_TYPE_HEADER mu_type_t as_type
 
-/// An abstract static type
-typedef struct { union {
-  MU_TYPE_HEADER;
-
-  enum {
-    MU_CORE_STATIC_TYPE = MU_CORE_TYPE,
-    MU_SCHEME_STATIC_TYPE = MU_SCHEME_TYPE,
-  } kind;
-}; } mu_static_type_t;
-
-/// The header that each concrete static type must have
-#define MU_STATIC_TYPE_HEADER union { \
-  MU_TYPE_HEADER; mu_static_type_t as_static_type; \
-}
-
 typedef struct mu_variable_type_t mu_variable_type_t;
 
 /// A core type
 typedef struct {
-  MU_STATIC_TYPE_HEADER;
+  MU_TYPE_HEADER;
   const mu_core_t *core;
   const mu_type_t *argv[/* core->argc */];
 } mu_core_type_t;
 
 /// A scheme type
 typedef struct {
-  MU_STATIC_TYPE_HEADER;
+  MU_TYPE_HEADER;
 
   const mu_type_t *matter;
 
@@ -135,22 +120,10 @@ struct mu_variable_type_t {
   typeof(concrete) _concrete; \
   typeof(_abstract->kind) _kind = _abstract->kind; \
   int _castable = _Generic(_concrete, \
-    const mu_static_type_t *: \
-      _kind == MU_CORE_TYPE || _kind == MU_SCHEME_TYPE, \
     const mu_core_type_t *: _kind == MU_CORE_TYPE, \
     const mu_join_type_t *: _kind == MU_JOIN_TYPE, \
     const mu_scheme_type_t *: _kind == MU_SCHEME_TYPE, \
     const mu_variable_type_t *: _kind == MU_VARIABLE_TYPE); \
-  _castable ? (typeof(_concrete)) _abstract : NULL; \
-})
-
-#define mu_static_type_cast(abstract, concrete) __extension__ ({ \
-  const mu_static_type_t *_abstract = (abstract); \
-  typeof(concrete) _concrete; \
-  typeof(_abstract->kind) _kind = _abstract->kind; \
-  int _castable = _Generic(_concrete, \
-    const mu_core_type_t *: _kind == MU_CORE_STATIC_TYPE, \
-    const mu_scheme_type_t *: _kind == MU_SCHEME_STATIC_TYPE); \
   _castable ? (typeof(_concrete)) _abstract : NULL; \
 })
 
