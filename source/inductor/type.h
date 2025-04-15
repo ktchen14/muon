@@ -18,7 +18,14 @@ typedef struct {
   const induce_t *induce;
   size_t id;
 
-  int semipolymorphic;
+  // TODO
+  union {
+    unsigned int status;
+    struct {
+      _Bool access[2];
+      _Bool polymorphic;
+    };
+  };
 } mu_type_t;
 
 /// The header that each concrete type must have
@@ -71,7 +78,7 @@ typedef struct {
 
   /// Length of list of polymorphic variables
   size_t argc;
-  const mu_variable_type_t *argv[/* argc */];
+  const mu_type_t *argv[/* argc */];
 } mu_scheme_type_t;
 
 /// A join solution
@@ -104,8 +111,6 @@ struct mu_variable_type_t {
   _Bool reduced;
 
   const mu_scheme_type_t *scheme;
-
-  _Bool reachable[2];
 };
 
 /**
@@ -228,10 +233,6 @@ __attribute__((nonnull))
 static inline const mu_solution_t *assign_solution(
     const mu_variable_type_t *variable_type, const mu_solution_t *solution) {
   return ((mu_variable_type_t *) variable_type)->solution = solution;
-}
-
-static inline _Bool scheme_owns(const mu_scheme_t *scheme, const mu_type_t *type) {
-  return type->id >= scheme->id;
 }
 
 /// @internal An enumeration over each kind of type, e.g. @c _core_type_kind

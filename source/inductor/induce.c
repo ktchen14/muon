@@ -319,7 +319,17 @@ static const mu_coercion_t *ensure_static_coercion_internal(
 
 
 
-static void mark_type(induce_t *induce, const mu_type_t *type, _Bool negative) {
+static void mark_type(
+    induce_t *induce, const mu_type_t *type, _Bool negative, const mu_type_t **buffer, size_t *length) {
+  if (type->id < induce->scheme->id)
+    return;
+
+  if (type->access[negative])
+    return;
+  if (!type->access[0] && !type->access[1])
+    buffer[(*length)++] = type;
+  ((mu_type_t *) type)->access[negative] = 1;
+
   switch ON_ABSTRACT_OBJECT(type) {
     case IS_KIND_OF(core_type): {
       const mu_core_t *core = core_type->core;
@@ -333,42 +343,49 @@ static void mark_type(induce_t *induce, const mu_type_t *type, _Bool negative) {
         if (variance == MU_CONTRAVARIANCE)
           argn = !argn;
 
-        mark_type(induce, argument, argn);
+        mark_type(induce, argument, argn, buffer, length);
       }
 
       break;
     }
 
-    case IS_KIND_OF(variable_type):
-      if (!scheme_owns(induce->scheme, &variable_type->as_type))
-        return;
+    case IS_KIND_OF(scheme_type):
+      mark_type(induce, scheme_type->matter, negative, buffer, length);
+      break;
 
-      ((mu_variable_type_t *) variable_type)->reachable[negative] = 1;
-
+    case MU_VARIABLE_TYPE: {
       universe_iterator_t it;
 
       it = universe_iterator(&induce->universe, type, negative);
       for (type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
         const mu_type_t *vertex = edge->vertex[negative];
 
-        const mu_variable_type_t *variable_vertex;
-        if ((variable_vertex = mu_type_cast(vertex, variable_vertex)) == NULL)
-          mark_type(induce, vertex, negative);
-        else if (scheme_owns(induce->scheme, &variable_vertex->as_type))
-          ((mu_variable_type_t *) variable_vertex)->reachable[negative] = 1;
+        if (vertex->kind != MU_VARIABLE_TYPE) {
+          mark_type(induce, vertex, negative, buffer, length);
+          continue;
+        }
+
+        if (vertex->id < induce->scheme->id)
+          continue;
+
+        if (!vertex->access[0] && !vertex->access[1])
+          buffer[(*length)++] = vertex;
+        ((mu_type_t *) vertex)->access[negative] = 1;
       }
 
       break;
-
-    case IS_KIND_OF(scheme_type):
-      mark_type(induce, scheme_type->matter, negative);
-      break;
+    }
   }
 }
 
-static void collect(
-    induce_t *induce, const mu_type_t *type, _Bool negative,
-    const mu_type_t **buffer, size_t *i) {
+static void collect(induce_t *induce, const mu_type_t *type, _Bool negative) {
+  if (type->id < induce->scheme->id)
+    return;
+
+  if (type->access[negative])
+    return;
+  ((mu_type_t *) type)->access[negative] = 1;
+
   switch ON_ABSTRACT_OBJECT(type) {
     case IS_KIND_OF(core_type): {
       const mu_core_t *core = core_type->core;
@@ -376,61 +393,91 @@ static void collect(
       for (size_t k = 0; k < core->argc; k++) {
         const mu_type_t *argument = core_type->argv[k];
 
-        if (argument->semipolymorphic == 0) {
-          _Bool argn = negative;
-          mu_variance_t variance = core->argv[k].variance;
-          assert(variance != MU_INVARIANCE);
-          if (variance == MU_CONTRAVARIANCE)
-            argn = !argn;
+        _Bool argn = negative;
+        mu_variance_t variance = core->argv[k].variance;
+        assert(variance != MU_INVARIANCE);
+        if (variance == MU_CONTRAVARIANCE)
+          argn = !argn;
 
-          collect(induce, argument, argn, buffer, i);
-        }
+        collect(induce, argument, argn);
 
-        if (argument->semipolymorphic == 1) {
-          ((mu_type_t *) type)->semipolymorphic = 1;
-          buffer[(*i)++] = type;
-          break;
-        }
+        ((mu_type_t *) type)->polymorphic = type->polymorphic || argument->polymorphic;
       }
 
       break;
     }
 
-    case IS_KIND_OF(variable_type):
-      // This is a polymorphic root. It's already been collected.
-      if (scheme_owns(induce->scheme, &variable_type->as_type) &&
-          variable_type->reachable[0] &&
-          variable_type->reachable[1]) {
-        return;
-      }
+    case IS_KIND_OF(scheme_type):
+      collect(induce, scheme_type->matter, negative);
+      if (scheme_type->matter->polymorphic)
+        ((mu_type_t *) scheme_type)->polymorphic = 1;
+      return;
 
+    case MU_VARIABLE_TYPE: {
       universe_iterator_t it;
 
       it = universe_iterator(&induce->universe, type, negative);
       for (type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
-        if (semipolymorphic(induce, edge->vertex[negative], negative))
-          return 1;
+        const mu_type_t *vertex = edge->vertex[negative];
+
+        if (vertex->kind != MU_VARIABLE_TYPE)
+          collect(induce, vertex, negative);
+
+        if (vertex->polymorphic) {
+          universe_iterator_t jt;
+
+          jt = universe_iterator(&induce->universe, type, negative);
+          for (type_edge_t *next_edge; (next_edge = universe_next(&jt)) != NULL;) {
+            const mu_type_t *next_vertex = next_edge->vertex[negative];
+
+            if (next_vertex == vertex)
+              continue;
+            if (next_vertex->polymorphic)
+              continue;
+            if (vertex->kind != MU_VARIABLE_TYPE)
+              continue;
+
+            if (universe_search(&induce->universe, next_vertex, vertex)) {
+              ((mu_type_t *) next_vertex)->polymorphic = 1;
+            }
+          }
+        }
       }
 
-      return 0;
-
-    case MU_SCHEME_TYPE:
-      return 0;
+      return;
+    }
   }
 }
 
 const mu_type_t *generalize_type(
     induce_t *induce, const mu_type_t *matter, mu_scheme_t *scheme) {
-  // Unpack the linked list of variable types into an array
-  mu_variable_type_t *variable[1000] = {0};
-  size_t variable_length = 0;
+  // Mark each type in the scheme with whether it's accessible from matter.
+  // Also, gather each type accessible from matter.
+  const mu_type_t *accessible[1000] = {0};
+  size_t accessible_length = 0;
+  mark_type(induce, matter, 0, accessible, &accessible_length);
 
-  // Next, mark each variable type in the scheme with whether it's accessible
-  // from matter.
-  mark_type(induce, matter, 0);
-
-  mu_variable_type_t *polymorphic[1000];
+  // Mark each variable type that's both positively and negatively reachable as
+  // semipolymorphic.
   size_t polymorphic_length = 0;
+  for (size_t i = 0; i < accessible_length; i++) {
+    const mu_type_t *type = accessible[i];
+    if (type->kind != MU_VARIABLE_TYPE)
+      continue;
+    if (type->access[0] && type->access[1]) {
+      polymorphic_length++;
+      ((mu_type_t *) type)->polymorphic = 1;
+    }
+  }
+
+  // If we don't have any polymorphic variables, then just reset everything and
+  // return matter
+  if (polymorphic_length == 0) {
+    for (size_t i = 0; i < accessible_length; i++)
+      ((mu_type_t *) accessible[i])->status = 0;
+
+    return matter;
+  }
 
   // Each variable type that's both + and - accessible from matter is a
   // "polymorphic root". However, these aren't the only types that are
@@ -443,45 +490,33 @@ const mu_type_t *generalize_type(
   //
   // So we'll mark each type that can reach a polymorphic root as polymorphic.
 
-  // Here, each polymorphic root is a variable type with reachable[0],
-  // reachable[1], and rank == scheme->rank. Unless all these conditions are
-  // met, a type isn't a polymorphic root!
-
-  for (size_t i = 0; i < variable_length; i++) {
-    mu_variable_type_t *v = variable[i];
-    if (v->reachable[0] || v->reachable[1])
-      polymorphic[polymorphic_length++] = v;
+  for (size_t i = 0; i < accessible_length; i++) {
+    const mu_type_t *type = accessible[i];
+    if (!type->polymorphic) {
+      ((mu_type_t *) type)->access[0] = 0;
+      ((mu_type_t *) type)->access[1] = 0;
+    }
   }
 
-  // Now, we're going to collect each type that's "semipolymorphic", or
-  // polymorphic because it's both reachable from matter, and it can reach a
-  // polymorphic root.
-  const mu_type_t *buffer[1000];
-  size_t buffer_length = 0;
+  collect(induce, matter, 0);
 
-  /* mu_variable_type_t *variable_type = scheme->link; */
-  /* while (variable_type != NULL) { */
-  /*   mu_variable_type_t *next = variable_type->scheme_next; */
-
-  /*   /1* variable_type->scheme_next = scheme->parent->link; *1/ */
-  /*   /1* scheme->parent->link = variable_type; *1/ */
-  /*   /1* variable_type->rank--; *1/ */
-
-  /*   variable_type = next; */
-  /* } */
-
-  if (polymorphic_length == 0)
-    return matter;
+  polymorphic_length = 0;
+  for (size_t i = 0; i < accessible_length; i++) {
+    const mu_type_t *type = accessible[i];
+    if (type->polymorphic)
+      polymorphic_length++;
+  }
 
   mu_scheme_type_t *allocation;
   if ((allocation = scheme_type_allocate(induce, polymorphic_length)) == NULL)
     return NULL;
 
-  size_t i = 0;
-  for (size_t j = 0; j < polymorphic_length; j++) {
-    mu_variable_type_t *type = polymorphic[j];
-    type->scheme = allocation;
-    allocation->argv[i++] = type;
+  size_t j = 0;
+  for (size_t i = 0; i < accessible_length; i++) {
+    const mu_type_t *type = accessible[i];
+    if (type->polymorphic)
+      allocation->argv[j++] = type;
+    ((mu_type_t *) type)->status = 0;
   }
 
   const mu_scheme_type_t *result;
