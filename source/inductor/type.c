@@ -33,10 +33,6 @@ static inline mu_type_t *assign_type(mu_inductor_t *inductor, mu_type_t *type) {
   return type;
 }
 
-/// @internal Assign the concrete @a type to the @a induce instance
-#define assign_type(induce, type) \
-  ((typeof((type))) (assign_type)((induce), &(type)->as_type))
-
 const mu_core_type_t *mu_core_type(
     mu_inductor_t *inductor,
     const mu_core_t *core,
@@ -70,19 +66,11 @@ const mu_core_type_t *mu_vector_type(
 }
 
 const mu_variable_type_t *mu_variable_type(induce_t *induce) {
-  mu_scheme_t *scheme = induce->scheme;
-  assert(scheme != NULL);
-
   mu_variable_type_t *result;
   if ((result = type_allocate(induce, sizeof(mu_variable_type_t))) == NULL)
     return NULL;
-
-  *result = (mu_variable_type_t) {
-    .as_type.kind = MU_VARIABLE_TYPE,
-    .as_type.induce = induce,
-    .as_type.id = induce->type_number++,
-  };
-  return result;
+  *result = (mu_variable_type_t) { .as_type.kind = MU_VARIABLE_TYPE };
+  return assign_type(induce, &result->as_type), result;
 }
 
 mu_scheme_t *mu_scheme(mu_scheme_t *parent) {
@@ -136,7 +124,7 @@ const mu_core_type_t *core_type_activate(mu_core_type_t *type) {
     assert(argument != NULL);
     assert(argument->induce == type->as_type.induce);
   }
-  return assign_type(inductor, type), type;
+  return assign_type(inductor, &type->as_type), type;
 }
 
 mu_scheme_type_t *scheme_type_allocate(induce_t *induce, size_t argc) {
@@ -163,7 +151,7 @@ const mu_scheme_type_t *scheme_type_activate(
   }
   type->matter = matter;
 
-  return assign_type(induce, type);
+  return assign_type(induce, &type->as_type), type;
 }
 
 mu_join_type_t *join_type_allocate(induce_t *induce, size_t argc) {
@@ -188,7 +176,7 @@ const mu_join_type_t *join_type_activate(mu_join_type_t *type) {
     assert(type->argv[i]->induce == induce);
   }
 
-  return assign_type(induce, type);
+  return assign_type(induce, &type->as_type), type;
 }
 
 static void type_debug_internal(const mu_type_t *type, _Bool expand, unsigned char prec, int assoc);
