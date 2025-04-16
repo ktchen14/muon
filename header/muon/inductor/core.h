@@ -42,12 +42,6 @@ typedef struct {
   const mu_expr_t *expr;
 } mu_instance_t;
 
-typedef struct {
-  const mu_core_t *target;
-  const mu_core_t *source;
-  size_t argv[/* target->argc */];
-} record_instance_t;
-
 const mu_core_t *mu_simple_core(induce_t *induce, const mu_name_t *name);
 
 const mu_instance_t *mu_instance(
