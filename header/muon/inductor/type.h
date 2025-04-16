@@ -113,16 +113,20 @@ const mu_core_type_t *mu_core_type(
     const mu_type_t *const argv[/* core->argc */])
   __attribute__((malloc, nonnull(1, 2)));
 
+/// Create a boolean type in the @a inductor
 const mu_core_type_t *mu_boolean_type(induce_t *induce)
   __attribute__((malloc, nonnull));
 
+/// Create an integer type in the @a inductor
 const mu_core_type_t *mu_integer_type(induce_t *induce)
   __attribute__((malloc, nonnull));
 
+/// Create a lambda type in the @a inductor
 const mu_core_type_t *mu_lambda_type(
     induce_t *induce, const mu_type_t *argument, const mu_type_t *output)
   __attribute__((malloc, nonnull));
 
+/// Create a vector type in the @a inductor
 const mu_core_type_t *mu_vector_type(
     induce_t *induce, const mu_type_t *matter)
   __attribute__((malloc, nonnull));
