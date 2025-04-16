@@ -2,7 +2,6 @@
 #define MU_INDUCTOR_COERCION_H
 
 #include "core.h"
-#include "type.h"
 
 #include <stddef.h>
 
@@ -39,11 +38,7 @@ typedef struct {
   MU_COERCION_HEADER;
 } mu_id_coercion_t;
 
-typedef struct {
-  MU_COERCION_HEADER;
-  const mu_type_t *target;
-  const mu_type_t *source;
-} mu_edge_coercion_t;
+typedef struct mu_edge_coercion_t mu_edge_coercion_t;
 
 typedef struct {
   MU_COERCION_HEADER;

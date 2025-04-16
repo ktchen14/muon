@@ -2,11 +2,17 @@
 #define MU_INDUCTOR_COERCION_I
 
 #include <muon/inductor/coercion.h>  // IWYU pragma: export
+#include <muon/inductor/type.h>
 
 #include "core.h"
-#include "type.h"
 
 #include <stddef.h>
+
+struct mu_edge_coercion_t {
+  MU_COERCION_HEADER;
+  const mu_type_t *target;
+  const mu_type_t *source;
+};
 
 /// @internal An enumeration over each kind of coercion, e.g. @c _id_coercion_kind
 enum {

@@ -2,10 +2,10 @@
 #define MU_INDUCTOR_INDUCE_I
 
 #include <muon/stator.h>
+#include <muon/inductor/type.h>
 
 #include "coercion.h"
 #include "core.h"
-#include "type.h"
 #include "universe.h"
 
 #include "detect.h"
@@ -18,6 +18,15 @@ typedef struct {
   const mu_coercion_t *coercion;
   const mu_type_t *target;
 } node_coercion_t;
+
+typedef struct mu_scheme_t mu_scheme_t;
+struct mu_scheme_t {
+  const induce_t *induce;
+  mu_scheme_t *parent;
+
+  // The lowest id that a type that's a part of this scheme will have
+  size_t id;
+};
 
 typedef struct induce_t induce_t;
 struct induce_t {
@@ -147,6 +156,9 @@ const mu_coercion_t *ensure_coercion(
 
 const mu_type_t *generalize_type(induce_t *induce, const mu_type_t *type)
   __attribute__((nonnull));
+
+mu_scheme_t *mu_scheme(mu_scheme_t *parent)
+  __attribute__((malloc));
 
 extern const mu_name_t *vector_access;
 extern const mu_name_t *vector_join;

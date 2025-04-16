@@ -3,24 +3,15 @@
 
 #include <muon/inductor/type.h>  // IWYU pragma: export
 
+#include "../common.h"
 #include "core.h"
+#include "induce.h"
+#include "universe.h"
 
 #include <assert.h>
 #include <stddef.h>
 
 typedef struct induce_t induce_t;
-
-typedef struct mu_scheme_t mu_scheme_t;
-struct mu_scheme_t {
-  const induce_t *induce;
-  mu_scheme_t *parent;
-
-  // The lowest id that a type that's a part of this scheme will have
-  size_t id;
-};
-
-mu_scheme_t *mu_scheme(mu_scheme_t *parent)
-  __attribute__((malloc));
 
 mu_core_type_t *core_type_allocate(induce_t *induce, const mu_core_t *core)
   __attribute__((malloc, nonnull));
@@ -59,8 +50,8 @@ enum {
 #undef MU_EMIT
 };
 
-extern _Thread_local _Bool charge;
-extern _Thread_local _Bool next_charge;
+static _Thread_local _Bool charge;
+static _Thread_local _Bool next_charge;
 
 typedef struct {
   const mu_type_t *anterior;
@@ -112,6 +103,45 @@ static inline const mu_type_t *type_return(const mu_type_t *type) {
 }
 
 /// Return the <em>i</em>th type in the abstract @a type
-const mu_type_t *type_next(const mu_type_t *type);
+static inline const mu_type_t *type_next(const mu_type_t *type) {
+  type_cursor_t *cursor = type_cursor(type);
+  next_charge = charge;
+
+  switch ON_ABSTRACT_OBJECT(type) {
+    case IS_KIND_OF(core_type): {
+      const mu_core_t *core = core_type->core;
+
+      if (cursor->i >= core->argc)
+        return NULL;
+
+      mu_variance_t variance = core->argv[cursor->i].variance;
+      assert(variance != MU_INVARIANCE);
+      if (variance == MU_CONTRAVARIANCE)
+        next_charge = !next_charge;
+      return core_type->argv[cursor->i++];
+    }
+
+    case IS_KIND_OF(scheme_type):
+      if (cursor->i > 0)
+        return NULL;
+      return cursor->i++, scheme_type->matter;
+
+    case IS_KIND_OF(join_type):
+      assert(charge == 0);
+      return cursor->i < join_type->argc ? join_type->argv[cursor->i++] : NULL;
+
+    case MU_VARIABLE_TYPE: {
+      const universe_t *universe = &type->induce->universe;
+
+      for (size_t i; (i = cursor->i++) < universe->length;) {
+        const type_edge_t *edge = &universe->data[i];
+        if (edge->vertex[!charge] == type)
+          return edge->vertex[charge];
+      }
+      return NULL; 
+    }
+  }
+  __builtin_unreachable();
+}
 
 #endif /* MU_INDUCTOR_TYPE_I */

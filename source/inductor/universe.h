@@ -1,8 +1,9 @@
 #ifndef MU_INDUCTOR_UNIVERSE_I
 #define MU_INDUCTOR_UNIVERSE_I
 
+#include <muon/inductor/type.h>
+
 #include "coercion.h"
-#include "type.h"
 
 #include <assert.h>
 #include <stddef.h>
