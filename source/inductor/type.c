@@ -111,7 +111,7 @@ mu_core_type_t *core_type_allocate(induce_t *induce, const mu_core_t *core) {
   if ((result = type_allocate(induce, size)) == NULL)
     return NULL;
   *result = (mu_core_type_t) {
-    .as_type.kind = MU_CORE_TYPE, .as_type.induce = induce, .core = core,
+    .as_type = { .kind = MU_CORE_TYPE, .induce = induce }, .core = core,
   };
   return result;
 }
@@ -136,7 +136,7 @@ mu_scheme_type_t *scheme_type_allocate(induce_t *induce, size_t argc) {
   if ((result = type_allocate(induce, size)) == NULL)
     return NULL;
   *result = (mu_scheme_type_t) {
-    .as_type.kind = MU_SCHEME_TYPE, .as_type.induce = induce, .argc = argc,
+    .as_type = { .kind = MU_SCHEME_TYPE, .induce = induce }, .argc = argc,
   };
   return result;
 }
@@ -150,7 +150,6 @@ const mu_scheme_type_t *scheme_type_activate(
     assert(type->argv[i]->induce == induce);
   }
   type->matter = matter;
-
   return assign_type(induce, &type->as_type), type;
 }
 
@@ -163,7 +162,7 @@ mu_join_type_t *join_type_allocate(induce_t *induce, size_t argc) {
   if ((result = type_allocate(induce, size)) == NULL)
     return NULL;
   *result = (mu_join_type_t) {
-    .as_type.kind = MU_JOIN_TYPE, .as_type.induce = induce, .argc = argc,
+    .as_type = { .kind = MU_JOIN_TYPE, .induce = induce }, .argc = argc,
   };
   return result;
 }
@@ -175,7 +174,6 @@ const mu_join_type_t *join_type_activate(mu_join_type_t *type) {
     assert(type->argv[i] != NULL);
     assert(type->argv[i]->induce == induce);
   }
-
   return assign_type(induce, &type->as_type), type;
 }
 

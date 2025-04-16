@@ -107,6 +107,12 @@ typedef struct {
   _castable ? (typeof(_concrete)) _abstract : NULL; \
 })
 
+const mu_core_type_t *mu_core_type(
+    mu_inductor_t *inductor,
+    const mu_core_t *core,
+    const mu_type_t *const argv[/* core->argc */])
+  __attribute__((malloc, nonnull(1, 2)));
+
 const mu_core_type_t *mu_boolean_type(induce_t *induce)
   __attribute__((malloc, nonnull));
 
@@ -121,12 +127,6 @@ const mu_core_type_t *mu_vector_type(
     induce_t *induce, const mu_type_t *matter)
   __attribute__((malloc, nonnull));
 
-const mu_core_type_t *mu_core_type(
-    mu_inductor_t *inductor,
-    const mu_core_t *core,
-    const mu_type_t *const argv[/* core->argc */])
-  __attribute__((malloc, nonnull(1, 2)));
-
 const mu_scheme_type_t *mu_scheme_type(
     induce_t *induce,
     const mu_type_t *matter,
@@ -134,6 +134,7 @@ const mu_scheme_type_t *mu_scheme_type(
     const mu_type_t *const argv[argc])
   __attribute__((malloc, nonnull(1, 2)));
 
-const mu_variable_type_t *mu_variable_type(induce_t *induce);
+const mu_variable_type_t *mu_variable_type(induce_t *induce)
+  __attribute__((malloc, nonnull));
 
 #endif /* MU_INDUCTOR_TYPE_H */
