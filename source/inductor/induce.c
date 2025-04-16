@@ -292,7 +292,9 @@ const mu_type_t *generalize_type(induce_t *induce, const mu_type_t *root) {
   type_header(root)->access[0] = 1;
 
   for (const mu_type_t *type = root; type != NULL; type = type_return(type)) {
-    for (const mu_type_t *next; (next = type_next(type)) != NULL;) {
+    const mu_type_t *next;
+    _Bool next_charge;
+    while ((next = type_next(type, &next_charge)) != NULL) {
       if (next->id < induce->scheme->id)
         continue;
 
@@ -316,7 +318,7 @@ const mu_type_t *generalize_type(induce_t *induce, const mu_type_t *root) {
       if (next->kind == MU_VARIABLE_TYPE && type->kind == MU_VARIABLE_TYPE)
         continue;
 
-      type = type_continue(type, next);
+      type = type_continue(type, next, next_charge);
     }
   };
 
@@ -344,7 +346,8 @@ const mu_type_t *generalize_type(induce_t *induce, const mu_type_t *root) {
   type_header(root)->access[0] = 1;
 
   for (const mu_type_t *type = root, *next;;) {
-    while ((next = type_next(type)) != NULL) {
+    _Bool next_charge;
+    while ((next = type_next(type, &next_charge)) != NULL) {
       if (next->id < induce->scheme->id)
         continue;
 
@@ -354,7 +357,7 @@ const mu_type_t *generalize_type(induce_t *induce, const mu_type_t *root) {
       if (type_header(next)->access[next_charge])
         continue;
       type_header(next)->access[next_charge] = 1;
-      type = type_continue(type, next);
+      type = type_continue(type, next, next_charge);
     }
 
     if ((type = type_return(next = type)) == NULL)

@@ -12,45 +12,12 @@
 #include <limits.h>
 #include <stddef.h>
 
-typedef struct induce_t induce_t;
-
-mu_core_type_t *core_type_allocate(induce_t *induce, const mu_core_t *core)
-  __attribute__((malloc, nonnull));
-
-const mu_core_type_t *core_type_activate(mu_core_type_t *type)
-  __attribute__((nonnull, warn_unused_result));
-
-mu_scheme_type_t *scheme_type_allocate(induce_t *induce, size_t argc)
-  __attribute__((malloc, nonnull));
-
-const mu_scheme_type_t *scheme_type_activate(
-    mu_scheme_type_t *type, const mu_type_t *matter)
-  __attribute__((nonnull, warn_unused_result));
-
-mu_join_type_t *join_type_allocate(induce_t *induce, size_t argc)
-  __attribute__((malloc, nonnull));
-
-const mu_join_type_t *join_type_activate(mu_join_type_t *join)
-  __attribute__((nonnull, warn_unused_result));
-
-void type_debug(const mu_type_t *type, _Bool expand)
-  __attribute__((nonnull));
-
-__attribute__((nonnull))
-static inline const mu_type_t *assign_solution(
-    const mu_variable_type_t *variable_type, const mu_type_t *solution) {
-  return ((mu_variable_type_t *) variable_type)->solution = solution;
-}
-
 /// @internal An enumeration over each kind of type, e.g. @c _core_type_kind
 enum {
 #define MU_EMIT(lower, upper, t) _##lower##_type_kind = MU_##upper##_TYPE,
   MU_EACH_TYPE_KIND(MU_EMIT)
 #undef MU_EMIT
 };
-
-static _Thread_local _Bool charge;
-static _Thread_local _Bool next_charge;
 
 typedef struct {
   const mu_type_t *anterior;
@@ -90,9 +57,11 @@ static inline type_cursor_t *type_cursor(const mu_type_t *type, _Bool charge) {
   return &type_header(type)->cursor[charge];
 }
 
+static _Thread_local _Bool charge;
+
 /// Continue into the type
 static inline const mu_type_t *type_continue(
-    const mu_type_t *type, const mu_type_t *next) {
+    const mu_type_t *type, const mu_type_t *next, _Bool next_charge) {
   type_cursor_t *cursor = type_cursor(next, next_charge);
   assert(cursor->anterior == NULL && cursor->i == 0);
   cursor->charge = charge;
@@ -113,9 +82,10 @@ static inline const mu_type_t *type_return(const mu_type_t *type) {
 }
 
 /// Return the <em>i</em>th type in the abstract @a type
-static inline const mu_type_t *type_next(const mu_type_t *type) {
+static inline const mu_type_t *type_next(
+    const mu_type_t *type, _Bool *next_charge) {
   type_cursor_t *cursor = type_cursor(type, charge);
-  next_charge = charge;
+  *next_charge = charge;
 
   switch ON_ABSTRACT_OBJECT(type) {
     case IS_KIND_OF(core_type): {
@@ -127,7 +97,7 @@ static inline const mu_type_t *type_next(const mu_type_t *type) {
       mu_variance_t variance = core->argv[cursor->i].variance;
       assert(variance != MU_INVARIANCE);
       if (variance == MU_CONTRAVARIANCE)
-        next_charge = !next_charge;
+        *next_charge = !*next_charge;
       return core_type->argv[cursor->i++];
     }
 
@@ -152,6 +122,34 @@ static inline const mu_type_t *type_next(const mu_type_t *type) {
     }
   }
   __builtin_unreachable();
+}
+
+mu_core_type_t *core_type_allocate(induce_t *induce, const mu_core_t *core)
+  __attribute__((malloc, nonnull));
+
+const mu_core_type_t *core_type_activate(mu_core_type_t *type)
+  __attribute__((nonnull, warn_unused_result));
+
+mu_scheme_type_t *scheme_type_allocate(induce_t *induce, size_t argc)
+  __attribute__((malloc, nonnull));
+
+const mu_scheme_type_t *scheme_type_activate(
+    mu_scheme_type_t *type, const mu_type_t *matter)
+  __attribute__((nonnull, warn_unused_result));
+
+mu_join_type_t *join_type_allocate(induce_t *induce, size_t argc)
+  __attribute__((malloc, nonnull));
+
+const mu_join_type_t *join_type_activate(mu_join_type_t *join)
+  __attribute__((nonnull, warn_unused_result));
+
+void type_debug(const mu_type_t *type, _Bool expand)
+  __attribute__((nonnull));
+
+__attribute__((nonnull))
+static inline const mu_type_t *assign_solution(
+    const mu_variable_type_t *variable_type, const mu_type_t *solution) {
+  return ((mu_variable_type_t *) variable_type)->solution = solution;
 }
 
 #endif /* MU_INDUCTOR_TYPE_I */
