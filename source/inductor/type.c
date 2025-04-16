@@ -25,11 +25,11 @@ static inline void *type_allocate(mu_inductor_t *inductor, size_t size) {
   return header->data;
 }
 
-/// @internal Assign the abstract @a type to the @a induce instance
+/// @internal Assign the abstract @a type to the @a inductor
 __attribute__((nonnull, returns_nonnull))
-static inline mu_type_t *assign_type(induce_t *induce, mu_type_t *type) {
-  type->induce = induce;
-  type->id = induce->type_number++;
+static inline mu_type_t *assign_type(mu_inductor_t *inductor, mu_type_t *type) {
+  type->induce = inductor;
+  type->id = inductor->type_number++;
   return type;
 }
 
@@ -38,9 +38,11 @@ static inline mu_type_t *assign_type(induce_t *induce, mu_type_t *type) {
   ((typeof((type))) (assign_type)((induce), &(type)->as_type))
 
 const mu_core_type_t *mu_core_type(
-    induce_t *induce, const mu_core_t *core, const mu_type_t *const argv[]) {
+    mu_inductor_t *inductor,
+    const mu_core_t *core,
+    const mu_type_t *const argv[/* core->argc */]) {
   mu_core_type_t *result;
-  if ((result = core_type_allocate(induce, core)) == NULL)
+  if ((result = core_type_allocate(inductor, core)) == NULL)
     return NULL;
   for (size_t i = 0; i < core->argc; i++)
     result->argv[i] = argv[i];
@@ -127,14 +129,14 @@ mu_core_type_t *core_type_allocate(induce_t *induce, const mu_core_t *core) {
 }
 
 const mu_core_type_t *core_type_activate(mu_core_type_t *type) {
-  induce_t *induce = (induce_t *) type->as_type.induce;
+  mu_inductor_t *inductor = (mu_inductor_t *) type->as_type.induce;
 
   for (size_t i = 0; i < type->core->argc; i++) {
     const mu_type_t *argument = type->argv[i];
     assert(argument != NULL);
     assert(argument->induce == type->as_type.induce);
   }
-  return assign_type(induce, type);
+  return assign_type(inductor, type), type;
 }
 
 mu_scheme_type_t *scheme_type_allocate(induce_t *induce, size_t argc) {

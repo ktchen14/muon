@@ -7,11 +7,11 @@
 
 typedef enum {
   MU_BOOLEAN_CORE,
+  MU_CUSTOM_CORE,
   MU_INTEGER_CORE,
   MU_LAMBDA_CORE,
-  MU_VECTOR_CORE,
   MU_RECORD_CORE,
-  MU_CUSTOM_CORE,
+  MU_VECTOR_CORE,
 } mu_core_kind_t;
 
 typedef enum {
