@@ -281,21 +281,22 @@ const mu_coercion_t *ensure_coercion(
 
 static void mark_type_flat(
     const mu_type_t *root, const mu_type_t **buffer, size_t *length) {
-  assert(charge == 0);
-
   size_t scheme_id = root->induce->scheme->id;
   if (root->id < scheme_id)
     return;
 
   buffer[(*length)++] = root;
-  ((mu_type_t *) root)->access[charge] = 1;
+  ((mu_type_t *) root)->access[0] = 1;
 
+  charge = 0;
   const mu_type_t *type = root, *next;
   do {
     while ((next = type_next(type)) != NULL) {
+      // Don't continue into a type that wasn't created in this scheme
       if (next->id < scheme_id)
         continue;
 
+      // Don't continue into a type that we've already accessed
       if (next->access[charge])
         continue;
 
@@ -303,6 +304,9 @@ static void mark_type_flat(
         buffer[(*length)++] = next;
       ((mu_type_t *) next)->access[charge] = 1;
 
+      // Don't continue into a variable type from a variable type. We maintain
+      // the transitive closure of each variable type, so no new information is
+      // available in the next variable.
       if (type->kind == MU_VARIABLE_TYPE && next->kind == MU_VARIABLE_TYPE)
         continue;
 
@@ -339,44 +343,35 @@ static void collect_flat(induce_t *induce, const mu_type_t *root) {
     if ((anterior = type_return(type)) == NULL)
       break;
 
-    if (type->polymorphic)
+    if (type->polymorphic) {
       ((mu_type_t *) anterior)->polymorphic = 1;
+
+      if (anterior->kind == MU_VARIABLE_TYPE) {
+        universe_iterator_t jt;
+
+        jt = universe_iterator(&induce->universe, anterior, charge);
+        for (type_edge_t *edge; (edge = universe_next(&jt)) != NULL;) {
+          const mu_type_t *vertex = edge->vertex[charge];
+
+          if (vertex == type)
+            continue;
+          if (vertex->polymorphic)
+            continue;
+          if (vertex->kind != MU_VARIABLE_TYPE)
+            continue;
+
+          if (charge == 0) {
+            if (universe_search(&induce->universe, vertex, type))
+              ((mu_type_t *) vertex)->polymorphic = 1;
+          } else {
+            if (universe_search(&induce->universe, type, vertex))
+              ((mu_type_t *) vertex)->polymorphic = 1;
+          }
+        }
+      }
+    }
+    type = anterior;
   } while (1);
-
-    // case MU_VARIABLE_TYPE: {
-    //   universe_iterator_t it;
-
-    //   it = universe_iterator(&induce->universe, type, negative);
-    //   for (type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
-    //     const mu_type_t *vertex = edge->vertex[negative];
-
-    //     if (vertex->kind != MU_VARIABLE_TYPE)
-    //       collect(induce, vertex, negative);
-
-    //     if (vertex->polymorphic) {
-    //       ((mu_type_t *) type)->polymorphic = 1;
-
-    //       universe_iterator_t jt;
-
-    //       jt = universe_iterator(&induce->universe, type, negative);
-    //       for (type_edge_t *next_edge; (next_edge = universe_next(&jt)) != NULL;) {
-    //         const mu_type_t *next_vertex = next_edge->vertex[negative];
-
-    //         if (next_vertex == vertex)
-    //           continue;
-    //         if (next_vertex->polymorphic)
-    //           continue;
-    //         if (vertex->kind != MU_VARIABLE_TYPE)
-    //           continue;
-
-    //         if (universe_search(&induce->universe, next_vertex, vertex)) {
-    //           ((mu_type_t *) next_vertex)->polymorphic = 1;
-    //         }
-    //       }
-    //     }
-    //   }
-  // }
-
 }
 
 
