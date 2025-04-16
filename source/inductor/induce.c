@@ -538,11 +538,6 @@ const mu_type_t *generalize_type(
   return &result->as_type;
 }
 
-typedef struct {
-  const mu_type_t *source;
-  const mu_type_t *target;
-} cache_item;
-
 static const mu_type_t *instantiate_scheme(
     induce_t *induce, const mu_scheme_type_t *scheme
 ) {
