@@ -1,7 +1,6 @@
 #ifndef MU_INDUCTOR_TYPE_I
 #define MU_INDUCTOR_TYPE_I
 
-#include <limits.h>
 #include <muon/inductor/type.h>  // IWYU pragma: export
 
 #include "../common.h"
@@ -10,6 +9,7 @@
 #include "universe.h"
 
 #include <assert.h>
+#include <limits.h>
 #include <stddef.h>
 
 typedef struct induce_t induce_t;
@@ -18,20 +18,20 @@ mu_core_type_t *core_type_allocate(induce_t *induce, const mu_core_t *core)
   __attribute__((malloc, nonnull));
 
 const mu_core_type_t *core_type_activate(mu_core_type_t *type)
-  __attribute__((nonnull));
+  __attribute__((nonnull, warn_unused_result));
 
 mu_scheme_type_t *scheme_type_allocate(induce_t *induce, size_t argc)
   __attribute__((malloc, nonnull));
 
 const mu_scheme_type_t *scheme_type_activate(
     mu_scheme_type_t *type, const mu_type_t *matter)
-  __attribute__((nonnull));
+  __attribute__((nonnull, warn_unused_result));
 
 mu_join_type_t *join_type_allocate(induce_t *induce, size_t argc)
   __attribute__((malloc, nonnull));
 
 const mu_join_type_t *join_type_activate(mu_join_type_t *join)
-  __attribute__((nonnull));
+  __attribute__((nonnull, warn_unused_result));
 
 void type_debug(const mu_type_t *type, _Bool expand)
   __attribute__((nonnull));
