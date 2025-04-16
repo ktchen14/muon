@@ -364,6 +364,8 @@ const mu_type_t *generalize_type(induce_t *induce, const mu_type_t *root) {
       continue;
 
   handle_polymorphic:
+    if (!type->polymorphic)
+      polymorphic_length++;
     ((mu_type_t *) type)->polymorphic = 1;
 
     if (type->kind != MU_VARIABLE_TYPE)
@@ -382,23 +384,22 @@ const mu_type_t *generalize_type(induce_t *induce, const mu_type_t *root) {
         continue;
 
       if (charge == 0) {
-        if (universe_search(&induce->universe, vertex, next))
+        if (universe_search(&induce->universe, vertex, next)) {
+          if (!vertex->polymorphic)
+            polymorphic_length++;
           ((mu_type_t *) vertex)->polymorphic = 1;
+        }
       } else {
-        if (universe_search(&induce->universe, next, vertex))
+        if (universe_search(&induce->universe, next, vertex)) {
+          if (!vertex->polymorphic)
+            polymorphic_length++;
           ((mu_type_t *) vertex)->polymorphic = 1;
+        }
       }
     }
   }
 
   assert(root->polymorphic);
-
-  polymorphic_length = 0;
-  for (size_t i = 0; i < accessible_length; i++) {
-    const mu_type_t *type = accessible[i];
-    if (type->polymorphic)
-      polymorphic_length++;
-  }
 
   mu_scheme_type_t *allocation;
   if ((allocation = scheme_type_allocate(induce, polymorphic_length)) == NULL)
