@@ -92,8 +92,11 @@ static inline const mu_type_t *type_return(const mu_type_t *type) {
   const mu_type_t *anterior = cursor->anterior;
   *cursor = (type_cursor_t) {0};
 
+  if (anterior == NULL)
+    return NULL;
+
   const mu_core_type_t *core_type;
-  if (anterior != NULL && (core_type = mu_type_cast(anterior, core_type)) != NULL) {
+  if ((core_type = mu_type_cast(anterior, core_type)) != NULL) {
     const mu_core_t *core = core_type->core;
     cursor = type_cursor(anterior);
     if (core->argv[cursor->i - 1].variance == MU_CONTRAVARIANCE)
