@@ -593,7 +593,7 @@ static inline int debug_node_coercion(const mu_node_t *node) {
 }
 
 /// Emit debugging information on the abstract @a node to the debug stream
-void mu_node_debug(const mu_node_t *node) {
+void mu_node_debug(const mu_node_t *node) {  // NOLINT(misc-no-recursion)
   // Kind -> Text, e.g. [MU_ACCESS_EXPR_NODE] = "AccessExpr"
   static const char *const KIND_TEXT[] = {
 #define MU_EMIT(l, upper, title) [MU_##upper##_NODE] = #title,

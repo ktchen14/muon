@@ -171,6 +171,7 @@ const mu_meet_coercion_t *meet_coercion_activate(
   return coercion;
 }
 
+// NOLINTNEXTLINE(misc-no-recursion)
 void mu_coercion_debug(const mu_coercion_t *coercion) {
   // Kind -> Text, e.g. [MU_ID_COERCION] = "Id"
   static const char *KIND_TEXT[] = {
