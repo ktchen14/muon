@@ -343,39 +343,39 @@ static void collect_flat(induce_t *induce, const mu_type_t *root) {
       ((mu_type_t *) anterior)->polymorphic = 1;
   } while (1);
 
-    case MU_VARIABLE_TYPE: {
-      universe_iterator_t it;
+    // case MU_VARIABLE_TYPE: {
+    //   universe_iterator_t it;
 
-      it = universe_iterator(&induce->universe, type, negative);
-      for (type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
-        const mu_type_t *vertex = edge->vertex[negative];
+    //   it = universe_iterator(&induce->universe, type, negative);
+    //   for (type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
+    //     const mu_type_t *vertex = edge->vertex[negative];
 
-        if (vertex->kind != MU_VARIABLE_TYPE)
-          collect(induce, vertex, negative);
+    //     if (vertex->kind != MU_VARIABLE_TYPE)
+    //       collect(induce, vertex, negative);
 
-        if (vertex->polymorphic) {
-          ((mu_type_t *) type)->polymorphic = 1;
+    //     if (vertex->polymorphic) {
+    //       ((mu_type_t *) type)->polymorphic = 1;
 
-          universe_iterator_t jt;
+    //       universe_iterator_t jt;
 
-          jt = universe_iterator(&induce->universe, type, negative);
-          for (type_edge_t *next_edge; (next_edge = universe_next(&jt)) != NULL;) {
-            const mu_type_t *next_vertex = next_edge->vertex[negative];
+    //       jt = universe_iterator(&induce->universe, type, negative);
+    //       for (type_edge_t *next_edge; (next_edge = universe_next(&jt)) != NULL;) {
+    //         const mu_type_t *next_vertex = next_edge->vertex[negative];
 
-            if (next_vertex == vertex)
-              continue;
-            if (next_vertex->polymorphic)
-              continue;
-            if (vertex->kind != MU_VARIABLE_TYPE)
-              continue;
+    //         if (next_vertex == vertex)
+    //           continue;
+    //         if (next_vertex->polymorphic)
+    //           continue;
+    //         if (vertex->kind != MU_VARIABLE_TYPE)
+    //           continue;
 
-            if (universe_search(&induce->universe, next_vertex, vertex)) {
-              ((mu_type_t *) next_vertex)->polymorphic = 1;
-            }
-          }
-        }
-      }
-  }
+    //         if (universe_search(&induce->universe, next_vertex, vertex)) {
+    //           ((mu_type_t *) next_vertex)->polymorphic = 1;
+    //         }
+    //       }
+    //     }
+    //   }
+  // }
 
 }
 
