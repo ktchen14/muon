@@ -279,42 +279,6 @@ const mu_coercion_t *ensure_coercion(
   return edge_assign(result_edge, &result->as_coercion);
 }
 
-static void mark_type_flat(
-    const mu_type_t *root, const mu_type_t **buffer, size_t *length) {
-  size_t scheme_id = root->induce->scheme->id;
-  if (root->id < scheme_id)
-    return;
-
-  buffer[(*length)++] = root;
-  ((mu_type_t *) root)->access[0] = 1;
-
-  charge = 0;
-  const mu_type_t *type = root, *next;
-  do {
-    while ((next = type_next(type)) != NULL) {
-      // Don't continue into a type that wasn't created in this scheme
-      if (next->id < scheme_id)
-        continue;
-
-      // Don't continue into a type that we've already accessed
-      if (next->access[next_charge])
-        continue;
-
-      if (!next->access[0] && !next->access[1])
-        buffer[(*length)++] = next;
-      ((mu_type_t *) next)->access[next_charge] = 1;
-
-      // Don't continue into a variable type from a variable type. We maintain
-      // the transitive closure of each variable type, so no new information is
-      // available in the next variable.
-      if (type->kind == MU_VARIABLE_TYPE && next->kind == MU_VARIABLE_TYPE)
-        continue;
-
-      type = type_continue(type, next);
-    }
-  } while ((type = type_return(type)) != NULL);
-}
-
 static void collect_flat(induce_t *induce, const mu_type_t *root) {
   assert(charge == 0);
 
@@ -460,11 +424,41 @@ static void collect(induce_t *induce, const mu_type_t *type, _Bool negative) {
 
 const mu_type_t *generalize_type(
     induce_t *induce, const mu_type_t *matter) {
+  size_t scheme_id = induce->scheme->id;
+  if (matter->id < scheme_id)
+    return matter;
+
   // Mark each type in the scheme with whether it's accessible from matter.
   // Also, gather each type accessible from matter.
-  const mu_type_t *accessible[1000] = {0};
-  size_t accessible_length = 0;
-  mark_type_flat(matter, accessible, &accessible_length);
+  const mu_type_t *accessible[1000] = { matter };
+  size_t accessible_length = 1;
+  ((mu_type_t *) matter)->access[0] = 1;
+
+  charge = 0;
+  const mu_type_t *type = matter, *next;
+  do {
+    while ((next = type_next(type)) != NULL) {
+      // Don't continue into a type that doesn't belong to this scheme
+      if (next->id < scheme_id)
+        continue;
+
+      // Don't continue into a type that we've already accessed
+      if (next->access[next_charge])
+        continue;
+
+      if (!next->access[0] && !next->access[1])
+        accessible[accessible_length++] = next;
+      ((mu_type_t *) next)->access[next_charge] = 1;
+
+      // Don't continue into a variable type from a variable type. We maintain
+      // the transitive closure of each variable type, so no new information is
+      // available in the next variable.
+      if (type->kind == MU_VARIABLE_TYPE && next->kind == MU_VARIABLE_TYPE)
+        continue;
+
+      type = type_continue(type, next);
+    }
+  } while ((type = type_return(type)) != NULL);
 
   // Mark each variable type that's both positively and negatively reachable as
   // semipolymorphic.
