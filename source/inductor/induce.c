@@ -280,7 +280,7 @@ const mu_coercion_t *ensure_coercion(
 }
 
 static void collect_flat(induce_t *induce, const mu_type_t *root) {
-  assert(charge == 0);
+  charge = 0;
 
   size_t scheme_id = root->induce->scheme->id;
   if (root->id < induce->scheme->id)
@@ -296,9 +296,9 @@ static void collect_flat(induce_t *induce, const mu_type_t *root) {
       if (next->id < scheme_id)
         continue;
 
-      if (next->access[charge])
+      if (next->access[next_charge])
         continue;
-      ((mu_type_t *) next)->access[charge] = 1;
+      ((mu_type_t *) next)->access[next_charge] = 1;
 
       type = type_continue(type, next);
     }
