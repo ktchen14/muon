@@ -422,19 +422,19 @@ static void collect(induce_t *induce, const mu_type_t *type, _Bool negative) {
   }
 }
 
-const mu_type_t *generalize_type(
-    induce_t *induce, const mu_type_t *matter) {
-  if (matter->id < induce->scheme->id)
-    return matter;
+const mu_type_t *generalize_type(induce_t *induce, const mu_type_t *root) {
+  // The root type can't be polymorphic if it isn't in the active scheme
+  if (root->id < induce->scheme->id)
+    return root;
 
-  // Mark each type in the scheme with whether it's accessible from matter.
-  // Also, gather each type accessible from matter.
-  const mu_type_t *accessible[1000] = { matter };
+  // Mark each type in the active scheme with whether it's accessible from the
+  // root type.
+  const mu_type_t *accessible[1000] = { root };
   size_t accessible_length = 1;
-  ((mu_type_t *) matter)->access[0] = 1;
+  ((mu_type_t *) root)->access[0] = 1;
 
   charge = 0;
-  const mu_type_t *type = matter, *next;
+  const mu_type_t *type = root, *next;
   do {
     while ((next = type_next(type)) != NULL) {
       // Don't continue into a type that doesn't belong to this scheme
@@ -479,7 +479,7 @@ const mu_type_t *generalize_type(
     for (size_t i = 0; i < accessible_length; i++)
       ((mu_type_t *) accessible[i])->status = 0;
 
-    return matter;
+    return root;
   }
 
   // Each variable type that's both + and - accessible from matter is a
@@ -533,7 +533,7 @@ const mu_type_t *generalize_type(
   }
 
   const mu_scheme_type_t *result;
-  if (rare((result = scheme_type_activate(allocation, matter)) == NULL))
+  if (rare((result = scheme_type_activate(allocation, root)) == NULL))
     return NULL;
   return &result->as_type;
 }

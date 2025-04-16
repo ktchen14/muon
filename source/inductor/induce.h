@@ -155,7 +155,7 @@ const mu_coercion_t *ensure_coercion(
     induce_t *induce, const mu_type_t *source, const mu_type_t *target)
   __attribute__((nonnull));
 
-const mu_type_t *generalize_type(induce_t *induce, const mu_type_t *type)
+const mu_type_t *generalize_type(induce_t *induce, const mu_type_t *root)
   __attribute__((nonnull));
 
 mu_scheme_t *mu_scheme(mu_scheme_t *parent)
