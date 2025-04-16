@@ -392,8 +392,7 @@ const mu_type_t *generalize_type(induce_t *induce, const mu_type_t *root) {
           continue;
       }
 
-      if (!type_header(vertex)->polymorphic)
-        polymorphic_length++;
+      polymorphic_length++;
       type_header(vertex)->polymorphic = 1;
     }
   }
@@ -484,10 +483,9 @@ static const mu_type_t *instantiate_scheme(
 
         for (size_t i = 0; i < core_type->core->argc; i++) {
           const mu_type_t *type = core_type->argv[i];
-          if (equation[type->id] == NULL)
-            allocation->argv[i] = type;
-          else
-            allocation->argv[i] = equation[type->id];
+          if (equation[type->id] != NULL)
+            type = equation[type->id];
+          allocation->argv[i] = type;
         }
 
         if (core_type_activate(allocation) == NULL)
@@ -501,18 +499,14 @@ static const mu_type_t *instantiate_scheme(
 
         for (size_t i = 0; i < scheme_type->argc; i++) {
           const mu_type_t *type = scheme_type->argv[i];
-          if (equation[type->id] == NULL)
-            allocation->argv[i] = type;
-          else
-            allocation->argv[i] = equation[type->id];
+          if (equation[type->id] != NULL)
+            type = equation[type->id];
+          allocation->argv[i] = type;
         }
 
-        const mu_type_t *matter;
-        if (equation[scheme_type->matter->id] == NULL)
-          matter = scheme_type->matter;
-        else
-          matter = equation[scheme_type->matter->id];
-
+        const mu_type_t *matter = scheme_type->matter;
+        if (equation[matter->id] != NULL)
+          matter = equation[matter->id];
         if (scheme_type_activate(allocation, matter) == NULL)
           return NULL;
         break;
@@ -524,10 +518,9 @@ static const mu_type_t *instantiate_scheme(
 
         for (size_t i = 0; i < join_type->argc; i++) {
           const mu_type_t *type = join_type->argv[i];
-          if (equation[type->id] == NULL)
-            allocation->argv[i] = type;
-          else
-            allocation->argv[i] = equation[type->id];
+          if (equation[type->id] != NULL)
+            type = equation[type->id];
+          allocation->argv[i] = type;
         }
 
         if (join_type_activate(allocation) == NULL)
