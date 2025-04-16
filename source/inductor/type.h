@@ -1,6 +1,7 @@
 #ifndef MU_INDUCTOR_TYPE_I
 #define MU_INDUCTOR_TYPE_I
 
+#include <limits.h>
 #include <muon/inductor/type.h>  // IWYU pragma: export
 
 #include "../common.h"
@@ -55,7 +56,8 @@ static _Thread_local _Bool next_charge;
 
 typedef struct {
   const mu_type_t *anterior;
-  size_t i;
+  size_t i : sizeof(size_t) * CHAR_BIT - 1;
+  _Bool charge : 1;
 } type_cursor_t;
 
 typedef struct {
@@ -69,7 +71,7 @@ typedef struct {
 
 /// Return the cursor attached to the @a type
 __attribute__((const, nonnull, returns_nonnull))
-static inline type_cursor_t *type_cursor(const mu_type_t *type) {
+static inline type_cursor_t *type_cursor(const mu_type_t *type, _Bool charge) {
   type_header_t *header = (type_header_t *) (
       (char *) type - offsetof(type_header_t, data));
   return &header->cursor[charge];
@@ -78,8 +80,9 @@ static inline type_cursor_t *type_cursor(const mu_type_t *type) {
 /// Continue into the type
 static inline const mu_type_t *type_continue(
     const mu_type_t *type, const mu_type_t *next) {
-  type_cursor_t *cursor = type_cursor(next);
+  type_cursor_t *cursor = type_cursor(next, next_charge);
   assert(cursor->anterior == NULL && cursor->i == 0);
+  cursor->charge = charge;
   charge = next_charge;
   cursor->anterior = type;
   return next;
@@ -88,26 +91,16 @@ static inline const mu_type_t *type_continue(
 /// Return from the type
 __attribute__((nonnull))
 static inline const mu_type_t *type_return(const mu_type_t *type) {
-  type_cursor_t *cursor = type_cursor(type);
+  type_cursor_t *cursor = type_cursor(type, charge);
+  charge = cursor->charge;
   const mu_type_t *anterior = cursor->anterior;
   *cursor = (type_cursor_t) {0};
-
-  if (anterior == NULL)
-    return NULL;
-
-  const mu_core_type_t *core_type;
-  if ((core_type = mu_type_cast(anterior, core_type)) != NULL) {
-    const mu_core_t *core = core_type->core;
-    cursor = type_cursor(anterior);
-    if (core->argv[cursor->i - 1].variance == MU_CONTRAVARIANCE)
-      charge = !charge;
-  }
   return anterior;
 }
 
 /// Return the <em>i</em>th type in the abstract @a type
 static inline const mu_type_t *type_next(const mu_type_t *type) {
-  type_cursor_t *cursor = type_cursor(type);
+  type_cursor_t *cursor = type_cursor(type, charge);
   next_charge = charge;
 
   switch ON_ABSTRACT_OBJECT(type) {

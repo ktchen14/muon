@@ -28,6 +28,7 @@ struct mu_scheme_t {
   size_t id;
 };
 
+typedef struct induce_t mu_inductor_t;
 typedef struct induce_t induce_t;
 struct induce_t {
   mu_engine_t *engine;

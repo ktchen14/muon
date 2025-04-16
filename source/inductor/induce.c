@@ -297,12 +297,12 @@ static void mark_type_flat(
         continue;
 
       // Don't continue into a type that we've already accessed
-      if (next->access[charge])
+      if (next->access[next_charge])
         continue;
 
       if (!next->access[0] && !next->access[1])
         buffer[(*length)++] = next;
-      ((mu_type_t *) next)->access[charge] = 1;
+      ((mu_type_t *) next)->access[next_charge] = 1;
 
       // Don't continue into a variable type from a variable type. We maintain
       // the transitive closure of each variable type, so no new information is
@@ -372,74 +372,6 @@ static void collect_flat(induce_t *induce, const mu_type_t *root) {
     }
     type = anterior;
   } while (1);
-}
-
-
-static void mark_type(
-    induce_t *induce, const mu_type_t *type, _Bool negative, const mu_type_t **buffer, size_t *length) {
-  if (type->id < induce->scheme->id)
-    return;
-
-  if (type->access[negative])
-    return;
-  if (!type->access[0] && !type->access[1])
-    buffer[(*length)++] = type;
-  ((mu_type_t *) type)->access[negative] = 1;
-
-  switch ON_ABSTRACT_OBJECT(type) {
-    case IS_KIND_OF(core_type): {
-      const mu_core_t *core = core_type->core;
-
-      for (size_t i = 0; i < core->argc; i++) {
-        const mu_type_t *argument = core_type->argv[i];
-
-        _Bool argn = negative;
-        mu_variance_t variance = core->argv[i].variance;
-        assert(variance != MU_INVARIANCE);
-        if (variance == MU_CONTRAVARIANCE)
-          argn = !argn;
-
-        mark_type(induce, argument, argn, buffer, length);
-      }
-
-      break;
-    }
-
-    case IS_KIND_OF(scheme_type):
-      mark_type(induce, scheme_type->matter, negative, buffer, length);
-      break;
-
-    case IS_KIND_OF(join_type):
-      assert(!negative);
-
-      for (size_t i = 0; i < join_type->argc; i++)
-        mark_type(induce, join_type->argv[i], negative, buffer, length);
-
-      break;
-
-    case MU_VARIABLE_TYPE: {
-      universe_iterator_t it;
-
-      it = universe_iterator(&induce->universe, type, negative);
-      for (type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
-        const mu_type_t *vertex = edge->vertex[negative];
-
-        if (vertex->kind != MU_VARIABLE_TYPE) {
-          mark_type(induce, vertex, negative, buffer, length);
-          continue;
-        }
-
-        if (vertex->id < induce->scheme->id)
-          continue;
-
-        if (!vertex->access[0] && !vertex->access[1])
-          buffer[(*length)++] = vertex;
-        ((mu_type_t *) vertex)->access[negative] = 1;
-      }
-
-      break;
-    }
-  }
 }
 
 static void collect(induce_t *induce, const mu_type_t *type, _Bool negative) {
@@ -532,7 +464,7 @@ const mu_type_t *generalize_type(
   // Also, gather each type accessible from matter.
   const mu_type_t *accessible[1000] = {0};
   size_t accessible_length = 0;
-  mark_type(induce, matter, 0, accessible, &accessible_length);
+  mark_type_flat(matter, accessible, &accessible_length);
 
   // Mark each variable type that's both positively and negatively reachable as
   // semipolymorphic.

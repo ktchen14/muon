@@ -11,6 +11,20 @@
 #include <stdlib.h>
 #include <string.h>
 
+/// @internal Allocate a type of size @a size in the @a inductor
+__attribute__((malloc, nonnull))
+static inline void *type_allocate(mu_inductor_t *inductor, size_t size) {
+  if (rare((size = struct_size(type_header_t, data, size)) == 0))
+    return errno = ENOMEM, NULL;
+
+  type_header_t *header;
+  if ((header = malloc(size)) == NULL)
+    return NULL;
+  *header = (type_header_t) {0};
+
+  return header->data;
+}
+
 /// @internal Assign the abstract @a type to the @a induce instance
 __attribute__((nonnull, returns_nonnull))
 static inline mu_type_t *assign_type(induce_t *induce, mu_type_t *type) {
@@ -58,7 +72,7 @@ const mu_variable_type_t *mu_variable_type(induce_t *induce) {
   assert(scheme != NULL);
 
   mu_variable_type_t *result;
-  if ((result = malloc(sizeof(mu_variable_type_t))) == NULL)
+  if ((result = type_allocate(induce, sizeof(mu_variable_type_t))) == NULL)
     return NULL;
 
   *result = (mu_variable_type_t) {
@@ -104,7 +118,7 @@ mu_core_type_t *core_type_allocate(induce_t *induce, const mu_core_t *core) {
     return errno = ENOMEM, NULL;
 
   mu_core_type_t *result;
-  if ((result = malloc(size)) == NULL)
+  if ((result = type_allocate(induce, size)) == NULL)
     return NULL;
   *result = (mu_core_type_t) {
     .as_type.kind = MU_CORE_TYPE, .as_type.induce = induce, .core = core,
@@ -129,7 +143,7 @@ mu_scheme_type_t *scheme_type_allocate(induce_t *induce, size_t argc) {
     return errno = ENOMEM, NULL;
 
   mu_scheme_type_t *result;
-  if ((result = malloc(size)) == NULL)
+  if ((result = type_allocate(induce, size)) == NULL)
     return NULL;
   *result = (mu_scheme_type_t) {
     .as_type.kind = MU_SCHEME_TYPE, .as_type.induce = induce, .argc = argc,
@@ -156,7 +170,7 @@ mu_join_type_t *join_type_allocate(induce_t *induce, size_t argc) {
     return errno = ENOMEM, NULL;
 
   mu_join_type_t *result;
-  if ((result = malloc(size)) == NULL)
+  if ((result = type_allocate(induce, size)) == NULL)
     return NULL;
   *result = (mu_join_type_t) {
     .as_type.kind = MU_JOIN_TYPE, .as_type.induce = induce, .argc = argc,
