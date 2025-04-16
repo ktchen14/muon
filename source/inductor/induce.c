@@ -170,8 +170,8 @@ const mu_coercion_t *ensure_coercion(
       const mu_coercion_t *coercion;
       if ((coercion = ensure_coercion(induce, argument, target)) == NULL)
         return NULL;
-      if (coercion == NO_SUCH_COERCION)
-        return NO_SUCH_COERCION;
+      if (coercion == MU_NO_SUCH_COERCION)
+        return MU_NO_SUCH_COERCION;
 
       allocation->argv[i] = coercion;
     }
@@ -206,8 +206,8 @@ const mu_coercion_t *ensure_coercion(
     const mu_coercion_t *coercion;
     if ((coercion = ensure_coercion(induce, instance, target)) == NULL)
       return NULL;
-    if (coercion == NO_SUCH_COERCION)
-      return NO_SUCH_COERCION;
+    if (coercion == MU_NO_SUCH_COERCION)
+      return MU_NO_SUCH_COERCION;
 
     // Then return the coercion (source ⇝ instance) ∘ (instance ⇝ target)
     const mu_indirect_coercion_t *result;
@@ -785,7 +785,7 @@ static const mu_coercion_t *retrieve_core_coercion(
   /*   return induce->id_coercion; */
 
   if (source_core != target_core)
-    return NO_SUCH_COERCION;
+    return MU_NO_SUCH_COERCION;
 
   const mu_core_t *core = source_core;
 
@@ -805,7 +805,7 @@ static const mu_coercion_t *retrieve_core_coercion(
     }
 
     const mu_coercion_t *coercion = retrieve_coercion(induce, next_source, next_target);
-    if (coercion == NULL || coercion == NO_SUCH_COERCION) {
+    if (coercion == NULL || coercion == MU_NO_SUCH_COERCION) {
       free(allocation);
       return coercion;
     }
@@ -838,7 +838,7 @@ const mu_coercion_t *retrieve_coercion(
     if ((result = retrieve_core_coercion(induce, next_source, next_target)) == NULL)
       return NULL;
 
-    if (result == NO_SUCH_COERCION)
+    if (result == MU_NO_SUCH_COERCION)
       return result;
 
     type_edge_t *edge;
@@ -847,7 +847,7 @@ const mu_coercion_t *retrieve_coercion(
     return edge_assign(edge, result);
   }
 
-  return NO_SUCH_COERCION;
+  return MU_NO_SUCH_COERCION;
 }
 
 

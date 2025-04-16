@@ -9,7 +9,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-const void *const NO_SUCH_COERCION = &NO_SUCH_COERCION;
+const void *const MU_NO_SUCH_COERCION = &MU_NO_SUCH_COERCION;
 
 const mu_edge_coercion_t *mu_edge_coercion(const mu_type_t *source, const mu_type_t *target) {
   mu_edge_coercion_t *result;

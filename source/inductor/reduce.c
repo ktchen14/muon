@@ -144,7 +144,7 @@ const void *reduce_type_to_join(
       const mu_coercion_t *coercion;
       if ((coercion = retrieve_coercion(induce, b, a)) == NULL)
         return NULL;
-      if (coercion != NO_SUCH_COERCION) {
+      if (coercion != MU_NO_SUCH_COERCION) {
         if (redirect_source(induce, b_edge, a, coercion) == NULL)
           return NULL;
         continue;
@@ -153,7 +153,7 @@ const void *reduce_type_to_join(
       // If we have a ⇝ b, then assign a ⇝ b ⇝ v to ⟨a ⇒ v⟩ and skip this a
       if ((coercion = retrieve_coercion(induce, a, b)) == NULL)
         return NULL;
-      if (coercion != NO_SUCH_COERCION) {
+      if (coercion != MU_NO_SUCH_COERCION) {
         if (redirect_source(induce, a_edge, b, coercion) == NULL)
           return NULL;
         goto continue_a;
