@@ -289,7 +289,7 @@ const mu_type_t *generalize_type(induce_t *induce, const mu_type_t *root) {
   const mu_type_t *accessible[1000] = { root };
   size_t accessible_length = 1;
   size_t polymorphic_length = 0;
-  ((mu_type_t *) root)->access[0] = 1;
+  type_header(root)->access[0] = 1;
 
   for (const mu_type_t *type = root; type != NULL; type = type_return(type)) {
     for (const mu_type_t *next; (next = type_next(type)) != NULL;) {
@@ -297,17 +297,17 @@ const mu_type_t *generalize_type(induce_t *induce, const mu_type_t *root) {
         continue;
 
       // Don't continue into a type that we've already accessed
-      if (next->access[next_charge])
+      if (type_header(next)->access[next_charge])
         continue;
 
-      if (!next->access[0] && !next->access[1])
+      if (!type_header(next)->access[0] && !type_header(next)->access[1])
         accessible[accessible_length++] = next;
-      ((mu_type_t *) next)->access[next_charge] = 1;
+      type_header(next)->access[next_charge] = 1;
 
       // Mark a variable type that's both + and - accessible as polymorphic
-      if (next->kind == MU_VARIABLE_TYPE && next->access[0] && next->access[1]) {
+      if (next->kind == MU_VARIABLE_TYPE && type_header(next)->access[0] && type_header(next)->access[1]) {
         polymorphic_length++;
-        ((mu_type_t *) next)->polymorphic = 1;
+        type_header(next)->polymorphic = 1;
       }
 
       // Don't continue into a variable type from a variable type. We maintain
@@ -324,7 +324,7 @@ const mu_type_t *generalize_type(induce_t *induce, const mu_type_t *root) {
   // return matter
   if (polymorphic_length == 0) {
     for (size_t i = 0; i < accessible_length; i++)
-      ((mu_type_t *) accessible[i])->status = 0;
+      type_header(accessible[i])->status = 0;
     return root;
   }
 
@@ -340,33 +340,33 @@ const mu_type_t *generalize_type(induce_t *induce, const mu_type_t *root) {
   // So we'll mark each type that can reach a polymorphic root as polymorphic.
 
   for (size_t i = 0; i < accessible_length; i++)
-    ((mu_type_t *) accessible[i])->access[0] = ((mu_type_t *) accessible[i])->access[1] = 0;
-  ((mu_type_t *) root)->access[0] = 1;
+    type_header(accessible[i])->access[0] = type_header(accessible[i])->access[1] = 0;
+  type_header(root)->access[0] = 1;
 
   for (const mu_type_t *type = root, *next;;) {
     while ((next = type_next(type)) != NULL) {
       if (next->id < induce->scheme->id)
         continue;
 
-      if (next->polymorphic)
+      if (type_header(next)->polymorphic)
         goto handle_polymorphic;
 
-      if (next->access[next_charge])
+      if (type_header(next)->access[next_charge])
         continue;
-      ((mu_type_t *) next)->access[next_charge] = 1;
+      type_header(next)->access[next_charge] = 1;
       type = type_continue(type, next);
     }
 
     if ((type = type_return(next = type)) == NULL)
       break;
 
-    if (!next->polymorphic)
+    if (!type_header(next)->polymorphic)
       continue;
 
   handle_polymorphic:
-    if (!type->polymorphic)
+    if (!type_header(type)->polymorphic)
       polymorphic_length++;
-    ((mu_type_t *) type)->polymorphic = 1;
+    type_header(type)->polymorphic = 1;
 
     if (type->kind != MU_VARIABLE_TYPE)
       continue;
@@ -378,28 +378,27 @@ const mu_type_t *generalize_type(induce_t *induce, const mu_type_t *root) {
 
       if (vertex == next)
         continue;
-      if (vertex->polymorphic)
+      if (type_header(vertex)->polymorphic)
         continue;
       if (vertex->kind != MU_VARIABLE_TYPE)
         continue;
 
+      // If vertex is a sibling of next, and ∃
       if (charge == 0) {
-        if (universe_search(&induce->universe, vertex, next)) {
-          if (!vertex->polymorphic)
-            polymorphic_length++;
-          ((mu_type_t *) vertex)->polymorphic = 1;
-        }
+        if (!universe_search(&induce->universe, vertex, next))
+          continue;
       } else {
-        if (universe_search(&induce->universe, next, vertex)) {
-          if (!vertex->polymorphic)
-            polymorphic_length++;
-          ((mu_type_t *) vertex)->polymorphic = 1;
-        }
+        if (!universe_search(&induce->universe, next, vertex))
+          continue;
       }
+
+      if (!type_header(vertex)->polymorphic)
+        polymorphic_length++;
+      type_header(vertex)->polymorphic = 1;
     }
   }
 
-  assert(root->polymorphic);
+  assert(type_header(root)->polymorphic);
 
   mu_scheme_type_t *allocation;
   if ((allocation = scheme_type_allocate(induce, polymorphic_length)) == NULL)
@@ -409,7 +408,7 @@ const mu_type_t *generalize_type(induce_t *induce, const mu_type_t *root) {
   for (size_t i = 0; i < accessible_length; i++) {
     const mu_type_t *type = accessible[i];
 
-    if (type->polymorphic) {
+    if (type_header(type)->polymorphic) {
       allocation->argv[j++] = type;
 
       const mu_variable_type_t *v;
@@ -419,7 +418,7 @@ const mu_type_t *generalize_type(induce_t *induce, const mu_type_t *root) {
       }
     }
 
-    ((mu_type_t *) type)->status = 0;
+    type_header(type)->status = 0;
   }
 
   const mu_scheme_type_t *result;

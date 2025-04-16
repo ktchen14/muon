@@ -26,15 +26,6 @@ typedef struct {
   mu_type_kind_t kind;
   const induce_t *induce;
   size_t id;
-
-  // TODO
-  union {
-    unsigned int status;
-    struct {
-      _Bool access[2];
-      _Bool polymorphic;
-    };
-  };
 } mu_type_t;
 
 /// The header that each concrete type must have

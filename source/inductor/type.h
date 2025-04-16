@@ -64,6 +64,15 @@ typedef struct {
   const mu_type_t *next;
   type_cursor_t cursor[2];
 
+  // TODO
+  union {
+    unsigned int status;
+    struct {
+      _Bool access[2];
+      _Bool polymorphic;
+    };
+  };
+
   _Alignas(union {
 #define MU_EMIT(lower, u, t) mu_##lower##_type_t lower;
     MU_EACH_TYPE_KIND(MU_EMIT)
