@@ -424,8 +424,7 @@ static void collect(induce_t *induce, const mu_type_t *type, _Bool negative) {
 
 const mu_type_t *generalize_type(
     induce_t *induce, const mu_type_t *matter) {
-  size_t scheme_id = induce->scheme->id;
-  if (matter->id < scheme_id)
+  if (matter->id < induce->scheme->id)
     return matter;
 
   // Mark each type in the scheme with whether it's accessible from matter.
@@ -439,7 +438,7 @@ const mu_type_t *generalize_type(
   do {
     while ((next = type_next(type)) != NULL) {
       // Don't continue into a type that doesn't belong to this scheme
-      if (next->id < scheme_id)
+      if (next->id < induce->scheme->id)
         continue;
 
       // Don't continue into a type that we've already accessed
@@ -459,6 +458,7 @@ const mu_type_t *generalize_type(
       type = type_continue(type, next);
     }
   } while ((type = type_return(type)) != NULL);
+  assert(charge == 0);
 
   // Mark each variable type that's both positively and negatively reachable as
   // semipolymorphic.
