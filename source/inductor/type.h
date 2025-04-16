@@ -36,8 +36,6 @@ const mu_join_type_t *join_type_activate(mu_join_type_t *join)
 void type_debug(const mu_type_t *type, _Bool expand)
   __attribute__((nonnull));
 
-void debug_variable_type_name(const mu_variable_type_t *type);
-
 __attribute__((nonnull))
 static inline const mu_type_t *assign_solution(
     const mu_variable_type_t *variable_type, const mu_type_t *solution) {

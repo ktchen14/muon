@@ -179,7 +179,7 @@ const mu_join_type_t *join_type_activate(mu_join_type_t *type) {
 
 static void type_debug_internal(const mu_type_t *type, _Bool expand, unsigned char prec, int assoc);
 
-void debug_variable_type_name(const mu_variable_type_t *type) {
+static void debug_variable_type_name(const mu_variable_type_t *type) {
   static _Atomic size_t next_number = 0;
   static const char *alphabet[] = {
     "α", "β", "γ", "δ", "ε", "ζ", "η", "θ", "ι", "κ", "μ", "ν", "ξ", "ο", "π",
