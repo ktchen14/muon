@@ -101,6 +101,7 @@ static inline const mu_type_t *type_return(const mu_type_t *type) {
   charge = cursor->charge;
   const mu_type_t *anterior = cursor->anterior;
   *cursor = (type_cursor_t) {0};
+  assert(anterior != NULL || charge == 0);
   return anterior;
 }
 
