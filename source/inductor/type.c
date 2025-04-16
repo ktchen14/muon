@@ -372,12 +372,11 @@ const mu_type_t *type_next(const mu_type_t *type) {
       const universe_t *universe = &type->induce->universe;
 
       for (size_t i; (i = cursor->i++) < universe->length;) {
-        type_edge_t *edge = &universe->data[i];
-        if (charge == 0 && edge->target == type)
-          return edge->source;
-        if (charge == 1 && edge->source == type)
-          return edge->target;
+        const type_edge_t *edge = &universe->data[i];
+        if (edge->vertex[!charge] == type)
+          return edge->vertex[charge];
       }
+      return NULL; 
     }
   }
   __builtin_unreachable();
