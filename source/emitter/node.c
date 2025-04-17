@@ -45,27 +45,66 @@ __attribute__((nonnull)) static LLVMValueRef integer_expr_frame(
 
 __attribute__((nonnull)) static LLVMValueRef invoke_expr_frame(
     frame_t *frame, const mu_invoke_expr_t *expr) {
+  emitter_t *emitter = frame->emitter;
+
+  const mu_node_t *operator = &expr->operator->as_node;
+
+  LLVMValueRef operator_val = evince_result(frame, operator);
+
+  const mu_type_t *operator_type;
+  if ((operator_type = evince_type(emitter->inductor, operator)) == NULL)
+    return NULL;
+
+  LLVMTypeRef operator_ty;
+  if ((operator_ty = get_type(emitter, operator_type)) == NULL)
+    return NULL;
+
+  const mu_node_t *argument = &expr->argument->as_node;
+
+  LLVMValueRef argument_val = evince_result(frame, argument);
+
+  const mu_type_t *argument_type;
+  if ((argument_type = evince_type(emitter->inductor, argument)) == NULL)
+    return NULL;
+
+  LLVMTypeRef argument_ty;
+  if ((argument_ty = get_type(emitter, argument_type)) == NULL)
+    return NULL;
+
+  LLVMTypeRef return_type = LLVMGetReturnType(operator_ty);
+  size_t argc = LLVMCountParamTypes(operator_ty);
+  assert(argc == 0);
+  LLVMValueRef argv[argc];
+  argv[0] = argument_val;
+
+  return LLVMBuildCall2(
+      frame->builder, return_type, operator_val, argv, argc, "invoke");
 }
 
 __attribute__((nonnull))
-static LLVMValueRef lambda_expr_frame(frame_t *frame, const mu_lambda_expr_t *expr) {
-  emit_t *emit = frame->emit;
+static frame_t *lambda_expr_frame(frame_t *frame, const mu_lambda_expr_t *expr) {
+  emitter_t *emitter = frame->emitter;
 
-  LLVMTypeRef argv[] = { LLVMInt32Type(), LLVMInt32Type() };
-  size_t argc = sizeof(argv) / sizeof(argv[0]);
+  const mu_type_t *lambda_type = evince_type(emitter->inductor, &expr->as_node);
+  LLVMTypeRef lambda_ty;
+  if ((lambda_ty = get_type(emitter, lambda_type)) == NULL)
+    return NULL;
 
-  LLVMTypeRef matter_type = LLVMInt32Type();
-
-  LLVMTypeRef result = LLVMFunctionType(matter_type, argv, argc, 0);
-  LLVMValueRef lambda = LLVMAddFunction(emit->module, "lambda", result);
+  LLVMValueRef lambda = LLVMAddFunction(emitter->module, "lambda", lambda_ty);
   LLVMBasicBlockRef entry = LLVMAppendBasicBlock(lambda, "");
   LLVMBuilderRef builder = LLVMCreateBuilder();
   LLVMPositionBuilderAtEnd(builder, entry);
+
+  frame_t newframe = { .emitter = emitter, .lambda = lambda, .builder = builder };
+  emitter->frame[emitter->frame_length++] = newframe;
+  return &emitter->frame[emitter->frame_length - 1];
 }
 
 __attribute__((nonnull))
 static LLVMValueRef name_expr_frame(frame_t *frame, const mu_name_expr_t *expr) {
-  const mu_node_t *target = detect_evince(frame->emit->detect, &expr->as_node);
+  emitter_t *emitter = frame->emitter;
+
+  const mu_node_t *target = detect_evince(emitter->detect, &expr->as_node);
   assert(target != NULL);
   return evince_result(frame, target);
 }
