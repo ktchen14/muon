@@ -1,0 +1,166 @@
+#include "common.h"
+
+#include "../common.h"
+#include "../inductor.h"
+
+#include <llvm-c/Core.h>
+#include <llvm-c/Target.h>
+#include <llvm-c/Types.h>
+
+#include <assert.h>
+#include <errno.h>
+#include <stdlib.h>
+
+__attribute__((nonnull, returns_nonnull))
+static LLVMTypeRef evince_result(const emitter_t *emitter, const mu_type_t *type) {
+  assert(type->id < emitter->type_length);
+  LLVMTypeRef result = emitter->type_to_type[type->id];
+  assert(result != NULL);
+  return result;
+}
+
+__attribute__((nonnull)) static LLVMTypeRef boolean_type_emit(
+    emitter_t *emitter, const mu_core_type_t *type) {
+  return LLVMInt1Type();
+}
+
+__attribute__((nonnull)) static LLVMTypeRef integer_type_emit(
+    emitter_t *emitter, const mu_core_type_t *type) {
+  return LLVMInt64Type();
+}
+
+__attribute__((nonnull)) static LLVMTypeRef lambda_type_emit(
+    emitter_t *emitter, const mu_core_type_t *type) {
+  LLVMTypeRef argument_type = evince_result(emitter, type->argv[0]);
+  LLVMTypeRef output_type = evince_result(emitter, type->argv[1]);
+  return LLVMFunctionType(output_type, &argument_type, 1, 0);
+}
+
+__attribute__((nonnull)) static LLVMTypeRef record_type_emit(
+    emitter_t *emitter, const mu_core_type_t *type) {
+  const mu_core_t *core = type->core;
+
+  if (core->argc < 256) {
+    LLVMTypeRef argv[256];
+
+    for (size_t i = 0; i < core->argc; i++)
+      argv[i] = evince_result(emitter, type->argv[i]);
+
+    return LLVMStructType(argv, core->argc, 0);
+  }
+
+  size_t size;
+  if (rare(__builtin_mul_overflow(sizeof(LLVMTypeRef), core->argc, &size)))
+    return errno = ENOMEM, NULL;
+
+  LLVMTypeRef *argv;
+  if ((argv = malloc(size)) == NULL)
+    goto except_malloc;
+
+  for (size_t i = 0; i < core->argc; i++)
+    argv[i] = evince_result(emitter, type->argv[i]);
+
+  LLVMTypeRef result;
+  if ((result = LLVMStructType(argv, core->argc, 0)) == NULL)
+    goto except_llvm_struct_type;
+
+  free(argv);
+  return result;
+
+except_llvm_struct_type:
+  free(argv);
+
+except_malloc:
+  return NULL;
+}
+
+__attribute__((nonnull)) static LLVMTypeRef vector_type_emit(
+    emitter_t *emitter, const mu_core_type_t *type) {
+  LLVMTypeRef matter_type = evince_result(emitter, type->argv[0]);
+
+  LLVMTypeRef allocation_type;
+  if ((allocation_type = LLVMPointerType(matter_type, 0)) == NULL)
+    return NULL;
+
+  LLVMTypeRef argv[] = { LLVMInt64Type(), allocation_type };
+  return LLVMStructType(argv, 2, 0);
+}
+
+__attribute__((nonnull)) static LLVMTypeRef custom_type_emit(
+    emitter_t *emitter, const mu_core_type_t *type) {
+  return LLVMInt64Type();
+}
+
+__attribute__((nonnull)) static LLVMTypeRef core_type_emit(
+    emitter_t *emitter, const mu_core_type_t *type) {
+  switch (type->core->kind) {
+    case MU_BOOLEAN_CORE: return boolean_type_emit(emitter, type);
+    case MU_CUSTOM_CORE:  return custom_type_emit(emitter, type);
+    case MU_INTEGER_CORE: return integer_type_emit(emitter, type);
+    case MU_LAMBDA_CORE:  return lambda_type_emit(emitter, type);
+    case MU_RECORD_CORE:  return record_type_emit(emitter, type);
+    case MU_VECTOR_CORE:  return vector_type_emit(emitter, type);
+  }
+  __builtin_unreachable();
+}
+
+__attribute__((nonnull)) static LLVMTypeRef join_type_emit(
+    emitter_t *emitter, const mu_join_type_t *type) {
+  size_t result_size = 0;
+  for (size_t i = 0; i < type->argc; i++) {
+    LLVMTypeRef argument = evince_result(emitter, type->argv[i]);
+    size_t size = LLVMABISizeOfType(emitter->data_layout, argument);
+    result_size = maximum(result_size, size);
+  }
+
+  LLVMTypeRef byte_type = LLVMInt8Type();
+  LLVMTypeRef data_type;
+  if ((data_type = LLVMArrayType(byte_type, result_size)) == NULL)
+    return NULL;
+
+  LLVMTypeRef argv[] = { LLVMInt64Type(), data_type };
+  return LLVMStructType(argv, 2, 0);
+}
+
+__attribute__((nonnull)) static LLVMTypeRef type_emit(
+    emitter_t *emitter, const mu_type_t *type) {
+  switch ON_ABSTRACT_OBJECT(type) {
+    case IS_KIND_OF(core_type):
+      return core_type_emit(emitter, core_type);
+
+    case IS_KIND_OF(scheme_type):
+      abort();
+
+    case IS_KIND_OF(variable_type):
+      assert(variable_type->solution != NULL);
+      return type_emit(emitter, variable_type->solution);
+
+    case IS_KIND_OF(join_type):
+      return join_type_emit(emitter, join_type);
+  }
+  __builtin_unreachable();
+}
+
+LLVMTypeRef get_type(emitter_t *emitter, const mu_type_t *root) {
+  assert(root->id < emitter->type_length);
+
+  const mu_type_t *type = root, *next;
+  do {
+    while ((next = type_next(type)) != NULL) {
+      assert(next->id < emitter->type_length);
+
+      LLVMTypeRef answer = emitter->type_to_type[next->id];
+      if (answer != NULL)
+        continue;
+
+      type = type_continue(type, next);
+    }
+
+    LLVMTypeRef answer;
+    if ((answer = type_emit(emitter, type)) == NULL)
+      return NULL;
+    emitter->type_to_type[type->id] = answer;
+  } while ((type = type_return(type)) != NULL);
+
+  return evince_result(emitter, root);
+}
