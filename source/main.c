@@ -1,5 +1,6 @@
 #include <muon.h>
 
+#include "author.h"
 #include "inductor.h"
 #include "muon/common.h"
 #include "script.h"
@@ -7,6 +8,9 @@
 #include "status.h"
 
 #include "common.h"
+
+#include <llvm-c/BitWriter.h>
+#include <llvm-c/Types.h>
 
 #include <assert.h>
 #include <errno.h>
@@ -148,6 +152,14 @@ int main(int argc, char *argv[argc]) {
     mu_debug_stream = stderr;
 
     system("dot -Tpng -O out.dot");
+  }
+
+  LLVMModuleRef module;
+  module = script_emit(&induce, &sequence_expr->as_node);
+  assert(module != NULL);
+
+  if (LLVMWriteBitcodeToFile(module, "module.bc") != 0) {
+    fprintf(stderr, "error writing bitcode to file, skipping\n");
   }
 
   return EXIT_SUCCESS;

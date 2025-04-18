@@ -1,4 +1,5 @@
 #include "../inductor.h"
+#include "../stator.h"
 
 #include <llvm-c/Target.h>
 #include <llvm-c/Types.h>
@@ -31,3 +32,4 @@ struct author_t {
 };
 
 LLVMTypeRef get_type(author_t *author, const mu_type_t *root);
+LLVMModuleRef script_emit(induce_t *induce, const mu_node_t *root);

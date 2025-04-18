@@ -14,6 +14,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+static LLVMValueRef SKIP = (void *) &(int) {1};
+
 static LLVMValueRef evince_result(const frame_t *frame, const mu_node_t *node) {
   author_t *author = frame->author;
   assert(node->id < author->node_length);
@@ -35,6 +37,8 @@ __attribute__((nonnull)) static LLVMValueRef access_expr_emit(
   LLVMBasicBlockRef entry = LLVMAppendBasicBlock(lambda, "");
   LLVMBuilderRef builder = LLVMCreateBuilder();
   LLVMPositionBuilderAtEnd(builder, entry);
+
+  return SKIP;
 }
 
 __attribute__((nonnull)) static LLVMValueRef boolean_expr_emit(
@@ -109,29 +113,28 @@ static LLVMValueRef name_expr_emit(frame_t *frame, const mu_name_expr_t *expr) {
 
 __attribute__((nonnull))
 static LLVMValueRef native_expr_emit(frame_t *frame, const mu_native_expr_t *expr) {
-  abort();
+  return SKIP;
 }
 
 __attribute__((nonnull))
 static LLVMValueRef record_expr_emit(frame_t *frame, const mu_record_expr_t *expr) {
-  abort();
+  return SKIP;
 }
 
 __attribute__((nonnull))
 static LLVMValueRef sequence_expr_emit(frame_t *frame, const mu_sequence_expr_t *expr) {
-  abort();
+  return SKIP;
 }
 
 __attribute__((nonnull))
 static LLVMValueRef switch_expr_emit(frame_t *frame, const mu_switch_expr_t *expr) {
-  abort();
+  return SKIP;
 }
 
 __attribute__((nonnull))
 static LLVMValueRef vector_expr_emit(frame_t *frame, const mu_vector_expr_t *expr) {
+  return SKIP;
 }
-
-static LLVMValueRef SKIP = (void *) &(int) {1};
 
 LLVMValueRef node_emit(frame_t *frame, const mu_node_t *node) {
   switch (node->kind) {
@@ -149,8 +152,18 @@ LLVMModuleRef script_emit(induce_t *induce, const mu_node_t *root) {
   author_t author = {
     .detect = induce->detect,
     .inductor = induce,
+    .type_length = induce->type_number,
+    .node_length = induce->engine->node_number,
     .module = module,
   };
+
+  LLVMTypeRef global_type = LLVMFunctionType(LLVMVoidType(), NULL, 0, 0);
+  LLVMValueRef lambda = LLVMAddFunction(module, "init", global_type);
+  LLVMBasicBlockRef entry = LLVMAppendBasicBlock(lambda, "");
+  LLVMBuilderRef builder = LLVMCreateBuilder();
+  LLVMPositionBuilderAtEnd(builder, entry);
+  frame_t newframe = { .author = &author, .lambda = lambda, .builder = builder };
+  author.frame[author.frame_length++] = newframe;
 
   const mu_node_t *node = root, *next;
   do {
@@ -176,6 +189,7 @@ LLVMModuleRef script_emit(induce_t *induce, const mu_node_t *root) {
     }
 
     LLVMValueRef result;
+
     if ((result = node_emit(&author.frame[author.frame_length - 1], node)) == NULL)
       return NULL;
     if (result == SKIP)
