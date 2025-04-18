@@ -22,6 +22,21 @@ static LLVMValueRef evince_result(const frame_t *frame, const mu_node_t *node) {
   return result;
 }
 
+__attribute__((nonnull)) static LLVMValueRef access_expr_emit(
+    frame_t *frame, const mu_access_expr_t *expr) {
+  emitter_t *emitter = frame->emitter;
+
+  const mu_type_t *lambda_type = evince_type(emitter->inductor, &expr->as_node);
+  LLVMTypeRef lambda_ty;
+  if ((lambda_ty = get_type(emitter, lambda_type)) == NULL)
+    return NULL;
+
+  LLVMValueRef lambda = LLVMAddFunction(emitter->module, "", lambda_ty);
+  LLVMBasicBlockRef entry = LLVMAppendBasicBlock(lambda, "");
+  LLVMBuilderRef builder = LLVMCreateBuilder();
+  LLVMPositionBuilderAtEnd(builder, entry);
+}
+
 __attribute__((nonnull)) static LLVMValueRef boolean_expr_emit(
     frame_t *frame, const mu_boolean_expr_t *expr) {
   return LLVMConstInt(LLVMInt1Type(), expr->data, 0);
@@ -66,7 +81,7 @@ __attribute__((nonnull)) static LLVMValueRef invoke_expr_emit(
     return NULL;
 
   LLVMTypeRef return_type = LLVMGetReturnType(operator_ty);
-  size_t argc = LLVMCountParamTypes(operator_ty);
+  unsigned int argc = LLVMCountParamTypes(operator_ty);
   assert(argc == 0);
   LLVMValueRef argv[argc];
   argv[0] = argument_val;
@@ -101,6 +116,26 @@ static LLVMValueRef name_expr_emit(frame_t *frame, const mu_name_expr_t *expr) {
   const mu_node_t *target = detect_evince(emitter->detect, &expr->as_node);
   assert(target != NULL);
   return evince_result(frame, target);
+}
+
+__attribute__((nonnull))
+static LLVMValueRef native_expr_emit(frame_t *frame, const mu_native_expr_t *expr) {
+  abort();
+}
+
+__attribute__((nonnull))
+static LLVMValueRef record_expr_emit(frame_t *frame, const mu_record_expr_t *expr) {
+  abort();
+}
+
+__attribute__((nonnull))
+static LLVMValueRef sequence_expr_emit(frame_t *frame, const mu_sequence_expr_t *expr) {
+  abort();
+}
+
+__attribute__((nonnull))
+static LLVMValueRef switch_expr_emit(frame_t *frame, const mu_switch_expr_t *expr) {
+  abort();
 }
 
 __attribute__((nonnull))
