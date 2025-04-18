@@ -346,5 +346,5 @@ static void type_debug_internal(const mu_type_t *type, _Bool expand, unsigned ch
 }
 
 void type_debug(const mu_type_t *type, _Bool expand) {
-  return type_debug_internal(type, expand, 0, 0);
+  type_debug_internal(type, expand, 0, 0);
 }
