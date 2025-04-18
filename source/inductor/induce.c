@@ -627,7 +627,7 @@ const mu_coercion_t *retrieve_coercion(
     return induce->id_coercion;
 
   // If ∃⟨source ⇒ target⟩ then return the coercion on that edge
-  const type_edge_t *edge;
+  type_edge_t *edge;
   if ((edge = universe_search(&induce->universe, source, target)) != NULL)
     return coerce_with(edge);
 

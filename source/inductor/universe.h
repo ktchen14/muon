@@ -71,7 +71,7 @@ static inline type_edge_t *universe_next(universe_iterator_t *iterator) {
 }
 
 __attribute__((nonnull))
-static inline const mu_coercion_t *coerce_with(const type_edge_t *edge) {
+static inline const mu_coercion_t *coerce_with(type_edge_t *edge) {
   // If the edge has a coercion, return it
   if (edge->coercion != NULL)
     return edge->coercion;
@@ -80,7 +80,7 @@ static inline const mu_coercion_t *coerce_with(const type_edge_t *edge) {
   const mu_edge_coercion_t *result;
   if ((result = mu_edge_coercion(edge->source, edge->target)) == NULL)
     return NULL;
-  return ((type_edge_t *) edge)->coercion = &result->as_coercion;
+  return edge->coercion = &result->as_coercion;
 }
 
 __attribute__((nonnull, pure))
