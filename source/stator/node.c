@@ -12,6 +12,14 @@
 #include <stdint.h>
 #include <string.h>
 
+/// @internal Return the mutable engine of the @a node
+static inline mu_engine_t *unlock_engine(mu_node_t *node) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-qual"
+  return (mu_engine_t *) node->engine;
+#pragma GCC diagnostic pop
+}
+
 /// @internal Allocate a node of size @a size in the @a engine
 __attribute__((malloc, nonnull))
 static inline void *node_allocate(mu_engine_t *engine, size_t size) {
@@ -238,7 +246,7 @@ mu_record_expr_t *record_expr_allocate(mu_engine_t *engine, size_t argc) {
 }
 
 const mu_record_expr_t *record_expr_activate(mu_record_expr_t *expr) {
-  mu_engine_t *engine = (mu_engine_t *) expr->as_node.engine;
+  mu_engine_t *engine = unlock_engine(&expr->as_node);
 
   for (size_t i = 0; i < expr->argc; i++) {
     assert(expr->argv[i] != NULL);
@@ -265,7 +273,7 @@ mu_switch_expr_t *switch_expr_allocate(mu_engine_t *engine, size_t argc) {
 }
 
 const mu_switch_expr_t *switch_expr_activate(mu_switch_expr_t *expr) {
-  mu_engine_t *engine = (mu_engine_t *) expr->as_node.engine;
+  mu_engine_t *engine = unlock_engine(&expr->as_node);
 
   for (size_t i = 0; i < expr->argc; i++) {
     assert(expr->argv[i] != NULL);
@@ -292,7 +300,7 @@ mu_sequence_expr_t *sequence_expr_allocate(mu_engine_t *engine, size_t argc) {
 }
 
 const mu_sequence_expr_t *sequence_expr_activate(mu_sequence_expr_t *expr) {
-  mu_engine_t *engine = (mu_engine_t *) expr->as_node.engine;
+  mu_engine_t *engine = unlock_engine(&expr->as_node);
 
   for (size_t i = 0; i < expr->argc; i++) {
     assert(expr->argv[i] != NULL);
@@ -463,7 +471,7 @@ mu_datatype_stmt_t *datatype_stmt_allocate(mu_engine_t *engine, size_t argc) {
 
 const mu_datatype_stmt_t *datatype_stmt_activate(
     mu_datatype_stmt_t *stmt, const mu_name_t *name) {
-  mu_engine_t *engine = (mu_engine_t *) stmt->as_node.engine;
+  mu_engine_t *engine = unlock_engine(&stmt->as_node);
 
   assert(name->engine == engine);
 
@@ -530,7 +538,7 @@ mu_record_view_t *record_view_allocate(mu_engine_t *engine, size_t argc) {
 }
 
 const mu_record_view_t *record_view_activate(mu_record_view_t *view) {
-  mu_engine_t *engine = (mu_engine_t *) view->as_node.engine;
+  mu_engine_t *engine = unlock_engine(&view->as_node);
 
   for (size_t i = 0; i < view->argc; i++) {
     assert(view->argv[i] != NULL);
