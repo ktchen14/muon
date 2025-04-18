@@ -45,7 +45,7 @@ __attribute__((malloc))
 static roster_t *roster_create(
     roster_t *roster, size_t volume, const mu_node_t *origin) {
   size_t size;
-  if (rare((size = struct_size(roster_t, data, volume))) == 0)
+  if (rare((size = struct_size(roster_t, data, volume)) == 0))
     return errno = ENOMEM, NULL;
 
   roster_t *result;
