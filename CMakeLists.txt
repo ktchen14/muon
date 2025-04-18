@@ -11,14 +11,14 @@ project(Muon VERSION "${PROJECT_VERSION}"
 
 add_library(muon)
 target_compile_features(muon PUBLIC c_std_11)
-target_compile_options(muon PRIVATE -Wall -Wextra -Wno-unused-parameter -Wno-parentheses -Wno-logical-op-parentheses)
+target_compile_options(muon PRIVATE -Wall -Wextra -pedantic -Wno-unused-parameter -Wno-parentheses -Wno-logical-op-parentheses)
 target_include_directories(muon PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/header>"
   "$<INSTALL_INTERFACE:include>")
 set_property(TARGET muon PROPERTY VERSION "${Muon_VERSION}")
 
 add_executable(main)
-target_compile_options(main PRIVATE -Wall -Wextra -Wno-unused-parameter -Wno-parentheses -Wno-logical-op-parentheses)
+target_compile_options(main PRIVATE -Wall -Wextra -pedantic -Wno-unused-parameter -Wno-parentheses -Wno-logical-op-parentheses)
 target_link_libraries(main PRIVATE muon)
 
 # find_package(LLVM REQUIRED CONFIG)
