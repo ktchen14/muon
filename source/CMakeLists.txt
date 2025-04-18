@@ -1,3 +1,4 @@
+add_subdirectory(emitter)
 add_subdirectory(script)
 
 target_sources(muon PRIVATE
