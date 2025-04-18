@@ -14,36 +14,30 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-static LLVMValueRef evince_result(const frame_t *frame, const mu_node_t *node)
-  __attribute__((nonnull, returns_nonnull));
-
-void write_script(
-    mu_engine_t *engine,
-    induce_t *induce,
-    const mu_node_t *root) {
-  const mu_node_t *node = root, *next;
-  do {
-    while ((next = node_at(node, node_cursor(node)->i++)) != NULL)
-      node = node_continue(node, next);
-  } while ((node = node_return(node)) != NULL);
+static LLVMValueRef evince_result(const frame_t *frame, const mu_node_t *node) {
+  emitter_t *emitter = frame->emitter;
+  assert(node->id < emitter->node_length);
+  LLVMValueRef result = emitter->node_to_value[node->id];
+  assert(result != NULL);
+  return result;
 }
 
-__attribute__((nonnull)) static LLVMValueRef boolean_expr_frame(
+__attribute__((nonnull)) static LLVMValueRef boolean_expr_emit(
     frame_t *frame, const mu_boolean_expr_t *expr) {
   return LLVMConstInt(LLVMInt1Type(), expr->data, 0);
 }
 
-__attribute__((nonnull)) static LLVMValueRef cast_expr_induce(
+__attribute__((nonnull)) static LLVMValueRef cast_expr_emit(
     frame_t *frame, const mu_cast_expr_t *expr) {
   return evince_result(frame, &expr->matter->as_node);
 }
 
-__attribute__((nonnull)) static LLVMValueRef integer_expr_frame(
+__attribute__((nonnull)) static LLVMValueRef integer_expr_emit(
     frame_t *frame, const mu_integer_expr_t *expr) {
   return LLVMConstInt(LLVMInt64Type(), expr->data, 0);
 }
 
-__attribute__((nonnull)) static LLVMValueRef invoke_expr_frame(
+__attribute__((nonnull)) static LLVMValueRef invoke_expr_emit(
     frame_t *frame, const mu_invoke_expr_t *expr) {
   emitter_t *emitter = frame->emitter;
 
@@ -82,7 +76,7 @@ __attribute__((nonnull)) static LLVMValueRef invoke_expr_frame(
 }
 
 __attribute__((nonnull))
-static frame_t *lambda_expr_frame(frame_t *frame, const mu_lambda_expr_t *expr) {
+static frame_t *lambda_expr_emit(frame_t *frame, const mu_lambda_expr_t *expr) {
   emitter_t *emitter = frame->emitter;
 
   const mu_type_t *lambda_type = evince_type(emitter->inductor, &expr->as_node);
@@ -101,13 +95,81 @@ static frame_t *lambda_expr_frame(frame_t *frame, const mu_lambda_expr_t *expr) 
 }
 
 __attribute__((nonnull))
-static LLVMValueRef name_expr_frame(frame_t *frame, const mu_name_expr_t *expr) {
+static LLVMValueRef name_expr_emit(frame_t *frame, const mu_name_expr_t *expr) {
   emitter_t *emitter = frame->emitter;
 
   const mu_node_t *target = detect_evince(emitter->detect, &expr->as_node);
   assert(target != NULL);
   return evince_result(frame, target);
 }
+
+__attribute__((nonnull))
+static LLVMValueRef vector_expr_emit(frame_t *frame, const mu_vector_expr_t *expr) {
+}
+
+const LLVMValueRef *node_emit(frame_t *frame, const mu_expr_t *expr) {
+  switch (expr->kind) {
+#define MU_EMIT(lower, upper, t) case MU_##upper##_EXPR: \
+      return lower##_expr_emit(frame, (const mu_##lower##_expr_t *) expr);
+    MU_EACH_EXPR_KIND(MU_EMIT);
+#undef MU_EMIT
+  }
+}
+
+void script_emit(
+    mu_engine_t *engine, induce_t *induce, const mu_node_t *root) {
+  const mu_node_t *node = root, *next;
+  do {
+    while ((next = node_at(node, node_cursor(node)->i++)) != NULL)
+      node = node_continue(node, next);
+  } while ((node = node_return(node)) != NULL);
+}
+
+/* const LLVMValueRef *induce_node(induce_t *induce, const mu_node_t *root) { */
+/*   assert(induce->scheme == NULL); */
+/*   induce->scheme = &(mu_scheme_t) { .induce = induce, .id = induce->type_number }; */
+
+/*   assert(root->id < induce->node_length); */
+
+/*   const mu_node_t *node = root, *next; */
+/*   do { */
+/*     while ((next = node_at(node, node_cursor(node)->i++)) != NULL) { */
+/*       node = node_continue(node, next); */
+
+/*       const mu_datatype_stmt_t *datatype_stmt; */
+/*       if ((datatype_stmt = mu_node_cast(node, datatype_stmt)) != NULL) { */
+/*         const mu_core_t *core; */
+/*         if ((core = mu_simple_core(induce, datatype_stmt->name)) == NULL) */
+/*           return NULL; */
+/*         induce->core[induce->core_length++] = core; */
+/*         induce->datatype_core = core; */
+/*       } */
+
+/*       if (node->kind != MU_DEFINE_STMT_NODE) */
+/*         continue; */
+
+/*       mu_scheme_t *scheme; */
+/*       if ((scheme = mu_scheme(induce->scheme)) == NULL) */
+/*         return NULL; */
+/*       induce->scheme = scheme; */
+/*     } */
+
+/*     // Induce the type of the node */
+/*     const mu_type_t *type; */
+/*     if ((type = node_induce(induce, node)) == NULL) */
+/*       return NULL; */
+
+/*     if (node->kind == MU_DEFINE_STMT_NODE) { */
+/*       mu_scheme_t *parent = induce->scheme->parent; */
+/*       free(induce->scheme); */
+/*       induce->scheme = parent; */
+/*     } */
+
+/*     induce->node_to_type[node->id] = type; */
+/*   } while ((node = node_return(node)) != NULL); */
+
+/*   return evince_type(induce, root); */
+/* } */
 
 /* int main(int argc, char const *argv[]) { */
 /*   LLVMModuleRef module = LLVMModuleCreateWithName("my_module"); */
