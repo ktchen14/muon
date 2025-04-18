@@ -9,7 +9,20 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <limits.h>
 #include <stdlib.h>
+
+static inline _Bool llvm_length_overflow(size_t length, unsigned int *result) {
+  if (length > UINT_MAX)
+    return 1;
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconversion"
+  *result = length;
+#pragma GCC diagnostic pop
+
+  return 0;
+}
 
 __attribute__((nonnull, returns_nonnull))
 static LLVMTypeRef evince_result(const emitter_t *emitter, const mu_type_t *type) {
@@ -40,13 +53,17 @@ __attribute__((nonnull)) static LLVMTypeRef record_type_emit(
     emitter_t *emitter, const mu_core_type_t *type) {
   const mu_core_t *core = type->core;
 
+  unsigned int argc;
+  if (rare(llvm_length_overflow(core->argc, &argc)))
+    return errno = EOVERFLOW, NULL;
+
   if (core->argc < 256) {
     LLVMTypeRef argv[256];
 
     for (size_t i = 0; i < core->argc; i++)
       argv[i] = evince_result(emitter, type->argv[i]);
 
-    return LLVMStructType(argv, core->argc, 0);
+    return LLVMStructType(argv, argc, 0);
   }
 
   size_t size;
@@ -61,7 +78,7 @@ __attribute__((nonnull)) static LLVMTypeRef record_type_emit(
     argv[i] = evince_result(emitter, type->argv[i]);
 
   LLVMTypeRef result;
-  if ((result = LLVMStructType(argv, core->argc, 0)) == NULL)
+  if ((result = LLVMStructType(argv, argc, 0)) == NULL)
     goto except_llvm_struct_type;
 
   free(argv);
@@ -115,13 +132,14 @@ __attribute__((nonnull)) static LLVMTypeRef join_type_emit(
 
   LLVMTypeRef byte_type = LLVMInt8Type();
   LLVMTypeRef data_type;
-  if ((data_type = LLVMArrayType(byte_type, result_size)) == NULL)
+  if ((data_type = LLVMArrayType2(byte_type, result_size)) == NULL)
     return NULL;
 
   LLVMTypeRef argv[] = { LLVMInt64Type(), data_type };
   return LLVMStructType(argv, 2, 0);
 }
 
+// NOLINTNEXTLINE: misc-no-recursion
 __attribute__((nonnull)) static LLVMTypeRef type_emit(
     emitter_t *emitter, const mu_type_t *type) {
   switch ON_ABSTRACT_OBJECT(type) {
@@ -146,14 +164,15 @@ LLVMTypeRef get_type(emitter_t *emitter, const mu_type_t *root) {
 
   const mu_type_t *type = root, *next;
   do {
-    while ((next = type_next(type)) != NULL) {
+    _Bool next_charge;
+    while ((next = type_next(type, &next_charge)) != NULL) {
       assert(next->id < emitter->type_length);
 
       LLVMTypeRef answer = emitter->type_to_type[next->id];
       if (answer != NULL)
         continue;
 
-      type = type_continue(type, next);
+      type = type_continue(type, next, next_charge);
     }
 
     LLVMTypeRef answer;

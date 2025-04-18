@@ -1,6 +1,7 @@
 find_package(LLVM REQUIRED CONFIG)
 
 add_library(emitter OBJECT node.c type.c)
+target_compile_features(emitter PUBLIC c_std_23)
 target_compile_options(emitter PRIVATE
   -Wall -Wextra -pedantic
   -Wconversion
