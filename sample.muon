@@ -1,5 +1,7 @@
 # define id = lambda x = x.foo
 
+define main = lambda x = 1
+
 # define y = (bar: id)
 # define x = y.bar (foo: 1)
 

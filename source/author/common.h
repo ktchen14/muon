@@ -5,16 +5,16 @@
 
 #include <stddef.h>
 
-typedef struct emitter_t emitter_t;
+typedef struct author_t author_t;
 
 typedef struct {
-  emitter_t *emitter;
+  author_t *author;
   LLVMValueRef lambda;
   LLVMBuilderRef builder;
 } frame_t;
 
-struct emitter_t {
-  detect_result_t *detect;
+struct author_t {
+  const detect_result_t *detect;
   mu_inductor_t *inductor;
 
   LLVMTypeRef type_to_type[1000];
@@ -30,4 +30,4 @@ struct emitter_t {
   LLVMTargetDataRef data_layout;
 };
 
-LLVMTypeRef get_type(emitter_t *emitter, const mu_type_t *root);
+LLVMTypeRef get_type(author_t *author, const mu_type_t *root);
