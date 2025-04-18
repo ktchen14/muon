@@ -188,7 +188,7 @@ const void *reduce_type_to_join(
     const mu_type_t *solution = single_a;
     it = universe_iterator(universe, &target->as_type, 1);
     for (type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
-      const type_edge_t *e;
+      type_edge_t *e;
       e = universe_search(&induce->universe, solution, edge->target);
       assert(e != NULL);
       edge->coercion = coerce_with(e);

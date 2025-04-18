@@ -48,7 +48,11 @@ typedef struct {
 /// Return the header of the @a type
 __attribute__((const, nonnull, returns_nonnull))
 static inline type_header_t *type_header(const mu_type_t *type) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-align"
+#pragma GCC diagnostic ignored "-Wcast-qual"
   return (type_header_t *) ((char *) type - offsetof(type_header_t, data));
+#pragma GCC diagnostic pop
 }
 
 /// Return the cursor attached to the @a type

@@ -33,9 +33,13 @@ typedef struct {
 /// Return the cursor attached to the @a node
 __attribute__((const, nonnull, returns_nonnull))
 static inline node_cursor_t *node_cursor(const mu_node_t *node) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-align"
+#pragma GCC diagnostic ignored "-Wcast-qual"
   node_header_t *header = (node_header_t *) (
       (char *) node - offsetof(node_header_t, data));
   return &header->cursor;
+#pragma GCC diagnostic pop
 }
 
 /// Continue into the node

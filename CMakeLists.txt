@@ -10,15 +10,33 @@ project(Muon VERSION "${PROJECT_VERSION}"
 )
 
 add_library(muon)
-target_compile_features(muon PUBLIC c_std_11)
-target_compile_options(muon PRIVATE -Wall -Wextra -pedantic -Wno-unused-parameter -Wno-parentheses -Wno-logical-op-parentheses)
+target_compile_features(muon PUBLIC c_std_23)
+target_compile_options(muon PRIVATE
+  -Wall -Wextra -pedantic
+  -Wconversion
+  -Wno-gnu-zero-variadic-macro-arguments  # Ignore , ##__VA_ARGS__
+  -Wno-logical-op-parentheses
+  -Wno-parentheses
+  -Wno-unknown-pragmas
+  -Wno-unused-parameter
+  -Wcast-align
+)
 target_include_directories(muon PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/header>"
   "$<INSTALL_INTERFACE:include>")
 set_property(TARGET muon PROPERTY VERSION "${Muon_VERSION}")
 
 add_executable(main)
-target_compile_options(main PRIVATE -Wall -Wextra -pedantic -Wno-unused-parameter -Wno-parentheses -Wno-logical-op-parentheses)
+target_compile_options(main PRIVATE
+  -Wall -Wextra -pedantic
+  -Wconversion
+  -Wno-gnu-zero-variadic-macro-arguments  # Ignore , ##__VA_ARGS__
+  -Wno-logical-op-parentheses
+  -Wno-parentheses
+  -Wno-unknown-pragmas
+  -Wno-unused-parameter
+  -Wcast-align
+)
 target_link_libraries(main PRIVATE muon)
 
 # find_package(LLVM REQUIRED CONFIG)
