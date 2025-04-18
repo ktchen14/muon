@@ -19,6 +19,7 @@ target_sources(muon PRIVATE
   stator/name.c
   stator/node.c
 
+  $<TARGET_OBJECTS:author>
   $<TARGET_OBJECTS:reader>
 )
 
