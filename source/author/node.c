@@ -38,7 +38,12 @@ __attribute__((nonnull)) static LLVMValueRef access_expr_emit(
   LLVMBuilderRef builder = LLVMCreateBuilder();
   LLVMPositionBuilderAtEnd(builder, entry);
 
-  return SKIP;
+  LLVMValueRef argument = LLVMGetParam(lambda, 0);
+  LLVMValueRef result = LLVMBuildExtractValue(builder, argument, 0, "");
+  LLVMBuildRet(builder, result);
+  LLVMDisposeBuilder(builder);
+
+  return lambda;
 }
 
 __attribute__((nonnull)) static LLVMValueRef boolean_expr_emit(
@@ -84,14 +89,13 @@ __attribute__((nonnull)) static LLVMValueRef invoke_expr_emit(
   if ((argument_ty = get_type(author, argument_type)) == NULL)
     return NULL;
 
-  LLVMTypeRef return_type = LLVMGetReturnType(operator_ty);
   unsigned int argc = LLVMCountParamTypes(operator_ty);
-  assert(argc == 0);
+  assert(argc == 1);
   LLVMValueRef argv[argc];
   argv[0] = argument_val;
 
   return LLVMBuildCall2(
-      frame->builder, return_type, operator_val, argv, argc, "invoke");
+      frame->builder, operator_ty, operator_val, argv, argc, "");
 }
 
 __attribute__((nonnull))
@@ -123,7 +127,26 @@ static LLVMValueRef native_expr_emit(frame_t *frame, const mu_native_expr_t *exp
 
 __attribute__((nonnull))
 static LLVMValueRef record_expr_emit(frame_t *frame, const mu_record_expr_t *expr) {
-  return SKIP;
+  author_t *author = frame->author;
+
+  const mu_type_t *type = evince_type(author->inductor, &expr->as_node);
+  LLVMTypeRef ty;
+  if ((ty = get_type(author, type)) == NULL)
+    return NULL;
+
+  LLVMValueRef result;
+  if ((result = LLVMGetPoison(ty)) == NULL)
+    return NULL;
+
+  for (size_t i = 0; i < expr->argc; i++) {
+    const mu_expr_member_t *member = expr->argv[i];
+    const mu_expr_t *matter = member->expr;
+
+    LLVMValueRef argument = evince_result(frame, &matter->as_node);
+    result = LLVMBuildInsertValue(frame->builder, result, argument, i, "");
+  }
+
+  return result;
 }
 
 __attribute__((nonnull))
@@ -181,7 +204,7 @@ LLVMModuleRef script_emit(induce_t *induce, const mu_node_t *root) {
         if ((lambda_ty = get_type(&author, lambda_type)) == NULL)
           return NULL;
 
-        LLVMValueRef lambda = LLVMAddFunction(author.module, "lambda", lambda_ty);
+        LLVMValueRef lambda = LLVMAddFunction(author.module, "", lambda_ty);
         LLVMBasicBlockRef entry = LLVMAppendBasicBlock(lambda, "");
         LLVMBuilderRef builder = LLVMCreateBuilder();
         LLVMPositionBuilderAtEnd(builder, entry);
