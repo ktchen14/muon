@@ -12,6 +12,7 @@
 #include <limits.h>
 #include <stdlib.h>
 
+/// @internal Assign @a length to @a result. Return 1 on overflow.
 static inline _Bool llvm_length_overflow(size_t length, unsigned int *result) {
   if (length > UINT_MAX)
     return 1;
