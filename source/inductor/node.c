@@ -52,7 +52,7 @@ const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
       induce->scheme = parent;
     }
 
-    induce->node_to_type[node->id] = type;
+    induce->result[node->id].source_type = type;
   } while ((node = node_return(node)) != NULL);
 
   return evince_type(induce, root);

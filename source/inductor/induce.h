@@ -16,8 +16,9 @@
 
 typedef struct {
   const mu_coercion_t *coercion;
+  const mu_type_t *source_type;
   const mu_type_t *target_type;
-} node_coercion_t;
+} induce_node_t;
 
 typedef struct mu_scheme_t mu_scheme_t;
 struct mu_scheme_t {
@@ -37,8 +38,7 @@ struct induce_t {
 
   const detect_result_t *detect;
 
-  const mu_type_t **node_to_type; /* const type_t *[node_length] */
-  node_coercion_t *node_coercion;
+  induce_node_t *result;
 
   universe_t universe;
 
@@ -74,21 +74,31 @@ __attribute__((nonnull, pure, returns_nonnull))
 static inline const mu_type_t *evince_type(
     const induce_t *induce, const mu_node_t *node) {
   assert(node->id < induce->node_length);
-  const mu_type_t *type = induce->node_to_type[node->id];
-  assert(type != NULL);
-  return type;
+  induce_node_t result = induce->result[node->id];
+  assert(result.source_type != NULL);
+  return result.source_type;
 }
 
-__attribute__((nonnull, pure, returns_nonnull))
+__attribute__((nonnull(1, 2), pure))
 static inline const mu_coercion_t *evince_coercion(
     const induce_t *induce, const mu_node_t *node, const mu_type_t **target) {
   assert(node->id < induce->node_length);
-  node_coercion_t node_coercion = induce->node_coercion[node->id];
-  assert(node_coercion.coercion != NULL);
-  assert(node_coercion.target_type != NULL);
-  *target = node_coercion.target_type;
-  return node_coercion.coercion;
+  induce_node_t result = induce->result[node->id];
+  if (target != NULL)
+    *target = result.target_type;
+  return result.coercion;
 }
+
+__attribute__((nonnull))
+static inline void override_coercion(
+    induce_t *induce, const mu_node_t *node, const mu_coercion_t *coercion, const mu_type_t *target) {
+  assert(node->engine == induce->engine);
+  assert(node->id < induce->node_length);
+  induce_node_t *result = &induce->result[node->id];
+  result->coercion = coercion;
+  result->target_type = target;
+}
+
 
 /**
  * @brief Assign the @a coercion to the @a node
@@ -110,11 +120,11 @@ static inline void assign_coercion(
   assert(node->engine == induce->engine);
   assert(node->id < induce->node_length);
 
-  node_coercion_t *node_coercion = &induce->node_coercion[node->id];
-  assert(node_coercion->coercion == NULL);
-  assert(node_coercion->target_type == NULL);
-
-  *node_coercion = (node_coercion_t) { .coercion = coercion, .target_type = target };
+  induce_node_t *result = &induce->result[node->id];
+  assert(result->coercion == NULL);
+  assert(result->target_type == NULL);
+  result->coercion = coercion;
+  result->target_type = target;
 }
 
 /**
