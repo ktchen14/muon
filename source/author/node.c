@@ -33,7 +33,12 @@ __attribute__((nonnull)) static LLVMValueRef access_expr_emit(
   if ((lambda_ty = get_type(author, lambda_type)) == NULL)
     return NULL;
 
-  LLVMValueRef lambda = LLVMAddFunction(author->module, "", lambda_ty);
+  // TODO: fix this
+  char *name;
+  if (asprintf(&name, "access.%zu", expr->as_node.id) == -1)
+    return NULL;
+
+  LLVMValueRef lambda = LLVMAddFunction(author->module, name, lambda_ty);
   LLVMBasicBlockRef entry = LLVMAppendBasicBlock(lambda, "");
   LLVMBuilderRef builder = LLVMCreateBuilder();
   LLVMPositionBuilderAtEnd(builder, entry);
@@ -203,7 +208,12 @@ LLVMModuleRef script_emit(induce_t *induce, const mu_node_t *root) {
         if ((lambda_ty = get_type(&author, lambda_type)) == NULL)
           return NULL;
 
-        LLVMValueRef lambda = LLVMAddFunction(author.module, "", lambda_ty);
+        // TODO: fix this
+        char *name;
+        if (asprintf(&name, "lambda.%zu", lambda_expr->as_node.id) == -1)
+          return NULL;
+
+        LLVMValueRef lambda = LLVMAddFunction(author.module, name, lambda_ty);
         LLVMBasicBlockRef entry = LLVMAppendBasicBlock(lambda, "");
         LLVMBuilderRef builder = LLVMCreateBuilder();
         LLVMPositionBuilderAtEnd(builder, entry);
