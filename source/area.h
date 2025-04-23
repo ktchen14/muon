@@ -2,6 +2,7 @@
 #define MU_AREA_I
 
 #include "common.h"
+#include <stdint.h>
 
 #ifdef __has_feature
 #if __has_feature(address_sanitizer)
@@ -17,6 +18,7 @@
 
 #include <assert.h>
 #include <stddef.h>
+#include <stdlib.h>
 
 typedef struct area_t area_t;
 struct area_t {
@@ -31,9 +33,31 @@ struct area_t {
 };
 
 static const size_t AREA_SIZE = 4096 - sizeof(void *[2]);
+static const size_t AREA_VOLUME = AREA_SIZE - offsetof(area_t, data);
 static const size_t AREA_UNIT = _Alignof(void *);
 
-void *area_allocate_internal(area_t **area, size_t area_size);
+/**
+ * @brief Create an area
+ *
+ * The volume of the area will be @c AREA_VOLUME, and it will be suitably
+ * aligned for any object type with fundamental alignment.
+ *
+ * On allocation failure, <tt>*area</tt> is unmodified and @c errno is set by
+ * the allocator. This function can't fail otherwise.
+ *
+ * @param area the existing area to link the new area to, or @c NULL
+ * @return the created area on success; otherwise @c NULL
+ */
+area_t *area_create(area_t *area)
+  __attribute__((malloc));
+
+/// @internal Create and allocate an object in an area
+void *area_create_allocate(area_t **area, size_t size)
+  __attribute__((malloc, nonnull));
+
+/// @internal Create an area sized to hold a single object of size @a size
+void *area_create_single(area_t **area, size_t size)
+  __attribute__((malloc, nonnull));
 
 /**
  * @brief Allocate an object (of the @a size and alignment @a m) in the @a area
@@ -60,7 +84,7 @@ void *area_allocate_internal(area_t **area, size_t area_size);
  * @param unit alignment requirement of the object to allocate
  * @return the allocation on success; otherwise @c NULL
  */
-__attribute__((nonnull))
+__attribute__((malloc, nonnull))
 static inline void *area_allocate(area_t **area, size_t size, size_t unit) {
   assert(*area != NULL);
   assert(size != 0);
@@ -69,11 +93,12 @@ static inline void *area_allocate(area_t **area, size_t size, size_t unit) {
   assert(unit <= _Alignof(max_align_t));
   assert(unit & (unit - 1) == 0);
 
-  size_t volume = (*area)->volume;
+  // Align volume down to unit
+  size_t volume = (*area)->volume & ~(unit - 1);
   if (rare(unit > AREA_UNIT))
     volume &= ~(unit - 1);
 
-  void *result = (*area)->sentinel - volume;
+  void *result = &(*area)->sentinel[-volume];
   if (common(!__builtin_sub_overflow(volume, size, &volume))) {
     (*area)->volume = volume;
 #ifdef __SANITIZE_ADDRESS__
@@ -82,13 +107,23 @@ static inline void *area_allocate(area_t **area, size_t size, size_t unit) {
     return result;
   }
 
-  size_t area_size;
-  if (common(size < AREA_SIZE - offsetof(area_t, data)))
-    area_size = AREA_SIZE;
-  else if (rare((area_size = struct_size(area_t, data, size)) == 0))
-    return NULL;
+  if (rare(size > AREA_VOLUME))
+    return area_create_single(area, size);
 
-  return area_allocate_internal(area, area_size);
+  return area_create_allocate(area, size);
+}
+
+/**
+ * @brief Deallocate an object in the @a area
+ *
+ * @param object the object to deallocate
+ */
+__attribute__((nonnull))
+static inline void area_deallocate(void *object) {
+  // Find the area from the object by aligning it down to a 4096 byte boundary
+  area_t *area = (area_t *) ((uintptr_t) object & ~(4096U - 1));
+  assert(area->volume != 0);
+  area->volume += (uintptr_t) object - (uintptr_t) area->data;
 }
 
 void *test(area_t **area) {
