@@ -179,36 +179,62 @@ static LLVMValueRef vector_expr_emit(frame_t *frame, const mu_vector_expr_t *exp
   if ((ty = get_type(author, type)) == NULL)
     return NULL;
 
+  // %matter_type = type <matter_muon_type>
   LLVMTypeRef matter_type = get_type(author, matter_muon_type);
 
-  // Make the array type from matter_type
-  LLVMTypeRef data_type = LLVMArrayType2(matter_type, expr->argc);
+  // %allocation_type = type [<expr->argc> x %matter_type]
+  LLVMTypeRef allocation_type;
+  if ((allocation_type = LLVMArrayType2(matter_type, expr->argc)) == NULL)
+    return NULL;
 
-  // Calculate the size of the array type
-  size_t allocation_size = LLVMABISizeOfType(author->layout, data_type);
+  // Calculate the size of allocation_type
+  size_t allocation_size = LLVMABISizeOfType(author->layout, allocation_type);
 
-  // %size = size_t [size]
+  // %size = size_t <allocation_size>
   LLVMValueRef size;
   if ((size = LLVMConstInt(author->size_type, allocation_size, 0)) == NULL)
     return NULL;
 
   // %allocation = call ptr @malloc(size_t %size)
-  LLVMValueRef argv[] = { size };
+  LLVMValueRef malloc_argv[] = { size };
   LLVMValueRef allocation = LLVMBuildCall2(
-      frame->builder, author->malloc_type, author->malloc, argv, 1, "");
+      frame->builder, author->malloc_type, author->malloc, malloc_argv, 1, "");
 
-  // %result = insertvalue { size_t, ptr } poison
-  LLVMValueRef result;
-  if ((result = LLVMGetPoison(ty)) == NULL)
-    return NULL;
+  for (size_t i = 0; i < expr->argc; i++) {
+    LLVMValueRef argument = evince_result(frame, &expr->argv[i]->as_node);
 
-  // %length = size_t [expr->argc]
+    // %index = size_t <i>
+    LLVMValueRef index;
+    if ((index = LLVMConstInt(author->size_type, i, 0)) == NULL)
+      return NULL;
+
+    LLVMValueRef ptr_i = LLVMBuildGEPWithNoWrapFlags(
+        frame->builder,
+        allocation_type,
+        allocation,
+        (LLVMValueRef[]) { index },
+        1,
+        "",
+        LLVMGEPFlagInBounds | LLVMGEPFlagNUW
+        );
+
+    LLVMBuildStore(frame->builder, argument, ptr_i);
+  }
+
+  // %length = size_t <expr->argc>
   LLVMValueRef length;
   if ((length = LLVMConstInt(author->size_type, expr->argc, 0)) == NULL)
     return NULL;
 
-  // %4 = insertvalue { size_t, ptr } %result, size_t %length, 0
-  if ((result = LLVMBuildInsertValue(frame->builder, result, length, 0, "")) == NULL)
+  // %none = ptr poison
+  LLVMValueRef none;
+  if ((none = LLVMGetPoison(author->star_type)) == NULL)
+    return NULL;
+
+  // %result = { size_t, ptr } { size_t %length, ptr %none }
+  LLVMValueRef struct_argv[] = { length, none };
+  LLVMValueRef result;
+  if ((result = LLVMConstStruct(struct_argv, 2, 0)) == NULL)
     return NULL;
 
   // %5 = insertvalue { size_t, ptr } %result, ptr %allocation, 1
