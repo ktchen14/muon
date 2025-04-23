@@ -592,8 +592,8 @@ static inline int debug_node_coercion(const mu_node_t *node) {
   debug("%*s", debug_indent, "");
   mu_coercion_debug(coercion);
   debug(" ∷ ");
-  type_debug(node_coercion.target, 0);
-  debug(" #%zu", node_coercion.target->id);
+  type_debug(node_coercion.target_type, 0);
+  debug(" #%zu", node_coercion.target_type->id);
 
   debug("\n");
 

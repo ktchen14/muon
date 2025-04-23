@@ -16,7 +16,7 @@
 
 typedef struct {
   const mu_coercion_t *coercion;
-  const mu_type_t *target;
+  const mu_type_t *target_type;
 } node_coercion_t;
 
 typedef struct mu_scheme_t mu_scheme_t;
@@ -85,8 +85,8 @@ static inline const mu_coercion_t *evince_coercion(
   assert(node->id < induce->node_length);
   node_coercion_t node_coercion = induce->node_coercion[node->id];
   assert(node_coercion.coercion != NULL);
-  assert(node_coercion.target != NULL);
-  *target = node_coercion.target;
+  assert(node_coercion.target_type != NULL);
+  *target = node_coercion.target_type;
   return node_coercion.coercion;
 }
 
@@ -112,9 +112,9 @@ static inline void assign_coercion(
 
   node_coercion_t *node_coercion = &induce->node_coercion[node->id];
   assert(node_coercion->coercion == NULL);
-  assert(node_coercion->target == NULL);
+  assert(node_coercion->target_type == NULL);
 
-  *node_coercion = (node_coercion_t) { .coercion = coercion, .target = target };
+  *node_coercion = (node_coercion_t) { .coercion = coercion, .target_type = target };
 }
 
 /**

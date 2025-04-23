@@ -100,7 +100,6 @@ __attribute__((nonnull)) static LLVMValueRef invoke_expr_emit(
 
 __attribute__((nonnull))
 static LLVMValueRef lambda_expr_emit(frame_t *frame, const mu_lambda_expr_t *expr) {
-  author_t *author = frame->author;
   LLVMValueRef matter = evince_result(frame, &expr->matter->as_node);
 
   LLVMBuildRet(frame->builder, matter);

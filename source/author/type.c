@@ -147,7 +147,7 @@ __attribute__((nonnull)) static LLVMTypeRef type_emit(
     case IS_KIND_OF(core_type):
       return core_type_emit(author, core_type);
 
-    case IS_KIND_OF(scheme_type):
+    case MU_SCHEME_TYPE:
       abort();
 
     case IS_KIND_OF(variable_type):
