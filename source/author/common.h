@@ -28,8 +28,24 @@ struct author_t {
   size_t frame_length;
 
   LLVMTargetDataRef layout;
+
   LLVMModuleRef module;
+
+  // LLVM type of a Boolean
+  LLVMTypeRef bool_type;
+
+  // LLVM type of a byte
+  LLVMTypeRef byte_type;
+
+  // LLVM type of a size_t
+  LLVMTypeRef size_type;
+
+  // LLVM type of an opaque pointer
+  LLVMTypeRef star_type;
+
+  // LLVM type of malloc()
   LLVMTypeRef malloc_type;
+
   LLVMValueRef malloc;
 };
 

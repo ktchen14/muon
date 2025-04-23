@@ -36,7 +36,7 @@ static LLVMTypeRef evince_result(const author_t *author, const mu_type_t *type) 
 /// @internal Return @c i1
 __attribute__((nonnull)) static LLVMTypeRef boolean_type_emit(
     author_t *author, const mu_core_type_t *type) {
-  return LLVMInt1Type();
+  return author->bool_type;
 }
 
 /// @internal Return @c i64
@@ -91,13 +91,7 @@ __attribute__((nonnull)) static LLVMTypeRef record_type_emit(
 /// @internal Return <tt>{ i64, ptr }</tt>
 __attribute__((nonnull)) static LLVMTypeRef vector_type_emit(
     author_t *author, const mu_core_type_t *type) {
-  LLVMTypeRef matter_type = evince_result(author, type->argv[0]);
-
-  LLVMTypeRef allocation_type;
-  if ((allocation_type = LLVMPointerType(matter_type, 0)) == NULL)
-    return NULL;
-
-  LLVMTypeRef argv[] = { LLVMInt64Type(), allocation_type };
+  LLVMTypeRef argv[] = { author->size_type, author->star_type };
   return LLVMStructType(argv, 2, 0);
 }
 
@@ -128,9 +122,8 @@ __attribute__((nonnull)) static LLVMTypeRef join_type_emit(
     result_size = maximum(result_size, size);
   }
 
-  LLVMTypeRef byte_type = LLVMInt8Type();
   LLVMTypeRef data_type;
-  if ((data_type = LLVMArrayType2(byte_type, result_size)) == NULL)
+  if ((data_type = LLVMArrayType2(author->byte_type, result_size)) == NULL)
     return NULL;
 
   LLVMTypeRef argv[] = { LLVMInt64Type(), data_type };

@@ -53,7 +53,8 @@ __attribute__((nonnull)) static LLVMValueRef access_expr_emit(
 
 __attribute__((nonnull)) static LLVMValueRef boolean_expr_emit(
     frame_t *frame, const mu_boolean_expr_t *expr) {
-  return LLVMConstInt(LLVMInt1Type(), expr->data, 0);
+  author_t *author = frame->author;
+  return LLVMConstInt(author->bool_type, expr->data, 0);
 }
 
 __attribute__((nonnull)) static LLVMValueRef cast_expr_emit(
@@ -182,21 +183,37 @@ static LLVMValueRef vector_expr_emit(frame_t *frame, const mu_vector_expr_t *exp
 
   // Make the array type from matter_type
   LLVMTypeRef data_type = LLVMArrayType2(matter_type, expr->argc);
-  LLVMDumpType(data_type);
 
   // Calculate the size of the array type
-  size_t size = LLVMABISizeOfType(author->layout, data_type);
+  size_t allocation_size = LLVMABISizeOfType(author->layout, data_type);
 
-  // Call malloc. TODO: fix explicit Int64
-  LLVMValueRef argv[] = { LLVMConstInt(LLVMInt64Type(), size, 0) };
-  LLVMValueRef malloc_call = LLVMBuildCall2(
+  // %size = size_t [size]
+  LLVMValueRef size;
+  if ((size = LLVMConstInt(author->size_type, allocation_size, 0)) == NULL)
+    return NULL;
+
+  // %allocation = call ptr @malloc(size_t %size)
+  LLVMValueRef argv[] = { size };
+  LLVMValueRef allocation = LLVMBuildCall2(
       frame->builder, author->malloc_type, author->malloc, argv, 1, "");
 
+  // %result = insertvalue { size_t, ptr } poison
   LLVMValueRef result;
   if ((result = LLVMGetPoison(ty)) == NULL)
     return NULL;
-  LLVMBuildInsertValue(frame->builder, result, LLVMConstInt(LLVMInt64Type(), expr->argc, 0), 0, "");
-  LLVMBuildInsertValue(frame->builder, result, malloc_call, 1, "");
+
+  // %length = size_t [expr->argc]
+  LLVMValueRef length;
+  if ((length = LLVMConstInt(author->size_type, expr->argc, 0)) == NULL)
+    return NULL;
+
+  // %4 = insertvalue { size_t, ptr } %result, size_t %length, 0
+  if ((result = LLVMBuildInsertValue(frame->builder, result, length, 0, "")) == NULL)
+    return NULL;
+
+  // %5 = insertvalue { size_t, ptr } %result, ptr %allocation, 1
+  if ((result = LLVMBuildInsertValue(frame->builder, result, allocation, 1, "")) == NULL)
+    return NULL;
 
   return result;
 }
