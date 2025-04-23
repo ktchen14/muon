@@ -1,7 +1,6 @@
 #include <muon.h>
 
 #include "author.h"
-#include "area.h"
 #include "inductor.h"
 #include "muon/common.h"
 #include "script.h"
