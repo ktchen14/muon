@@ -33,11 +33,13 @@ static LLVMTypeRef evince_result(const author_t *author, const mu_type_t *type) 
   return result;
 }
 
+/// @internal Return @c i1
 __attribute__((nonnull)) static LLVMTypeRef boolean_type_emit(
     author_t *author, const mu_core_type_t *type) {
   return LLVMInt1Type();
 }
 
+/// @internal Return @c i64
 __attribute__((nonnull)) static LLVMTypeRef integer_type_emit(
     author_t *author, const mu_core_type_t *type) {
   return LLVMInt64Type();
@@ -50,6 +52,8 @@ __attribute__((nonnull)) static LLVMTypeRef lambda_type_emit(
   return LLVMFunctionType(output_type, &argument_type, 1, 0);
 }
 
+/// @internal Return <tt>{ ... }</tt> where each type in ... is the type of the
+/// argument in @c type->argv at the same index.
 __attribute__((nonnull)) static LLVMTypeRef record_type_emit(
     author_t *author, const mu_core_type_t *type) {
   const mu_core_t *core = type->core;
@@ -58,6 +62,7 @@ __attribute__((nonnull)) static LLVMTypeRef record_type_emit(
   if (rare(llvm_length_overflow(core->argc, &argc)))
     return errno = EOVERFLOW, NULL;
 
+  // Don't malloc a buffer if argc < 256
   if (core->argc < 256) {
     LLVMTypeRef argv[256];
 
@@ -73,25 +78,17 @@ __attribute__((nonnull)) static LLVMTypeRef record_type_emit(
 
   LLVMTypeRef *argv;
   if ((argv = malloc(size)) == NULL)
-    goto except_malloc;
+    return NULL;
 
   for (size_t i = 0; i < core->argc; i++)
     argv[i] = evince_result(author, type->argv[i]);
 
-  LLVMTypeRef result;
-  if ((result = LLVMStructType(argv, argc, 0)) == NULL)
-    goto except_llvm_struct_type;
-
+  LLVMTypeRef result = LLVMStructType(argv, argc, 0);
   free(argv);
   return result;
-
-except_llvm_struct_type:
-  free(argv);
-
-except_malloc:
-  return NULL;
 }
 
+/// @internal Return <tt>{ i64, ptr }</tt>
 __attribute__((nonnull)) static LLVMTypeRef vector_type_emit(
     author_t *author, const mu_core_type_t *type) {
   LLVMTypeRef matter_type = evince_result(author, type->argv[0]);
@@ -127,7 +124,7 @@ __attribute__((nonnull)) static LLVMTypeRef join_type_emit(
   size_t result_size = 0;
   for (size_t i = 0; i < type->argc; i++) {
     LLVMTypeRef argument = evince_result(author, type->argv[i]);
-    size_t size = LLVMABISizeOfType(author->data_layout, argument);
+    size_t size = LLVMABISizeOfType(author->layout, argument);
     result_size = maximum(result_size, size);
   }
 

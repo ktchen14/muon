@@ -165,7 +165,40 @@ static LLVMValueRef switch_expr_emit(frame_t *frame, const mu_switch_expr_t *exp
 
 __attribute__((nonnull))
 static LLVMValueRef vector_expr_emit(frame_t *frame, const mu_vector_expr_t *expr) {
-  return SKIP;
+  author_t *author = frame->author;
+
+  const mu_type_t *type = evince_type(author->inductor, &expr->as_node);
+  const mu_core_type_t *vector_type = mu_type_cast(type, vector_type);
+  assert(vector_type != NULL);
+  assert(vector_type->core == vector_type->as_type.induce->vector_core);
+  const mu_type_t *matter_muon_type = vector_type->argv[0];
+
+  // Type of the vector expr itself. Should be { i64, ptr }.
+  LLVMTypeRef ty;
+  if ((ty = get_type(author, type)) == NULL)
+    return NULL;
+
+  LLVMTypeRef matter_type = get_type(author, matter_muon_type);
+
+  // Make the array type from matter_type
+  LLVMTypeRef data_type = LLVMArrayType2(matter_type, expr->argc);
+  LLVMDumpType(data_type);
+
+  // Calculate the size of the array type
+  size_t size = LLVMABISizeOfType(author->layout, data_type);
+
+  // Call malloc. TODO: fix explicit Int64
+  LLVMValueRef argv[] = { LLVMConstInt(LLVMInt64Type(), size, 0) };
+  LLVMValueRef malloc_call = LLVMBuildCall2(
+      frame->builder, author->malloc_type, author->malloc, argv, 1, "");
+
+  LLVMValueRef result;
+  if ((result = LLVMGetPoison(ty)) == NULL)
+    return NULL;
+  LLVMBuildInsertValue(frame->builder, result, LLVMConstInt(LLVMInt64Type(), expr->argc, 0), 0, "");
+  LLVMBuildInsertValue(frame->builder, result, malloc_call, 1, "");
+
+  return result;
 }
 
 LLVMValueRef node_emit(frame_t *frame, const mu_node_t *node) {
@@ -180,17 +213,13 @@ LLVMValueRef node_emit(frame_t *frame, const mu_node_t *node) {
 }
 
 LLVMModuleRef script_emit(induce_t *induce, const mu_node_t *root) {
-  LLVMModuleRef module = LLVMModuleCreateWithName("my_module");
-  author_t author = {
-    .detect = induce->detect,
-    .inductor = induce,
-    .type_length = induce->type_number,
-    .node_length = induce->engine->node_number,
-    .module = module,
-  };
+  author_t author;
+  if (author_initialize(&author, induce->detect, induce) == NULL) {
+    return NULL;
+  }
 
   LLVMTypeRef global_type = LLVMFunctionType(LLVMVoidType(), NULL, 0, 0);
-  LLVMValueRef lambda = LLVMAddFunction(module, "init", global_type);
+  LLVMValueRef lambda = LLVMAddFunction(author.module, "init", global_type);
   LLVMBasicBlockRef entry = LLVMAppendBasicBlock(lambda, "");
   LLVMBuilderRef builder = LLVMCreateBuilder();
   LLVMPositionBuilderAtEnd(builder, entry);
@@ -239,7 +268,7 @@ LLVMModuleRef script_emit(induce_t *induce, const mu_node_t *root) {
   LLVMBuildRetVoid(frame->builder);
   LLVMDisposeBuilder(frame->builder);
 
-  return module;
+  return author.module;
 }
 
 /* int main(int argc, char const *argv[]) { */

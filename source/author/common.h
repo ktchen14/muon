@@ -27,9 +27,15 @@ struct author_t {
   frame_t frame[1000];
   size_t frame_length;
 
+  LLVMTargetDataRef layout;
   LLVMModuleRef module;
-  LLVMTargetDataRef data_layout;
+  LLVMTypeRef malloc_type;
+  LLVMValueRef malloc;
 };
+
+author_t *author_initialize(
+    author_t *author, const detect_result_t *detect, mu_inductor_t *inductor)
+  __attribute__((nonnull));
 
 LLVMTypeRef get_type(author_t *author, const mu_type_t *root);
 LLVMModuleRef script_emit(induce_t *induce, const mu_node_t *root);
