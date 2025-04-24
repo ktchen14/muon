@@ -100,19 +100,6 @@ __attribute__((nonnull)) static LLVMTypeRef custom_type_emit(
   return LLVMInt64Type();
 }
 
-__attribute__((nonnull)) static LLVMTypeRef core_type_emit(
-    author_t *author, const mu_core_type_t *type) {
-  switch (type->core->kind) {
-    case MU_BOOLEAN_CORE: return boolean_type_emit(author, type);
-    case MU_CUSTOM_CORE:  return custom_type_emit(author, type);
-    case MU_INTEGER_CORE: return integer_type_emit(author, type);
-    case MU_LAMBDA_CORE:  return lambda_type_emit(author, type);
-    case MU_RECORD_CORE:  return record_type_emit(author, type);
-    case MU_VECTOR_CORE:  return vector_type_emit(author, type);
-  }
-  __builtin_unreachable();
-}
-
 __attribute__((nonnull)) static LLVMTypeRef join_type_emit(
     author_t *author, const mu_join_type_t *type) {
   size_t result_size = 0;
@@ -135,7 +122,26 @@ __attribute__((nonnull)) static LLVMTypeRef type_emit(
     author_t *author, const mu_type_t *type) {
   switch ON_ABSTRACT_OBJECT(type) {
     case IS_KIND_OF(core_type):
-      return core_type_emit(author, core_type);
+      switch (core_type->core->kind) {
+        case MU_BOOLEAN_CORE:
+          return boolean_type_emit(author, core_type);
+
+        case MU_CUSTOM_CORE:
+          return custom_type_emit(author, core_type);
+
+        case MU_INTEGER_CORE:
+          return integer_type_emit(author, core_type);
+
+        case MU_LAMBDA_CORE:
+          return lambda_type_emit(author, core_type);
+
+        case MU_RECORD_CORE:
+          return record_type_emit(author, core_type);
+
+        case MU_VECTOR_CORE:
+          return vector_type_emit(author, core_type);
+      }
+      __builtin_unreachable();
 
     case MU_SCHEME_TYPE:
       abort();
