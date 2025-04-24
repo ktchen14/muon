@@ -199,27 +199,8 @@ static LLVMValueRef vector_expr_emit(frame_t *frame, const mu_vector_expr_t *exp
   LLVMValueRef malloc_argv[] = { size };
   LLVMValueRef allocation = LLVMBuildCall2(
       frame->builder, author->malloc_type, author->malloc, malloc_argv, 1, "");
-
-  for (size_t i = 0; i < expr->argc; i++) {
-    LLVMValueRef argument = evince_result(frame, &expr->argv[i]->as_node);
-
-    // %index = size_t <i>
-    LLVMValueRef index;
-    if ((index = LLVMConstInt(author->size_type, i, 0)) == NULL)
-      return NULL;
-
-    LLVMValueRef ptr_i = LLVMBuildGEPWithNoWrapFlags(
-        frame->builder,
-        allocation_type,
-        allocation,
-        (LLVMValueRef[]) { index },
-        1,
-        "",
-        LLVMGEPFlagInBounds | LLVMGEPFlagNUW
-        );
-
-    LLVMBuildStore(frame->builder, argument, ptr_i);
-  }
+  if (allocation == NULL)
+    return NULL;
 
   // %length = size_t <expr->argc>
   LLVMValueRef length;
@@ -240,6 +221,32 @@ static LLVMValueRef vector_expr_emit(frame_t *frame, const mu_vector_expr_t *exp
   // %5 = insertvalue { size_t, ptr } %result, ptr %allocation, 1
   if ((result = LLVMBuildInsertValue(frame->builder, result, allocation, 1, "")) == NULL)
     return NULL;
+
+  for (size_t i = 0; i < expr->argc; i++) {
+    LLVMValueRef argument = evince_result(frame, &expr->argv[i]->as_node);
+
+    // %index = size_t <i>
+    LLVMValueRef index;
+    if ((index = LLVMConstInt(author->size_type, i, 0)) == NULL)
+      return NULL;
+
+    // %target = getelementptr inbounds nuw %allocation_type, ptr %allocation,
+    //           size_t %index
+    LLVMValueRef target = LLVMBuildGEPWithNoWrapFlags(
+        frame->builder,
+        allocation_type,
+        allocation,
+        (LLVMValueRef[]) { index },
+        1,
+        "",
+        LLVMGEPFlagInBounds | LLVMGEPFlagNUW);
+    if (target == NULL)
+      return NULL;
+
+    // store i64 2, ptr %7, align 4
+    if (LLVMBuildStore(frame->builder, argument, target) == NULL)
+      return NULL;
+  }
 
   return result;
 }
