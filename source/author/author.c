@@ -1,4 +1,3 @@
-#include "/home/ktchen14/Code/muon/source/common.h"
 #include "common.h"
 
 #include "../inductor.h"
