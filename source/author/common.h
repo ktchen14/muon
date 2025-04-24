@@ -43,6 +43,9 @@ struct author_t {
   // LLVM type of an opaque pointer
   LLVMTypeRef star_type;
 
+  // LLVM type of a Muon vector
+  LLVMTypeRef vector_type;
+
   // LLVM type of malloc()
   LLVMTypeRef malloc_type;
 

@@ -69,9 +69,14 @@ author_t *author_initialize(
   if ((star_type = LLVMPointerType(byte_type, 0)) == NULL)
     goto except_star_type;
 
-  LLVMTypeRef argv[] = { size_type };
+  LLVMTypeRef vector_argv[] = { size_type, star_type };
+  LLVMTypeRef vector_type;
+  if ((vector_type = LLVMStructType(vector_argv, 2, 0)) == NULL)
+    return NULL;
+
+  LLVMTypeRef malloc_argv[] = { size_type };
   LLVMTypeRef malloc_type;
-  if ((malloc_type = LLVMFunctionType(star_type, argv, 1, 0)) == NULL)
+  if ((malloc_type = LLVMFunctionType(star_type, malloc_argv, 1, 0)) == NULL)
     goto except_malloc_type;
 
   LLVMValueRef malloc;
@@ -86,9 +91,11 @@ author_t *author_initialize(
     .node_length = inductor->engine->node_number,
     .layout = layout,
     .module = module,
+    .bool_type = bool_type,
     .byte_type = byte_type,
     .size_type = size_type,
     .star_type = star_type,
+    .vector_type = vector_type,
     .malloc_type = malloc_type,
     .malloc = malloc,
   };

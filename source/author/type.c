@@ -91,8 +91,7 @@ __attribute__((nonnull)) static LLVMTypeRef record_type_emit(
 /// @internal Return <tt>{ i64, ptr }</tt>
 __attribute__((nonnull)) static LLVMTypeRef vector_type_emit(
     author_t *author, const mu_core_type_t *type) {
-  LLVMTypeRef argv[] = { author->size_type, author->star_type };
-  return LLVMStructType(argv, 2, 0);
+  return author->vector_type;
 }
 
 __attribute__((nonnull)) static LLVMTypeRef custom_type_emit(
