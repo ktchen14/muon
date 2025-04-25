@@ -101,15 +101,46 @@ __attribute__((nonnull)) static LLVMTypeRef custom_type_emit(
 
 __attribute__((nonnull)) static LLVMTypeRef join_type_emit(
     author_t *author, const mu_join_type_t *type) {
-  size_t result_size = 0;
-  for (size_t i = 0; i < type->argc; i++) {
-    LLVMTypeRef argument = evince_result(author, type->argv[i]);
-    size_t size = LLVMABISizeOfType(author->layout, argument);
-    result_size = maximum(result_size, size);
+  if (type->argc == 0)
+    abort();
+
+  // LLVM doesn't have a native union type so to synthesize it, we'll represent
+  // the data of the join type as an array [length x member_type]. The
+  // member_type must have the largest alignemnt requirement of any argument to
+  // the join type. The length should be such that the size of the array is
+  // sufficient to hold any argument to the join type.
+
+  LLVMTargetDataRef layout = author->layout;
+
+  LLVMTypeRef member_type = evince_result(author, type->argv[0]);
+  size_t member_size = LLVMABISizeOfType(layout, member_type);
+  size_t maximum_unit = LLVMABIAlignmentOfType(layout, member_type);
+  size_t maximum_size = member_size;
+
+  for (size_t i = 1; i < type->argc; i++) {
+    LLVMTypeRef argument_type = evince_result(author, type->argv[i]);
+    size_t size = LLVMABISizeOfType(layout, argument_type);
+    size_t unit = LLVMABIAlignmentOfType(layout, argument_type);
+
+    // Record the largest size of an argument to the join type
+    maximum_size = maximum(maximum_size, size);
+
+    // Record the argument to the join type with the largest alignment
+    // requirement. If multiple arguments tie, then record the one with the
+    // smallest size.
+    if (unit < maximum_unit || unit == maximum_unit && size >= member_size)
+      continue;
+    member_type = argument_type;
+    member_size = size;
+    maximum_unit = unit;
   }
 
+  size_t length = maximum_size / member_size;
+  if (maximum_size % member_size > 0)
+    length++;
+
   LLVMTypeRef data_type;
-  if ((data_type = LLVMArrayType2(author->byte_type, result_size)) == NULL)
+  if ((data_type = LLVMArrayType2(member_type, length)) == NULL)
     return NULL;
 
   LLVMTypeRef argv[] = { LLVMInt64Type(), data_type };
