@@ -20,7 +20,7 @@ typedef struct {
   LLVMValueRef source;
 } info_t;
 
-LLVMValueRef coercion_emit(frame_t *frame, const mu_coercion_t *coercion, LLVMValueRef source);
+LLVMValueRef coercion_emit(frame_t *frame, const mu_coercion_t *coercion, info_t info);
 
 static LLVMValueRef SKIP = (void *) &(int) {1};
 
@@ -33,11 +33,8 @@ static LLVMValueRef evince_result(const frame_t *frame, const mu_node_t *node) {
 }
 
 __attribute__((nonnull)) static LLVMValueRef id_coercion_emit(
-    frame_t *frame,
-    const mu_id_coercion_t *coercion,
-    LLVMValueRef source,
-    LLVMTypeRef target) {
-  return source;
+    frame_t *frame, const mu_id_coercion_t *coercion, info_t info) {
+  return info.source;
 }
 
 __attribute__((nonnull)) static LLVMValueRef edge_coercion_emit(
@@ -52,16 +49,24 @@ __attribute__((nonnull)) static LLVMValueRef slot_coercion_emit(
 
 __attribute__((nonnull)) static LLVMValueRef indirect_coercion_emit(
     frame_t *frame, const mu_indirect_coercion_t *coercion, info_t info) {
-  LLVMValueRef intermediate = coercion_emit(frame, coercion->head, info.source);
-  return coercion_emit(frame, coercion->tail, intermediate);
+  abort();
+  // TODO: fix this
+  /* LLVMValueRef intermediate = coercion_emit(frame, coercion->head, info.source); */
+  /* return coercion_emit(frame, coercion->tail, intermediate); */
 }
 
 __attribute__((nonnull)) static LLVMValueRef variance_coercion_emit(
     frame_t *frame, const mu_variance_coercion_t *coercion, info_t info) {
+  abort();
 }
 
 __attribute__((nonnull)) static LLVMValueRef instance_coercion_emit(
     frame_t *frame, const mu_instance_coercion_t *coercion, info_t info) {
+  abort();
+}
+
+__attribute__((nonnull)) static LLVMValueRef unscheme_coercion_emit(
+    frame_t *frame, const mu_unscheme_coercion_t *coercion, info_t info) {
   abort();
 }
 
@@ -108,6 +113,17 @@ __attribute__((nonnull)) static LLVMValueRef join_coercion_emit(
 
 __attribute__((nonnull)) static LLVMValueRef unjoin_coercion_emit(
     frame_t *frame, const mu_unjoin_coercion_t *coercion, info_t info) {
+  abort();
+}
+
+__attribute__((nonnull)) static LLVMValueRef meet_coercion_emit(
+    frame_t *frame, const mu_meet_coercion_t *coercion, info_t info) {
+  abort();
+}
+
+__attribute__((nonnull)) static LLVMValueRef unmeet_coercion_emit(
+    frame_t *frame, const mu_unmeet_coercion_t *coercion, info_t info) {
+  abort();
 }
 
 LLVMValueRef coercion_emit(frame_t *frame, const mu_coercion_t *coercion, info_t info) {

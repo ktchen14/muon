@@ -29,6 +29,7 @@ typedef enum {
 /// An abstract coercion
 typedef struct {
   mu_coercion_kind_t kind;
+  size_t id;
 } mu_coercion_t;
 
 /// The header that each concrete coercion must have

@@ -1,6 +1,6 @@
 find_package(LLVM REQUIRED CONFIG)
 
-add_library(author OBJECT author.c node.c type.c)
+add_library(author OBJECT author.c coercion.c node.c type.c)
 target_compile_features(author PUBLIC c_std_23)
 target_compile_options(author PRIVATE
   -Wall -Wextra -pedantic
