@@ -1,6 +1,6 @@
 # define id = lambda x = x.foo
 
-define main = lambda () = [[(foo: (bar: 2)).foo.bar, 2], [4]]
+define main = lambda () = [[(foo: (bar: 5)).foo.bar, 7], [9]]
 
 # define y = (bar: id)
 # define x = y.bar (foo: 1)

@@ -15,6 +15,8 @@
 #include <stdlib.h>
 
 typedef struct {
+  const mu_type_t *source_muon_type;
+  const mu_type_t *target_muon_type;
   LLVMTypeRef source_type;
   LLVMTypeRef target_type;
   LLVMValueRef source;
@@ -113,6 +115,19 @@ __attribute__((nonnull)) static LLVMValueRef join_coercion_emit(
 
 __attribute__((nonnull)) static LLVMValueRef unjoin_coercion_emit(
     frame_t *frame, const mu_unjoin_coercion_t *coercion, info_t info) {
+  author_t *author = frame->author;
+
+  LLVMBuilderRef builder = LLVMCreateBuilder();
+  for (size_t i = 0; i < coercion->argc; i++) {
+    LLVMBasicBlockRef bblock = LLVMAppendBasicBlock(frame->lambda, "");
+    LLVMPositionBuilderAtEnd(builder, bblock);
+
+    frame_t newframe = { .author = author, .lambda = frame->lambda, .builder = builder };
+    author->frame[author->frame_length++] = newframe;
+
+    // TODO: fix info
+    coercion_emit(&newframe, coercion->argv[i], info);
+  }
   abort();
 }
 
