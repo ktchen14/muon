@@ -726,5 +726,11 @@ induce_t *induce_initialize(
     .lambda_core = lambda_core,
     .vector_core = vector_core,
   };
+
+  id_coercion->as_coercion.id = induce->coercion_number++;
+  id_coercion->as_coercion.inductor = induce;
+  slot_coercion->as_coercion.id =induce->coercion_number++;
+  slot_coercion->as_coercion.inductor = induce;
+
   return induce;
 }

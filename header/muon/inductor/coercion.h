@@ -100,6 +100,14 @@ typedef struct {
 
 extern const void *const MU_NO_SUCH_COERCION;
 
+const mu_id_coercion_t *mu_id_coercion(
+    mu_inductor_t *inductor, const mu_type_t *target)
+  __attribute__((malloc, nonnull));
+
+const mu_slot_coercion_t *mu_slot_coercion(
+    mu_inductor_t *inductor, const mu_type_t *target)
+  __attribute__((malloc, nonnull));
+
 const mu_indirect_coercion_t *mu_indirect_coercion(
     mu_inductor_t *inductor,
     const mu_coercion_t *head, const mu_coercion_t *tail)
