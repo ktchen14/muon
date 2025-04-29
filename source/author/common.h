@@ -64,7 +64,6 @@ typedef struct {
 
 typedef struct {
   const mu_type_t *source_muon_type;
-  const mu_type_t *target_muon_type;
   LLVMTypeRef source_type;
   LLVMTypeRef target_type;
   LLVMValueRef source;

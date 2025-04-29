@@ -48,7 +48,6 @@ __attribute__((nonnull)) static LLVMValueRef indirect_coercion_emit(
 
   info_t single_info = {
     .source_muon_type = info.source_muon_type,
-    .target_muon_type = middle_type,
     .source_type = info.source_type,
     .target_type = middle_llvm_type,
     .source = info.source,
@@ -60,7 +59,6 @@ __attribute__((nonnull)) static LLVMValueRef indirect_coercion_emit(
 
   single_info = (info_t) {
     .source_muon_type = middle_type,
-    .target_muon_type = info.target_muon_type,
     .source_type = middle_llvm_type,
     .target_type = info.target_type,
     .source = middle,
@@ -142,11 +140,23 @@ __attribute__((nonnull)) static LLVMValueRef join_coercion_emit(
 
 __attribute__((nonnull)) static LLVMValueRef unjoin_coercion_emit(
     author_t *author, const mu_unjoin_coercion_t *coercion, info_t info) {
+  const mu_join_type_t *source_type = mu_type_cast(info.source_muon_type, source_type);
+  assert(source_type != NULL);
+
   LLVMBuilderRef tail = LLVMCreateBuilder();
   for (size_t i = 0; i < coercion->argc; i++) {
-    LLVMBasicBlockRef bblock = LLVMAppendBasicBlock(author->lambda, "");
+    // TODO: fix this
+    char *name;
+    if (asprintf(&name, "unjoin.discriminant.%zu", i) == -1)
+      return NULL;
+
+    LLVMBasicBlockRef bblock = LLVMAppendBasicBlock(author->lambda, name);
     LLVMPositionBuilderAtEnd(tail, bblock);
     author->tail = tail;
+
+    info_t discriminant_info = info;
+    info.source_muon_type = source_type->argv[i];
+    info.source_type = get_type(author, info.source_muon_type);
 
     // TODO: fix info
     coercion_emit(author, coercion->argv[i], info);

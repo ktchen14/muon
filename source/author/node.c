@@ -311,7 +311,6 @@ LLVMModuleRef script_emit(induce_t *induce, const mu_node_t *root) {
 
       info_t info = {
         .source_muon_type = source_muon_type,
-        .target_muon_type = target_muon_type,
         .source_type = source_type,
         .target_type = target_type,
         .source = source,
