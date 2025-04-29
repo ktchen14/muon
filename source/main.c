@@ -4,6 +4,7 @@
 #include "inductor.h"
 #include "muon/common.h"
 #include "script.h"
+#include "standard.h"
 #include "stator.h"
 #include "status.h"
 
@@ -154,8 +155,13 @@ int main(int argc, char *argv[argc]) {
     system("dot -Tpng -O out.dot");
   }
 
+  author_t *author;
+  if ((author = author_initialize(&(author_t) {0}, detect_result(&detect), &induce)) == NULL)
+    assert(0);
+  author->native_expr_emit = standard_native_expr_emit;
+
   LLVMModuleRef module;
-  module = script_emit(&induce, &sequence_expr->as_node);
+  module = script_emit(author, &sequence_expr->as_node);
   assert(module != NULL);
 
   if (LLVMWriteBitcodeToFile(module, "module.bc") != 0) {

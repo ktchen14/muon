@@ -1,5 +1,6 @@
 #include "common.h"
 
+#include "../common.h"
 #include "../stator.h"
 #include "../inductor.h"
 
@@ -114,7 +115,8 @@ static LLVMValueRef name_expr_emit(author_t *author, const mu_name_expr_t *expr)
 
 __attribute__((nonnull))
 static LLVMValueRef native_expr_emit(author_t *author, const mu_native_expr_t *expr) {
-  return SKIP;
+  assert(author->native_expr_emit != NULL);
+  return author->native_expr_emit(author, expr);
 }
 
 __attribute__((nonnull))
@@ -235,28 +237,27 @@ static LLVMValueRef vector_expr_emit(author_t *author, const mu_vector_expr_t *e
 }
 
 LLVMValueRef node_emit(author_t *author, const mu_node_t *node) {
-  switch (node->kind) {
+  switch ON_ABSTRACT_OBJECT(node) {
 #define MU_EMIT(lower, upper, t) case MU_##upper##_EXPR: \
       return lower##_expr_emit(author, (const mu_##lower##_expr_t *) node);
     MU_EACH_EXPR_KIND(MU_EMIT);
 #undef MU_EMIT
 
+    case IS_KIND_OF(define_stmt):
+      return evince_result(author, &define_stmt->expr->as_node);
+
     default: return SKIP;
   }
 }
 
-LLVMModuleRef script_emit(induce_t *induce, const mu_node_t *root) {
-  author_t author;
-  if (author_initialize(&author, induce->detect, induce) == NULL)
-    return NULL;
-
+LLVMModuleRef script_emit(author_t *author, const mu_node_t *root) {
   LLVMTypeRef initialize_type = LLVMFunctionType(LLVMVoidType(), NULL, 0, 0);
-  LLVMValueRef lambda = LLVMAddFunction(author.module, "initialize", initialize_type);
+  LLVMValueRef lambda = LLVMAddFunction(author->module, "initialize", initialize_type);
   LLVMBasicBlockRef b = LLVMAppendBasicBlock(lambda, "");
   LLVMBuilderRef tail = LLVMCreateBuilder();
   LLVMPositionBuilderAtEnd(tail, b);
 
-  if (author_continue(&author, lambda, tail) == NULL)
+  if (author_continue(author, lambda, tail) == NULL)
     return NULL;
 
   const mu_node_t *node = root, *next;
@@ -265,18 +266,18 @@ LLVMModuleRef script_emit(induce_t *induce, const mu_node_t *root) {
       const mu_lambda_expr_t *lambda_expr;
 
       if ((lambda_expr = mu_node_cast(next, lambda_expr)) != NULL) {
-        const mu_type_t *lambda_type = evince_type(author.inductor, &lambda_expr->as_node);
+        const mu_type_t *lambda_type = evince_type(author->inductor, &lambda_expr->as_node);
         LLVMTypeRef lambda_ty;
-        if ((lambda_ty = get_type(&author, lambda_type)) == NULL)
+        if ((lambda_ty = get_type(author, lambda_type)) == NULL)
           return NULL;
 
         snprintf(name, sizeof(name), "lambda.%zu", lambda_expr->as_node.id);
-        LLVMValueRef lambda = LLVMAddFunction(author.module, name, lambda_ty);
+        LLVMValueRef lambda = LLVMAddFunction(author->module, name, lambda_ty);
         LLVMBasicBlockRef entry = LLVMAppendBasicBlock(lambda, "");
         LLVMBuilderRef tail = LLVMCreateBuilder();
         LLVMPositionBuilderAtEnd(tail, entry);
 
-        if (author_continue(&author, lambda, tail) == NULL)
+        if (author_continue(author, lambda, tail) == NULL)
           return NULL;
       }
 
@@ -285,37 +286,37 @@ LLVMModuleRef script_emit(induce_t *induce, const mu_node_t *root) {
 
     LLVMValueRef result;
 
-    if ((result = node_emit(&author, node)) == NULL)
+    if ((result = node_emit(author, node)) == NULL)
       return NULL;
     if (result == SKIP)
       continue;
-    author.node_to_value[node->id] = result;
+    author->node_to_value[node->id] = result;
 
     const mu_coercion_t *coercion;
     const mu_type_t *target_type;
-    if ((coercion = evince_coercion(induce, node, &target_type)) != NULL) {
-      const mu_type_t *source_muon_type = evince_type(induce, node);
-      LLVMTypeRef source_type = get_type(&author, source_muon_type);
+    if ((coercion = evince_coercion(author->inductor, node, &target_type)) != NULL) {
+      const mu_type_t *source_muon_type = evince_type(author->inductor, node);
+      LLVMTypeRef source_type = get_type(author, source_muon_type);
       assert(source_type != NULL);
 
       const mu_type_t *target_muon_type = target_type;
-      LLVMTypeRef target_type = get_type(&author, target_muon_type);
+      LLVMTypeRef target_type = get_type(author, target_muon_type);
       assert(target_type != NULL);
 
       LLVMValueRef source = result;
 
       info_t info = { .source_type = source_muon_type, .source = source };
-      if ((result = coercion_emit(&author, coercion, info)) == NULL)
+      if ((result = coercion_emit(author, coercion, info)) == NULL)
         return NULL;
-      author.node_to_value[node->id] = result;
+      author->node_to_value[node->id] = result;
     }
   } while ((node = node_return(node)) != NULL);
 
-  assert(author.stream_length == 1);
-  LLVMBuildRetVoid(author.tail);
-  LLVMDisposeBuilder(author.tail);
+  assert(author->stream_length == 1);
+  LLVMBuildRetVoid(author->tail);
+  LLVMDisposeBuilder(author->tail);
 
-  return author.module;
+  return author->module;
 }
 
 /* int main(int argc, char const *argv[]) { */

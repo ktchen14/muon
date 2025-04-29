@@ -16,7 +16,8 @@ typedef struct {
   LLVMBuilderRef tail;
 } stream_t;
 
-typedef struct {
+typedef struct author_t author_t;
+struct author_t {
   const detect_result_t *detect;
   mu_inductor_t *inductor;
 
@@ -25,6 +26,10 @@ typedef struct {
 
   LLVMValueRef node_to_value[1000];
   size_t node_length;
+
+  LLVMValueRef (*native_expr_emit)(
+      author_t *author, const mu_native_expr_t *expr)
+    __attribute__((nonnull));
 
   /// LLVM data layout
   LLVMTargetDataRef layout;
@@ -61,7 +66,7 @@ typedef struct {
 
   /// Builder positioned at the end of the lambda
   LLVMBuilderRef tail;
-} author_t;
+};
 
 typedef struct {
   const mu_type_t *source_type;
@@ -73,7 +78,7 @@ author_t *author_initialize(
   __attribute__((nonnull));
 
 LLVMTypeRef get_type(author_t *author, const mu_type_t *root);
-LLVMModuleRef script_emit(induce_t *induce, const mu_node_t *root);
+LLVMModuleRef script_emit(author_t *author, const mu_node_t *root);
 LLVMValueRef coercion_emit(author_t *author, const mu_coercion_t *coercion, info_t info);
 
 static inline LLVMValueRef author_continue(

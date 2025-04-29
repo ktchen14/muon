@@ -14,6 +14,7 @@ target_sources(muon PRIVATE
   inductor/node.c
 
   script.c
+  standard.c
   status.c
 
   stator/name.c
