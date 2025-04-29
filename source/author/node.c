@@ -16,8 +16,7 @@
 
 static LLVMValueRef SKIP = (void *) &(int) {1};
 
-static LLVMValueRef evince_result(const frame_t *frame, const mu_node_t *node) {
-  author_t *author = frame->author;
+static LLVMValueRef evince_result(const author_t *author, const mu_node_t *node) {
   assert(node->id < author->node_length);
   LLVMValueRef result = author->node_to_value[node->id];
   assert(result != NULL);
@@ -25,9 +24,7 @@ static LLVMValueRef evince_result(const frame_t *frame, const mu_node_t *node) {
 }
 
 __attribute__((nonnull)) static LLVMValueRef access_expr_emit(
-    frame_t *frame, const mu_access_expr_t *expr) {
-  author_t *author = frame->author;
-
+    author_t *author, const mu_access_expr_t *expr) {
   const mu_type_t *lambda_type = evince_type(author->inductor, &expr->as_node);
   LLVMTypeRef lambda_ty;
   if ((lambda_ty = get_type(author, lambda_type)) == NULL)
@@ -40,40 +37,37 @@ __attribute__((nonnull)) static LLVMValueRef access_expr_emit(
 
   LLVMValueRef lambda = LLVMAddFunction(author->module, name, lambda_ty);
   LLVMBasicBlockRef entry = LLVMAppendBasicBlock(lambda, "");
-  LLVMBuilderRef builder = LLVMCreateBuilder();
-  LLVMPositionBuilderAtEnd(builder, entry);
+  LLVMBuilderRef tail = LLVMCreateBuilder();
+  LLVMPositionBuilderAtEnd(tail, entry);
 
   LLVMValueRef argument = LLVMGetParam(lambda, 0);
-  LLVMValueRef result = LLVMBuildExtractValue(builder, argument, 0, "");
-  LLVMBuildRet(builder, result);
-  LLVMDisposeBuilder(builder);
+  LLVMValueRef result = LLVMBuildExtractValue(tail, argument, 0, "");
+  LLVMBuildRet(tail, result);
+  LLVMDisposeBuilder(tail);
 
   return lambda;
 }
 
 __attribute__((nonnull)) static LLVMValueRef boolean_expr_emit(
-    frame_t *frame, const mu_boolean_expr_t *expr) {
-  author_t *author = frame->author;
+    author_t *author, const mu_boolean_expr_t *expr) {
   return LLVMConstInt(author->bool_type, expr->data, 0);
 }
 
 __attribute__((nonnull)) static LLVMValueRef cast_expr_emit(
-    frame_t *frame, const mu_cast_expr_t *expr) {
-  return evince_result(frame, &expr->matter->as_node);
+    author_t *author, const mu_cast_expr_t *expr) {
+  return evince_result(author, &expr->matter->as_node);
 }
 
 __attribute__((nonnull)) static LLVMValueRef integer_expr_emit(
-    frame_t *frame, const mu_integer_expr_t *expr) {
+    author_t *author, const mu_integer_expr_t *expr) {
   return LLVMConstInt(LLVMInt64Type(), expr->data, 0);
 }
 
 __attribute__((nonnull)) static LLVMValueRef invoke_expr_emit(
-    frame_t *frame, const mu_invoke_expr_t *expr) {
-  author_t *author = frame->author;
-
+    author_t *author, const mu_invoke_expr_t *expr) {
   const mu_node_t *operator = &expr->operator->as_node;
 
-  LLVMValueRef operator_val = evince_result(frame, operator);
+  LLVMValueRef operator_val = evince_result(author, operator);
 
   const mu_type_t *operator_type;
   if ((operator_type = evince_type(author->inductor, operator)) == NULL)
@@ -85,7 +79,7 @@ __attribute__((nonnull)) static LLVMValueRef invoke_expr_emit(
 
   const mu_node_t *argument = &expr->argument->as_node;
 
-  LLVMValueRef argument_val = evince_result(frame, argument);
+  LLVMValueRef argument_val = evince_result(author, argument);
 
   const mu_type_t *argument_type;
   if ((argument_type = evince_type(author->inductor, argument)) == NULL)
@@ -101,39 +95,31 @@ __attribute__((nonnull)) static LLVMValueRef invoke_expr_emit(
   argv[0] = argument_val;
 
   return LLVMBuildCall2(
-      frame->builder, operator_ty, operator_val, argv, argc, "");
+      author->tail, operator_ty, operator_val, argv, argc, "");
 }
 
 __attribute__((nonnull))
-static LLVMValueRef lambda_expr_emit(frame_t *frame, const mu_lambda_expr_t *expr) {
-  LLVMValueRef matter = evince_result(frame, &expr->matter->as_node);
-
-  LLVMBuildRet(frame->builder, matter);
-
-  frame_t this_frame = *frame;
-  LLVMDisposeBuilder(this_frame.builder);
-  frame->author->frame_length--;
-  return this_frame.lambda;
+static LLVMValueRef lambda_expr_emit(author_t *author, const mu_lambda_expr_t *expr) {
+  LLVMValueRef matter = evince_result(author, &expr->matter->as_node);
+  LLVMBuildRet(author->tail, matter);
+  LLVMDisposeBuilder(author->tail);
+  return author_return(author);
 }
 
 __attribute__((nonnull))
-static LLVMValueRef name_expr_emit(frame_t *frame, const mu_name_expr_t *expr) {
-  author_t *author = frame->author;
-
+static LLVMValueRef name_expr_emit(author_t *author, const mu_name_expr_t *expr) {
   const mu_node_t *target = detect_evince(author->detect, &expr->as_node);
   assert(target != NULL);
-  return evince_result(frame, target);
+  return evince_result(author, target);
 }
 
 __attribute__((nonnull))
-static LLVMValueRef native_expr_emit(frame_t *frame, const mu_native_expr_t *expr) {
+static LLVMValueRef native_expr_emit(author_t *author, const mu_native_expr_t *expr) {
   return SKIP;
 }
 
 __attribute__((nonnull))
-static LLVMValueRef record_expr_emit(frame_t *frame, const mu_record_expr_t *expr) {
-  author_t *author = frame->author;
-
+static LLVMValueRef record_expr_emit(author_t *author, const mu_record_expr_t *expr) {
   const mu_type_t *type = evince_type(author->inductor, &expr->as_node);
   LLVMTypeRef ty;
   if ((ty = get_type(author, type)) == NULL)
@@ -147,27 +133,25 @@ static LLVMValueRef record_expr_emit(frame_t *frame, const mu_record_expr_t *exp
     const mu_expr_member_t *member = expr->argv[i];
     const mu_expr_t *matter = member->expr;
 
-    LLVMValueRef argument = evince_result(frame, &matter->as_node);
-    result = LLVMBuildInsertValue(frame->builder, result, argument, i, "");
+    LLVMValueRef argument = evince_result(author, &matter->as_node);
+    result = LLVMBuildInsertValue(author->tail, result, argument, i, "");
   }
 
   return result;
 }
 
 __attribute__((nonnull))
-static LLVMValueRef sequence_expr_emit(frame_t *frame, const mu_sequence_expr_t *expr) {
+static LLVMValueRef sequence_expr_emit(author_t *author, const mu_sequence_expr_t *expr) {
   return SKIP;
 }
 
 __attribute__((nonnull))
-static LLVMValueRef switch_expr_emit(frame_t *frame, const mu_switch_expr_t *expr) {
+static LLVMValueRef switch_expr_emit(author_t *author, const mu_switch_expr_t *expr) {
   return SKIP;
 }
 
 __attribute__((nonnull))
-static LLVMValueRef vector_expr_emit(frame_t *frame, const mu_vector_expr_t *expr) {
-  author_t *author = frame->author;
-
+static LLVMValueRef vector_expr_emit(author_t *author, const mu_vector_expr_t *expr) {
   const mu_type_t *type = evince_type(author->inductor, &expr->as_node);
   const mu_core_type_t *vector_type = mu_type_cast(type, vector_type);
   assert(vector_type != NULL);
@@ -198,7 +182,7 @@ static LLVMValueRef vector_expr_emit(frame_t *frame, const mu_vector_expr_t *exp
   // %allocation = call ptr @malloc(size_t %size)
   LLVMValueRef malloc_argv[] = { size };
   LLVMValueRef allocation = LLVMBuildCall2(
-      frame->builder, author->malloc_type, author->malloc, malloc_argv, 1, "");
+      author->tail, author->malloc_type, author->malloc, malloc_argv, 1, "");
   if (allocation == NULL)
     return NULL;
 
@@ -219,11 +203,11 @@ static LLVMValueRef vector_expr_emit(frame_t *frame, const mu_vector_expr_t *exp
     return NULL;
 
   // %5 = insertvalue { size_t, ptr } %result, ptr %allocation, 1
-  if ((result = LLVMBuildInsertValue(frame->builder, result, allocation, 1, "")) == NULL)
+  if ((result = LLVMBuildInsertValue(author->tail, result, allocation, 1, "")) == NULL)
     return NULL;
 
   for (size_t i = 0; i < expr->argc; i++) {
-    LLVMValueRef argument = evince_result(frame, &expr->argv[i]->as_node);
+    LLVMValueRef argument = evince_result(author, &expr->argv[i]->as_node);
 
     // %index = size_t <i>
     LLVMValueRef index;
@@ -233,7 +217,7 @@ static LLVMValueRef vector_expr_emit(frame_t *frame, const mu_vector_expr_t *exp
     // %target = getelementptr inbounds nuw %allocation_type, ptr %allocation,
     //           size_t %index
     LLVMValueRef target = LLVMBuildGEPWithNoWrapFlags(
-        frame->builder,
+        author->tail,
         allocation_type,
         allocation,
         (LLVMValueRef[]) { index },
@@ -244,17 +228,17 @@ static LLVMValueRef vector_expr_emit(frame_t *frame, const mu_vector_expr_t *exp
       return NULL;
 
     // store i64 2, ptr %7, align 4
-    if (LLVMBuildStore(frame->builder, argument, target) == NULL)
+    if (LLVMBuildStore(author->tail, argument, target) == NULL)
       return NULL;
   }
 
   return result;
 }
 
-LLVMValueRef node_emit(frame_t *frame, const mu_node_t *node) {
+LLVMValueRef node_emit(author_t *author, const mu_node_t *node) {
   switch (node->kind) {
 #define MU_EMIT(lower, upper, t) case MU_##upper##_EXPR: \
-      return lower##_expr_emit(frame, (const mu_##lower##_expr_t *) node);
+      return lower##_expr_emit(author, (const mu_##lower##_expr_t *) node);
     MU_EACH_EXPR_KIND(MU_EMIT);
 #undef MU_EMIT
 
@@ -264,17 +248,17 @@ LLVMValueRef node_emit(frame_t *frame, const mu_node_t *node) {
 
 LLVMModuleRef script_emit(induce_t *induce, const mu_node_t *root) {
   author_t author;
-  if (author_initialize(&author, induce->detect, induce) == NULL) {
+  if (author_initialize(&author, induce->detect, induce) == NULL)
     return NULL;
-  }
 
-  LLVMTypeRef global_type = LLVMFunctionType(LLVMVoidType(), NULL, 0, 0);
-  LLVMValueRef lambda = LLVMAddFunction(author.module, "init", global_type);
-  LLVMBasicBlockRef entry = LLVMAppendBasicBlock(lambda, "");
-  LLVMBuilderRef builder = LLVMCreateBuilder();
-  LLVMPositionBuilderAtEnd(builder, entry);
-  frame_t newframe = { .author = &author, .lambda = lambda, .builder = builder };
-  author.frame[author.frame_length++] = newframe;
+  LLVMTypeRef initialize_type = LLVMFunctionType(LLVMVoidType(), NULL, 0, 0);
+  LLVMValueRef lambda = LLVMAddFunction(author.module, "initialize", initialize_type);
+  LLVMBasicBlockRef b = LLVMAppendBasicBlock(lambda, "");
+  LLVMBuilderRef tail = LLVMCreateBuilder();
+  LLVMPositionBuilderAtEnd(tail, b);
+
+  if (author_continue(&author, lambda, tail) == NULL)
+    return NULL;
 
   const mu_node_t *node = root, *next;
   do {
@@ -294,11 +278,11 @@ LLVMModuleRef script_emit(induce_t *induce, const mu_node_t *root) {
 
         LLVMValueRef lambda = LLVMAddFunction(author.module, name, lambda_ty);
         LLVMBasicBlockRef entry = LLVMAppendBasicBlock(lambda, "");
-        LLVMBuilderRef builder = LLVMCreateBuilder();
-        LLVMPositionBuilderAtEnd(builder, entry);
+        LLVMBuilderRef tail = LLVMCreateBuilder();
+        LLVMPositionBuilderAtEnd(tail, entry);
 
-        frame_t newframe = { .author = &author, .lambda = lambda, .builder = builder };
-        author.frame[author.frame_length++] = newframe;
+        if (author_continue(&author, lambda, tail) == NULL)
+          return NULL;
       }
 
       node = node_continue(node, next);
@@ -306,7 +290,7 @@ LLVMModuleRef script_emit(induce_t *induce, const mu_node_t *root) {
 
     LLVMValueRef result;
 
-    if ((result = node_emit(&author.frame[author.frame_length - 1], node)) == NULL)
+    if ((result = node_emit(&author, node)) == NULL)
       return NULL;
     if (result == SKIP)
       continue;
@@ -333,17 +317,15 @@ LLVMModuleRef script_emit(induce_t *induce, const mu_node_t *root) {
         .source = source,
       };
 
-      frame_t *frame = &author.frame[author.frame_length - 1];
-      if ((result = coercion_emit(frame, coercion, info)) == NULL)
+      if ((result = coercion_emit(&author, coercion, info)) == NULL)
         return NULL;
       author.node_to_value[node->id] = result;
     }
   } while ((node = node_return(node)) != NULL);
 
-  assert(author.frame_length == 1);
-  frame_t *frame = &author.frame[author.frame_length - 1];
-  LLVMBuildRetVoid(frame->builder);
-  LLVMDisposeBuilder(frame->builder);
+  assert(author.stream_length == 1);
+  LLVMBuildRetVoid(author.tail);
+  LLVMDisposeBuilder(author.tail);
 
   return author.module;
 }

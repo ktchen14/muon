@@ -48,10 +48,6 @@ author_t *author_initialize(
   if ((layout = LLVMCreateTargetDataLayout(machine)) == NULL)
     goto except_layout;
 
-  LLVMModuleRef module;
-  if ((module = LLVMModuleCreateWithName("test_module")) == NULL)
-    goto except_module;
-
   LLVMTypeRef bool_type;
   if ((bool_type = LLVMInt1Type()) == NULL)
     goto except_bool_type;
@@ -78,6 +74,10 @@ author_t *author_initialize(
   if ((malloc_type = LLVMFunctionType(star_type, malloc_argv, 1, 0)) == NULL)
     goto except_malloc_type;
 
+  LLVMModuleRef module;
+  if ((module = LLVMModuleCreateWithName("test_module")) == NULL)
+    goto except_module;
+
   LLVMValueRef malloc;
   if ((malloc = LLVMAddFunction(module, "malloc", malloc_type)) == NULL)
     goto except_malloc;
@@ -101,14 +101,15 @@ author_t *author_initialize(
   return author;
 
 except_malloc:
+  LLVMDisposeModule(module);
+
+except_module:
+
 except_malloc_type:
 except_star_type:
 except_size_type:
 except_byte_type:
 except_bool_type:
-  LLVMDisposeModule(module);
-
-except_module:
   LLVMDisposeTargetData(layout);
 
 except_layout:
