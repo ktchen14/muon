@@ -236,6 +236,22 @@ static LLVMValueRef vector_expr_emit(author_t *author, const mu_vector_expr_t *e
   return result;
 }
 
+__attribute__((nonnull))
+static LLVMValueRef define_stmt_emit(author_t *author, const mu_define_stmt_t *stmt) {
+  LLVMValueRef expr_result = evince_result(author, &stmt->expr->as_node);
+  LLVMTypeRef expr_type = LLVMTypeOf(expr_result);
+
+  // @result = global <expr_type> poison
+  LLVMValueRef result = LLVMAddGlobal(
+      author->module, expr_type, (const char *) stmt->name->text);
+  LLVMSetInitializer(result, LLVMGetPoison(expr_type));
+
+  // store <expr_type> <expr_result>, @result
+  LLVMBuildStore(author->tail, expr_result, result);
+
+  return result;
+}
+
 LLVMValueRef node_emit(author_t *author, const mu_node_t *node) {
   switch ON_ABSTRACT_OBJECT(node) {
 #define MU_EMIT(lower, upper, t) case MU_##upper##_EXPR: \
@@ -244,7 +260,7 @@ LLVMValueRef node_emit(author_t *author, const mu_node_t *node) {
 #undef MU_EMIT
 
     case IS_KIND_OF(define_stmt):
-      return evince_result(author, &define_stmt->expr->as_node);
+      return define_stmt_emit(author, define_stmt);
 
     default: return SKIP;
   }
