@@ -108,13 +108,13 @@ __attribute__((nonnull)) static LLVMValueRef join_coercion_emit(
   if ((result = LLVMGetPoison(target_type)) == NULL)
     return NULL;
 
-  // %number = i64 <coercion->i>
-  LLVMValueRef number;
-  if ((number = LLVMConstInt(LLVMInt64Type(), coercion->i, 0)) == NULL)
+  // %discriminant = i64 <coercion->i>
+  LLVMValueRef discriminant;
+  if ((discriminant = LLVMConstInt(LLVMInt64Type(), coercion->i, 0)) == NULL)
     return NULL;
 
-  // %result = insertvalue <info.target_type> %result, %number, 0
-  if ((result = LLVMBuildInsertValue(tail, result, number, 0, "")) == NULL)
+  // %result = insertvalue <info.target_type> %result, %discriminant, 0
+  if ((result = LLVMBuildInsertValue(tail, result, discriminant, 0, "")) == NULL)
     return NULL;
 
   LLVMTypeRef data_type = LLVMStructGetTypeAtIndex(target_type, 1);
@@ -142,28 +142,95 @@ __attribute__((nonnull)) static LLVMValueRef join_coercion_emit(
 
 __attribute__((nonnull)) static LLVMValueRef unjoin_coercion_emit(
     author_t *author, const mu_unjoin_coercion_t *coercion, info_t info) {
+  // Ensure that the source type is a join type
   const mu_join_type_t *source_type = mu_type_cast(info.source_muon_type, source_type);
   assert(source_type != NULL);
 
-  LLVMBuilderRef tail = LLVMCreateBuilder();
+  unsigned int argc;
+  if (rare(llvm_length_overflow(coercion->argc, &argc)))
+    return NULL;
+
+  LLVMTypeRef llvm_source_type = LLVMTypeOf(info.source);
+  LLVMTypeRef data_type = LLVMStructGetTypeAtIndex(llvm_source_type, 1);
+
+  // %discriminant = i64 <info.source>
+  LLVMValueRef discriminant = LLVMBuildExtractValue(author->tail, info.source, 0, "");
+
+  // %allocation = alloca <data_type>
+  LLVMValueRef allocation = LLVMBuildAlloca(author->tail, data_type, "");
+
+  // %source_data = extractvalue { i64, <data_type> } <info.source>, 1
+  LLVMValueRef source_data = LLVMBuildExtractValue(author->tail, info.source, 1, "");
+
+  // store <data_type> %source_data, %allocation
+  LLVMBuildStore(author->tail, source_data, allocation);
+
+  // %none:
+  LLVMBasicBlockRef none = LLVMAppendBasicBlock(author->lambda, "");
+
+  // switch i64 %discriminant, label %none, ...
+  LLVMValueRef jump = LLVMBuildSwitch(author->tail, discriminant, none, argc);
+
+  // unreachable (in %none)
+  LLVMPositionBuilderAtEnd(author->tail, none);
+  LLVMBuildUnreachable(author->tail);
+
+  // %next:
+  LLVMBasicBlockRef next = LLVMAppendBasicBlock(author->lambda, "");
+
+  LLVMTypeRef target_type;
+  if ((target_type = get_type(author, coercion->as_coercion.target)) == NULL)
+    return NULL;
+
+  // %result = phi <target_type>, ...
+  LLVMPositionBuilderAtEnd(author->tail, next);
+  LLVMValueRef result = LLVMBuildPhi(author->tail, target_type, "");
+
+  // For each discriminant, append a basic block that will load from the
+  // allocation as the appropriate type, then emit the relevant coercion against
+  // the loaded data.
   for (size_t i = 0; i < coercion->argc; i++) {
     // TODO: fix this
     char *name;
     if (asprintf(&name, "unjoin.discriminant.%zu", i) == -1)
       return NULL;
 
-    LLVMBasicBlockRef bblock = LLVMAppendBasicBlock(author->lambda, name);
-    LLVMPositionBuilderAtEnd(tail, bblock);
-    author->tail = tail;
+    // %branch:
+    LLVMBasicBlockRef branch = LLVMAppendBasicBlock(author->lambda, name);
+    LLVMPositionBuilderAtEnd(author->tail, branch);
 
-    info_t discriminant_info = info;
-    info.source_muon_type = source_type->argv[i];
-    info.source_type = get_type(author, info.source_muon_type);
+    // %number = i64 <i>
+    LLVMValueRef number = LLVMConstInt(LLVMInt64Type(), i, 0);
 
-    // TODO: fix info
-    coercion_emit(author, coercion->argv[i], info);
+    // switch i64 %discriminant, ... [... i64 %number, label %branch ...]
+    LLVMAddCase(jump, number, branch);
+
+    const mu_type_t *muon_branch_type = source_type->argv[i];
+    LLVMTypeRef branch_type;
+    if ((branch_type = get_type(author, muon_branch_type)) == NULL)
+      return NULL;
+
+    // %data = load <branch_type>, %allocation
+    LLVMValueRef data = LLVMBuildLoad2(author->tail, branch_type, allocation, "");
+
+    info_t branch_info = {
+      .source_muon_type = muon_branch_type,
+      .source_type = branch_type,
+      .source = data,
+    };
+
+    LLVMValueRef branch_result;
+    if ((branch_result = coercion_emit(author, coercion->argv[i], info)) == NULL)
+      return NULL;
+
+    // br %next
+    LLVMBuildBr(author->tail, next);
+
+    LLVMAddIncoming(result, &branch_result, &branch, 1);
   }
-  abort();
+
+  LLVMPositionBuilderAtEnd(author->tail, next);
+  return result;
 }
 
 __attribute__((nonnull)) static LLVMValueRef meet_coercion_emit(

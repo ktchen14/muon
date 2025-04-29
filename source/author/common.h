@@ -1,6 +1,7 @@
 #include "../inductor.h"
 #include "../stator.h"
 
+#include <limits.h>
 #include <llvm-c/Target.h>
 #include <llvm-c/Types.h>
 
@@ -12,6 +13,7 @@
  */
 typedef struct {
   LLVMValueRef lambda;
+
   LLVMBuilderRef tail;
 } stream_t;
 
@@ -93,4 +95,17 @@ static inline LLVMValueRef author_return(author_t *author) {
   author->lambda = stream.lambda;
   author->tail = stream.tail;
   return result;
+}
+
+/// @internal Assign @a length to @a result. Return 1 on overflow.
+static inline _Bool llvm_length_overflow(size_t length, unsigned int *result) {
+  if (length > UINT_MAX)
+    return 1;
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconversion"
+  *result = length;
+#pragma GCC diagnostic pop
+
+  return 0;
 }

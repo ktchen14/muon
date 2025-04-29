@@ -12,19 +12,6 @@
 #include <limits.h>
 #include <stdlib.h>
 
-/// @internal Assign @a length to @a result. Return 1 on overflow.
-static inline _Bool llvm_length_overflow(size_t length, unsigned int *result) {
-  if (length > UINT_MAX)
-    return 1;
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wconversion"
-  *result = length;
-#pragma GCC diagnostic pop
-
-  return 0;
-}
-
 __attribute__((nonnull, returns_nonnull))
 static LLVMTypeRef evince_result(const author_t *author, const mu_type_t *type) {
   assert(type->id < author->type_length);
