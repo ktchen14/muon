@@ -16,6 +16,8 @@
 
 static LLVMValueRef SKIP = (void *) &(int) {1};
 
+static char name[256];
+
 static LLVMValueRef evince_result(const author_t *author, const mu_node_t *node) {
   assert(node->id < author->node_length);
   LLVMValueRef result = author->node_to_value[node->id];
@@ -30,11 +32,7 @@ __attribute__((nonnull)) static LLVMValueRef access_expr_emit(
   if ((lambda_ty = get_type(author, lambda_type)) == NULL)
     return NULL;
 
-  // TODO: fix this
-  char *name;
-  if (asprintf(&name, "access.%zu", expr->as_node.id) == -1)
-    return NULL;
-
+  snprintf(name, sizeof(name), "access.%zu", expr->as_node.id);
   LLVMValueRef lambda = LLVMAddFunction(author->module, name, lambda_ty);
   LLVMBasicBlockRef entry = LLVMAppendBasicBlock(lambda, "");
   LLVMBuilderRef tail = LLVMCreateBuilder();
