@@ -13,7 +13,6 @@
  */
 typedef struct {
   LLVMValueRef lambda;
-
   LLVMBuilderRef tail;
 } stream_t;
 
