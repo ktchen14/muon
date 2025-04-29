@@ -112,3 +112,5 @@ static inline _Bool llvm_length_overflow(size_t length, unsigned int *result) {
 
   return 0;
 }
+
+extern LLVMValueRef SKIP;

@@ -15,7 +15,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-static LLVMValueRef SKIP = (void *) &(int) {1};
+LLVMValueRef SKIP = (void *) &(int) {1};
 
 static char name[256];
 

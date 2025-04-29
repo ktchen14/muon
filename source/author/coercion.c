@@ -15,8 +15,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-static LLVMValueRef SKIP = (void *) &(int) {1};
-
 static LLVMValueRef evince_result(const author_t *author, const mu_node_t *node) {
   assert(node->id < author->node_length);
   LLVMValueRef result = author->node_to_value[node->id];
