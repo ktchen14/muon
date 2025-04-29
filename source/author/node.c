@@ -309,12 +309,7 @@ LLVMModuleRef script_emit(induce_t *induce, const mu_node_t *root) {
 
       LLVMValueRef source = result;
 
-      info_t info = {
-        .source_muon_type = source_muon_type,
-        .source_type = source_type,
-        .source = source,
-      };
-
+      info_t info = { .source_type = source_muon_type, .source = source };
       if ((result = coercion_emit(&author, coercion, info)) == NULL)
         return NULL;
       author.node_to_value[node->id] = result;

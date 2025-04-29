@@ -46,23 +46,12 @@ __attribute__((nonnull)) static LLVMValueRef indirect_coercion_emit(
   if ((middle_llvm_type = get_type(author, middle_type)) == NULL)
     return NULL;
 
-  info_t single_info = {
-    .source_muon_type = info.source_muon_type,
-    .source_type = info.source_type,
-    .source = info.source,
-  };
-
   LLVMValueRef middle;
-  if ((middle = coercion_emit(author, coercion->head, single_info)) == NULL)
+  if ((middle = coercion_emit(author, coercion->head, info)) == NULL)
     return NULL;
 
-  single_info = (info_t) {
-    .source_muon_type = middle_type,
-    .source_type = middle_llvm_type,
-    .source = middle,
-  };
-
-  return coercion_emit(author, coercion->tail, single_info);
+  info = (info_t) { .source_type = middle_type, .source = middle };
+  return coercion_emit(author, coercion->tail, info);
 }
 
 __attribute__((nonnull)) static LLVMValueRef variance_coercion_emit(
@@ -143,7 +132,7 @@ __attribute__((nonnull)) static LLVMValueRef join_coercion_emit(
 __attribute__((nonnull)) static LLVMValueRef unjoin_coercion_emit(
     author_t *author, const mu_unjoin_coercion_t *coercion, info_t info) {
   // Ensure that the source type is a join type
-  const mu_join_type_t *source_type = mu_type_cast(info.source_muon_type, source_type);
+  const mu_join_type_t *source_type = mu_type_cast(info.source_type, source_type);
   assert(source_type != NULL);
 
   unsigned int argc;
@@ -205,20 +194,14 @@ __attribute__((nonnull)) static LLVMValueRef unjoin_coercion_emit(
     // switch i64 %discriminant, ... [... i64 %number, label %branch ...]
     LLVMAddCase(jump, number, branch);
 
-    const mu_type_t *muon_branch_type = source_type->argv[i];
     LLVMTypeRef branch_type;
-    if ((branch_type = get_type(author, muon_branch_type)) == NULL)
+    if ((branch_type = get_type(author, source_type->argv[i])) == NULL)
       return NULL;
 
     // %data = load <branch_type>, %allocation
     LLVMValueRef data = LLVMBuildLoad2(author->tail, branch_type, allocation, "");
 
-    info_t branch_info = {
-      .source_muon_type = muon_branch_type,
-      .source_type = branch_type,
-      .source = data,
-    };
-
+    info_t info = { .source_type = source_type->argv[i], .source = data };
     LLVMValueRef branch_result;
     if ((branch_result = coercion_emit(author, coercion->argv[i], info)) == NULL)
       return NULL;

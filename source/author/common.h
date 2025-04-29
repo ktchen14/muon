@@ -65,8 +65,7 @@ typedef struct {
 } author_t;
 
 typedef struct {
-  const mu_type_t *source_muon_type;
-  LLVMTypeRef source_type;
+  const mu_type_t *source_type;
   LLVMValueRef source;
 } info_t;
 
