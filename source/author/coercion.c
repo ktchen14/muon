@@ -1,7 +1,8 @@
 #include "common.h"
 
-#include "../stator.h"
+#include "../common.h"
 #include "../inductor.h"
+#include "../stator.h"
 
 #include <llvm-c/Types.h>
 #include <llvm-c/Core.h>
@@ -13,14 +14,6 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-typedef struct {
-  const mu_type_t *source_muon_type;
-  const mu_type_t *target_muon_type;
-  LLVMTypeRef source_type;
-  LLVMTypeRef target_type;
-  LLVMValueRef source;
-} info_t;
 
 LLVMValueRef coercion_emit(frame_t *frame, const mu_coercion_t *coercion, info_t info);
 
@@ -51,15 +44,54 @@ __attribute__((nonnull)) static LLVMValueRef slot_coercion_emit(
 
 __attribute__((nonnull)) static LLVMValueRef indirect_coercion_emit(
     frame_t *frame, const mu_indirect_coercion_t *coercion, info_t info) {
-  abort();
-  // TODO: fix this
-  /* LLVMValueRef intermediate = coercion_emit(frame, coercion->head, info.source); */
-  /* return coercion_emit(frame, coercion->tail, intermediate); */
+  author_t *author = frame->author;
+
+  const mu_type_t *middle_type = coercion->head->target;
+  LLVMTypeRef middle_llvm_type;
+  if ((middle_llvm_type = get_type(author, middle_type)) == NULL)
+    return NULL;
+
+  info_t single_info = {
+    .source_muon_type = info.source_muon_type,
+    .target_muon_type = middle_type,
+    .source_type = info.source_type,
+    .target_type = middle_llvm_type,
+    .source = info.source,
+  };
+
+  LLVMValueRef middle;
+  if ((middle = coercion_emit(frame, coercion->head, single_info)) == NULL)
+    return NULL;
+
+  single_info = (info_t) {
+    .source_muon_type = middle_type,
+    .target_muon_type = info.target_muon_type,
+    .source_type = middle_llvm_type,
+    .target_type = info.target_type,
+    .source = middle,
+  };
+
+  return coercion_emit(frame, coercion->tail, single_info);
 }
 
 __attribute__((nonnull)) static LLVMValueRef variance_coercion_emit(
     frame_t *frame, const mu_variance_coercion_t *coercion, info_t info) {
-  abort();
+  switch ON_ABSTRACT_OBJECT(coercion->core) {
+    case MU_BOOLEAN_CORE:
+    case MU_INTEGER_CORE:
+      return info.source;
+
+    case MU_LAMBDA_CORE:
+    case MU_RECORD_CORE:
+      return info.source;
+
+    case MU_VECTOR_CORE: {
+      return info.source;
+    }
+
+    case MU_CUSTOM_CORE:
+      return info.source;
+  }
 }
 
 __attribute__((nonnull)) static LLVMValueRef instance_coercion_emit(

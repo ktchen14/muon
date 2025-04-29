@@ -1,5 +1,7 @@
 # define id = lambda x = x.foo
 
+define number = 1234
+
 define main = lambda () = [[(foo: (bar: 5)).foo.bar, 7], [9]]
 
 # define y = (bar: id)

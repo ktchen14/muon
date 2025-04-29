@@ -52,9 +52,18 @@ struct author_t {
   LLVMValueRef malloc;
 };
 
+typedef struct {
+  const mu_type_t *source_muon_type;
+  const mu_type_t *target_muon_type;
+  LLVMTypeRef source_type;
+  LLVMTypeRef target_type;
+  LLVMValueRef source;
+} info_t;
+
 author_t *author_initialize(
     author_t *author, const detect_result_t *detect, mu_inductor_t *inductor)
   __attribute__((nonnull));
 
 LLVMTypeRef get_type(author_t *author, const mu_type_t *root);
 LLVMModuleRef script_emit(induce_t *induce, const mu_node_t *root);
+LLVMValueRef coercion_emit(frame_t *frame, const mu_coercion_t *coercion, info_t info);
