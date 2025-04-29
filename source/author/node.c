@@ -311,6 +311,33 @@ LLVMModuleRef script_emit(induce_t *induce, const mu_node_t *root) {
     if (result == SKIP)
       continue;
     author.node_to_value[node->id] = result;
+
+    const mu_coercion_t *coercion;
+    const mu_type_t *target_type;
+    if ((coercion = evince_coercion(induce, node, &target_type)) != NULL) {
+      const mu_type_t *source_muon_type = evince_type(induce, node);
+      LLVMTypeRef source_type = get_type(&author, source_muon_type);
+      assert(source_type != NULL);
+
+      const mu_type_t *target_muon_type = target_type;
+      LLVMTypeRef target_type = get_type(&author, target_muon_type);
+      assert(target_type != NULL);
+
+      LLVMValueRef source = result;
+
+      info_t info = {
+        .source_muon_type = source_muon_type,
+        .target_muon_type = target_muon_type,
+        .source_type = source_type,
+        .target_type = target_type,
+        .source = source,
+      };
+
+      frame_t *frame = &author.frame[author.frame_length - 1];
+      if ((result = coercion_emit(frame, coercion, info)) == NULL)
+        return NULL;
+      author.node_to_value[node->id] = result;
+    }
   } while ((node = node_return(node)) != NULL);
 
   assert(author.frame_length == 1);
