@@ -49,7 +49,6 @@ __attribute__((nonnull)) static LLVMValueRef indirect_coercion_emit(
   info_t single_info = {
     .source_muon_type = info.source_muon_type,
     .source_type = info.source_type,
-    .target_type = middle_llvm_type,
     .source = info.source,
   };
 
@@ -60,7 +59,6 @@ __attribute__((nonnull)) static LLVMValueRef indirect_coercion_emit(
   single_info = (info_t) {
     .source_muon_type = middle_type,
     .source_type = middle_llvm_type,
-    .target_type = info.target_type,
     .source = middle,
   };
 
@@ -101,9 +99,13 @@ __attribute__((nonnull)) static LLVMValueRef join_coercion_emit(
     author_t *author, const mu_join_coercion_t *coercion, info_t info) {
   LLVMBuilderRef tail = author->tail;
 
-  // %result = <info.target_type>
+  LLVMTypeRef target_type;
+  if ((target_type = get_type(author, coercion->as_coercion.target)) == NULL)
+    return NULL;
+
+  // %result = <target_type>
   LLVMValueRef result;
-  if ((result = LLVMGetPoison(info.target_type)) == NULL)
+  if ((result = LLVMGetPoison(target_type)) == NULL)
     return NULL;
 
   // %number = i64 <coercion->i>
@@ -115,7 +117,7 @@ __attribute__((nonnull)) static LLVMValueRef join_coercion_emit(
   if ((result = LLVMBuildInsertValue(tail, result, number, 0, "")) == NULL)
     return NULL;
 
-  LLVMTypeRef data_type = LLVMStructGetTypeAtIndex(info.target_type, 1);
+  LLVMTypeRef data_type = LLVMStructGetTypeAtIndex(target_type, 1);
 
   // %allocation = alloca <data_type>
   LLVMValueRef allocation;
