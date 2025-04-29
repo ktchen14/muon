@@ -35,6 +35,7 @@ struct induce_t {
   mu_engine_t *engine;
   size_t node_length;
   size_t type_number;
+  size_t coercion_number;
 
   const detect_result_t *detect;
 
@@ -112,7 +113,7 @@ static inline void override_coercion(
  * - a coercion has already been assigned to the @a node
  */
 __attribute__((nonnull))
-static inline void assign_coercion(
+static inline void assign_coercion_to_node(
     induce_t *induce,
     const mu_node_t *node,
     const mu_coercion_t *coercion,

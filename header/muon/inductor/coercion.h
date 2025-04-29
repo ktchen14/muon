@@ -2,6 +2,7 @@
 #define MU_INDUCTOR_COERCION_H
 
 #include "core.h"
+#include "type.h"
 
 #include <stddef.h>
 
@@ -29,7 +30,9 @@ typedef enum {
 /// An abstract coercion
 typedef struct {
   mu_coercion_kind_t kind;
+  const mu_inductor_t *inductor;
   size_t id;
+  const mu_type_t *target;
 } mu_coercion_t;
 
 /// The header that each concrete coercion must have
@@ -55,7 +58,7 @@ typedef struct {
 typedef struct {
   MU_COERCION_HEADER;
   const mu_core_t *core;
-  const mu_coercion_t *argv[/* core->argc */];
+  const mu_coercion_t *argv[/* target->core->argc */];
 } mu_variance_coercion_t;
 
 typedef struct {
@@ -98,32 +101,47 @@ typedef struct {
 extern const void *const MU_NO_SUCH_COERCION;
 
 const mu_indirect_coercion_t *mu_indirect_coercion(
+    mu_inductor_t *inductor,
     const mu_coercion_t *head, const mu_coercion_t *tail)
   __attribute__((malloc, nonnull));
 
 const mu_instance_coercion_t *mu_instance_coercion(
+    mu_inductor_t *inductor,
+    const mu_type_t *target,
     const mu_instance_t *instance)
   __attribute__((malloc, nonnull));
 
 const mu_variance_coercion_t *mu_variance_coercion(
-    const mu_core_t *core, const mu_coercion_t *argv[/* target->core->argc */])
+    mu_inductor_t *inductor,
+    const mu_type_t *target,
+    const mu_core_t *core,
+    const mu_coercion_t *argv[/* target->core->argc */])
   __attribute__((malloc, nonnull(1)));
 
-const mu_join_coercion_t *mu_join_coercion(size_t i)
+const mu_join_coercion_t *mu_join_coercion(
+    mu_inductor_t *inductor, const mu_type_t *target, size_t i)
   __attribute__((malloc));
 
 const mu_unjoin_coercion_t *mu_unjoin_coercion(
-    size_t argc, const mu_coercion_t *argv[/* argc */])
+    mu_inductor_t *inductor,
+    const mu_type_t *target,
+    size_t argc,
+    const mu_coercion_t *argv[/* argc */])
   __attribute__((malloc));
 
 const mu_meet_coercion_t *mu_meet_coercion(
-    size_t argc, const mu_coercion_t *argv[/* argc */])
+    mu_inductor_t *inductor,
+    const mu_type_t *target,
+    size_t argc,
+    const mu_coercion_t *argv[/* argc */])
   __attribute__((malloc));
 
-const mu_unmeet_coercion_t *mu_unmeet_coercion(size_t i)
+const mu_unmeet_coercion_t *mu_unmeet_coercion(
+    mu_inductor_t *inductor, const mu_type_t *target, size_t i)
   __attribute__((malloc));
 
-const mu_unscheme_coercion_t *mu_unscheme_coercion(void)
+const mu_unscheme_coercion_t *mu_unscheme_coercion(
+    mu_inductor_t *inductor, const mu_type_t *target)
   __attribute__((malloc));
 
 void mu_coercion_debug(const mu_coercion_t *coercion)

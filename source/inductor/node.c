@@ -97,7 +97,7 @@ __attribute__((nonnull)) static const mu_type_t *cast_expr_induce(
   const mu_coercion_t *coercion;
   if ((coercion = ensure_coercion(induce, matter_type, sign_type)) == NULL)
     return NULL;
-  assign_coercion(induce, &expr->matter->as_node, coercion, sign_type);
+  assign_coercion_to_node(induce, &expr->matter->as_node, coercion, sign_type);
 
   return sign_type;
 }
@@ -129,7 +129,7 @@ __attribute__((nonnull)) static const mu_type_t *invoke_expr_induce(
   const mu_coercion_t *coercion;
   if ((coercion = ensure_coercion(induce, operator_type, target)) == NULL)
     return NULL;
-  assign_coercion(induce, &expr->operator->as_node, coercion, target);
+  assign_coercion_to_node(induce, &expr->operator->as_node, coercion, target);
 
   return &result->as_type;
 }
@@ -231,7 +231,7 @@ __attribute__((nonnull)) static const mu_type_t *switch_expr_induce(
     const mu_coercion_t *coercion;
     if ((coercion = ensure_coercion(induce, type, &result->as_type)) == NULL)
       return NULL;
-    assign_coercion(induce, &expr->argv[i]->as_node, coercion, &result->as_type);
+    assign_coercion_to_node(induce, &expr->argv[i]->as_node, coercion, &result->as_type);
   }
 
   return &result->as_type;
@@ -257,7 +257,7 @@ __attribute__((nonnull)) static const mu_type_t *vector_expr_induce(
     const mu_coercion_t *coercion;
     if ((coercion = ensure_coercion(induce, type, &matter_type->as_type)) == NULL)
       return NULL;
-    assign_coercion(induce, &expr->argv[i]->as_node, coercion, &matter_type->as_type);
+    assign_coercion_to_node(induce, &expr->argv[i]->as_node, coercion, &matter_type->as_type);
   }
 
   const mu_core_type_t *result;
@@ -329,7 +329,7 @@ __attribute__((nonnull)) static const mu_type_t *coercion_stmt_induce(
   const mu_coercion_t *coercion;
   if ((coercion = ensure_coercion(induce, expr_type, &lambda_type->as_type)) == NULL)
     return NULL;
-  assign_coercion(induce, &stmt->expr->as_node, coercion, &lambda_type->as_type);
+  assign_coercion_to_node(induce, &stmt->expr->as_node, coercion, &lambda_type->as_type);
 
   const mu_core_type_t *source_core_type = mu_type_cast(source_type, source_core_type);
   assert(source_core_type != NULL);

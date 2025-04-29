@@ -20,7 +20,7 @@ __attribute__((nonnull, pure))
 const mu_coercion_t *mu_edge_coercion_reload(
     const universe_t *universe, const mu_edge_coercion_t *coercion) {
   const mu_type_t *source = coercion->source;
-  const mu_type_t *target = coercion->target;
+  const mu_type_t *target = coercion->as_coercion.target;
 
   type_edge_t *edge = universe_search(universe, source, target);
   assert(edge != NULL);
@@ -75,12 +75,12 @@ void *redirect_source(
 
     // Retrieve β ⇝ τ
     const mu_coercion_t *direct_coercion;
-    if ((direct_coercion = coerce_with(direct)) == NULL)
+    if ((direct_coercion = coerce_with(induce, direct)) == NULL)
       return NULL;
 
     // Create α ⇝ β ⇝ τ
     const mu_indirect_coercion_t *result;
-    if ((result = mu_indirect_coercion(coercion, direct_coercion)) == NULL)
+    if ((result = mu_indirect_coercion(induce, coercion, direct_coercion)) == NULL)
       return NULL;
 
     // Assign the α ⇝ β ⇝ τ to ⟨α ⇒ τ⟩
@@ -191,7 +191,7 @@ const void *reduce_type_to_join(
       type_edge_t *e;
       e = universe_search(&induce->universe, solution, edge->target);
       assert(e != NULL);
-      edge->coercion = coerce_with(e);
+      edge->coercion = coerce_with(induce, e);
     }
 
     // Define ⟨target ⇒ α⟩ and assign the id coercion to it
@@ -216,7 +216,7 @@ const void *reduce_type_to_join(
     allocation->argv[argc] = edge->source;
 
     const mu_join_coercion_t *coercion;
-    if ((coercion = mu_join_coercion(argc++)) == NULL)
+    if ((coercion = mu_join_coercion(induce, &target->as_type, argc++)) == NULL)
       return NULL;
     edge_assign(edge, &coercion->as_coercion);
   }
@@ -247,7 +247,7 @@ const mu_coercion_t *reduce_coercion(
         return reduce_coercion(induce, next_coercion);
 
       const mu_type_t *source = edge_coercion->source;
-      const mu_type_t *target = edge_coercion->target;
+      const mu_type_t *target = edge_coercion->as_coercion.target;
 
       assert(target->kind == MU_VARIABLE_TYPE || source->kind == MU_VARIABLE_TYPE);
 
@@ -300,7 +300,7 @@ const mu_coercion_t *reduce_coercion(
 
           case IS_KIND_OF(join_type): {
             mu_unjoin_coercion_t *allocation;
-            if ((allocation = unjoin_coercion_allocate(join_type->argc)) == NULL)
+            if ((allocation = unjoin_coercion_allocate(induce, join_type->argc)) == NULL)
               return NULL;
 
             for (size_t i = 0; i < join_type->argc; i++) {
@@ -315,7 +315,7 @@ const mu_coercion_t *reduce_coercion(
             }
 
             const mu_unjoin_coercion_t *result;
-            if ((result = unjoin_coercion_activate(allocation)) == NULL)
+            if ((result = unjoin_coercion_activate(allocation, target)) == NULL)
               return NULL;
             return &result->as_coercion;
           }
@@ -337,7 +337,7 @@ const mu_coercion_t *reduce_coercion(
       tail = reduce_coercion(induce, tail);
 
       const mu_indirect_coercion_t *result;
-      if ((result = mu_indirect_coercion(head, tail)) == NULL)
+      if ((result = mu_indirect_coercion(induce, head, tail)) == NULL)
         return NULL;
       return &result->as_coercion;
     }
@@ -349,7 +349,7 @@ const mu_coercion_t *reduce_coercion(
       const mu_core_t *core = variance_coercion->core;
 
       mu_variance_coercion_t *allocation;
-      if ((allocation = variance_coercion_allocate(core)) == NULL)
+      if ((allocation = variance_coercion_allocate(induce, core)) == NULL)
         return NULL;
 
       for (size_t i = 0; i < core->argc; i++) {
@@ -358,7 +358,7 @@ const mu_coercion_t *reduce_coercion(
       }
 
       const mu_variance_coercion_t *result;
-      if ((result = variance_coercion_activate(allocation)) == NULL)
+      if ((result = variance_coercion_activate(allocation, variance_coercion->as_coercion.target)) == NULL)
         return NULL;
       return &result->as_coercion;
     }
@@ -376,14 +376,14 @@ const mu_coercion_t *reduce_coercion(
       size_t argc = unjoin_coercion->argc;
 
       mu_unjoin_coercion_t *allocation;
-      if ((allocation = unjoin_coercion_allocate(argc)) == NULL)
+      if ((allocation = unjoin_coercion_allocate(induce, argc)) == NULL)
         return NULL;
 
       for (size_t i = 0; i < argc; i++)
         allocation->argv[i] = reduce_coercion(induce, unjoin_coercion->argv[i]);
 
       const mu_unjoin_coercion_t *result;
-      if ((result = unjoin_coercion_activate(allocation)) == NULL)
+      if ((result = unjoin_coercion_activate(allocation, unjoin_coercion->as_coercion.target)) == NULL)
         return NULL;
       return &result->as_coercion;
     }
@@ -392,14 +392,14 @@ const mu_coercion_t *reduce_coercion(
       size_t argc = meet_coercion->argc;
 
       mu_meet_coercion_t *allocation;
-      if ((allocation = meet_coercion_allocate(argc)) == NULL)
+      if ((allocation = meet_coercion_allocate(induce, argc)) == NULL)
         return NULL;
 
       for (size_t i = 0; i < argc; i++)
         allocation->argv[i] = reduce_coercion(induce, meet_coercion->argv[i]);
 
       const mu_meet_coercion_t *result;
-      if ((result = meet_coercion_activate(allocation)) == NULL)
+      if ((result = meet_coercion_activate(allocation, meet_coercion->as_coercion.target)) == NULL)
         return NULL;
       return &result->as_coercion;
     }

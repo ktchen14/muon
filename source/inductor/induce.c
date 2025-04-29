@@ -32,7 +32,7 @@ const mu_coercion_t *ensure_coercion(
   // If ∃⟨source ⇒ target⟩, then just return the coercion on that edge
   type_edge_t *result_edge;
   if ((result_edge = universe_search(&induce->universe, source, target)) != NULL)
-    return coerce_with(result_edge);
+    return coerce_with(induce, result_edge);
 
   // A join type shouldn't ever appear as a target
   assert(target->kind != MU_JOIN_TYPE);
@@ -70,7 +70,7 @@ const mu_coercion_t *ensure_coercion(
       addition->transitive = 1;
     }
 
-    return coerce_with(result_edge);
+    return coerce_with(induce, result_edge);
   }
 
   if (source->kind != MU_VARIABLE_TYPE && target->kind == MU_VARIABLE_TYPE) {
@@ -102,7 +102,7 @@ const mu_coercion_t *ensure_coercion(
       addition->transitive = 1;
     }
 
-    return coerce_with(result_edge);
+    return coerce_with(induce, result_edge);
   }
 
   if (source->kind == MU_VARIABLE_TYPE && target->kind == MU_VARIABLE_TYPE) {
@@ -155,13 +155,13 @@ const mu_coercion_t *ensure_coercion(
       next_edge->transitive = 1;
     }
 
-    return coerce_with(result_edge);
+    return coerce_with(induce, result_edge);
   }
 
   const mu_join_type_t *join_type;
   if ((join_type = mu_type_cast(source, join_type)) != NULL) {
     mu_unjoin_coercion_t *allocation;
-    if ((allocation = unjoin_coercion_allocate(join_type->argc)) == NULL)
+    if ((allocation = unjoin_coercion_allocate(induce, join_type->argc)) == NULL)
       return NULL;
 
     for (size_t i = 0; i < join_type->argc; i++) {
@@ -177,7 +177,7 @@ const mu_coercion_t *ensure_coercion(
     }
 
     const mu_unjoin_coercion_t *result;
-    if ((result = unjoin_coercion_activate(allocation)) == NULL)
+    if ((result = unjoin_coercion_activate(allocation, target)) == NULL)
       return NULL;
     return edge_assign(result_edge, &result->as_coercion);
   }
@@ -194,7 +194,7 @@ const mu_coercion_t *ensure_coercion(
       return NULL;
 
     const mu_unscheme_coercion_t *head;
-    if ((head = mu_unscheme_coercion()) == NULL)
+    if ((head = mu_unscheme_coercion(induce, instance)) == NULL)
       return NULL;
 
     type_edge_t *edge;
@@ -211,7 +211,7 @@ const mu_coercion_t *ensure_coercion(
 
     // Then return the coercion (source ⇝ instance) ∘ (instance ⇝ target)
     const mu_indirect_coercion_t *result;
-    if ((result = mu_indirect_coercion(&head->as_coercion, coercion)) == NULL)
+    if ((result = mu_indirect_coercion(induce, &head->as_coercion, coercion)) == NULL)
       return NULL;
     return edge_assign(result_edge, &result->as_coercion);
   }
@@ -245,7 +245,7 @@ const mu_coercion_t *ensure_coercion(
 
   instance_coercion:;
     const mu_instance_coercion_t *result;
-    if ((result = mu_instance_coercion(instance)) == NULL)
+    if ((result = mu_instance_coercion(induce, target, instance)) == NULL)
       return NULL;
     return edge_assign(result_edge, &result->as_coercion);
   }
@@ -253,7 +253,7 @@ const mu_coercion_t *ensure_coercion(
   const mu_core_t *core = source_core;
 
   mu_variance_coercion_t *allocation;
-  if ((allocation = variance_coercion_allocate(core)) == NULL)
+  if ((allocation = variance_coercion_allocate(induce, core)) == NULL)
     return NULL;
 
   for (size_t i = 0; i < core->argc; i++) {
@@ -274,7 +274,7 @@ const mu_coercion_t *ensure_coercion(
   }
 
   const mu_variance_coercion_t *result;
-  if ((result = variance_coercion_activate(allocation)) == NULL)
+  if ((result = variance_coercion_activate(allocation, target)) == NULL)
     return NULL;
   return edge_assign(result_edge, &result->as_coercion);
 }
@@ -591,7 +591,7 @@ static const mu_coercion_t *retrieve_core_coercion(
   const mu_core_t *core = source_core;
 
   mu_variance_coercion_t *allocation;
-  if ((allocation = variance_coercion_allocate(core)) == NULL)
+  if ((allocation = variance_coercion_allocate(induce, core)) == NULL)
     return NULL;
 
   for (size_t i = 0; i < core->argc; i++) {
@@ -614,7 +614,7 @@ static const mu_coercion_t *retrieve_core_coercion(
   }
 
   const mu_variance_coercion_t *result;
-  if ((result = variance_coercion_activate(allocation)) == NULL)
+  if ((result = variance_coercion_activate(allocation, &target->as_type)) == NULL)
     return NULL;
   return &result->as_coercion;
 }
@@ -629,7 +629,7 @@ const mu_coercion_t *retrieve_coercion(
   // If ∃⟨source ⇒ target⟩ then return the coercion on that edge
   type_edge_t *edge;
   if ((edge = universe_search(&induce->universe, source, target)) != NULL)
-    return coerce_with(edge);
+    return coerce_with(induce, edge);
 
   if (source->kind == MU_CORE_TYPE && target->kind == MU_CORE_TYPE) {
     const mu_core_type_t *next_source = (const mu_core_type_t *) source;
