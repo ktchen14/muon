@@ -34,9 +34,9 @@ __attribute__((nonnull)) static LLVMValueRef access_expr_emit(
 
   snprintf(name, sizeof(name), "access.%zu", expr->as_node.id);
   LLVMValueRef lambda = LLVMAddFunction(author->module, name, lambda_ty);
-  LLVMBasicBlockRef entry = LLVMAppendBasicBlock(lambda, "");
+  LLVMBasicBlockRef main = LLVMAppendBasicBlock(lambda, "main.0");
   LLVMBuilderRef tail = LLVMCreateBuilder();
-  LLVMPositionBuilderAtEnd(tail, entry);
+  LLVMPositionBuilderAtEnd(tail, main);
 
   LLVMValueRef argument = LLVMGetParam(lambda, 0);
   LLVMValueRef result = LLVMBuildExtractValue(tail, argument, 0, "");
@@ -92,8 +92,9 @@ __attribute__((nonnull)) static LLVMValueRef invoke_expr_emit(
   LLVMValueRef argv[argc];
   argv[0] = argument_val;
 
+  snprintf(name, sizeof(name), "invoke.%zu", expr->as_node.id);
   return LLVMBuildCall2(
-      author->tail, operator_ty, operator_val, argv, argc, "");
+      author->tail, operator_ty, operator_val, argv, argc, name);
 }
 
 __attribute__((nonnull))
@@ -269,11 +270,7 @@ LLVMModuleRef script_emit(induce_t *induce, const mu_node_t *root) {
         if ((lambda_ty = get_type(&author, lambda_type)) == NULL)
           return NULL;
 
-        // TODO: fix this
-        char *name;
-        if (asprintf(&name, "lambda.%zu", lambda_expr->as_node.id) == -1)
-          return NULL;
-
+        snprintf(name, sizeof(name), "lambda.%zu", lambda_expr->as_node.id);
         LLVMValueRef lambda = LLVMAddFunction(author.module, name, lambda_ty);
         LLVMBasicBlockRef entry = LLVMAppendBasicBlock(lambda, "");
         LLVMBuilderRef tail = LLVMCreateBuilder();
