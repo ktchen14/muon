@@ -9,8 +9,12 @@
 #include "status.h"
 
 #include "common.h"
+#include "llvm-c/Target.h"
 
+#include <llvm-c/Analysis.h>
 #include <llvm-c/BitWriter.h>
+#include <llvm-c/ExecutionEngine.h>
+#include <llvm-c/Core.h>
 #include <llvm-c/Types.h>
 
 #include <assert.h>
@@ -160,13 +164,36 @@ int main(int argc, char *argv[argc]) {
     assert(0);
   author->native_expr_emit = standard_native_expr_emit;
 
-  LLVMModuleRef module;
-  module = script_emit(author, &sequence_expr->as_node);
+  LLVMModuleRef module = script_emit(author, &sequence_expr->as_node);
   assert(module != NULL);
+
+  char *error = NULL;
+  LLVMVerifyModule(module, LLVMAbortProcessAction, &error);
+  LLVMDisposeMessage(error);
 
   if (LLVMWriteBitcodeToFile(module, "module.bc") != 0) {
     fprintf(stderr, "error writing bitcode to file, skipping\n");
   }
+
+  LLVMLinkInMCJIT();
+  LLVMInitializeNativeTarget();
+  LLVMInitializeNativeAsmPrinter();
+
+  LLVMExecutionEngineRef exec_engine;
+  error = NULL;
+  if (LLVMCreateExecutionEngineForModule(&exec_engine, module, &error) != 0) {
+    fprintf(stderr, "failed to create execution engine\n");
+    abort();
+  }
+  if (error) {
+    fprintf(stderr, "error: %s\n", error);
+    LLVMDisposeMessage(error);
+    exit(EXIT_FAILURE);
+  }
+
+  LLVMValueRef module_initialize;
+  LLVMFindFunction(exec_engine, "initialize", &module_initialize);
+  LLVMRunFunction(exec_engine, module_initialize, 0, NULL);
 
   return EXIT_SUCCESS;
 
