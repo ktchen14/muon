@@ -28,7 +28,6 @@ unsigned char buffer[4096];
 #include "stator.h"
 
 const mu_name_t *vector_access;
-const mu_name_t *vector_join;
 
 int main(int argc, char *argv[argc]) {
   const char *muon_name = argc > 0 ? argv[0] : "muon";
@@ -67,23 +66,12 @@ int main(int argc, char *argv[argc]) {
       &engine, vector_access, &vector_access_expr->as_expr);
   assert(define_vector_access != NULL);
 
-  vector_join = mu_name(&engine, strlen("+"), (mu_char8_t[]) { "+" });
-  assert(vector_join != NULL);
-
-  const mu_native_expr_t *vector_join_expr = mu_native_expr(&engine, vector_join);
-  assert(vector_join_expr != NULL);
-
-  const mu_define_stmt_t *define_vector_join = mu_define_stmt(
-      &engine, vector_join, &vector_join_expr->as_expr);
-  assert(define_vector_join != NULL);
-
   const mu_stmt_t *prefix[] = {
     &define_vector_access->as_stmt,
-    &define_vector_join->as_stmt,
   };
 
   const mu_sequence_expr_t *sequence_expr;
-  if ((sequence_expr = mu_script_to_sequence_expr_with_prefix(&engine, script, 2, prefix)) == NULL)
+  if ((sequence_expr = mu_script_to_sequence_expr_with_prefix(&engine, script, 1, prefix)) == NULL)
     assert(0);
 
   detect_t detect;
