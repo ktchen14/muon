@@ -20,7 +20,8 @@
 # define foo = lambda x = Foo1
 
 define x = 1
-# define y = 2
+define y = 2
+define z = [1]
 # define list = handle_list [1, 2, 3]
 
 # define idi = lambda x = x :: Integer -> Integer

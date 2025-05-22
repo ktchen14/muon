@@ -4,9 +4,14 @@
 #include <llvm-c/Core.h>
 #include <llvm-c/Types.h>
 
+#include <stdint.h>
 #include <stdio.h>
 
 static char name[256];
+
+uint64_t handle_list(struct { uint64_t length; void *data; } argument) {
+  return 1;
+}
 
 __attribute__((nonnull))
 static LLVMValueRef handle_list_emit(author_t *author, const mu_native_expr_t *expr) {

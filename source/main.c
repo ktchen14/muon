@@ -9,16 +9,21 @@
 #include "status.h"
 
 #include "common.h"
+#include "llvm-c/Error.h"
+#include "llvm-c/Orc.h"
 #include "llvm-c/Target.h"
 
 #include <llvm-c/Analysis.h>
 #include <llvm-c/BitWriter.h>
-#include <llvm-c/ExecutionEngine.h>
 #include <llvm-c/Core.h>
+#include <llvm-c/ExecutionEngine.h>
+#include <llvm-c/Support.h>
 #include <llvm-c/Types.h>
+#include <llvm-c/LLJIT.h>
 
 #include <assert.h>
 #include <errno.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -163,25 +168,44 @@ int main(int argc, char *argv[argc]) {
     fprintf(stderr, "error writing bitcode to file, skipping\n");
   }
 
-  LLVMLinkInMCJIT();
   LLVMInitializeNativeTarget();
   LLVMInitializeNativeAsmPrinter();
+  LLVMInitializeNativeAsmParser();
 
-  LLVMExecutionEngineRef exec_engine;
-  error = NULL;
-  if (LLVMCreateExecutionEngineForModule(&exec_engine, module, &error) != 0) {
-    fprintf(stderr, "failed to create execution engine\n");
-    abort();
-  }
-  if (error) {
-    fprintf(stderr, "error: %s\n", error);
-    LLVMDisposeMessage(error);
-    exit(EXIT_FAILURE);
-  }
+  LLVMOrcThreadSafeContextRef tsc = LLVMOrcCreateNewThreadSafeContext();
+  LLVMOrcThreadSafeModuleRef tsm = LLVMOrcCreateNewThreadSafeModule(module, tsc);
 
-  LLVMValueRef module_initialize;
-  LLVMFindFunction(exec_engine, "initialize", &module_initialize);
-  LLVMRunFunction(exec_engine, module_initialize, 0, NULL);
+  LLVMOrcLLJITBuilderRef jit_builder = LLVMOrcCreateLLJITBuilder();
+  LLVMOrcLLJITRef jit;
+  LLVMErrorRef e = LLVMOrcCreateLLJIT(&jit, jit_builder);
+  LLVMCantFail(e);
+
+  LLVMOrcJITDylibRef dylib = LLVMOrcLLJITGetMainJITDylib(jit);
+
+  e = LLVMOrcLLJITAddLLVMIRModule(jit, dylib, tsm);
+  LLVMCantFail(e);
+
+  LLVMOrcExecutorAddress call;
+  e = LLVMOrcLLJITLookup(jit, &call, "initialize");
+  LLVMCantFail(e);
+
+  // LLVMLinkInMCJIT();
+  // LLVMExecutionEngineRef exec_engine;
+  // error = NULL;
+  // if (LLVMCreateExecutionEngineForModule(&exec_engine, module, &error) != 0) {
+  //   fprintf(stderr, "failed to create execution engine\n");
+  //   abort();
+  // }
+  // if (error) {
+  //   fprintf(stderr, "error: %s\n", error);
+  //   LLVMDisposeMessage(error);
+  //   exit(EXIT_FAILURE);
+  // }
+  // LLVMAddGlobalMapping(exec_engine, author->malloc, (void *) test);
+
+  // LLVMValueRef module_initialize;
+  // LLVMFindFunction(exec_engine, "initialize", &module_initialize);
+  // LLVMRunFunction(exec_engine, module_initialize, 0, NULL);
 
   return EXIT_SUCCESS;
 

@@ -153,6 +153,13 @@ static LLVMValueRef switch_expr_emit(author_t *author, const mu_switch_expr_t *e
 
 __attribute__((nonnull))
 static LLVMValueRef vector_expr_emit(author_t *author, const mu_vector_expr_t *expr) {
+  // %allocation = call ptr @malloc(size_t %size)
+  LLVMValueRef myargv[] = { LLVMConstInt(author->size_type, 1, 0) };
+  LLVMValueRef myalloc = LLVMBuildCall2(
+      author->tail, author->malloc_type, author->malloc, myargv, 1, "");
+  return myalloc;
+
+
   const mu_type_t *type = evince_type(author->inductor, &expr->as_node);
   const mu_core_type_t *vector_type = mu_type_cast(type, vector_type);
   assert(vector_type != NULL);
