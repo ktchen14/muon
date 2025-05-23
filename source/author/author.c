@@ -77,6 +77,8 @@ author_t *author_initialize(
   LLVMModuleRef module;
   if ((module = LLVMModuleCreateWithName("test_module")) == NULL)
     goto except_module;
+  LLVMSetTarget(module, triple);
+  LLVMSetModuleDataLayout(module, layout);
 
   LLVMValueRef malloc;
   if ((malloc = LLVMAddFunction(module, "malloc", malloc_type)) == NULL)

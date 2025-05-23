@@ -13,6 +13,7 @@ target_sources(muon PRIVATE
   inductor/universe.c
   inductor/node.c
 
+  runner.c
   script.c
   standard.c
   status.c

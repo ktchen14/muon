@@ -339,6 +339,9 @@ LLVMModuleRef script_emit(author_t *author, const mu_node_t *root) {
   LLVMBuildRetVoid(author->tail);
   LLVMDisposeBuilder(author->tail);
 
+  // This can't fail absent a bug in Muon so just abort() on failure
+  LLVMVerifyModule(author->module, LLVMAbortProcessAction, NULL);
+
   return author->module;
 }
 
