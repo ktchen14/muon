@@ -67,7 +67,8 @@ int main(int argc, char *argv[argc]) {
   };
 
   const mu_sequence_expr_t *sequence_expr;
-  if ((sequence_expr = mu_script_to_sequence_expr_with_prefix(&engine, script, 1, prefix)) == NULL)
+  // if ((sequence_expr = mu_script_to_sequence_expr_with_prefix(&engine, script, 1, prefix)) == NULL)
+  if ((sequence_expr = mu_script_to_sequence_expr(&engine, script)) == NULL)
     assert(0);
 
   detect_t detect;
