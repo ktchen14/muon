@@ -8,21 +8,41 @@
 #include <llvm-c/Target.h>
 #include <llvm-c/Types.h>
 
+#include <stddef.h>
+
 void mu_run(LLVMModuleRef module) {
   LLVMInitializeNativeTarget();
   LLVMInitializeNativeAsmPrinter();
 
-  LLVMOrcThreadSafeContextRef tsc = LLVMOrcCreateNewThreadSafeContext();
-  LLVMOrcThreadSafeModuleRef tsm = LLVMOrcCreateNewThreadSafeModule(module, tsc);
+  // Create a JIT builder
+  LLVMOrcLLJITBuilderRef builder = NULL;
+  builder = LLVMOrcCreateLLJITBuilder();
 
-  LLVMOrcLLJITBuilderRef jit_builder = LLVMOrcCreateLLJITBuilder();
+  // Create the JIT
   LLVMOrcLLJITRef jit;
-  LLVMErrorRef e = LLVMOrcCreateLLJIT(&jit, jit_builder);
+  LLVMErrorRef e;
+  e = LLVMOrcCreateLLJIT(&jit, builder);
   LLVMCantFail(e);
 
+  // Get the main dylib
   LLVMOrcJITDylibRef dylib = LLVMOrcLLJITGetMainJITDylib(jit);
 
-  e = LLVMOrcLLJITAddLLVMIRModule(jit, dylib, tsm);
+  // Create the generator to find symbols in the current process
+  LLVMOrcDefinitionGeneratorRef generator;
+  e = LLVMOrcCreateDynamicLibrarySearchGeneratorForProcess(&generator,
+      LLVMOrcLLJITGetGlobalPrefix(jit), 0, NULL);
+  LLVMCantFail(e);
+  LLVMOrcJITDylibAddGenerator(dylib, generator);
+
+  // Create a thread safe context
+  LLVMOrcThreadSafeContextRef ts_context = LLVMOrcCreateNewThreadSafeContext();
+
+  // Create a thread safe module
+  LLVMOrcThreadSafeModuleRef ts_module = LLVMOrcCreateNewThreadSafeModule(
+      module, ts_context);
+
+  // Add the IR module
+  e = LLVMOrcLLJITAddLLVMIRModule(jit, dylib, ts_module);
   LLVMCantFail(e);
 
   LLVMOrcExecutorAddress call;
