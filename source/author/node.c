@@ -115,7 +115,6 @@ static LLVMValueRef name_expr_emit(author_t *author, const mu_name_expr_t *expr)
 
 __attribute__((nonnull))
 static LLVMValueRef native_expr_emit(author_t *author, const mu_native_expr_t *expr) {
-  return SKIP;
   assert(author->native_expr_emit != NULL);
   return author->native_expr_emit(author, expr);
 }
