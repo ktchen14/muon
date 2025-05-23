@@ -8,7 +8,11 @@
 #include <llvm-c/Target.h>
 #include <llvm-c/Types.h>
 
+#include <inttypes.h>
 #include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
 
 void mu_run(LLVMModuleRef module) {
   LLVMInitializeNativeTarget();
@@ -45,9 +49,18 @@ void mu_run(LLVMModuleRef module) {
   e = LLVMOrcLLJITAddLLVMIRModule(jit, dylib, ts_module);
   LLVMCantFail(e);
 
-  LLVMOrcExecutorAddress call;
-  e = LLVMOrcLLJITLookup(jit, &call, "initialize");
+  LLVMOrcExecutorAddress addr;
+  e = LLVMOrcLLJITLookup(jit, &addr, "initialize");
   LLVMCantFail(e);
+
+  void (*invoke)(void) = (void (*)(void)) addr;
+  invoke();
+
+  e = LLVMOrcLLJITLookup(jit, &addr, "result");
+  LLVMCantFail(e);
+  uint64_t result;
+  memcpy(&result, (void *) addr, sizeof(uint64_t));
+  fprintf(stderr, "result = %" PRIu64 "\n", result);
 
   // LLVMLinkInMCJIT();
   // LLVMExecutionEngineRef exec_engine;
