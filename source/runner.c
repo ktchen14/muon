@@ -56,7 +56,7 @@ void mu_run(LLVMModuleRef module) {
   void (*invoke)(void) = (void (*)(void)) addr;
   invoke();
 
-  e = LLVMOrcLLJITLookup(jit, &addr, "result");
+  e = LLVMOrcLLJITLookup(jit, &addr, "muon.result");
   LLVMCantFail(e);
   uint64_t result;
   memcpy(&result, (void *) addr, sizeof(uint64_t));

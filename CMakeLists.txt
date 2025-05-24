@@ -9,7 +9,7 @@ project(Muon VERSION "${PROJECT_VERSION}"
   LANGUAGES C
 )
 
-add_library(muon)
+add_library(muon SHARED)
 target_compile_features(muon PUBLIC c_std_23)
 target_compile_options(muon PRIVATE
   -Wall -Wextra -pedantic

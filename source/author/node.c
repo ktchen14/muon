@@ -264,9 +264,11 @@ static LLVMValueRef define_stmt_emit(author_t *author, const mu_define_stmt_t *s
   LLVMValueRef expr_result = evince_result(author, &stmt->expr->as_node);
   LLVMTypeRef expr_type = LLVMTypeOf(expr_result);
 
+  char name[256];
+  snprintf(name, sizeof(name), "muon.%s", stmt->name->text);
+
   // @result = global <expr_type> poison
-  LLVMValueRef result = LLVMAddGlobal(
-      author->module, expr_type, (const char *) stmt->name->text);
+  LLVMValueRef result = LLVMAddGlobal(author->module, expr_type, name);
   LLVMSetInitializer(result, LLVMGetPoison(expr_type));
 
   // store <expr_type> <expr_result>, @result

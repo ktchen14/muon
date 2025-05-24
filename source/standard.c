@@ -7,8 +7,6 @@
 #include <stdint.h>
 #include <stdio.h>
 
-static char name[256];
-
 uint64_t handle_list(struct { uint64_t length; void *data; } argument) {
   return 1;
 }
@@ -19,8 +17,7 @@ static LLVMValueRef handle_list_emit(author_t *author, const mu_native_expr_t *e
   LLVMTypeRef argv[] = { author->vector_type };
   LLVMTypeRef type = LLVMFunctionType(integer_type, argv, 1, 0);
 
-  snprintf(name, sizeof(name), "native.%zu", expr->as_node.id);
-  LLVMValueRef handle_list = LLVMAddFunction(author->module, name, type);
+  LLVMValueRef handle_list = LLVMAddFunction(author->module, "handle_list", type);
   LLVMSetLinkage(handle_list, LLVMExternalLinkage);
 
   return handle_list;

@@ -157,7 +157,7 @@ int main(int argc, char *argv[argc]) {
   if (LLVMWriteBitcodeToFile(module, "module.bc") != 0)
     fprintf(stderr, "error writing bitcode to file, skipping\n");
 
-  // mu_run(module);
+  mu_run(module);
 
   return EXIT_SUCCESS;
 

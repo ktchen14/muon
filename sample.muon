@@ -21,7 +21,8 @@
 
 define x = 1
 define y = x
-define z = [1]
+define z = [x, y, 3, 4, 5]
+define h = (foo: 1).foo
 define result = 3
 # define list = handle_list [1, 2, 3]
 
