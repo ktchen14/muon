@@ -45,12 +45,15 @@ __attribute__((nonnull)) static LLVMValueRef access_expr_emit(
   assert((size_t) e < sizeof(name));
 
   LLVMValueRef lambda = LLVMAddFunction(author->module, name, lambda_ty);
+  LLVMSetLinkage(lambda, LLVMPrivateLinkage);
+  LLVMSetUnnamedAddress(lambda, LLVMLocalUnnamedAddr);
   LLVMBasicBlockRef main = LLVMAppendBasicBlock(lambda, "");
+
   LLVMBuilderRef tail = LLVMCreateBuilder();
   LLVMPositionBuilderAtEnd(tail, main);
 
   LLVMValueRef argument = LLVMGetParam(lambda, 0);
-  LLVMValueRef result = LLVMBuildExtractValue(tail, argument, 0, "");
+  LLVMValueRef result = LLVMBuildExtractValue(tail, argument, 0, "result");
   LLVMBuildRet(tail, result);
   LLVMDisposeBuilder(tail);
 
@@ -129,11 +132,10 @@ static LLVMValueRef name_expr_emit(author_t *author, const mu_name_expr_t *expr)
 
   LLVMTypeRef data_type = LLVMGlobalGetValueType(variable);
 
+  // %name.[id] = load <data_type>, %variable
   char name[sizeof("name." ID)];
   int e = snprintf(name, sizeof(name), "name.%zu", expr->as_node.id);
   assert((size_t) e < sizeof(name));
-
-  // %return = load <data_type>, %variable
   return LLVMBuildLoad2(author->tail, data_type, variable, name);
 }
 
