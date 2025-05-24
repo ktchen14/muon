@@ -4,16 +4,22 @@
 #include "../stator.h"
 #include "../inductor.h"
 
+#include <llvm-c/Error.h>
 #include <llvm-c/Types.h>
 #include <llvm-c/Core.h>
 #include <llvm-c/ExecutionEngine.h>
 #include <llvm-c/Target.h>
 #include <llvm-c/Analysis.h>
 #include <llvm-c/BitWriter.h>
+#include <llvm-c/Transforms/PassBuilder.h>
 
 #include <assert.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#define INTERNAL_STRING(string) #string
+#define INDIRECT_STRING(string) INTERNAL_STRING(string)
 
 LLVMValueRef SKIP = (void *) &(int) {1};
 
@@ -33,7 +39,10 @@ __attribute__((nonnull)) static LLVMValueRef access_expr_emit(
   if ((lambda_ty = get_type(author, lambda_type)) == NULL)
     return NULL;
 
-  snprintf(name, sizeof(name), "access.%zu", expr->as_node.id);
+  char name[sizeof("access." INDIRECT_STRING(SIZE_MAX))];
+  int e = snprintf(name, sizeof(name), "access.%zu", expr->as_node.id);
+  assert(e == 0);
+
   LLVMValueRef lambda = LLVMAddFunction(author->module, name, lambda_ty);
   LLVMBasicBlockRef main = LLVMAppendBasicBlock(lambda, "main.0");
   LLVMBuilderRef tail = LLVMCreateBuilder();
@@ -64,16 +73,16 @@ __attribute__((nonnull)) static LLVMValueRef integer_expr_emit(
 
 __attribute__((nonnull)) static LLVMValueRef invoke_expr_emit(
     author_t *author, const mu_invoke_expr_t *expr) {
-  const mu_node_t *operator = &expr->operator->as_node;
+  const mu_node_t *operator_node = &expr->operator->as_node;
 
-  LLVMValueRef operator_val = evince_result(author, operator);
+  LLVMValueRef operator = evince_result(author, operator_node);
 
-  const mu_type_t *operator_type;
-  if ((operator_type = evince_type(author->inductor, operator)) == NULL)
+  const mu_type_t *operator_muon_type;
+  if ((operator_muon_type = evince_type(author->inductor, operator_node)) == NULL)
     return NULL;
 
-  LLVMTypeRef operator_ty;
-  if ((operator_ty = get_type(author, operator_type)) == NULL)
+  LLVMTypeRef operator_type;
+  if ((operator_type = get_type(author, operator_muon_type)) == NULL)
     return NULL;
 
   const mu_node_t *argument = &expr->argument->as_node;
@@ -88,14 +97,16 @@ __attribute__((nonnull)) static LLVMValueRef invoke_expr_emit(
   if ((argument_ty = get_type(author, argument_type)) == NULL)
     return NULL;
 
-  unsigned int argc = LLVMCountParamTypes(operator_ty);
+  unsigned int argc = LLVMCountParamTypes(operator_type);
   assert(argc == 1);
   LLVMValueRef argv[argc];
   argv[0] = argument_val;
 
-  snprintf(name, sizeof(name), "invoke.%zu", expr->as_node.id);
+  char name[sizeof("invoke." INDIRECT_STRING(SIZE_MAX))];
+  int e = snprintf(name, sizeof(name), "invoke.%zu", expr->as_node.id);
+  assert(e == 0);
   return LLVMBuildCall2(
-      author->tail, operator_ty, operator_val, argv, argc, name);
+      author->tail, operator_type, operator, argv, argc, name);
 }
 
 __attribute__((nonnull))
@@ -110,7 +121,19 @@ __attribute__((nonnull))
 static LLVMValueRef name_expr_emit(author_t *author, const mu_name_expr_t *expr) {
   const mu_node_t *target = detect_evince(author->detect, &expr->as_node);
   assert(target != NULL);
-  return evince_result(author, target);
+
+  LLVMValueRef variable = evince_result(author, target);
+  if (!LLVMIsAGlobalVariable(variable))
+    return variable;
+
+  LLVMTypeRef data_type = LLVMGlobalGetValueType(variable);
+
+  char name[sizeof("name." INDIRECT_STRING(SIZE_MAX))];
+  int e = snprintf(name, sizeof(name), "name.%zu", expr->as_node.id);
+  assert(e == 0);
+
+  // %return = load <data_type>, %variable
+  return LLVMBuildLoad2(author->tail, data_type, variable, name);
 }
 
 __attribute__((nonnull))
@@ -153,13 +176,6 @@ static LLVMValueRef switch_expr_emit(author_t *author, const mu_switch_expr_t *e
 
 __attribute__((nonnull))
 static LLVMValueRef vector_expr_emit(author_t *author, const mu_vector_expr_t *expr) {
-  // %allocation = call ptr @malloc(size_t %size)
-  LLVMValueRef myargv[] = { LLVMConstInt(author->size_type, 1, 0) };
-  LLVMValueRef myalloc = LLVMBuildCall2(
-      author->tail, author->malloc_type, author->malloc, myargv, 1, "");
-  return myalloc;
-
-
   const mu_type_t *type = evince_type(author->inductor, &expr->as_node);
   const mu_core_type_t *vector_type = mu_type_cast(type, vector_type);
   assert(vector_type != NULL);
@@ -187,10 +203,15 @@ static LLVMValueRef vector_expr_emit(author_t *author, const mu_vector_expr_t *e
   if ((size = LLVMConstInt(author->size_type, allocation_size, 0)) == NULL)
     return NULL;
 
+  // <name> = "vector.[id].allocation"
+  char allocation_name[sizeof("vector." INDIRECT_STRING(SIZE_MAX) ".allocation")];
+  int e = snprintf(allocation_name, sizeof(allocation_name), "vector.%zu.allocation", expr->as_node.id);
+  assert(e == 0);
+
   // %allocation = call ptr @malloc(size_t %size)
   LLVMValueRef malloc_argv[] = { size };
   LLVMValueRef allocation = LLVMBuildCall2(
-      author->tail, author->malloc_type, author->malloc, malloc_argv, 1, "");
+      author->tail, author->malloc_type, author->malloc, malloc_argv, 1, allocation_name);
   if (allocation == NULL)
     return NULL;
 
@@ -206,13 +227,15 @@ static LLVMValueRef vector_expr_emit(author_t *author, const mu_vector_expr_t *e
 
   // %result = { size_t, ptr } { size_t %length, ptr %none }
   LLVMValueRef struct_argv[] = { length, none };
-  LLVMValueRef result;
-  if ((result = LLVMConstStruct(struct_argv, 2, 0)) == NULL)
-    return NULL;
+  LLVMValueRef result = LLVMConstStruct(struct_argv, 2, 0);
+
+  // <name> = "vector.[id]"
+  char name[sizeof("vector." INDIRECT_STRING(SIZE_MAX))];
+  e = snprintf(name, sizeof(name), "vector.%zu", expr->as_node.id);
+  assert(e == 0);
 
   // %5 = insertvalue { size_t, ptr } %result, ptr %allocation, 1
-  if ((result = LLVMBuildInsertValue(author->tail, result, allocation, 1, "")) == NULL)
-    return NULL;
+  result = LLVMBuildInsertValue(author->tail, result, allocation, 1, name);
 
   for (size_t i = 0; i < expr->argc; i++) {
     LLVMValueRef argument = evince_result(author, &expr->argv[i]->as_node);
@@ -236,8 +259,7 @@ static LLVMValueRef vector_expr_emit(author_t *author, const mu_vector_expr_t *e
       return NULL;
 
     // store i64 2, ptr %7, align 4
-    if (LLVMBuildStore(author->tail, argument, target) == NULL)
-      return NULL;
+    LLVMBuildStore(author->tail, argument, target);
   }
 
   return result;
@@ -342,57 +364,11 @@ LLVMModuleRef script_emit(author_t *author, const mu_node_t *root) {
   // This can't fail absent a bug in Muon so just abort() on failure
   LLVMVerifyModule(author->module, LLVMAbortProcessAction, NULL);
 
+  LLVMPassBuilderOptionsRef option = LLVMCreatePassBuilderOptions();
+  LLVMErrorRef e;
+  e = LLVMRunPasses(author->module, "default<O2>", NULL, option);
+  LLVMCantFail(e);
+  LLVMDisposePassBuilderOptions(option);
+
   return author->module;
 }
-
-/* int main(int argc, char const *argv[]) { */
-/*   LLVMModuleRef module = LLVMModuleCreateWithName("my_module"); */
-
-/*   LLVMTypeRef param_types[] = { LLVMInt32Type(), LLVMInt32Type() }; */
-/*   LLVMTypeRef return_type = LLVMFunctionType(LLVMInt32Type(), param_types, 2, 0); */
-/*   LLVMValueRef sum = LLVMAddFunction(module, "sum", return_type); */
-
-/*   LLVMBasicBlockRef entry = LLVMAppendBasicBlock(sum, "entry"); */
-
-/*   LLVMBuilderRef builder = LLVMCreateBuilder(); */
-/*   LLVMPositionBuilderAtEnd(builder, entry); */
-/*   LLVMValueRef tmp = LLVMBuildAdd(builder, LLVMGetParam(sum, 0), LLVMGetParam(sum, 1), "tmp"); */
-/*   LLVMBuildRet(builder, tmp); */
-
-/*   char *error = NULL; */
-/*   LLVMVerifyModule(module, LLVMAbortProcessAction, &error); */
-/*   LLVMDisposeMessage(error); */
-
-/*   LLVMExecutionEngineRef engine; */
-/*   error = NULL; */
-/*   LLVMLinkInMCJIT(); */
-/*   LLVMInitializeNativeTarget(); */
-/*   LLVMInitializeNativeAsmPrinter(); */
-/*   if (LLVMCreateExecutionEngineForModule(&engine, module, &error) != 0) { */
-/*     fprintf(stderr, "failed to create execution engine\n"); */
-/*     abort(); */
-/*   } */
-/*   if (error) { */
-/*     fprintf(stderr, "error: %s\n", error); */
-/*     LLVMDisposeMessage(error); */
-/*     exit(EXIT_FAILURE); */
-/*   } */
-
-/*   if (argc < 3) { */
-/*     fprintf(stderr, "usage: %s x y\n", argv[0]); */
-/*     exit(EXIT_FAILURE); */
-/*   } */
-/*   long long x = strtoll(argv[1], NULL, 10); */
-/*   long long y = strtoll(argv[2], NULL, 10); */
-
-/*   int (*sum_func)(int, int) = (int (*)(int, int)) LLVMGetFunctionAddress(engine, "sum"); */
-/*   printf("%d\n", sum_func(x, y)); */
-
-/*   // Write out bitcode to file */
-/*   if (LLVMWriteBitcodeToFile(module, "sum.bc") != 0) { */
-/*     fprintf(stderr, "error writing bitcode to file, skipping\n"); */
-/*   } */
-
-/*   LLVMDisposeBuilder(builder); */
-/*   LLVMDisposeExecutionEngine(engine); */
-/* } */

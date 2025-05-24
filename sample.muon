@@ -20,7 +20,7 @@
 # define foo = lambda x = Foo1
 
 define x = 1
-define y = 2
+define y = x
 define z = [1]
 define result = 3
 # define list = handle_list [1, 2, 3]
