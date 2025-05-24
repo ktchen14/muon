@@ -85,6 +85,8 @@ author_t *author_initialize(
     goto except_malloc;
   LLVMSetLinkage(malloc, LLVMExternalLinkage);
 
+  LLVMValueRef zero_size = LLVMConstInt(size_type, 0, 0);
+
   *author = (author_t) {
     .detect = detect,
     .inductor = inductor,
@@ -99,6 +101,7 @@ author_t *author_initialize(
     .vector_type = vector_type,
     .malloc_type = malloc_type,
     .malloc = malloc,
+    .zero_size = zero_size,
   };
   return author;
 

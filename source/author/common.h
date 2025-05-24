@@ -58,6 +58,9 @@ struct author_t {
   /// External declaration of malloc() in the module
   LLVMValueRef malloc;
 
+  /// Constant zero size
+  LLVMValueRef zero_size;
+
   stream_t stream[1000];
   size_t stream_length;
 

@@ -20,6 +20,7 @@
 
 #define INTERNAL_STRING(string) #string
 #define INDIRECT_STRING(string) INTERNAL_STRING(string)
+#define ID INDIRECT_STRING(SIZE_MAX)
 
 LLVMValueRef SKIP = (void *) &(int) {1};
 
@@ -39,12 +40,12 @@ __attribute__((nonnull)) static LLVMValueRef access_expr_emit(
   if ((lambda_ty = get_type(author, lambda_type)) == NULL)
     return NULL;
 
-  char name[sizeof("access." INDIRECT_STRING(SIZE_MAX))];
+  char name[sizeof("access." ID)];
   int e = snprintf(name, sizeof(name), "access.%zu", expr->as_node.id);
-  assert(e == 0);
+  assert((size_t) e < sizeof(name));
 
   LLVMValueRef lambda = LLVMAddFunction(author->module, name, lambda_ty);
-  LLVMBasicBlockRef main = LLVMAppendBasicBlock(lambda, "main.0");
+  LLVMBasicBlockRef main = LLVMAppendBasicBlock(lambda, "");
   LLVMBuilderRef tail = LLVMCreateBuilder();
   LLVMPositionBuilderAtEnd(tail, main);
 
@@ -102,9 +103,9 @@ __attribute__((nonnull)) static LLVMValueRef invoke_expr_emit(
   LLVMValueRef argv[argc];
   argv[0] = argument_val;
 
-  char name[sizeof("invoke." INDIRECT_STRING(SIZE_MAX))];
+  char name[sizeof("invoke." ID)];
   int e = snprintf(name, sizeof(name), "invoke.%zu", expr->as_node.id);
-  assert(e == 0);
+  assert((size_t) e < sizeof(name));
   return LLVMBuildCall2(
       author->tail, operator_type, operator, argv, argc, name);
 }
@@ -128,9 +129,9 @@ static LLVMValueRef name_expr_emit(author_t *author, const mu_name_expr_t *expr)
 
   LLVMTypeRef data_type = LLVMGlobalGetValueType(variable);
 
-  char name[sizeof("name." INDIRECT_STRING(SIZE_MAX))];
+  char name[sizeof("name." ID)];
   int e = snprintf(name, sizeof(name), "name.%zu", expr->as_node.id);
-  assert(e == 0);
+  assert((size_t) e < sizeof(name));
 
   // %return = load <data_type>, %variable
   return LLVMBuildLoad2(author->tail, data_type, variable, name);
@@ -191,34 +192,26 @@ static LLVMValueRef vector_expr_emit(author_t *author, const mu_vector_expr_t *e
   LLVMTypeRef matter_type = get_type(author, matter_muon_type);
 
   // %allocation_type = type [<expr->argc> x %matter_type]
-  LLVMTypeRef allocation_type;
-  if ((allocation_type = LLVMArrayType2(matter_type, expr->argc)) == NULL)
-    return NULL;
+  LLVMTypeRef allocation_type = LLVMArrayType2(matter_type, expr->argc);
 
   // Calculate the size of allocation_type
   size_t allocation_size = LLVMABISizeOfType(author->layout, allocation_type);
 
   // %size = size_t <allocation_size>
-  LLVMValueRef size;
-  if ((size = LLVMConstInt(author->size_type, allocation_size, 0)) == NULL)
-    return NULL;
+  LLVMValueRef size = LLVMConstInt(author->size_type, allocation_size, 0);
 
   // <name> = "vector.[id].allocation"
-  char allocation_name[sizeof("vector." INDIRECT_STRING(SIZE_MAX) ".allocation")];
+  char allocation_name[sizeof("vector." ID ".allocation")];
   int e = snprintf(allocation_name, sizeof(allocation_name), "vector.%zu.allocation", expr->as_node.id);
-  assert(e == 0);
+  assert((size_t) e < sizeof(allocation_name));
 
   // %allocation = call ptr @malloc(size_t %size)
   LLVMValueRef malloc_argv[] = { size };
   LLVMValueRef allocation = LLVMBuildCall2(
       author->tail, author->malloc_type, author->malloc, malloc_argv, 1, allocation_name);
-  if (allocation == NULL)
-    return NULL;
 
   // %length = size_t <expr->argc>
-  LLVMValueRef length;
-  if ((length = LLVMConstInt(author->size_type, expr->argc, 0)) == NULL)
-    return NULL;
+  LLVMValueRef length = LLVMConstInt(author->size_type, expr->argc, 0);
 
   // %none = ptr poison
   LLVMValueRef none;
@@ -230,9 +223,9 @@ static LLVMValueRef vector_expr_emit(author_t *author, const mu_vector_expr_t *e
   LLVMValueRef result = LLVMConstStruct(struct_argv, 2, 0);
 
   // <name> = "vector.[id]"
-  char name[sizeof("vector." INDIRECT_STRING(SIZE_MAX))];
+  char name[sizeof("vector." ID)];
   e = snprintf(name, sizeof(name), "vector.%zu", expr->as_node.id);
-  assert(e == 0);
+  assert((size_t) e < sizeof(name));
 
   // %5 = insertvalue { size_t, ptr } %result, ptr %allocation, 1
   result = LLVMBuildInsertValue(author->tail, result, allocation, 1, name);
@@ -241,9 +234,12 @@ static LLVMValueRef vector_expr_emit(author_t *author, const mu_vector_expr_t *e
     LLVMValueRef argument = evince_result(author, &expr->argv[i]->as_node);
 
     // %index = size_t <i>
-    LLVMValueRef index;
-    if ((index = LLVMConstInt(author->size_type, i, 0)) == NULL)
-      return NULL;
+    LLVMValueRef index = LLVMConstInt(author->size_type, i, 0);
+
+    char name[sizeof("vector." ID ".allocation." ID)];
+    int e = snprintf(
+        name, sizeof(name), "vector.%zu.allocation.%zu", expr->as_node.id, i);
+    assert((size_t) e < sizeof(name));
 
     // %target = getelementptr inbounds nuw %allocation_type, ptr %allocation,
     //           size_t %index
@@ -251,12 +247,10 @@ static LLVMValueRef vector_expr_emit(author_t *author, const mu_vector_expr_t *e
         author->tail,
         allocation_type,
         allocation,
-        (LLVMValueRef[]) { index },
-        1,
-        "",
+        (LLVMValueRef[]) { author->zero_size, index },
+        2,
+        name,
         LLVMGEPFlagInBounds | LLVMGEPFlagNUW);
-    if (target == NULL)
-      return NULL;
 
     // store i64 2, ptr %7, align 4
     LLVMBuildStore(author->tail, argument, target);
