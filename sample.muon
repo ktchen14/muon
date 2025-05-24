@@ -23,8 +23,7 @@ define x = 1
 define y = x
 define z = [x, y, 3, 4, 5]
 define h = (foo: 1).foo
-define result = 3
-# define list = handle_list [1, 2, 3]
+define result = handle_list [1, 2, 3]
 
 # define idi = lambda x = x :: Integer -> Integer
 

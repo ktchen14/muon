@@ -8,7 +8,11 @@
 #include <stdio.h>
 
 uint64_t handle_list(struct { uint64_t length; void *data; } argument) {
-  return 1;
+  uint64_t *data = argument.data;
+  uint64_t result = 0;
+  for (size_t i = 0; i < argument.length; i++)
+    result += data[i];
+  return result;
 }
 
 __attribute__((nonnull))
