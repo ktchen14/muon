@@ -366,7 +366,8 @@ LLVMModuleRef script_emit(author_t *author, const mu_node_t *root) {
   LLVMPassBuilderOptionsRef option = LLVMCreatePassBuilderOptions();
   LLVMErrorRef e;
   e = LLVMRunPasses(author->module, "default<O2>", NULL, option);
-  LLVMCantFail(e);
+  if (e != NULL)
+    abort();
   LLVMDisposePassBuilderOptions(option);
 
   return author->module;

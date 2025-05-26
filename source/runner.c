@@ -12,7 +12,10 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+
+#define llvm_cant_fail(e) do { if ((e) != NULL) abort(); } while (0)
 
 void mu_run(LLVMModuleRef module) {
   LLVMInitializeNativeTarget();
@@ -26,7 +29,7 @@ void mu_run(LLVMModuleRef module) {
   LLVMOrcLLJITRef jit;
   LLVMErrorRef e;
   e = LLVMOrcCreateLLJIT(&jit, builder);
-  LLVMCantFail(e);
+  llvm_cant_fail(e);
 
   // Get the main dylib
   LLVMOrcJITDylibRef dylib = LLVMOrcLLJITGetMainJITDylib(jit);
@@ -35,7 +38,7 @@ void mu_run(LLVMModuleRef module) {
   LLVMOrcDefinitionGeneratorRef generator;
   e = LLVMOrcCreateDynamicLibrarySearchGeneratorForProcess(&generator,
       LLVMOrcLLJITGetGlobalPrefix(jit), 0, NULL);
-  LLVMCantFail(e);
+  llvm_cant_fail(e);
   LLVMOrcJITDylibAddGenerator(dylib, generator);
 
   // Create a thread safe context
@@ -47,17 +50,17 @@ void mu_run(LLVMModuleRef module) {
 
   // Add the IR module
   e = LLVMOrcLLJITAddLLVMIRModule(jit, dylib, ts_module);
-  LLVMCantFail(e);
+  llvm_cant_fail(e);
 
   LLVMOrcExecutorAddress addr;
   e = LLVMOrcLLJITLookup(jit, &addr, "initialize");
-  LLVMCantFail(e);
+  llvm_cant_fail(e);
 
   void (*invoke)(void) = (void (*)(void)) addr;
   invoke();
 
   e = LLVMOrcLLJITLookup(jit, &addr, "muon.result");
-  LLVMCantFail(e);
+  llvm_cant_fail(e);
   uint64_t result;
   memcpy(&result, (void *) addr, sizeof(uint64_t));
   fprintf(stderr, "result = %" PRIu64 "\n", result);
