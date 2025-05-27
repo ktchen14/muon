@@ -9,10 +9,6 @@
 #include "stator.h"
 #include "status.h"
 
-#include <llvm-c/BitWriter.h>
-#include <llvm-c/Core.h>
-#include <llvm-c/Types.h>
-
 #include <assert.h>
 #include <errno.h>
 #include <stdint.h>
@@ -150,12 +146,8 @@ int main(int argc, char *argv[argc]) {
     assert(0);
   author->native_expr_emit = standard_native_expr_emit;
 
-  LLVMModuleRef module = script_emit(author, &sequence_expr->as_node);
+  void *module = script_emit(author, &sequence_expr->as_node, argv[1]);
   assert(module != NULL);
-  LLVMSetSourceFileName(module, argv[1], strlen(argv[1]));
-
-  if (LLVMWriteBitcodeToFile(module, "module.bc") != 0)
-    fprintf(stderr, "error writing bitcode to file, skipping\n");
 
   mu_run(module);
 

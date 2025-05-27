@@ -4,19 +4,21 @@
 #include "../stator.h"
 #include "../inductor.h"
 
-#include <llvm-c/Error.h>
-#include <llvm-c/Types.h>
-#include <llvm-c/Core.h>
-#include <llvm-c/ExecutionEngine.h>
-#include <llvm-c/Target.h>
 #include <llvm-c/Analysis.h>
 #include <llvm-c/BitWriter.h>
+#include <llvm-c/BitWriter.h>
+#include <llvm-c/Core.h>
+#include <llvm-c/Error.h>
+#include <llvm-c/ExecutionEngine.h>
+#include <llvm-c/Target.h>
 #include <llvm-c/Transforms/PassBuilder.h>
+#include <llvm-c/Types.h>
 
 #include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define INTERNAL_STRING(string) #string
 #define INDIRECT_STRING(string) INTERNAL_STRING(string)
@@ -291,7 +293,7 @@ LLVMValueRef node_emit(author_t *author, const mu_node_t *node) {
   }
 }
 
-LLVMModuleRef script_emit(author_t *author, const mu_node_t *root) {
+LLVMModuleRef script_emit(author_t *author, const mu_node_t *root, const char *source_name) {
   LLVMTypeRef initialize_type = LLVMFunctionType(LLVMVoidType(), NULL, 0, 0);
   LLVMValueRef lambda = LLVMAddFunction(author->module, "initialize", initialize_type);
   LLVMBasicBlockRef b = LLVMAppendBasicBlock(lambda, "");
@@ -362,6 +364,7 @@ LLVMModuleRef script_emit(author_t *author, const mu_node_t *root) {
 
   // This can't fail absent a bug in Muon so just abort() on failure
   LLVMVerifyModule(author->module, LLVMAbortProcessAction, NULL);
+  LLVMSetSourceFileName(author->module, source_name, strlen(source_name));
 
   LLVMPassBuilderOptionsRef option = LLVMCreatePassBuilderOptions();
   LLVMErrorRef e;
@@ -369,6 +372,8 @@ LLVMModuleRef script_emit(author_t *author, const mu_node_t *root) {
   if (e != NULL)
     abort();
   LLVMDisposePassBuilderOptions(option);
+
+  LLVMWriteBitcodeToFile(author->module, "module.bc");
 
   return author->module;
 }

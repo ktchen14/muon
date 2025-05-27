@@ -26,6 +26,14 @@ target_include_directories(muon PUBLIC
   "$<INSTALL_INTERFACE:include>")
 set_property(TARGET muon PROPERTY VERSION "${Muon_VERSION}")
 
+# LLVM
+find_package(LLVM REQUIRED CONFIG)
+separate_arguments(LLVM_DEFINITIONS_LIST NATIVE_COMMAND "${LLVM_DEFINITIONS}")
+llvm_map_components_to_libnames(LLVM_LIBRARIES native orcjit)
+target_compile_definitions(muon PRIVATE ${LLVM_DEFINITIONS_LIST})
+target_include_directories(muon PRIVATE ${LLVM_INCLUDE_DIRS})
+target_link_libraries(muon PRIVATE ${LLVM_LIBRARIES})
+
 add_executable(main)
 target_compile_options(main PRIVATE
   -Wall -Wextra -pedantic
@@ -38,16 +46,6 @@ target_compile_options(main PRIVATE
   -Wcast-align
 )
 target_link_libraries(main PRIVATE muon)
-
-find_package(LLVM REQUIRED CONFIG)
-target_include_directories(main PRIVATE ${LLVM_INCLUDE_DIRS})
-target_include_directories(muon PRIVATE ${LLVM_INCLUDE_DIRS})
-separate_arguments(LLVM_DEFINITIONS_LIST NATIVE_COMMAND ${LLVM_DEFINITIONS})
-target_compile_definitions(main PRIVATE ${LLVM_DEFINITIONS_LIST})
-target_compile_definitions(muon PRIVATE ${LLVM_DEFINITIONS_LIST})
-llvm_map_components_to_libnames(llvm_libs mcjit interpreter native orcjit)
-target_link_libraries(muon PRIVATE ${llvm_libs} stdc++)
-target_link_libraries(main PRIVATE ${llvm_libs} stdc++)
 
 add_subdirectory(source)
 
