@@ -1,8 +1,12 @@
-add_subdirectory(author)
 add_subdirectory(script)
 
 target_sources(muon PRIVATE
   common.c
+
+  author/author.c
+  author/coercion.c
+  author/node.c
+  author/type.c
 
   inductor/coercion.c
   inductor/core.c
@@ -21,7 +25,6 @@ target_sources(muon PRIVATE
   stator/name.c
   stator/node.c
 
-  $<TARGET_OBJECTS:author>
   $<TARGET_OBJECTS:reader>
 )
 
