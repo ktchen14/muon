@@ -27,5 +27,3 @@ target_sources(muon PRIVATE
 
   $<TARGET_OBJECTS:reader>
 )
-
-target_sources(main PRIVATE main.c)

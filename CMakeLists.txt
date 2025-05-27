@@ -10,16 +10,17 @@ project(Muon VERSION "${PROJECT_VERSION}"
 )
 
 add_library(muon SHARED)
-target_compile_features(muon PUBLIC c_std_23)
+target_compile_features(muon INTERFACE c_std_11)
+target_compile_features(muon PRIVATE c_std_23)
 target_compile_options(muon PRIVATE
   -Wall -Wextra -pedantic
+  -Wcast-align
   -Wconversion
   -Wno-gnu-zero-variadic-macro-arguments  # Ignore , ##__VA_ARGS__
   -Wno-logical-op-parentheses
   -Wno-parentheses
   -Wno-unknown-pragmas
   -Wno-unused-parameter
-  -Wcast-align
 )
 target_include_directories(muon PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/header>"
@@ -34,7 +35,7 @@ target_compile_definitions(muon PRIVATE ${LLVM_DEFINITIONS_LIST})
 target_include_directories(muon PRIVATE ${LLVM_INCLUDE_DIRS})
 target_link_libraries(muon PRIVATE ${LLVM_LIBRARIES})
 
-add_executable(main)
+add_executable(main source/main.c)
 target_compile_options(main PRIVATE
   -Wall -Wextra -pedantic
   -Wconversion
