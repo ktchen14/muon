@@ -145,8 +145,8 @@ int main(int argc, char *argv[argc]) {
     system("dot -Tpng -O out.dot");
   }
 
-  author_t *author;
-  if ((author = author_initialize(&(author_t) {0}, detect_result(&detect), &induce)) == NULL)
+  author_t *author, _author;
+  if ((author = author_initialize(&_author, detect_result(&detect), &induce)) == NULL)
     assert(0);
   author->native_expr_emit = standard_native_expr_emit;
 

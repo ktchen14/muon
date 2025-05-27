@@ -15,6 +15,7 @@ target_compile_options(author PRIVATE
 target_include_directories(author PRIVATE ${LLVM_INCLUDE_DIRS})
 separate_arguments(LLVM_DEFINITIONS_LIST NATIVE_COMMAND ${LLVM_DEFINITIONS})
 target_compile_definitions(author PRIVATE ${LLVM_DEFINITIONS_LIST})
+set_property(TARGET author PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 target_include_directories(author PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../header>"

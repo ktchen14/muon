@@ -27,3 +27,4 @@ target_include_directories(reader PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../../hea
 target_include_directories(reader PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 target_include_directories(reader PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
 target_compile_features(reader PUBLIC c_std_11)
+set_property(TARGET reader PROPERTY POSITION_INDEPENDENT_CODE ON)

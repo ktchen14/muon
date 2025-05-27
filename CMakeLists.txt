@@ -46,7 +46,7 @@ separate_arguments(LLVM_DEFINITIONS_LIST NATIVE_COMMAND ${LLVM_DEFINITIONS})
 target_compile_definitions(main PRIVATE ${LLVM_DEFINITIONS_LIST})
 target_compile_definitions(muon PRIVATE ${LLVM_DEFINITIONS_LIST})
 llvm_map_components_to_libnames(llvm_libs mcjit interpreter native orcjit)
-target_link_libraries(muon ${llvm_libs} stdc++)
+target_link_libraries(muon PRIVATE ${llvm_libs} stdc++)
 target_link_libraries(main PRIVATE ${llvm_libs} stdc++)
 
 add_subdirectory(source)
