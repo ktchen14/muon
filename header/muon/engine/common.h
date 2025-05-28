@@ -1,5 +1,5 @@
-#ifndef MU_STATOR_ENGINE_H
-#define MU_STATOR_ENGINE_H
+#ifndef MU_ENGINE_COMMON_H
+#define MU_ENGINE_COMMON_H
 
 #include "name.h"
 
@@ -13,4 +13,4 @@ struct mu_engine_t {
   const mu_name_t *name[256];
 };
 
-#endif /* MU_STATOR_ENGINE_H */
+#endif /* MU_ENGINE_COMMON_H */

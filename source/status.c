@@ -1,7 +1,5 @@
 #include "status.h"
 
-#include "stator.h"
-
 #include <stdarg.h>
 #include <stdio.h>
 

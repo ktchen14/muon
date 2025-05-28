@@ -1,7 +1,7 @@
 #include "detect.h"
 
 #include "../common.h"
-#include "../stator.h"
+#include "../engine.h"
 #include "../status.h"
 
 #include <assert.h>

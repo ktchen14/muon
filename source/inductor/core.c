@@ -2,7 +2,7 @@
 #include "induce.h"
 
 #include "../common.h"
-#include "../stator/name.h"
+#include "../engine/name.h"
 
 #include <assert.h>
 #include <stdio.h>

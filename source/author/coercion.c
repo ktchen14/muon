@@ -2,7 +2,6 @@
 
 #include "../common.h"
 #include "../inductor.h"
-#include "../stator.h"
 
 #include <llvm-c/Types.h>
 #include <llvm-c/Core.h>
@@ -14,13 +13,6 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-static LLVMValueRef evince_result(const author_t *author, const mu_node_t *node) {
-  assert(node->id < author->node_length);
-  LLVMValueRef result = author->node_to_value[node->id];
-  assert(result != NULL);
-  return result;
-}
 
 __attribute__((nonnull)) static LLVMValueRef id_coercion_emit(
     author_t *author, const mu_id_coercion_t *coercion, info_t info) {

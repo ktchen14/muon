@@ -1,7 +1,7 @@
 #ifndef MU_INDUCTOR_CORE_H
 #define MU_INDUCTOR_CORE_H
 
-#include "../stator/name.h"
+#include "../engine/name.h"
 
 #include <stddef.h>
 

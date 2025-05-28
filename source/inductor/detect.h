@@ -1,7 +1,7 @@
 #ifndef MU_INDUCTOR_DETECT_I
 #define MU_INDUCTOR_DETECT_I
 
-#include "../stator.h"
+#include "../engine.h"
 #include "../status.h"
 
 #include <assert.h>

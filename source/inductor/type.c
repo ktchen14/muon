@@ -1,7 +1,7 @@
 #include "type.h"
 
 #include "../common.h"
-#include "../stator/name.h"
+#include "../engine/name.h"
 #include "core.h"
 #include "induce.h"
 #include "universe.h"

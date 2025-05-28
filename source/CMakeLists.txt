@@ -8,6 +8,9 @@ target_sources(muon PRIVATE
   author/node.c
   author/type.c
 
+  engine/name.c
+  engine/node.c
+
   inductor/coercion.c
   inductor/core.c
   inductor/detect.c
@@ -21,9 +24,6 @@ target_sources(muon PRIVATE
   script.c
   standard.c
   status.c
-
-  stator/name.c
-  stator/node.c
 
   $<TARGET_OBJECTS:reader>
 )

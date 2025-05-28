@@ -1,7 +1,7 @@
 #include "script.h"
 
 #include "common.h"
-#include "stator.h"
+#include "engine.h"
 
 #include <errno.h>
 #include <stddef.h>

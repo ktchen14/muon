@@ -1,5 +1,5 @@
-#ifndef MU_STATOR_EXPR_H
-#define MU_STATOR_EXPR_H
+#ifndef MU_ENGINE_NODE_H
+#define MU_ENGINE_NODE_H
 
 #include "name.h"
 
@@ -336,6 +336,13 @@ typedef struct {
 typedef struct {
   MU_NODE_HEADER;
   const mu_name_t *name;
+  size_t argc;
+  const mu_name_t *argv[/* argc */];
+} mu_type_node_t;
+
+typedef struct {
+  MU_NODE_HEADER;
+  const mu_name_t *name;
 } mu_datatype_option_t;
 
 typedef struct {
@@ -604,4 +611,4 @@ void mu_node_debug(const mu_node_t *node) __attribute__((nonnull));
     _castable ? (typeof(_concrete)) _abstract : NULL; \
   })
 
-#endif /* MU_STATOR_EXPR_H */
+#endif /* MU_ENGINE_NODE_H */

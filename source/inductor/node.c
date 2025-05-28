@@ -1,5 +1,5 @@
 #include "../common.h"
-#include "../stator.h"
+#include "../engine.h"
 #include "coercion.h"
 #include "core.h"
 #include "detect.h"

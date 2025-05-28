@@ -1,7 +1,7 @@
 #ifndef MU_INDUCTOR_INDUCE_I
 #define MU_INDUCTOR_INDUCE_I
 
-#include <muon/stator.h>
+#include <muon/engine.h>
 #include <muon/inductor/type.h>
 
 #include "coercion.h"

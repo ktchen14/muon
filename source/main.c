@@ -2,11 +2,11 @@
 
 #include "common.h"
 #include "author.h"
+#include "engine.h"
 #include "inductor.h"
 #include "runner.h"
 #include "script.h"
 #include "standard.h"
-#include "stator.h"
 #include "status.h"
 
 #include <assert.h>
@@ -17,8 +17,6 @@
 #include <string.h>
 
 unsigned char buffer[4096];
-
-#include "stator.h"
 
 const mu_name_t *vector_access;
 

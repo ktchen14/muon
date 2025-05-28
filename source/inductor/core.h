@@ -3,7 +3,7 @@
 
 #include <muon/inductor/core.h>  // IWYU pragma: export
 
-#include "../stator/name.h"
+#include "../engine/name.h"
 
 #include <assert.h>
 #include <stddef.h>

@@ -1,5 +1,5 @@
-#ifndef MU_STATOR_NAME_H
-#define MU_STATOR_NAME_H
+#ifndef MU_ENGINE_NAME_H
+#define MU_ENGINE_NAME_H
 
 #include <stddef.h>
 
@@ -33,4 +33,4 @@ const mu_name_t *mu_name(
 
 void mu_name_debug(const mu_name_t *name) __attribute__((nonnull));
 
-#endif /* MU_STATOR_NAME_H */
+#endif /* MU_ENGINE_NAME_H */

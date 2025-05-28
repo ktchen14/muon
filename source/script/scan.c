@@ -1,7 +1,7 @@
 #include "syntax.h"
 
 #include "../script.h"
-#include "../stator.h"
+#include "../engine.h"
 #include "../status.h"
 
 #include <assert.h>

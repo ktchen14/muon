@@ -1,10 +1,11 @@
-#ifndef MU_STATOR_NODE_I
-#define MU_STATOR_NODE_I
+#ifndef MU_ENGINE_NODE_I
+#define MU_ENGINE_NODE_I
 
-#include <muon/stator/node.h>  // IWYU pragma: export
+#include <muon/engine/node.h>  // IWYU pragma: export
+
+#include "name.h"
 
 #include "../common.h"
-#include "name.h"
 
 #include <assert.h>
 #include <stddef.h>
@@ -190,4 +191,4 @@ mu_record_view_t *record_view_allocate(mu_engine_t *engine, size_t argc)
 const mu_record_view_t *record_view_activate(mu_record_view_t *view)
   __attribute__((nonnull));
 
-#endif /* MU_STATOR_NODE_I */
+#endif /* MU_ENGINE_NODE_I */

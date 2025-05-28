@@ -1,7 +1,7 @@
 #ifndef MU_SCRIPT_H
 #define MU_SCRIPT_H
 
-#include "stator.h"
+#include "engine.h"
 
 #include <stddef.h>
 

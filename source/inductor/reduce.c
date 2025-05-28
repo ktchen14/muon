@@ -2,7 +2,7 @@
 #include "core.h"
 #include "induce.h"
 
-#include "../stator/node.h"
+#include "../engine/node.h"
 #include "coercion.h"
 #include "type.h"
 #include "universe.h"

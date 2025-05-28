@@ -3,7 +3,7 @@
 // ================================ Prologue ============================== {{{1
 
 %code requires {
-#include <muon/stator.h>
+#include <muon/engine.h>
 #include "../script.h"
 
 typedef struct {

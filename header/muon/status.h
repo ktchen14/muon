@@ -3,8 +3,6 @@
 
 #include <stddef.h>
 
-#include "stator.h"
-
 /**
  * @brief Source location of a Muon syntax object
  */

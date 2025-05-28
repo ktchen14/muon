@@ -1,7 +1,7 @@
 #include "common.h"
 
 #include "../common.h"
-#include "../stator.h"
+#include "../engine.h"
 #include "../inductor.h"
 
 #include <llvm-c/Analysis.h>

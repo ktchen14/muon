@@ -1,5 +1,5 @@
 #include "../inductor.h"
-#include "../stator.h"
+#include "../engine.h"
 
 #include <limits.h>
 #include <llvm-c/Target.h>
