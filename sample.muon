@@ -1,15 +1,15 @@
 # define id = lambda x = x.foo
 
-# define number = 1234
+define number = 1234
 
-# define main = lambda () = [[(foo: (bar: 5)).foo.bar, 7], [9]]
+define main = lambda () = [[(foo: (bar: 5)).foo.bar, 7], [9]]
 
 # define y = (bar: id)
 # define x = y.bar (foo: 1)
 
 # define x = handle_list [1, 2, id (foo: 3)]
 
-# datatype MyBoolean = MyTrue | MyFalse
+datatype MyBoolean = MyTrue | MyFalse
 
 # instance MyBoolean <: Integer = switch (case MyTrue = 1, case MyFalse = 0)
 
