@@ -1,6 +1,7 @@
 #ifndef MU_ENGINE_NODE_H
 #define MU_ENGINE_NODE_H
 
+#include "common.h"
 #include "name.h"
 
 #include <stddef.h>
@@ -95,8 +96,6 @@ typedef enum {
   MU_EACH_VIEW_KIND(MU_EMIT)
 #undef MU_EMIT
 } mu_view_kind_t;
-
-typedef struct mu_engine_t mu_engine_t;
 
 /// An abstract node
 typedef struct mu_node_t {
