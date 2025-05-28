@@ -374,6 +374,7 @@ LLVMModuleRef script_emit(author_t *author, const mu_node_t *root, const char *s
   LLVMDisposePassBuilderOptions(option);
 
   LLVMWriteBitcodeToFile(author->module, "module.bc");
+  LLVMPrintModuleToFile(author->module, "module.ll", NULL);
 
   return author->module;
 }
