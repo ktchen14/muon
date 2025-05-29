@@ -11,11 +11,11 @@
 typedef struct {
   union {
     __attribute__((packed)) struct {
-      const mu_type_t *source;
-      const mu_type_t *target;
+      const MuonType *source;
+      const MuonType *target;
     };
 
-    const mu_type_t *vertex[2];
+    const MuonType *vertex[2];
   };
 
   const mu_coercion_t *coercion;  // optional
@@ -31,7 +31,7 @@ typedef struct {
 
 typedef struct {
   const universe_t *universe;
-  const mu_type_t *target;
+  const MuonType *target;
   _Bool invert;
   size_t i;
 } universe_iterator_t;
@@ -41,15 +41,15 @@ universe_t *universe_initialize(universe_t *universe)
   __attribute__((nonnull));
 
 type_edge_t *universe_search(
-    const universe_t *universe, const mu_type_t *source, const mu_type_t *target)
+    const universe_t *universe, const MuonType *source, const MuonType *target)
   __attribute__((nonnull));
 
-type_edge_t *append_edge(universe_t *universe, const mu_type_t *source, const mu_type_t *target);
-type_edge_t *edge_define(universe_t *universe, const mu_type_t *source, const mu_type_t *target);
+type_edge_t *append_edge(universe_t *universe, const MuonType *source, const MuonType *target);
+type_edge_t *edge_define(universe_t *universe, const MuonType *source, const MuonType *target);
 
 __attribute__((nonnull))
 static inline universe_iterator_t universe_iterator(
-    const universe_t *universe, const mu_type_t *target, _Bool invert) {
+    const universe_t *universe, const MuonType *target, _Bool invert) {
   return (universe_iterator_t) {
     .universe = universe, .target = target, .invert = invert,
   };

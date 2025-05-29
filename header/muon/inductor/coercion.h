@@ -32,7 +32,7 @@ typedef struct {
   mu_coercion_kind_t kind;
   const mu_inductor_t *inductor;
   size_t id;
-  const mu_type_t *target;
+  const MuonType *target;
 } mu_coercion_t;
 
 /// The header that each concrete coercion must have
@@ -101,11 +101,11 @@ typedef struct {
 extern const void *const MU_NO_SUCH_COERCION;
 
 const mu_id_coercion_t *mu_id_coercion(
-    mu_inductor_t *inductor, const mu_type_t *target)
+    mu_inductor_t *inductor, const MuonType *target)
   __attribute__((malloc, nonnull));
 
 const mu_slot_coercion_t *mu_slot_coercion(
-    mu_inductor_t *inductor, const mu_type_t *target)
+    mu_inductor_t *inductor, const MuonType *target)
   __attribute__((malloc, nonnull));
 
 const mu_indirect_coercion_t *mu_indirect_coercion(
@@ -115,41 +115,41 @@ const mu_indirect_coercion_t *mu_indirect_coercion(
 
 const mu_instance_coercion_t *mu_instance_coercion(
     mu_inductor_t *inductor,
-    const mu_type_t *target,
+    const MuonType *target,
     const mu_instance_t *instance)
   __attribute__((malloc, nonnull));
 
 const mu_variance_coercion_t *mu_variance_coercion(
     mu_inductor_t *inductor,
-    const mu_type_t *target,
+    const MuonType *target,
     const mu_core_t *core,
     const mu_coercion_t *argv[/* target->core->argc */])
   __attribute__((malloc, nonnull(1)));
 
 const mu_join_coercion_t *mu_join_coercion(
-    mu_inductor_t *inductor, const mu_type_t *target, size_t i)
+    mu_inductor_t *inductor, const MuonType *target, size_t i)
   __attribute__((malloc));
 
 const mu_unjoin_coercion_t *mu_unjoin_coercion(
     mu_inductor_t *inductor,
-    const mu_type_t *target,
+    const MuonType *target,
     size_t argc,
     const mu_coercion_t *argv[/* argc */])
   __attribute__((malloc));
 
 const mu_meet_coercion_t *mu_meet_coercion(
     mu_inductor_t *inductor,
-    const mu_type_t *target,
+    const MuonType *target,
     size_t argc,
     const mu_coercion_t *argv[/* argc */])
   __attribute__((malloc));
 
 const mu_unmeet_coercion_t *mu_unmeet_coercion(
-    mu_inductor_t *inductor, const mu_type_t *target, size_t i)
+    mu_inductor_t *inductor, const MuonType *target, size_t i)
   __attribute__((malloc));
 
 const mu_unscheme_coercion_t *mu_unscheme_coercion(
-    mu_inductor_t *inductor, const mu_type_t *target)
+    mu_inductor_t *inductor, const MuonType *target)
   __attribute__((malloc));
 
 void mu_coercion_debug(const mu_coercion_t *coercion)

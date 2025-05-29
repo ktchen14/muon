@@ -13,7 +13,7 @@
 #include <stdlib.h>
 
 __attribute__((nonnull, returns_nonnull))
-static LLVMTypeRef evince_result(const author_t *author, const mu_type_t *type) {
+static LLVMTypeRef evince_result(const author_t *author, const MuonType *type) {
   assert(type->id < author->type_length);
   LLVMTypeRef result = author->type_to_type[type->id];
   assert(result != NULL);
@@ -136,7 +136,7 @@ __attribute__((nonnull)) static LLVMTypeRef join_type_emit(
 
 // NOLINTNEXTLINE: misc-no-recursion
 __attribute__((nonnull)) static LLVMTypeRef type_emit(
-    author_t *author, const mu_type_t *type) {
+    author_t *author, const MuonType *type) {
   switch ON_ABSTRACT_OBJECT(type) {
     case IS_KIND_OF(core_type):
       switch (core_type->core->kind) {
@@ -173,10 +173,10 @@ __attribute__((nonnull)) static LLVMTypeRef type_emit(
   __builtin_unreachable();
 }
 
-LLVMTypeRef get_type(author_t *author, const mu_type_t *root) {
+LLVMTypeRef get_type(author_t *author, const MuonType *root) {
   assert(root->id < author->type_length);
 
-  const mu_type_t *type = root, *next;
+  const MuonType *type = root, *next;
   do {
     _Bool next_charge;
     while ((next = type_next(type, &next_charge)) != NULL) {

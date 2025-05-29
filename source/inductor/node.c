@@ -15,10 +15,10 @@ static MuonNode *on_continue(induce_t *induce, MuonNode *node)
   __attribute__((nonnull));
 
 /// @internal Called, on return from a node, to induce the type of the @a node
-static const mu_type_t *on_return(induce_t *induce, MuonNode *node)
+static const MuonType *on_return(induce_t *induce, MuonNode *node)
   __attribute__((nonnull));
 
-const mu_type_t *induce_node(induce_t *induce, MuonNode *root) {
+const MuonType *induce_node(induce_t *induce, MuonNode *root) {
   assert(induce->scheme == NULL);
   induce->scheme = &(mu_scheme_t) { .induce = induce, .id = induce->type_number };
 
@@ -36,7 +36,7 @@ const mu_type_t *induce_node(induce_t *induce, MuonNode *root) {
     }
 
     // Induce the type of the node
-    const mu_type_t *type;
+    const MuonType *type;
     if ((type = on_return(induce, node)) == NULL)
       return NULL;
 
@@ -46,7 +46,7 @@ const mu_type_t *induce_node(induce_t *induce, MuonNode *root) {
   return evince_type(induce, root);
 }
 
-__attribute__((nonnull)) static const mu_type_t *access_expr_return(
+__attribute__((nonnull)) static const MuonType *access_expr_return(
     induce_t *induce, MuonAccessExpr *expr) {
   const mu_variable_type_t *variable_type;
   if ((variable_type = mu_variable_type(induce)) == NULL)
@@ -57,19 +57,19 @@ __attribute__((nonnull)) static const mu_type_t *access_expr_return(
     return NULL;
   assert(core->kind == MU_RECORD_CORE);
 
-  const mu_type_t *record_argv[] = { &variable_type->as_type };
+  const MuonType *record_argv[] = { &variable_type->as_type };
   const mu_core_type_t *record_type;
   if ((record_type = mu_core_type(induce, core, record_argv)) == NULL)
     return NULL;
 
-  const mu_type_t *argv[] = { &record_type->as_type, &variable_type->as_type };
+  const MuonType *argv[] = { &record_type->as_type, &variable_type->as_type };
   const mu_core_type_t *result;
   if ((result = mu_lambda_type(induce, argv[0], argv[1])) == NULL)
     return NULL;
   return &result->as_type;
 }
 
-__attribute__((nonnull)) static const mu_type_t *boolean_expr_return(
+__attribute__((nonnull)) static const MuonType *boolean_expr_return(
     induce_t *induce, MuonBooleanExpr *expr) {
   const mu_core_type_t *result;
   if ((result = mu_boolean_type(induce)) == NULL)
@@ -77,10 +77,10 @@ __attribute__((nonnull)) static const mu_type_t *boolean_expr_return(
   return &result->as_type;
 }
 
-__attribute__((nonnull)) static const mu_type_t *cast_expr_return(
+__attribute__((nonnull)) static const MuonType *cast_expr_return(
     induce_t *induce, MuonCastExpr *expr) {
-  const mu_type_t *sign_type = evince_type(induce, &expr->sign->as_node);
-  const mu_type_t *matter_type = evince_type(induce, &expr->matter->as_node);
+  const MuonType *sign_type = evince_type(induce, &expr->sign->as_node);
+  const MuonType *matter_type = evince_type(induce, &expr->matter->as_node);
 
   const mu_coercion_t *coercion;
   if ((coercion = ensure_coercion(induce, matter_type, sign_type)) == NULL)
@@ -90,7 +90,7 @@ __attribute__((nonnull)) static const mu_type_t *cast_expr_return(
   return sign_type;
 }
 
-__attribute__((nonnull)) static const mu_type_t *integer_expr_return(
+__attribute__((nonnull)) static const MuonType *integer_expr_return(
     induce_t *induce, MuonIntegerExpr *expr) {
   const mu_core_type_t *result;
   if ((result = mu_integer_type(induce)) == NULL)
@@ -98,9 +98,9 @@ __attribute__((nonnull)) static const mu_type_t *integer_expr_return(
   return &result->as_type;
 }
 
-__attribute__((nonnull)) static const mu_type_t *invoke_expr_return(
+__attribute__((nonnull)) static const MuonType *invoke_expr_return(
     induce_t *induce, MuonInvokeExpr *expr) {
-  const mu_type_t *operator_type, *argument_type;
+  const MuonType *operator_type, *argument_type;
   operator_type = evince_type(induce, &expr->operator->as_node);
   argument_type = evince_type(induce, &expr->argument->as_node);
 
@@ -108,12 +108,12 @@ __attribute__((nonnull)) static const mu_type_t *invoke_expr_return(
   if ((result = mu_variable_type(induce)) == NULL)
     return NULL;
 
-  const mu_type_t *argv[] = { argument_type, &result->as_type };
+  const MuonType *argv[] = { argument_type, &result->as_type };
   const mu_core_type_t *lambda_type;
   if ((lambda_type = mu_lambda_type(induce, argv[0], argv[1])) == NULL)
     return NULL;
 
-  const mu_type_t *target = &lambda_type->as_type;
+  const MuonType *target = &lambda_type->as_type;
   const mu_coercion_t *coercion;
   if ((coercion = ensure_coercion(induce, operator_type, target)) == NULL)
     return NULL;
@@ -122,10 +122,10 @@ __attribute__((nonnull)) static const mu_type_t *invoke_expr_return(
   return &result->as_type;
 }
 
-__attribute__((nonnull)) static const mu_type_t *lambda_expr_return(
+__attribute__((nonnull)) static const MuonType *lambda_expr_return(
     induce_t *induce, MuonLambdaExpr *expr) {
-  const mu_type_t *argument_type = evince_type(induce, &expr->argument->as_node);
-  const mu_type_t *output_type = evince_type(induce, &expr->matter->as_node);
+  const MuonType *argument_type = evince_type(induce, &expr->argument->as_node);
+  const MuonType *output_type = evince_type(induce, &expr->matter->as_node);
 
   const mu_core_type_t *result;
   if ((result = mu_lambda_type(induce, argument_type, output_type)) == NULL)
@@ -133,14 +133,14 @@ __attribute__((nonnull)) static const mu_type_t *lambda_expr_return(
   return &result->as_type;
 }
 
-__attribute__((nonnull)) static const mu_type_t *name_expr_return(
+__attribute__((nonnull)) static const MuonType *name_expr_return(
     induce_t *induce, MuonNameExpr *expr) {
   MuonNode *target = detect_evince(induce->detect, &expr->as_node);
   assert(target != NULL);
   return evince_type(induce, target);
 }
 
-__attribute__((nonnull)) static const mu_type_t *native_expr_return(
+__attribute__((nonnull)) static const MuonType *native_expr_return(
     induce_t *induce, MuonNativeExpr *expr) {
   const mu_core_type_t *integer_type;
   if ((integer_type = mu_integer_type(induce)) == NULL)
@@ -150,15 +150,15 @@ __attribute__((nonnull)) static const mu_type_t *native_expr_return(
   if ((vector_type = mu_vector_type(induce, &integer_type->as_type)) == NULL)
     return NULL;
 
-  const mu_type_t *argument_type = &vector_type->as_type;
-  const mu_type_t *output_type = &integer_type->as_type;
+  const MuonType *argument_type = &vector_type->as_type;
+  const MuonType *output_type = &integer_type->as_type;
   const mu_core_type_t *result;
   if ((result = mu_lambda_type(induce, argument_type, output_type)) == NULL)
     return NULL;
   return &result->as_type;
 }
 
-__attribute__((nonnull)) static const mu_type_t *record_expr_return(
+__attribute__((nonnull)) static const MuonType *record_expr_return(
     induce_t *induce, MuonRecordExpr *expr) {
   mu_core_t *core_allocation;
   if ((core_allocation = record_core_allocate(induce, expr->argc)) == NULL)
@@ -191,15 +191,15 @@ __attribute__((nonnull)) static const mu_type_t *record_expr_return(
   return &result->as_type;
 }
 
-__attribute__((nonnull)) static const mu_type_t *switch_case_return(
+__attribute__((nonnull)) static const MuonType *switch_case_return(
     induce_t *induce, MuonSwitchCase *node) {
   MuonNode *target;
   if ((target = detect_evince(induce->detect, &node->as_node)) == NULL)
     abort();
-  const mu_type_t *case_type = evince_type(induce, target);
+  const MuonType *case_type = evince_type(induce, target);
   assert(case_type->kind != MU_SCHEME_TYPE);
 
-  const mu_type_t *expr_type = evince_type(induce, &node->expr->as_node);
+  const MuonType *expr_type = evince_type(induce, &node->expr->as_node);
 
   const mu_core_type_t *result;
   if ((result = mu_lambda_type(induce, case_type, expr_type)) == NULL)
@@ -207,14 +207,14 @@ __attribute__((nonnull)) static const mu_type_t *switch_case_return(
   return &result->as_type;
 }
 
-__attribute__((nonnull)) static const mu_type_t *switch_expr_return(
+__attribute__((nonnull)) static const MuonType *switch_expr_return(
     induce_t *induce, MuonSwitchExpr *expr) {
   const mu_variable_type_t *result;
   if ((result = mu_variable_type(induce)) == NULL)
     return NULL;
 
   for (size_t i = 0; i < expr->argc; i++) {
-    const mu_type_t *type = evince_type(induce, &expr->argv[i]->as_node);
+    const MuonType *type = evince_type(induce, &expr->argv[i]->as_node);
 
     const mu_coercion_t *coercion;
     if ((coercion = ensure_coercion(induce, type, &result->as_type)) == NULL)
@@ -225,7 +225,7 @@ __attribute__((nonnull)) static const mu_type_t *switch_expr_return(
   return &result->as_type;
 }
 
-__attribute__((nonnull)) static const mu_type_t *sequence_expr_return(
+__attribute__((nonnull)) static const MuonType *sequence_expr_return(
     induce_t *induce, MuonSequenceExpr *expr) {
   const mu_variable_type_t *result;
   if ((result = mu_variable_type(induce)) == NULL)
@@ -233,14 +233,14 @@ __attribute__((nonnull)) static const mu_type_t *sequence_expr_return(
   return &result->as_type;
 }
 
-__attribute__((nonnull)) static const mu_type_t *vector_expr_return(
+__attribute__((nonnull)) static const MuonType *vector_expr_return(
     induce_t *induce, MuonVectorExpr *expr) {
   const mu_variable_type_t *matter_type;
   if ((matter_type = mu_variable_type(induce)) == NULL)
     return NULL;
 
   for (size_t i = 0; i < expr->argc; i++) {
-    const mu_type_t *type = evince_type(induce, &expr->argv[i]->as_node);
+    const MuonType *type = evince_type(induce, &expr->argv[i]->as_node);
 
     const mu_coercion_t *coercion;
     if ((coercion = ensure_coercion(induce, type, &matter_type->as_type)) == NULL)
@@ -254,7 +254,7 @@ __attribute__((nonnull)) static const mu_type_t *vector_expr_return(
   return &result->as_type;
 }
 
-__attribute__((nonnull)) static const mu_type_t *boolean_sign_return(
+__attribute__((nonnull)) static const MuonType *boolean_sign_return(
     induce_t *induce, MuonBooleanSign *sign) {
   const mu_core_type_t *result;
   if ((result = mu_boolean_type(induce)) == NULL)
@@ -262,7 +262,7 @@ __attribute__((nonnull)) static const mu_type_t *boolean_sign_return(
   return &result->as_type;
 }
 
-__attribute__((nonnull)) static const mu_type_t *integer_sign_return(
+__attribute__((nonnull)) static const MuonType *integer_sign_return(
     induce_t *induce, MuonIntegerSign *sign) {
   const mu_core_type_t *result;
   if ((result = mu_integer_type(induce)) == NULL)
@@ -270,10 +270,10 @@ __attribute__((nonnull)) static const mu_type_t *integer_sign_return(
   return &result->as_type;
 }
 
-__attribute__((nonnull)) static const mu_type_t *lambda_sign_return(
+__attribute__((nonnull)) static const MuonType *lambda_sign_return(
     induce_t *induce, MuonLambdaSign *sign) {
-  const mu_type_t *argument_type = evince_type(induce, &sign->argument->as_node);
-  const mu_type_t *output_type = evince_type(induce, &sign->output->as_node);
+  const MuonType *argument_type = evince_type(induce, &sign->argument->as_node);
+  const MuonType *output_type = evince_type(induce, &sign->output->as_node);
 
   const mu_core_type_t *result;
   if ((result = mu_lambda_type(induce, argument_type, output_type)) == NULL)
@@ -281,21 +281,21 @@ __attribute__((nonnull)) static const mu_type_t *lambda_sign_return(
   return &result->as_type;
 }
 
-__attribute__((nonnull)) static const mu_type_t *name_sign_return(
+__attribute__((nonnull)) static const MuonType *name_sign_return(
     induce_t *induce, MuonNameSign *sign) {
   MuonNode *target = detect_evince(induce->detect, &sign->as_node);
   assert(target != NULL);
   return evince_type(induce, target);
 }
 
-__attribute__((nonnull)) static const mu_type_t *record_sign_return(
+__attribute__((nonnull)) static const MuonType *record_sign_return(
     induce_t *induce, MuonRecordSign *sign) {
   assert(0);
 }
 
-__attribute__((nonnull)) static const mu_type_t *vector_sign_return(
+__attribute__((nonnull)) static const MuonType *vector_sign_return(
     induce_t *induce, MuonVectorSign *sign) {
-  const mu_type_t *matter = evince_type(induce, &sign->matter->as_node);
+  const MuonType *matter = evince_type(induce, &sign->matter->as_node);
 
   const mu_core_type_t *result;
   if ((result = mu_vector_type(induce, matter)) == NULL)
@@ -303,11 +303,11 @@ __attribute__((nonnull)) static const mu_type_t *vector_sign_return(
   return &result->as_type;
 }
 
-__attribute__((nonnull)) static const mu_type_t *coercion_stmt_return(
+__attribute__((nonnull)) static const MuonType *coercion_stmt_return(
     induce_t *induce, MuonCoercionStmt *stmt) {
-  const mu_type_t *source_type = evince_type(induce, &stmt->source->as_node);
-  const mu_type_t *target_type = evince_type(induce, &stmt->target->as_node);
-  const mu_type_t *expr_type = evince_type(induce, &stmt->expr->as_node);
+  const MuonType *source_type = evince_type(induce, &stmt->source->as_node);
+  const MuonType *target_type = evince_type(induce, &stmt->target->as_node);
+  const MuonType *expr_type = evince_type(induce, &stmt->expr->as_node);
 
   const mu_core_type_t *lambda_type;
   if ((lambda_type = mu_lambda_type(induce, source_type, target_type)) == NULL)
@@ -332,7 +332,7 @@ __attribute__((nonnull)) static const mu_type_t *coercion_stmt_return(
   return &lambda_type->as_type;
 }
 
-__attribute__((nonnull)) static const mu_type_t *datatype_option_return(
+__attribute__((nonnull)) static const MuonType *datatype_option_return(
     induce_t *induce, MuonDatatypeOption *option) {
   const mu_core_t *core = induce->datatype_core;
   assert(core != NULL);
@@ -354,7 +354,7 @@ __attribute__((nonnull)) static MuonNode *datatype_stmt_continue(
   return &stmt->as_node;
 }
 
-__attribute__((nonnull)) static const mu_type_t *datatype_stmt_return(
+__attribute__((nonnull)) static const MuonType *datatype_stmt_return(
     induce_t *induce, MuonDatatypeStmt *stmt) {
   // TODO: No arguments supported for now
   const mu_core_t *core = induce->datatype_core;
@@ -374,11 +374,11 @@ __attribute__((nonnull)) static MuonNode *define_stmt_continue(
   return &stmt->as_node;
 }
 
-__attribute__((nonnull)) static const mu_type_t *define_stmt_return(
+__attribute__((nonnull)) static const MuonType *define_stmt_return(
     induce_t *induce, MuonDefineStmt *stmt) {
-  const mu_type_t *expr_type = evince_type(induce, &stmt->expr->as_node);
+  const MuonType *expr_type = evince_type(induce, &stmt->expr->as_node);
 
-  const mu_type_t *result;
+  const MuonType *result;
   if ((result = generalize_type(induce, expr_type)) == NULL)
     return NULL;
 
@@ -389,7 +389,7 @@ __attribute__((nonnull)) static const mu_type_t *define_stmt_return(
   return result;
 }
 
-__attribute__((nonnull)) static const mu_type_t *record_view_return(
+__attribute__((nonnull)) static const MuonType *record_view_return(
     induce_t *induce, MuonRecordView *view) {
   mu_core_t *core_allocation;
   if ((core_allocation = record_core_allocate(induce, view->argc)) == NULL)
@@ -422,7 +422,7 @@ __attribute__((nonnull)) static const mu_type_t *record_view_return(
   return &result->as_type;
 }
 
-__attribute__((nonnull)) static const mu_type_t *variable_view_return(
+__attribute__((nonnull)) static const MuonType *variable_view_return(
     induce_t *induce, MuonVariableView *view) {
   const mu_variable_type_t *result;
   if ((result = mu_variable_type(induce)) == NULL)
@@ -430,12 +430,12 @@ __attribute__((nonnull)) static const mu_type_t *variable_view_return(
   return &result->as_type;
 }
 
-__attribute__((nonnull)) static const mu_type_t *expr_member_return(
+__attribute__((nonnull)) static const MuonType *expr_member_return(
     induce_t *induce, MuonExprMember *member) {
   return evince_type(induce, &member->expr->as_node);
 }
 
-__attribute__((nonnull)) static const mu_type_t *view_member_return(
+__attribute__((nonnull)) static const MuonType *view_member_return(
     induce_t *induce, MuonViewMember *member) {
   return evince_type(induce, &member->view->as_node);
 }
@@ -453,7 +453,7 @@ static MuonNode *on_continue(induce_t *induce, MuonNode *node) {
   __builtin_unreachable();
 }
 
-static const mu_type_t *on_return(induce_t *induce, MuonNode *node) {
+static const MuonType *on_return(induce_t *induce, MuonNode *node) {
   switch ON_ABSTRACT_OBJECT(node) {
 #define MUON_EMIT(lower, upper, title) \
     case MUON_##upper##_NODE: \

@@ -16,8 +16,8 @@
 
 typedef struct {
   const mu_coercion_t *coercion;
-  const mu_type_t *source_type;
-  const mu_type_t *target_type;
+  const MuonType *source_type;
+  const MuonType *target_type;
 } induce_node_t;
 
 typedef struct mu_scheme_t mu_scheme_t;
@@ -72,7 +72,7 @@ induce_t *induce_initialize(
   __attribute__((nonnull));
 
 __attribute__((nonnull, pure, returns_nonnull))
-static inline const mu_type_t *evince_type(
+static inline const MuonType *evince_type(
     const induce_t *induce, MuonNode *node) {
   assert(node->id < induce->node_length);
   induce_node_t result = induce->result[node->id];
@@ -82,7 +82,7 @@ static inline const mu_type_t *evince_type(
 
 __attribute__((nonnull(1, 2), pure))
 static inline const mu_coercion_t *evince_coercion(
-    const induce_t *induce, MuonNode *node, const mu_type_t **target) {
+    const induce_t *induce, MuonNode *node, const MuonType **target) {
   assert(node->id < induce->node_length);
   induce_node_t result = induce->result[node->id];
   if (target != NULL)
@@ -92,7 +92,7 @@ static inline const mu_coercion_t *evince_coercion(
 
 __attribute__((nonnull))
 static inline void override_coercion(
-    induce_t *induce, MuonNode *node, const mu_coercion_t *coercion, const mu_type_t *target) {
+    induce_t *induce, MuonNode *node, const mu_coercion_t *coercion, const MuonType *target) {
   assert(node->engine == induce->engine);
   assert(node->id < induce->node_length);
   induce_node_t *result = &induce->result[node->id];
@@ -117,7 +117,7 @@ static inline void assign_coercion_to_node(
     induce_t *induce,
     MuonNode *node,
     const mu_coercion_t *coercion,
-    const mu_type_t *target) {
+    const MuonType *target) {
   assert(node->engine == induce->engine);
   assert(node->id < induce->node_length);
 
@@ -134,16 +134,16 @@ static inline void assign_coercion_to_node(
  * This will traverse each node reachable from the @a node and will add all
  * constraints to the @a inductor.
  */
-const mu_type_t *induce_node(induce_t *inductor, MuonNode *node)
+const MuonType *induce_node(induce_t *inductor, MuonNode *node)
   __attribute__((nonnull));
 
-const mu_type_t *reduce_node(induce_t *induce, MuonNode *root);
+const MuonType *reduce_node(induce_t *induce, MuonNode *root);
 
 /**
  * @brief If the coercion source => target is ensured, then return it
  */
 const mu_coercion_t *retrieve_coercion(
-    induce_t *induce, const mu_type_t *source, const mu_type_t *target)
+    induce_t *induce, const MuonType *source, const MuonType *target)
   __attribute__((nonnull));
 
 /**
@@ -163,10 +163,10 @@ const mu_coercion_t *retrieve_coercion(
 // Ensure that a coercion exists, and will always exist, from source => target.
 // Return that coercion.
 const mu_coercion_t *ensure_coercion(
-    induce_t *induce, const mu_type_t *source, const mu_type_t *target)
+    induce_t *induce, const MuonType *source, const MuonType *target)
   __attribute__((nonnull));
 
-const mu_type_t *generalize_type(induce_t *induce, const mu_type_t *root)
+const MuonType *generalize_type(induce_t *induce, const MuonType *root)
   __attribute__((nonnull));
 
 mu_scheme_t *mu_scheme(mu_scheme_t *parent)

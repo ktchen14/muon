@@ -31,7 +31,7 @@ __attribute__((nonnull)) static LLVMValueRef slot_coercion_emit(
 
 __attribute__((nonnull)) static LLVMValueRef indirect_coercion_emit(
     author_t *author, const mu_indirect_coercion_t *coercion, info_t info) {
-  const mu_type_t *middle_type = coercion->head->target;
+  const MuonType *middle_type = coercion->head->target;
   LLVMTypeRef middle_llvm_type;
   if ((middle_llvm_type = get_type(author, middle_type)) == NULL)
     return NULL;
