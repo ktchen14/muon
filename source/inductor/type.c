@@ -60,8 +60,7 @@ MuonCoreType *mu_lambda_type(
   return mu_core_type(induce, induce->lambda_core, argv);
 }
 
-MuonCoreType *mu_vector_type(
-    induce_t *induce, MuonType *matter) {
+MuonCoreType *mu_vector_type(induce_t *induce, MuonType *matter) {
   MuonType *argv[] = { matter };
   return mu_core_type(induce, induce->vector_core, argv);
 }

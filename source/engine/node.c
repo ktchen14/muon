@@ -36,8 +36,7 @@ static inline void *node_allocate(MuonEngine *engine, size_t size) {
 
 /// @internal Assign the abstract @a node to the @a engine
 __attribute__((nonnull, returns_nonnull))
-static inline MuonNode *assign_node(
-    MuonEngine *engine, struct MuonNode *node) {
+static inline MuonNode *assign_node(MuonEngine *engine, struct MuonNode *node) {
   node->engine = engine;
   node->id = engine->node_number++;
   return node;

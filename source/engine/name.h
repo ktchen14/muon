@@ -1,5 +1,5 @@
-#ifndef MU_ENGINE_NAME_I
-#define MU_ENGINE_NAME_I
+#ifndef MUON_ENGINE_NAME_I
+#define MUON_ENGINE_NAME_I
 
 #include <muon/engine/name.h>  // IWYU pragma: export
 
@@ -17,4 +17,4 @@ static inline int name_cmp(MuonName *a, MuonName *b) {
   return (a->length > b->length) - (b->length > a->length);
 }
 
-#endif /* MU_ENGINE_NAME_I */
+#endif /* MUON_ENGINE_NAME_I */

@@ -86,8 +86,7 @@ static inline MuonType *type_return(MuonType *type) {
 }
 
 /// Return the <em>i</em>th type in the abstract @a type
-static inline MuonType *type_next(
-    MuonType *type, _Bool *next_charge) {
+static inline MuonType *type_next(MuonType *type, _Bool *next_charge) {
   TypeCursor *cursor = type_cursor(type, charge);
   *next_charge = charge;
 

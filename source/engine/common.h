@@ -1,5 +1,5 @@
-#ifndef MU_ENGINE_COMMON_I
-#define MU_ENGINE_COMMON_I
+#ifndef MUON_ENGINE_COMMON_I
+#define MUON_ENGINE_COMMON_I
 
 #include <muon/engine/common.h>  // IWYU pragma: export
 
@@ -12,4 +12,4 @@ static inline void *engine_allocate(MuonEngine *engine, size_t size) {
   return malloc(size);
 }
 
-#endif /* MU_ENGINE_COMMON_I */
+#endif /* MUON_ENGINE_COMMON_I */

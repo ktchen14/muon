@@ -429,9 +429,7 @@ MuonType *generalize_type(induce_t *induce, MuonType *root) {
   return &result->as_type;
 }
 
-static MuonType *instantiate_scheme(
-    induce_t *induce, MuonSchemeType *scheme
-) {
+static MuonType *instantiate_scheme(induce_t *induce, MuonSchemeType *scheme) {
   // TODO: wildly inefficient and unsafe
   size_t length = induce->type_number;
   MuonType **equation;
