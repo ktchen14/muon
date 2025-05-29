@@ -60,7 +60,7 @@ MuonAccessExpr *mu_access_expr(MuonEngine *engine, MuonName *name) {
   if ((result = node_allocate(engine, sizeof(MuonAccessExpr))) == NULL)
     return NULL;
   *result = (MuonAccessExpr) {
-    .as_expr.kind = MU_ACCESS_EXPR, .name = name,
+    .as_expr.kind = MUON_ACCESS_EXPR, .name = name,
   };
   return assign_node(engine, &result->as_node), result;
 }
@@ -70,7 +70,7 @@ MuonBooleanExpr *mu_boolean_expr(MuonEngine *engine, _Bool data) {
   if ((result = node_allocate(engine, sizeof(MuonBooleanExpr))) == NULL)
     return NULL;
   *result = (MuonBooleanExpr) {
-    .as_expr.kind = MU_BOOLEAN_EXPR, .data = data,
+    .as_expr.kind = MUON_BOOLEAN_EXPR, .data = data,
   };
   return assign_node(engine, &result->as_node), result;
 }
@@ -81,7 +81,7 @@ MuonCastExpr *mu_cast_expr(
   if ((result = node_allocate(engine, sizeof(MuonCastExpr))) == NULL)
     return NULL;
   *result = (MuonCastExpr) {
-    .as_expr.kind = MU_CAST_EXPR, .sign = sign, .matter = matter,
+    .as_expr.kind = MUON_CAST_EXPR, .sign = sign, .matter = matter,
   };
   return assign_node(engine, &result->as_node), result;
 }
@@ -91,7 +91,7 @@ MuonIntegerExpr *mu_integer_expr(MuonEngine *engine, uint64_t data) {
   if ((result = node_allocate(engine, sizeof(MuonIntegerExpr))) == NULL)
     return NULL;
   *result = (MuonIntegerExpr) {
-    .as_expr.kind = MU_INTEGER_EXPR, .data = data,
+    .as_expr.kind = MUON_INTEGER_EXPR, .data = data,
   };
   return assign_node(engine, &result->as_node), result;
 }
@@ -105,7 +105,7 @@ MuonInvokeExpr *mu_invoke_expr(
   if ((result = node_allocate(engine, sizeof(MuonInvokeExpr))) == NULL)
     return NULL;
   *result = (MuonInvokeExpr) {
-    .as_expr.kind = MU_INVOKE_EXPR, .operator = operator, .argument = argument,
+    .as_expr.kind = MUON_INVOKE_EXPR, .operator = operator, .argument = argument,
   };
   return assign_node(engine, &result->as_node), result;
 }
@@ -119,7 +119,7 @@ MuonLambdaExpr *mu_lambda_expr(
   if ((result = node_allocate(engine, sizeof(MuonLambdaExpr))) == NULL)
     return NULL;
   *result = (MuonLambdaExpr) {
-    .as_expr.kind = MU_LAMBDA_EXPR, .argument = argument, .matter = matter,
+    .as_expr.kind = MUON_LAMBDA_EXPR, .argument = argument, .matter = matter,
   };
   return assign_node(engine, &result->as_node), result;
 }
@@ -130,7 +130,7 @@ MuonNameExpr *mu_name_expr(MuonEngine *engine, MuonName *name) {
   struct MuonNameExpr *result;
   if ((result = node_allocate(engine, sizeof(MuonNameExpr))) == NULL)
     return NULL;
-  *result = (MuonNameExpr) { .as_expr.kind = MU_NAME_EXPR, .name = name };
+  *result = (MuonNameExpr) { .as_expr.kind = MUON_NAME_EXPR, .name = name };
   return assign_node(engine, &result->as_node), result;
 }
 
@@ -142,7 +142,7 @@ MuonNativeExpr *mu_native_expr(
   if ((result = node_allocate(engine, sizeof(MuonNativeExpr))) == NULL)
     return NULL;
   *result = (MuonNativeExpr) {
-    .as_expr.kind = MU_NATIVE_EXPR, .name = name,
+    .as_expr.kind = MUON_NATIVE_EXPR, .name = name,
   };
   return assign_node(engine, &result->as_node), result;
 }
@@ -156,7 +156,7 @@ MuonExprMember *mu_expr_member(
   if ((result = node_allocate(engine, sizeof(MuonExprMember))) == NULL)
     return NULL;
   *result = (MuonExprMember) {
-    .as_node.kind = MU_EXPR_MEMBER_NODE, .name = name, .expr = expr,
+    .as_node.kind = MUON_EXPR_MEMBER_NODE, .name = name, .expr = expr,
   };
   return assign_node(engine, &result->as_node), result;
 }
@@ -182,7 +182,7 @@ MuonSwitchCase *mu_switch_case(
   if ((result = node_allocate(engine, sizeof(MuonSwitchCase))) == NULL)
     return NULL;
   *result = (MuonSwitchCase) {
-    .as_node.kind = MU_SWITCH_CASE_NODE, .name = name, .expr = expr,
+    .as_node.kind = MUON_SWITCH_CASE_NODE, .name = name, .expr = expr,
   };
   return assign_node(engine, &result->as_node), result;
 }
@@ -224,7 +224,7 @@ MuonVectorExpr *mu_vector_expr(
   if ((result = node_allocate(engine, size)) == NULL)
     return NULL;
   *result = (MuonVectorExpr) {
-    .as_expr.kind = MU_VECTOR_EXPR, .argc = argc,
+    .as_expr.kind = MUON_VECTOR_EXPR, .argc = argc,
   };
 
   for (size_t i = 0; i < argc; i++)
@@ -254,7 +254,7 @@ MuonRecordExpr *record_expr_activate(struct MuonRecordExpr *expr) {
   }
 
   MuonRecordExpr source = {
-    .as_expr.kind = MU_RECORD_EXPR, .argc = expr->argc
+    .as_expr.kind = MUON_RECORD_EXPR, .argc = expr->argc
   };
   memcpy(expr, &source, offsetof(MuonRecordExpr, argv));
   return assign_node(engine, &expr->as_node), expr;
@@ -281,7 +281,7 @@ MuonSwitchExpr *switch_expr_activate(struct MuonSwitchExpr *expr) {
   }
 
   MuonSwitchExpr source = {
-    .as_expr.kind = MU_SWITCH_EXPR, .argc = expr->argc
+    .as_expr.kind = MUON_SWITCH_EXPR, .argc = expr->argc
   };
   memcpy(expr, &source, offsetof(MuonSwitchExpr, argv));
   return assign_node(engine, &expr->as_node), expr;
@@ -309,7 +309,7 @@ MuonSequenceExpr *sequence_expr_activate(struct MuonSequenceExpr *expr) {
   }
 
   MuonSequenceExpr source = {
-    .as_expr.kind = MU_SEQUENCE_EXPR, .argc = expr->argc
+    .as_expr.kind = MUON_SEQUENCE_EXPR, .argc = expr->argc
   };
   memcpy(expr, &source, offsetof(MuonSequenceExpr, argv));
   return assign_node(engine, &expr->as_node), expr;
@@ -319,7 +319,7 @@ MuonBooleanSign *mu_boolean_sign(MuonEngine *engine) {
   struct MuonBooleanSign *result;
   if ((result = node_allocate(engine, sizeof(MuonBooleanSign))) == NULL)
     return NULL;
-  *result = (MuonBooleanSign) { .as_sign.kind = MU_BOOLEAN_SIGN };
+  *result = (MuonBooleanSign) { .as_sign.kind = MUON_BOOLEAN_SIGN };
   return assign_node(engine, &result->as_node), result;
 }
 
@@ -327,7 +327,7 @@ MuonIntegerSign *mu_integer_sign(MuonEngine *engine) {
   struct MuonIntegerSign *result;
   if ((result = node_allocate(engine, sizeof(MuonIntegerSign))) == NULL)
     return NULL;
-  *result = (MuonIntegerSign) { .as_sign.kind = MU_INTEGER_SIGN };
+  *result = (MuonIntegerSign) { .as_sign.kind = MUON_INTEGER_SIGN };
   return assign_node(engine, &result->as_node), result;
 }
 
@@ -340,7 +340,7 @@ MuonLambdaSign *mu_lambda_sign(
   if ((result = node_allocate(engine, sizeof(MuonLambdaSign))) == NULL)
     return NULL;
   *result = (MuonLambdaSign) {
-    .as_sign.kind = MU_LAMBDA_SIGN, .argument = argument, .output = output,
+    .as_sign.kind = MUON_LAMBDA_SIGN, .argument = argument, .output = output,
   };
   return assign_node(engine, &result->as_node), result;
 }
@@ -351,7 +351,7 @@ MuonNameSign *mu_name_sign(MuonEngine *engine, MuonName *name) {
   struct MuonNameSign *result;
   if ((result = node_allocate(engine, sizeof(MuonNameSign))) == NULL)
     return NULL;
-  *result = (MuonNameSign) { .as_sign.kind = MU_NAME_SIGN, .name = name };
+  *result = (MuonNameSign) { .as_sign.kind = MUON_NAME_SIGN, .name = name };
   return assign_node(engine, &result->as_node), result;
 }
 
@@ -375,7 +375,7 @@ MuonRecordSign *mu_record_sign(
   if ((result = node_allocate(engine, size)) == NULL)
     return NULL;
   *result = (MuonRecordSign) {
-    .as_sign.kind = MU_RECORD_SIGN, .argc = argc,
+    .as_sign.kind = MUON_RECORD_SIGN, .argc = argc,
   };
 
   for (size_t i = 0; i < argc; i++)
@@ -391,7 +391,7 @@ MuonVectorSign *mu_vector_sign(MuonEngine *engine, MuonSign *matter) {
   if ((result = node_allocate(engine, sizeof(MuonVectorSign))) == NULL)
     return NULL;
   *result = (MuonVectorSign) {
-    .as_sign.kind = MU_VECTOR_SIGN, .matter = matter,
+    .as_sign.kind = MUON_VECTOR_SIGN, .matter = matter,
   };
   return assign_node(engine, &result->as_node), result;
 }
@@ -406,7 +406,7 @@ MuonCoercionStmt *mu_coercion_stmt(
   if ((result = node_allocate(engine, sizeof(MuonCoercionStmt))) == NULL)
     return NULL;
   *result = (MuonCoercionStmt) {
-    .as_stmt.kind = MU_COERCION_STMT,
+    .as_stmt.kind = MUON_COERCION_STMT,
     .source = source,
     .target = target,
     .expr = expr,
@@ -421,7 +421,7 @@ MuonDatatypeOption *mu_datatype_option(MuonEngine *engine, MuonName *name) {
   if ((result = node_allocate(engine, sizeof(MuonDatatypeOption))) == NULL)
     return NULL;
   *result = (MuonDatatypeOption) {
-    .as_node.kind = MU_DATATYPE_OPTION_NODE, .name = name,
+    .as_node.kind = MUON_DATATYPE_OPTION_NODE, .name = name,
   };
   return assign_node(engine, &result->as_node), result;
 }
@@ -448,7 +448,7 @@ MuonDefineStmt *mu_define_stmt(
   if ((result = node_allocate(engine, sizeof(MuonDefineStmt))) == NULL)
     return NULL;
   *result = (MuonDefineStmt) {
-    .as_stmt.kind = MU_DEFINE_STMT, .name = name, .expr = expr,
+    .as_stmt.kind = MUON_DEFINE_STMT, .name = name, .expr = expr,
   };
   return assign_node(engine, &result->as_node), result;
 }
@@ -478,7 +478,7 @@ MuonDatatypeStmt *datatype_stmt_activate(
   }
 
   MuonDatatypeStmt source = {
-    .as_stmt.kind = MU_DATATYPE_STMT, .name = name, .argc = stmt->argc,
+    .as_stmt.kind = MUON_DATATYPE_STMT, .name = name, .argc = stmt->argc,
   };
   memcpy(stmt, &source, offsetof(MuonDatatypeStmt, argv));
   return assign_node(engine, &stmt->as_node), stmt;
@@ -493,7 +493,7 @@ MuonViewMember *mu_view_member(
   if ((result = node_allocate(engine, sizeof(MuonViewMember))) == NULL)
     return NULL;
   *result = (MuonViewMember) {
-    .as_node.kind = MU_EXPR_MEMBER_NODE, .name = name, .view = view,
+    .as_node.kind = MUON_EXPR_MEMBER_NODE, .name = name, .view = view,
     .announce_length = node_announce_length(&view->as_node),
   };
   return assign_node(engine, &result->as_node), result;
@@ -516,7 +516,7 @@ MuonVariableView *mu_variable_view(MuonEngine *engine, MuonName *name) {
   if ((result = node_allocate(engine, sizeof(MuonVariableView))) == NULL)
     return NULL;
   *result = (MuonVariableView) {
-    .as_view.kind = MU_VARIABLE_VIEW, .name = name,
+    .as_view.kind = MUON_VARIABLE_VIEW, .name = name,
   };
   return assign_node(engine, &result->as_node), result;
 }
@@ -549,7 +549,7 @@ MuonRecordView *record_view_activate(struct MuonRecordView *view) {
   }
 
   MuonRecordView source = {
-    .as_view.kind = MU_RECORD_VIEW, .argc = view->argc,
+    .as_view.kind = MUON_RECORD_VIEW, .argc = view->argc,
     .announce_length = announce_length,
   };
   memcpy(view, &source, offsetof(MuonRecordView, argv));
@@ -598,11 +598,11 @@ static inline int debug_node_coercion(MuonNode *node) {
 
 /// Emit debugging information on the abstract @a node to the debug stream
 void mu_node_debug(MuonNode *node) {  // NOLINT(misc-no-recursion)
-  // Kind -> Text, e.g. [MU_ACCESS_EXPR_NODE] = "AccessExpr"
+  // Kind -> Text, e.g. [MUON_ACCESS_EXPR_NODE] = "AccessExpr"
   static const char *const KIND_TEXT[] = {
-#define MU_EMIT(l, upper, title) [MU_##upper##_NODE] = #title,
-    MU_EACH_NODE_KIND(MU_EMIT)
-#undef MU_EMIT
+#define MUON_EMIT(l, upper, title) [MUON_##upper##_NODE] = #title,
+    MU_EACH_NODE_KIND(MUON_EMIT)
+#undef MUON_EMIT
   };
   const char *kind = KIND_TEXT[node->kind];
 

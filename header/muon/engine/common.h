@@ -1,5 +1,5 @@
-#ifndef MU_ENGINE_COMMON_H
-#define MU_ENGINE_COMMON_H
+#ifndef MUON_ENGINE_COMMON_H
+#define MUON_ENGINE_COMMON_H
 
 #include <stddef.h>
 
@@ -12,4 +12,4 @@ typedef struct {
   MuonName *name[256];
 } MuonEngine;
 
-#endif /* MU_ENGINE_COMMON_H */
+#endif /* MUON_ENGINE_COMMON_H */

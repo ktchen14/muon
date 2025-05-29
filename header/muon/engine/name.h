@@ -1,5 +1,5 @@
-#ifndef MU_ENGINE_NAME_H
-#define MU_ENGINE_NAME_H
+#ifndef MUON_ENGINE_NAME_H
+#define MUON_ENGINE_NAME_H
 
 #include "common.h"
 
@@ -37,4 +37,4 @@ MuonName *mu_name(
 
 void mu_name_debug(MuonName *name) __attribute__((nonnull));
 
-#endif /* MU_ENGINE_NAME_H */
+#endif /* MUON_ENGINE_NAME_H */

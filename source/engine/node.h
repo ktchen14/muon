@@ -1,5 +1,5 @@
-#ifndef MU_ENGINE_NODE_I
-#define MU_ENGINE_NODE_I
+#ifndef MUON_ENGINE_NODE_I
+#define MUON_ENGINE_NODE_I
 
 #include <muon/engine/node.h>  // IWYU pragma: export
 
@@ -11,13 +11,6 @@
 #include <assert.h>
 #include <stddef.h>
 
-/// @internal An enumeration over each kind of node, e.g. @c _access_expr_kind
-enum {
-#define MU_EMIT(lower, upper, t) _##lower##_kind = MU_##upper##_NODE,
-  MU_EACH_NODE_KIND(MU_EMIT)
-#undef MU_EMIT
-};
-
 typedef struct {
   MuonNode *anterior;
   size_t i;
@@ -26,9 +19,9 @@ typedef struct {
 typedef struct {
   NodeCursor cursor;
   _Alignas(union {
-#define MU_EMIT(lower, u, title) Muon##title lower;
-    MU_EACH_NODE_KIND(MU_EMIT)
-#undef MU_EMIT
+#define MUON_EMIT(lower, u, title) Muon##title lower;
+    MU_EACH_NODE_KIND(MUON_EMIT)
+#undef MUON_EMIT
   }) char data[];
 } NodeHeader;
 
@@ -71,16 +64,16 @@ static inline MuonNode *node_return(MuonNode *node) {
 /// Return the <em>i</em>th node in the abstract @a node
 static inline MuonNode *node_at(MuonNode *node, size_t i) {
   switch ON_ABSTRACT_OBJECT(node) {
-    case MU_ACCESS_EXPR:
-    case MU_BOOLEAN_EXPR:
-    case MU_INTEGER_EXPR:
-    case MU_NAME_EXPR:
-    case MU_NATIVE_EXPR:
-    case MU_BOOLEAN_SIGN:
-    case MU_INTEGER_SIGN:
-    case MU_NAME_SIGN:
-    case MU_DATATYPE_OPTION:
-    case MU_VARIABLE_VIEW:
+    case MUON_ACCESS_EXPR:
+    case MUON_BOOLEAN_EXPR:
+    case MUON_INTEGER_EXPR:
+    case MUON_NAME_EXPR:
+    case MUON_NATIVE_EXPR:
+    case MUON_BOOLEAN_SIGN:
+    case MUON_INTEGER_SIGN:
+    case MUON_NAME_SIGN:
+    case MUON_DATATYPE_OPTION:
+    case MUON_VARIABLE_VIEW:
       return NULL;
 
     case IS_CONCRETE_NODE(MuonCastExpr *nominate(cast_expr))
@@ -155,7 +148,7 @@ static inline size_t node_announce_length(MuonNode *node) {
     case IS_CONCRETE_NODE(MuonDatatypeStmt *nominate(datatype_stmt))
       return datatype_stmt->argc + 1;
 
-    case MU_DEFINE_STMT:
+    case MUON_DEFINE_STMT:
       return 1;
 
     case IS_CONCRETE_NODE(MuonViewMember *nominate(view_member))
@@ -164,7 +157,7 @@ static inline size_t node_announce_length(MuonNode *node) {
     case IS_CONCRETE_NODE(MuonRecordView *nominate(record_view))
       return record_view->announce_length;
 
-    case MU_VARIABLE_VIEW:
+    case MUON_VARIABLE_VIEW:
       return 1;
 
     default: return 0;
@@ -205,4 +198,4 @@ struct MuonRecordView *record_view_allocate(MuonEngine *engine, size_t argc)
 MuonRecordView *record_view_activate(struct MuonRecordView *view)
   __attribute__((nonnull));
 
-#endif /* MU_ENGINE_NODE_I */
+#endif /* MUON_ENGINE_NODE_I */

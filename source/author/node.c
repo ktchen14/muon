@@ -281,10 +281,10 @@ static LLVMValueRef define_stmt_emit(author_t *author, MuonDefineStmt *stmt) {
 
 LLVMValueRef node_emit(author_t *author, MuonNode *node) {
   switch ON_ABSTRACT_OBJECT(node) {
-#define MU_EMIT(lower, upper, title) case MU_##upper##_EXPR: \
+#define MUON_EMIT(lower, upper, title) case MUON_##upper##_EXPR: \
       return lower##_expr_emit(author, (Muon##title##Expr *) node);
-    MU_EACH_EXPR_KIND(MU_EMIT);
-#undef MU_EMIT
+    MU_EACH_EXPR_KIND(MUON_EMIT);
+#undef MUON_EMIT
 
     case IS_CONCRETE_NODE(MuonDefineStmt *nominate(define_stmt))
       return define_stmt_emit(author, define_stmt);
