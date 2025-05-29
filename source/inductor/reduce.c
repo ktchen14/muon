@@ -417,7 +417,7 @@ MuonType *reduce_node(induce_t *induce, MuonNode *root) {
 
     MuonCoercion *coercion;
     MuonType *target_type;
-    if ((coercion = evince_coercion(induce, node, &target_type)) == NULL)
+    if ((coercion = node_coercion(induce, node, &target_type)) == NULL)
       continue;
 
     MuonCoercion *result;
@@ -426,5 +426,5 @@ MuonType *reduce_node(induce_t *induce, MuonNode *root) {
     override_coercion(induce, node, result, target_type);
   } while ((node = node_return(node)) != NULL);
 
-  return evince_type(induce, root);
+  return node_type(induce, root);
 }

@@ -563,7 +563,7 @@ static inline void debug_node_type(MuonNode *node) {
     return;
 
   MuonType *type;
-  if ((type = evince_type(debug_induce, node)) == NULL)
+  if ((type = node_type(debug_induce, node)) == NULL)
     return;
 
   debug(" ∷ ");

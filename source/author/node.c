@@ -35,7 +35,7 @@ static LLVMValueRef evince_result(const author_t *author, MuonNode *node) {
 
 __attribute__((nonnull)) static LLVMValueRef access_expr_emit(
     author_t *author, MuonAccessExpr *expr) {
-  MuonType *lambda_type = evince_type(author->inductor, &expr->as_node);
+  MuonType *lambda_type = node_type(author->inductor, &expr->as_node);
   LLVMTypeRef lambda_ty;
   if ((lambda_ty = get_type(author, lambda_type)) == NULL)
     return NULL;
@@ -82,7 +82,7 @@ __attribute__((nonnull)) static LLVMValueRef invoke_expr_emit(
   LLVMValueRef operator = evince_result(author, operator_node);
 
   MuonType *operator_muon_type;
-  if ((operator_muon_type = evince_type(author->inductor, operator_node)) == NULL)
+  if ((operator_muon_type = node_type(author->inductor, operator_node)) == NULL)
     return NULL;
 
   LLVMTypeRef operator_type;
@@ -94,7 +94,7 @@ __attribute__((nonnull)) static LLVMValueRef invoke_expr_emit(
   LLVMValueRef argument_val = evince_result(author, argument);
 
   MuonType *argument_type;
-  if ((argument_type = evince_type(author->inductor, argument)) == NULL)
+  if ((argument_type = node_type(author->inductor, argument)) == NULL)
     return NULL;
 
   LLVMTypeRef argument_ty;
@@ -147,7 +147,7 @@ static LLVMValueRef native_expr_emit(author_t *author, MuonNativeExpr *expr) {
 
 __attribute__((nonnull))
 static LLVMValueRef record_expr_emit(author_t *author, MuonRecordExpr *expr) {
-  MuonType *type = evince_type(author->inductor, &expr->as_node);
+  MuonType *type = node_type(author->inductor, &expr->as_node);
   LLVMTypeRef ty;
   if ((ty = get_type(author, type)) == NULL)
     return NULL;
@@ -179,7 +179,7 @@ static LLVMValueRef switch_expr_emit(author_t *author, MuonSwitchExpr *expr) {
 
 __attribute__((nonnull))
 static LLVMValueRef vector_expr_emit(author_t *author, MuonVectorExpr *expr) {
-  MuonType *type = evince_type(author->inductor, &expr->as_node);
+  MuonType *type = node_type(author->inductor, &expr->as_node);
   MuonCoreType *vector_type = mu_type_cast(type, vector_type);
   assert(vector_type != NULL);
   assert(vector_type->core == vector_type->as_type.induce->vector_core);
@@ -309,7 +309,7 @@ LLVMModuleRef script_emit(author_t *author, MuonNode *root, const char *source_n
       MuonLambdaExpr *lambda_expr;
 
       if ((lambda_expr = mu_node_cast(next, lambda_expr)) != NULL) {
-        MuonType *lambda_type = evince_type(author->inductor, &lambda_expr->as_node);
+        MuonType *lambda_type = node_type(author->inductor, &lambda_expr->as_node);
         LLVMTypeRef lambda_ty;
         if ((lambda_ty = get_type(author, lambda_type)) == NULL)
           return NULL;
@@ -340,8 +340,8 @@ LLVMModuleRef script_emit(author_t *author, MuonNode *root, const char *source_n
 
     MuonCoercion *coercion;
     MuonType *target_type;
-    if ((coercion = evince_coercion(author->inductor, node, &target_type)) != NULL) {
-      MuonType *source_muon_type = evince_type(author->inductor, node);
+    if ((coercion = node_coercion(author->inductor, node, &target_type)) != NULL) {
+      MuonType *source_muon_type = node_type(author->inductor, node);
       LLVMTypeRef source_type = get_type(author, source_muon_type);
       assert(source_type != NULL);
 

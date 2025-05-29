@@ -72,7 +72,7 @@ induce_t *induce_initialize(
   __attribute__((nonnull));
 
 __attribute__((nonnull, pure, returns_nonnull))
-static inline MuonType *evince_type(
+static inline MuonType *node_type(
     const induce_t *induce, MuonNode *node) {
   assert(node->id < induce->node_length);
   induce_node_t result = induce->result[node->id];
@@ -81,7 +81,7 @@ static inline MuonType *evince_type(
 }
 
 __attribute__((nonnull(1, 2), pure))
-static inline MuonCoercion *evince_coercion(
+static inline MuonCoercion *node_coercion(
     const induce_t *induce, MuonNode *node, MuonType **target) {
   assert(node->id < induce->node_length);
   induce_node_t result = induce->result[node->id];
