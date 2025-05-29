@@ -72,7 +72,7 @@ struct author_t {
 };
 
 typedef struct {
-  const MuonType *source_type;
+  MuonType *source_type;
   LLVMValueRef source;
 } info_t;
 
@@ -80,7 +80,7 @@ author_t *author_initialize(
     author_t *author, const detect_result_t *detect, mu_inductor_t *inductor)
   __attribute__((nonnull));
 
-LLVMTypeRef get_type(author_t *author, const MuonType *root);
+LLVMTypeRef get_type(author_t *author, MuonType *root);
 LLVMModuleRef script_emit(
     author_t *author, MuonNode *root, const char *source_name);
 

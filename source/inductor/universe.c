@@ -17,7 +17,7 @@ universe_t *universe_initialize(universe_t *universe) {
 }
 
 type_edge_t *universe_search(
-    const universe_t *universe, const MuonType *source, const MuonType *target) {
+    const universe_t *universe, MuonType *source, MuonType *target) {
   for (size_t i = 0; i < universe->length; i++) {
     type_edge_t *edge = &universe->data[i];
     if (edge->source == source && edge->target == target)
@@ -26,7 +26,7 @@ type_edge_t *universe_search(
   return NULL;
 }
 
-type_edge_t *append_edge(universe_t *universe, const MuonType *source, const MuonType *target) {
+type_edge_t *append_edge(universe_t *universe, MuonType *source, MuonType *target) {
   if (universe->length >= universe->volume) {
     size_t volume = universe->volume;
     if (rare(__builtin_mul_overflow(volume, 2, &volume)))
@@ -50,7 +50,7 @@ type_edge_t *append_edge(universe_t *universe, const MuonType *source, const Muo
 }
 
 type_edge_t *edge_define(
-    universe_t *universe, const MuonType *source, const MuonType *target) {
+    universe_t *universe, MuonType *source, MuonType *target) {
   type_edge_t *result;
   if ((result = universe_search(universe, source, target)) != NULL)
     return result;

@@ -20,13 +20,13 @@ enum {
 };
 
 typedef struct {
-  const MuonType *anterior;
+  MuonType *anterior;
   size_t i : sizeof(size_t) * CHAR_BIT - 1;
   _Bool charge : 1;
 } type_cursor_t;
 
 typedef struct {
-  const MuonType *next;
+  MuonType *next;
   type_cursor_t cursor[2];
 
   // TODO
@@ -47,7 +47,7 @@ typedef struct {
 
 /// Return the header of the @a type
 __attribute__((const, nonnull, returns_nonnull))
-static inline type_header_t *type_header(const MuonType *type) {
+static inline type_header_t *type_header(MuonType *type) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-align"
 #pragma GCC diagnostic ignored "-Wcast-qual"
@@ -57,15 +57,15 @@ static inline type_header_t *type_header(const MuonType *type) {
 
 /// Return the cursor attached to the @a type
 __attribute__((const, nonnull, returns_nonnull))
-static inline type_cursor_t *type_cursor(const MuonType *type, _Bool charge) {
+static inline type_cursor_t *type_cursor(MuonType *type, _Bool charge) {
   return &type_header(type)->cursor[charge];
 }
 
 static _Thread_local _Bool charge;
 
 /// Continue into the type
-static inline const MuonType *type_continue(
-    const MuonType *type, const MuonType *next, _Bool next_charge) {
+static inline MuonType *type_continue(
+    MuonType *type, MuonType *next, _Bool next_charge) {
   type_cursor_t *cursor = type_cursor(next, next_charge);
   assert(cursor->anterior == NULL && cursor->i == 0);
   cursor->charge = charge;
@@ -76,18 +76,18 @@ static inline const MuonType *type_continue(
 
 /// Return from the type
 __attribute__((nonnull))
-static inline const MuonType *type_return(const MuonType *type) {
+static inline MuonType *type_return(MuonType *type) {
   type_cursor_t *cursor = type_cursor(type, charge);
   charge = cursor->charge;
-  const MuonType *anterior = cursor->anterior;
+  MuonType *anterior = cursor->anterior;
   *cursor = (type_cursor_t) {0};
   assert(anterior != NULL || charge == 0);
   return anterior;
 }
 
 /// Return the <em>i</em>th type in the abstract @a type
-static inline const MuonType *type_next(
-    const MuonType *type, _Bool *next_charge) {
+static inline MuonType *type_next(
+    MuonType *type, _Bool *next_charge) {
   type_cursor_t *cursor = type_cursor(type, charge);
   *next_charge = charge;
 
@@ -138,7 +138,7 @@ mu_scheme_type_t *scheme_type_allocate(induce_t *induce, size_t argc)
   __attribute__((malloc, nonnull));
 
 const mu_scheme_type_t *scheme_type_activate(
-    mu_scheme_type_t *type, const MuonType *matter)
+    mu_scheme_type_t *type, MuonType *matter)
   __attribute__((nonnull, warn_unused_result));
 
 mu_join_type_t *join_type_allocate(induce_t *induce, size_t argc)
@@ -147,12 +147,12 @@ mu_join_type_t *join_type_allocate(induce_t *induce, size_t argc)
 const mu_join_type_t *join_type_activate(mu_join_type_t *join)
   __attribute__((nonnull, warn_unused_result));
 
-void type_debug(const MuonType *type, _Bool expand)
+void type_debug(MuonType *type, _Bool expand)
   __attribute__((nonnull));
 
 __attribute__((nonnull))
-static inline const MuonType *assign_solution(
-    const mu_variable_type_t *variable_type, const MuonType *solution) {
+static inline MuonType *assign_solution(
+    const mu_variable_type_t *variable_type, MuonType *solution) {
   return ((mu_variable_type_t *) variable_type)->solution = solution;
 }
 

@@ -166,7 +166,7 @@ script_argv: {
 // ================================== Name ================================ {{{1
 
 name: NAME {
-  $$ = mu_name(syntax->engine, $1.length, $1.c);
+  $$ = muon_name(syntax->engine, $1.length, $1.c);
 }
 
 // ================================== Expr ================================ {{{1
@@ -184,49 +184,49 @@ expr: '(' expr[matter] ')' { $$ = $matter; } |
   vector_expr  { $$ = &$vector_expr->as_expr; }
 
 access_expr: '.' name %prec '.' {
-  $$ = mu_access_expr(syntax->engine, $name);
+  $$ = muon_access_expr(syntax->engine, $name);
 }
 
 boolean_expr: BOOLEAN_LITERAL {
-  $$ = mu_boolean_expr(syntax->engine, $1);
+  $$ = muon_boolean_expr(syntax->engine, $1);
 }
 
 cast_expr: expr[matter] _ CAST _ sign %prec CAST {
-  $$ = mu_cast_expr(syntax->engine, $sign, $matter);
+  $$ = muon_cast_expr(syntax->engine, $sign, $matter);
 }
 
 integer_expr: INTEGER_LITERAL {
-  $$ = mu_integer_expr(syntax->engine, $1);
+  $$ = muon_integer_expr(syntax->engine, $1);
 }
 
 invoke_expr: expr[operator] _ expr[argument] %prec ' ' {
-  $$ = mu_invoke_expr(syntax->engine, $operator, $argument);
+  $$ = muon_invoke_expr(syntax->engine, $operator, $argument);
 
 } | expr[argument] access_expr[operator] %prec '.' {
-  $$ = mu_invoke_expr(syntax->engine, &$operator->as_expr, $argument);
+  $$ = muon_invoke_expr(syntax->engine, &$operator->as_expr, $argument);
 }
 
 lambda_expr: "lambda" _ view[argument] _ '=' _ expr[matter] %prec LAMBDA {
-  $$ = mu_lambda_expr(syntax->engine, $argument, $matter);
+  $$ = muon_lambda_expr(syntax->engine, $argument, $matter);
 }
 
 name_expr: name {
-  $$ = mu_name_expr(syntax->engine, $1);
+  $$ = muon_name_expr(syntax->engine, $1);
 }
 
 // --------------------------------- Record ------------------------------- {{{2
 
 expr_member: name ':' _ expr {
-  $$ = mu_expr_member(syntax->engine, $name, $expr);
+  $$ = muon_expr_member(syntax->engine, $name, $expr);
 }
 
 record_expr: '(' record_argv ')' {
   size_t i = $record_argv;
   syntax->expr_member_i -= i;
-  $$ = mu_record_expr(syntax->engine, i, &syntax->expr_member[syntax->expr_member_i]);
+  $$ = muon_record_expr(syntax->engine, i, &syntax->expr_member[syntax->expr_member_i]);
 
 } | '(' ')' {
-  $$ = mu_record_expr(syntax->engine, 0, NULL);
+  $$ = muon_record_expr(syntax->engine, 0, NULL);
 }
 
 record_argv: expr_member {
@@ -241,13 +241,13 @@ record_argv: expr_member {
 // --------------------------------- Switch ------------------------------- {{{2
 
 switch_case: "case" _ name _ '=' _ expr {
-  $$ = mu_switch_case(syntax->engine, $name, $expr);
+  $$ = muon_switch_case(syntax->engine, $name, $expr);
 }
 
 switch_expr: "switch" _ '(' switch_argv ')' {
   size_t i = $switch_argv;
   syntax->switch_case_i -= i;
-  $$ = mu_switch_expr(syntax->engine, i, &syntax->switch_case[syntax->switch_case_i]);
+  $$ = muon_switch_expr(syntax->engine, i, &syntax->switch_case[syntax->switch_case_i]);
 }
 
 switch_argv: switch_case {
@@ -264,10 +264,10 @@ switch_argv: switch_case {
 vector_expr: '[' vector_argv ']' {
   size_t i = $vector_argv;
   syntax->expr_i -= i;
-  $$ = mu_vector_expr(syntax->engine, i, &syntax->expr[syntax->expr_i]);
+  $$ = muon_vector_expr(syntax->engine, i, &syntax->expr[syntax->expr_i]);
 
 } | '[' ']' {
-  $$ = mu_vector_expr(syntax->engine, 0, NULL);
+  $$ = muon_vector_expr(syntax->engine, 0, NULL);
 }
 
 vector_argv: expr {
@@ -289,23 +289,23 @@ sign: '(' sign[matter] ')' { $$ = $matter; } |
   vector_sign  { $$ = &$vector_sign->as_sign; }
 
 boolean_sign: "Boolean" {
-  $$ = mu_boolean_sign(syntax->engine);
+  $$ = muon_boolean_sign(syntax->engine);
 }
 
 integer_sign: "Integer" {
-  $$ = mu_integer_sign(syntax->engine);
+  $$ = muon_integer_sign(syntax->engine);
 }
 
 lambda_sign: sign[argument] _ TO _ sign[output] %prec TO {
-  $$ = mu_lambda_sign(syntax->engine, $argument, $output);
+  $$ = muon_lambda_sign(syntax->engine, $argument, $output);
 }
 
 name_sign: name {
-  $$ = mu_name_sign(syntax->engine, $name);
+  $$ = muon_name_sign(syntax->engine, $name);
 }
 
 vector_sign: '[' sign ']' {
-  $$ = mu_vector_sign(syntax->engine, $sign);
+  $$ = muon_vector_sign(syntax->engine, $sign);
 }
 
 // ================================== Stmt ================================ {{{1
@@ -318,7 +318,7 @@ stmt:
 datatype_stmt: "datatype" _ name _ '=' _ datatype_argv '\n' {
   size_t i = $datatype_argv;
   syntax->datatype_option_i -= i;
-  $$ = mu_datatype_stmt(syntax->engine, $name, i, &syntax->datatype_option[syntax->datatype_option_i]);
+  $$ = muon_datatype_stmt(syntax->engine, $name, i, &syntax->datatype_option[syntax->datatype_option_i]);
 }
 
 datatype_argv: datatype_option {
@@ -331,15 +331,15 @@ datatype_argv: datatype_option {
 }
 
 datatype_option: name {
-  $$ = mu_datatype_option(syntax->engine, $name);
+  $$ = muon_datatype_option(syntax->engine, $name);
 }
 
 coercion_stmt: "instance" _ sign[source] _ "<:" _ sign[target] _ '=' _ expr '\n' {
-  $$ = mu_coercion_stmt(syntax->engine, $source, $target, $expr);
+  $$ = muon_coercion_stmt(syntax->engine, $source, $target, $expr);
 }
 
 define_stmt: "define" _ name _ '=' _ expr '\n' {
-  $$ = mu_define_stmt(syntax->engine, $name, $expr);
+  $$ = muon_define_stmt(syntax->engine, $name, $expr);
 }
 
 // ================================== View ================================ {{{1
@@ -349,20 +349,20 @@ view: '(' view[matter] ')' { $$ = $matter; } |
   variable_view { $$ = &$variable_view->as_view; }
 
 view_member: name ':' _ view {
-  $$ = mu_view_member(syntax->engine, $name, $view);
+  $$ = muon_view_member(syntax->engine, $name, $view);
 
 } | name ':' {
-  MuonVariableView *view = mu_variable_view(syntax->engine, $name);
-  $$ = mu_view_member(syntax->engine, $name, &view->as_view);
+  MuonVariableView *view = muon_variable_view(syntax->engine, $name);
+  $$ = muon_view_member(syntax->engine, $name, &view->as_view);
 }
 
 record_view: '(' record_view_argv ')' {
   size_t i = $record_view_argv;
   syntax->view_member_i -= i;
-  $$ = mu_record_view(syntax->engine, i, &syntax->view_member[syntax->view_member_i]);
+  $$ = muon_record_view(syntax->engine, i, &syntax->view_member[syntax->view_member_i]);
 
 } | '(' ')' {
-  $$ = mu_record_view(syntax->engine, 0, NULL);
+  $$ = muon_record_view(syntax->engine, 0, NULL);
 }
 
 record_view_argv: view_member {
@@ -375,7 +375,7 @@ record_view_argv: view_member {
 }
 
 variable_view: name {
-  $$ = mu_variable_view(syntax->engine, $name);
+  $$ = muon_variable_view(syntax->engine, $name);
 }
 
 // ============================= Miscellaneous ============================ {{{1

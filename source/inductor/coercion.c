@@ -30,7 +30,7 @@ static inline mu_coercion_t *assign_coercion(
 }
 
 const mu_edge_coercion_t *mu_edge_coercion(
-    mu_inductor_t *inductor, const MuonType *target, const MuonType *source) {
+    mu_inductor_t *inductor, MuonType *target, MuonType *source) {
   mu_edge_coercion_t *result;
   if ((result = malloc(sizeof(mu_edge_coercion_t))) == NULL)
     return NULL;
@@ -57,7 +57,7 @@ const mu_indirect_coercion_t *mu_indirect_coercion(
 
 const mu_instance_coercion_t *mu_instance_coercion(
     mu_inductor_t *inductor,
-    const MuonType *target,
+    MuonType *target,
     const mu_instance_t *instance) {
   mu_instance_coercion_t *result;
   if ((result = malloc(sizeof(mu_instance_coercion_t))) == NULL)
@@ -71,7 +71,7 @@ const mu_instance_coercion_t *mu_instance_coercion(
 
 const mu_variance_coercion_t *mu_variance_coercion(
     mu_inductor_t *inductor,
-    const MuonType *target,
+    MuonType *target,
     const mu_core_t *core,
     const mu_coercion_t *argv[/* target->core->argc */]) {
   assert(core->argc == 0 || argv != NULL);
@@ -85,7 +85,7 @@ const mu_variance_coercion_t *mu_variance_coercion(
 }
 
 const mu_join_coercion_t *mu_join_coercion(
-    mu_inductor_t *inductor, const MuonType *target, size_t i) {
+    mu_inductor_t *inductor, MuonType *target, size_t i) {
   mu_join_coercion_t *result;
   if ((result = malloc(sizeof(mu_join_coercion_t))) == NULL)
     return NULL;
@@ -97,7 +97,7 @@ const mu_join_coercion_t *mu_join_coercion(
 
 const mu_unjoin_coercion_t *mu_unjoin_coercion(
     mu_inductor_t *inductor,
-    const MuonType *target,
+    MuonType *target,
     size_t argc,
     const mu_coercion_t *argv[/* argc */]) {
   assert(argc == 0 || argv != NULL);
@@ -112,7 +112,7 @@ const mu_unjoin_coercion_t *mu_unjoin_coercion(
 
 const mu_meet_coercion_t *mu_meet_coercion(
     mu_inductor_t *inductor,
-    const MuonType *target,
+    MuonType *target,
     size_t argc,
     const mu_coercion_t *argv[/* argc */]) {
   assert(argc == 0 || argv != NULL);
@@ -126,7 +126,7 @@ const mu_meet_coercion_t *mu_meet_coercion(
 }
 
 const mu_unmeet_coercion_t *mu_unmeet_coercion(
-    mu_inductor_t *inductor, const MuonType *target, size_t i) {
+    mu_inductor_t *inductor, MuonType *target, size_t i) {
   mu_unmeet_coercion_t *result;
   if ((result = malloc(sizeof(mu_unmeet_coercion_t))) == NULL)
     return NULL;
@@ -138,7 +138,7 @@ const mu_unmeet_coercion_t *mu_unmeet_coercion(
 }
 
 const mu_unscheme_coercion_t *mu_unscheme_coercion(
-    mu_inductor_t *inductor, const MuonType *target) {
+    mu_inductor_t *inductor, MuonType *target) {
   mu_unscheme_coercion_t *result;
   if ((result = malloc(sizeof(mu_unscheme_coercion_t))) == NULL)
     return NULL;
@@ -165,7 +165,7 @@ mu_variance_coercion_t *variance_coercion_allocate(
 }
 
 const mu_variance_coercion_t *variance_coercion_activate(
-    mu_variance_coercion_t *coercion, const MuonType *target) {
+    mu_variance_coercion_t *coercion, MuonType *target) {
   mu_inductor_t *inductor = unlock_inductor(&coercion->as_coercion);
 
   for (size_t i = 0; i < coercion->core->argc; i++) {
@@ -198,7 +198,7 @@ mu_unjoin_coercion_t *unjoin_coercion_allocate(
 }
 
 const mu_unjoin_coercion_t *unjoin_coercion_activate(
-    mu_unjoin_coercion_t *coercion, const MuonType *target) {
+    mu_unjoin_coercion_t *coercion, MuonType *target) {
   mu_inductor_t *inductor = unlock_inductor(&coercion->as_coercion);
 
   for (size_t i = 0; i < coercion->argc; i++) {
@@ -231,7 +231,7 @@ mu_meet_coercion_t *meet_coercion_allocate(
 }
 
 const mu_meet_coercion_t *meet_coercion_activate(
-    mu_meet_coercion_t *coercion, const MuonType *target) {
+    mu_meet_coercion_t *coercion, MuonType *target) {
   mu_inductor_t *inductor = unlock_inductor(&coercion->as_coercion);
 
   for (size_t i = 0; i < coercion->argc; i++) {

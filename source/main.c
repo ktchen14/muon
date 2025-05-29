@@ -25,15 +25,15 @@ int main(int argc, char *argv[argc]) {
     MU_EACH_EXPR_KIND(MU_EMIT);
 #undef MU_EMIT
 
-  const char *muon_name = argc > 0 ? argv[0] : "muon";
+  const char *main_name = argc > 0 ? argv[0] : "muon";
   if (argc < 2) {
-    fprintf(stderr, "Usage: %s source\n", muon_name);
+    fprintf(stderr, "Usage: %s source\n", main_name);
     return EXIT_FAILURE;
   }
 
   FILE *stream;
   if ((stream = fopen(argv[1], "r")) == NULL) {
-    fprintf(stderr, "%s: fopen(): %s\n", muon_name, strerror(errno));
+    fprintf(stderr, "%s: fopen(): %s\n", main_name, strerror(errno));
     goto except_fopen;
   }
 
@@ -47,7 +47,7 @@ int main(int argc, char *argv[argc]) {
   mu_script_t *script;
 
   if ((script = mu_read_script(&engine, &status, buffer)) == NULL) {
-    fprintf(stderr, "%s: mu_read_script(): %s\n", muon_name, strerror(errno));
+    fprintf(stderr, "%s: mu_read_script(): %s\n", main_name, strerror(errno));
     goto except_read_script;
   }
 

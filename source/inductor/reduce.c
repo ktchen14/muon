@@ -19,8 +19,8 @@ const mu_coercion_t *reduce_coercion(
 __attribute__((nonnull, pure))
 const mu_coercion_t *mu_edge_coercion_reload(
     const universe_t *universe, const mu_edge_coercion_t *coercion) {
-  const MuonType *source = coercion->source;
-  const MuonType *target = coercion->as_coercion.target;
+  MuonType *source = coercion->source;
+  MuonType *target = coercion->as_coercion.target;
 
   type_edge_t *edge = universe_search(universe, source, target);
   assert(edge != NULL);
@@ -48,9 +48,9 @@ const mu_coercion_t *mu_edge_coercion_reload(
 void *redirect_source(
     induce_t *induce,
     type_edge_t *origin,
-    const MuonType *center,
+    MuonType *center,
     const mu_coercion_t *coercion) {
-  const MuonType *source = origin->source;
+  MuonType *source = origin->source;
 
   universe_iterator_t it;
   it = universe_iterator(&induce->universe, origin->target, 1);
@@ -126,17 +126,17 @@ const void *reduce_type_to_join(
   // Determine the length of the join to allocate as the number of remaining
   // types that aren't variable types and are sources to the variable type.
   type_edge_t *single_edge;
-  const MuonType *single_a;
+  MuonType *single_a;
   size_t argc = 0;
   it = universe_iterator(universe, &target->as_type, 0);
   for (type_edge_t *a_edge; (a_edge = universe_next(&it)) != NULL;) {
-    const MuonType *a;
+    MuonType *a;
     if (a_edge->indirect || (a = a_edge->source)->kind == MU_VARIABLE_TYPE)
       continue;
 
     universe_iterator_t jt = it;
     for (type_edge_t *b_edge; (b_edge = universe_next(&jt)) != NULL;) {
-      const MuonType *b;
+      MuonType *b;
       if (b_edge->indirect || (b = b_edge->source)->kind == MU_VARIABLE_TYPE)
         continue;
 
@@ -185,7 +185,7 @@ const void *reduce_type_to_join(
     edge_assign(single_edge, induce->id_coercion);
 
     // Assign α ⇝ β to each ⟨target ⇒ β⟩
-    const MuonType *solution = single_a;
+    MuonType *solution = single_a;
     it = universe_iterator(universe, &target->as_type, 1);
     for (type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
       type_edge_t *e;
@@ -246,8 +246,8 @@ const mu_coercion_t *reduce_coercion(
       if ((next_coercion = mu_edge_coercion_reload(&induce->universe, edge_coercion)) != NULL)
         return reduce_coercion(induce, next_coercion);
 
-      const MuonType *source = edge_coercion->source;
-      const MuonType *target = edge_coercion->as_coercion.target;
+      MuonType *source = edge_coercion->source;
+      MuonType *target = edge_coercion->as_coercion.target;
 
       assert(target->kind == MU_VARIABLE_TYPE || source->kind == MU_VARIABLE_TYPE);
 
@@ -410,7 +410,7 @@ const mu_coercion_t *reduce_coercion(
   __builtin_unreachable();
 }
 
-const MuonType *reduce_node(induce_t *induce, MuonNode *root) {
+MuonType *reduce_node(induce_t *induce, MuonNode *root) {
   assert(root->id < induce->node_length);
 
   MuonNode *node = root, *next;
@@ -419,7 +419,7 @@ const MuonType *reduce_node(induce_t *induce, MuonNode *root) {
       node = node_continue(node, next);
 
     const mu_coercion_t *coercion;
-    const MuonType *target_type;
+    MuonType *target_type;
     if ((coercion = evince_coercion(induce, node, &target_type)) == NULL)
       continue;
 
