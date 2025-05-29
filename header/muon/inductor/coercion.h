@@ -38,42 +38,42 @@ typedef const struct MuonCoercion {
 /// The header that each concrete coercion must have
 #define MU_COERCION_HEADER struct MuonCoercion as_coercion
 
-typedef struct {
+typedef struct MuonIdCoercion {
   MU_COERCION_HEADER;
 } MuonIdCoercion;
 
 typedef struct MuonEdgeCoercion MuonEdgeCoercion;
 
-typedef struct {
+typedef struct MuonIndirectCoercion {
   MU_COERCION_HEADER;
   MuonCoercion *head;
   MuonCoercion *tail;
 } MuonIndirectCoercion;
 
-typedef struct {
+typedef struct MuonInstanceCoercion {
   MU_COERCION_HEADER;
   const mu_instance_t *instance;
 } MuonInstanceCoercion;
 
-typedef struct {
+typedef struct MuonVarianceCoercion {
   MU_COERCION_HEADER;
   const mu_core_t *core;
   MuonCoercion *argv[/* target->core->argc */];
 } MuonVarianceCoercion;
 
-typedef struct {
+typedef struct MuonSlotCoercion {
   MU_COERCION_HEADER;
 } MuonSlotCoercion;
 
 /// Coercion of τ to a join type with τ at discriminant @c i
-typedef struct {
+typedef struct MuonJoinCoercion {
   MU_COERCION_HEADER;
   size_t i;
 } MuonJoinCoercion;
 
 /// Coercion of a join type to type τ. Each coercion in argv specifies the
 /// coercion to use for that discriminant.
-typedef struct {
+typedef struct MuonUnjoinCoercion {
   MU_COERCION_HEADER;
   size_t argc;
   MuonCoercion *argv[/* argc */];
@@ -81,20 +81,20 @@ typedef struct {
 
 /// Coercion of τ to a meet type. Each coercion in argv specifies the coercion
 /// of τ to the type at that location.
-typedef struct {
+typedef struct MuonMeetCoercion {
   MU_COERCION_HEADER;
   size_t argc;
   MuonCoercion *argv[/* argc */];
 } MuonMeetCoercion;
 
 /// Coercion of a meet type to type τ, where τ is at index @a i in the meet type
-typedef struct {
+typedef struct MuonUnmeetCoercion {
   MU_COERCION_HEADER;
   size_t i;
 } MuonUnmeetCoercion;
 
 /// Coercion of a scheme type to an instance of its type
-typedef struct {
+typedef struct MuonUnschemeCoercion {
   MU_COERCION_HEADER;
 } MuonUnschemeCoercion;
 
