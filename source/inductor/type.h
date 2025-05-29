@@ -12,13 +12,6 @@
 #include <limits.h>
 #include <stddef.h>
 
-/// @internal An enumeration over each kind of type, e.g. @c _core_type_kind
-enum {
-#define MU_EMIT(lower, upper, t) _##lower##_type_kind = MU_##upper##_TYPE,
-  MU_EACH_TYPE_KIND(MU_EMIT)
-#undef MU_EMIT
-};
-
 #define INTERNAL_IS_CONCRETE_TYPE(type, name) \
   MU_TYPE_ENUMERATOR(type):; __typeof__(type) name = _object;
 
@@ -28,13 +21,13 @@ enum {
 
 typedef struct {
   MuonType *anterior;
-  size_t i : sizeof(size_t) * CHAR_BIT - 1;
   _Bool charge : 1;
-} type_cursor_t;
+  size_t i : sizeof(size_t) * CHAR_BIT - 1;
+} TypeCursor;
 
 typedef struct {
   MuonType *next;
-  type_cursor_t cursor[2];
+  TypeCursor cursor[2];
 
   // TODO
   union {
@@ -50,21 +43,21 @@ typedef struct {
     MU_EACH_TYPE_KIND(MU_EMIT)
 #undef MU_EMIT
   }) char data[];
-} type_header_t;
+} TypeHeader;
 
 /// Return the header of the @a type
 __attribute__((const, nonnull, returns_nonnull))
-static inline type_header_t *type_header(MuonType *type) {
+static inline TypeHeader *type_header(MuonType *type) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-align"
 #pragma GCC diagnostic ignored "-Wcast-qual"
-  return (type_header_t *) ((char *) type - offsetof(type_header_t, data));
+  return (TypeHeader *) ((char *) type - offsetof(TypeHeader, data));
 #pragma GCC diagnostic pop
 }
 
 /// Return the cursor attached to the @a type
 __attribute__((const, nonnull, returns_nonnull))
-static inline type_cursor_t *type_cursor(MuonType *type, _Bool charge) {
+static inline TypeCursor *type_cursor(MuonType *type, _Bool charge) {
   return &type_header(type)->cursor[charge];
 }
 
@@ -73,7 +66,7 @@ static _Thread_local _Bool charge;
 /// Continue into the type
 static inline MuonType *type_continue(
     MuonType *type, MuonType *next, _Bool next_charge) {
-  type_cursor_t *cursor = type_cursor(next, next_charge);
+  TypeCursor *cursor = type_cursor(next, next_charge);
   assert(cursor->anterior == NULL && cursor->i == 0);
   cursor->charge = charge;
   charge = next_charge;
@@ -84,10 +77,10 @@ static inline MuonType *type_continue(
 /// Return from the type
 __attribute__((nonnull))
 static inline MuonType *type_return(MuonType *type) {
-  type_cursor_t *cursor = type_cursor(type, charge);
+  TypeCursor *cursor = type_cursor(type, charge);
   charge = cursor->charge;
   MuonType *anterior = cursor->anterior;
-  *cursor = (type_cursor_t) {0};
+  *cursor = (TypeCursor) {0};
   assert(anterior != NULL || charge == 0);
   return anterior;
 }
@@ -95,11 +88,11 @@ static inline MuonType *type_return(MuonType *type) {
 /// Return the <em>i</em>th type in the abstract @a type
 static inline MuonType *type_next(
     MuonType *type, _Bool *next_charge) {
-  type_cursor_t *cursor = type_cursor(type, charge);
+  TypeCursor *cursor = type_cursor(type, charge);
   *next_charge = charge;
 
   switch ON_ABSTRACT_OBJECT(type) {
-    case IS_CONCRETE_TYPE(const MuonCoreType *nominate(core_type)) {
+    case IS_CONCRETE_TYPE(MuonCoreType *nominate(core_type)) {
       const mu_core_t *core = core_type->core;
 
       if (cursor->i >= core->argc)
@@ -112,12 +105,12 @@ static inline MuonType *type_next(
       return core_type->argv[cursor->i++];
     }
 
-    case IS_CONCRETE_TYPE(const MuonSchemeType *nominate(scheme_type))
+    case IS_CONCRETE_TYPE(MuonSchemeType *nominate(scheme_type))
       if (cursor->i > 0)
         return NULL;
       return cursor->i++, scheme_type->matter;
 
-    case IS_CONCRETE_TYPE(const MuonJoinType *nominate(join_type))
+    case IS_CONCRETE_TYPE(MuonJoinType *nominate(join_type))
       assert(charge == 0);
       return cursor->i < join_type->argc ? join_type->argv[cursor->i++] : NULL;
 
@@ -135,23 +128,23 @@ static inline MuonType *type_next(
   __builtin_unreachable();
 }
 
-MuonCoreType *core_type_allocate(induce_t *induce, const mu_core_t *core)
+struct MuonCoreType *core_type_allocate(induce_t *induce, const mu_core_t *core)
   __attribute__((malloc, nonnull));
 
-const MuonCoreType *core_type_activate(MuonCoreType *type)
+MuonCoreType *core_type_activate(struct MuonCoreType *type)
   __attribute__((nonnull, warn_unused_result));
 
-MuonSchemeType *scheme_type_allocate(induce_t *induce, size_t argc)
+struct MuonSchemeType *scheme_type_allocate(induce_t *induce, size_t argc)
   __attribute__((malloc, nonnull));
 
-const MuonSchemeType *scheme_type_activate(
-    MuonSchemeType *type, MuonType *matter)
+MuonSchemeType *scheme_type_activate(
+    struct MuonSchemeType *type, MuonType *matter)
   __attribute__((nonnull, warn_unused_result));
 
-MuonJoinType *join_type_allocate(induce_t *induce, size_t argc)
+struct MuonJoinType *join_type_allocate(induce_t *induce, size_t argc)
   __attribute__((malloc, nonnull));
 
-const MuonJoinType *join_type_activate(MuonJoinType *join)
+MuonJoinType *join_type_activate(struct MuonJoinType *join)
   __attribute__((nonnull, warn_unused_result));
 
 void type_debug(MuonType *type, _Bool expand)
@@ -159,8 +152,8 @@ void type_debug(MuonType *type, _Bool expand)
 
 __attribute__((nonnull))
 static inline MuonType *assign_solution(
-    const MuonVariableType *variable_type, MuonType *solution) {
-  return ((MuonVariableType *) variable_type)->solution = solution;
+    MuonVariableType *variable_type, MuonType *solution) {
+  return ((struct MuonVariableType *) variable_type)->solution = solution;
 }
 
 #endif /* MU_INDUCTOR_TYPE_I */

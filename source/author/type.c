@@ -22,18 +22,18 @@ static LLVMTypeRef evince_result(const author_t *author, MuonType *type) {
 
 /// @internal Return @c i1
 __attribute__((nonnull)) static LLVMTypeRef boolean_type_emit(
-    author_t *author, const MuonCoreType *type) {
+    author_t *author, MuonCoreType *type) {
   return author->bool_type;
 }
 
 /// @internal Return @c i64
 __attribute__((nonnull)) static LLVMTypeRef integer_type_emit(
-    author_t *author, const MuonCoreType *type) {
+    author_t *author, MuonCoreType *type) {
   return LLVMInt64Type();
 }
 
 __attribute__((nonnull)) static LLVMTypeRef lambda_type_emit(
-    author_t *author, const MuonCoreType *type) {
+    author_t *author, MuonCoreType *type) {
   LLVMTypeRef argument_type = evince_result(author, type->argv[0]);
   LLVMTypeRef output_type = evince_result(author, type->argv[1]);
   return LLVMFunctionType(output_type, &argument_type, 1, 0);
@@ -42,7 +42,7 @@ __attribute__((nonnull)) static LLVMTypeRef lambda_type_emit(
 /// @internal Return <tt>{ ... }</tt> where each type in ... is the type of the
 /// argument in @c type->argv at the same index.
 __attribute__((nonnull)) static LLVMTypeRef record_type_emit(
-    author_t *author, const MuonCoreType *type) {
+    author_t *author, MuonCoreType *type) {
   const mu_core_t *core = type->core;
 
   unsigned int argc;
@@ -77,17 +77,17 @@ __attribute__((nonnull)) static LLVMTypeRef record_type_emit(
 
 /// @internal Return <tt>{ i64, ptr }</tt>
 __attribute__((nonnull)) static LLVMTypeRef vector_type_emit(
-    author_t *author, const MuonCoreType *type) {
+    author_t *author, MuonCoreType *type) {
   return author->vector_type;
 }
 
 __attribute__((nonnull)) static LLVMTypeRef custom_type_emit(
-    author_t *author, const MuonCoreType *type) {
+    author_t *author, MuonCoreType *type) {
   return LLVMInt64Type();
 }
 
 __attribute__((nonnull)) static LLVMTypeRef join_type_emit(
-    author_t *author, const MuonJoinType *type) {
+    author_t *author, MuonJoinType *type) {
   if (type->argc == 0)
     abort();
 
@@ -138,7 +138,7 @@ __attribute__((nonnull)) static LLVMTypeRef join_type_emit(
 __attribute__((nonnull)) static LLVMTypeRef type_emit(
     author_t *author, MuonType *type) {
   switch ON_ABSTRACT_OBJECT(type) {
-    case IS_CONCRETE_TYPE(const MuonCoreType *nominate(core_type))
+    case IS_CONCRETE_TYPE(MuonCoreType *nominate(core_type))
       switch (core_type->core->kind) {
         case MU_BOOLEAN_CORE:
           return boolean_type_emit(author, core_type);
@@ -163,11 +163,11 @@ __attribute__((nonnull)) static LLVMTypeRef type_emit(
     case MU_SCHEME_TYPE:
       abort();
 
-    case IS_CONCRETE_TYPE(const MuonVariableType *nominate(variable_type))
+    case IS_CONCRETE_TYPE(MuonVariableType *nominate(variable_type))
       assert(variable_type->solution != NULL);
       return type_emit(author, variable_type->solution);
 
-    case IS_CONCRETE_TYPE(const MuonJoinType *nominate(join_type))
+    case IS_CONCRETE_TYPE(MuonJoinType *nominate(join_type))
       return join_type_emit(author, join_type);
   }
   __builtin_unreachable();
