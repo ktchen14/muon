@@ -41,3 +41,5 @@ define result = handle_list [1, 2, 3]
 
 # define z = sw2 1
 # define y = sw2 true
+
+define az = [1, 2, 3, 4, 5]
