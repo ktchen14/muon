@@ -8,7 +8,7 @@
 #include <stddef.h>
 #include <string.h>
 
-MuonName *mu_name(
+MuonName *muon_name(
     MuonEngine *engine,
     size_t length,
     const mu_char8_t text[restrict static length]) {
@@ -37,6 +37,6 @@ MuonName *mu_name(
   return engine->name[engine->name_number++] = name;
 }
 
-void mu_name_debug(MuonName *name) {
+void muon_name_debug(MuonName *name) {
   debug(PRIsNAME, DEBUG_NAME(name));
 }

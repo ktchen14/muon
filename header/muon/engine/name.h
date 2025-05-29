@@ -29,12 +29,12 @@ typedef const struct MuonName {
  * The actual @a text of the name must be a null terminated string in UTF-8
  * encoding.
  */
-MuonName *mu_name(
+MuonName *muon_name(
     MuonEngine *engine,
     size_t length,
     const mu_char8_t text[restrict static length])
   __attribute__((nonnull));
 
-void mu_name_debug(MuonName *name) __attribute__((nonnull));
+void muon_name_debug(MuonName *name) __attribute__((nonnull));
 
 #endif /* MUON_ENGINE_NAME_H */

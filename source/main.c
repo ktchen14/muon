@@ -51,13 +51,13 @@ int main(int argc, char *argv[argc]) {
     goto except_read_script;
   }
 
-  vector_access = mu_name(&engine, strlen("handle_list"), (mu_char8_t[]) { "handle_list" });
+  vector_access = muon_name(&engine, strlen("handle_list"), (mu_char8_t[]) { "handle_list" });
   assert(vector_access != NULL);
 
-  MuonNativeExpr *vector_access_expr = mu_native_expr(&engine, vector_access);
+  MuonNativeExpr *vector_access_expr = muon_native_expr(&engine, vector_access);
   assert(vector_access_expr != NULL);
 
-  MuonDefineStmt *define_vector_access = mu_define_stmt(
+  MuonDefineStmt *define_vector_access = muon_define_stmt(
       &engine, vector_access, &vector_access_expr->as_expr);
   assert(define_vector_access != NULL);
 
@@ -91,7 +91,7 @@ int main(int argc, char *argv[argc]) {
   mu_debug_colorize = 1;
   debug_induce = &induce;
 
-  mu_node_debug(&sequence_expr->as_node);
+  muon_node_debug(&sequence_expr->as_node);
 
   if (getenv("DOT") != NULL) {
     FILE *output = fopen("out.dot", "w");

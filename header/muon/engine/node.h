@@ -236,54 +236,54 @@ typedef const struct MuonVectorExpr {
   MuonExpr *argv[/* argc */];
 } MuonVectorExpr;
 
-MuonAccessExpr *mu_access_expr(MuonEngine *engine, MuonName *name)
+MuonAccessExpr *muon_access_expr(MuonEngine *engine, MuonName *name)
   __attribute__((malloc, nonnull));
 
-MuonBooleanExpr *mu_boolean_expr(MuonEngine *engine, _Bool data)
+MuonBooleanExpr *muon_boolean_expr(MuonEngine *engine, _Bool data)
   __attribute__((malloc, nonnull));
 
-MuonCastExpr *mu_cast_expr(
+MuonCastExpr *muon_cast_expr(
     MuonEngine *engine, MuonSign *sign, MuonExpr *matter)
   __attribute__((malloc, nonnull));
 
-MuonIntegerExpr *mu_integer_expr(MuonEngine *engine, uint64_t data)
+MuonIntegerExpr *muon_integer_expr(MuonEngine *engine, uint64_t data)
   __attribute__((malloc, nonnull));
 
-MuonInvokeExpr *mu_invoke_expr(
+MuonInvokeExpr *muon_invoke_expr(
     MuonEngine *engine, MuonExpr *operator, MuonExpr *argument)
   __attribute__((malloc, nonnull));
 
-MuonLambdaExpr *mu_lambda_expr(
+MuonLambdaExpr *muon_lambda_expr(
     MuonEngine *engine, MuonView *argument, MuonExpr *matter)
   __attribute__((malloc, nonnull));
 
-MuonNameExpr *mu_name_expr(MuonEngine *engine, MuonName *name)
+MuonNameExpr *muon_name_expr(MuonEngine *engine, MuonName *name)
   __attribute__((malloc, nonnull));
 
-MuonNativeExpr *mu_native_expr(MuonEngine *engine, MuonName *name)
+MuonNativeExpr *muon_native_expr(MuonEngine *engine, MuonName *name)
   __attribute__((malloc, nonnull));
 
-MuonExprMember *mu_expr_member(
+MuonExprMember *muon_expr_member(
     MuonEngine *engine, MuonName *name, MuonExpr *expr)
   __attribute__((malloc, nonnull));
 
-MuonRecordExpr *mu_record_expr(
+MuonRecordExpr *muon_record_expr(
     MuonEngine *engine, size_t argc, MuonExprMember *argv[/* argc */])
   __attribute__((malloc, nonnull(1)));
 
-MuonSwitchCase *mu_switch_case(
+MuonSwitchCase *muon_switch_case(
     MuonEngine *engine, MuonName *name, MuonExpr *expr)
   __attribute__((malloc, nonnull));
 
-MuonSwitchExpr *mu_switch_expr(
+MuonSwitchExpr *muon_switch_expr(
     MuonEngine *engine, size_t argc, MuonSwitchCase *const argv[argc])
   __attribute__((malloc, nonnull));
 
-MuonSequenceExpr *mu_sequence_expr(
+MuonSequenceExpr *muon_sequence_expr(
     MuonEngine *engine, size_t argc, MuonStmt *const argv[argc])
   __attribute__((malloc, nonnull));
 
-MuonVectorExpr *mu_vector_expr(
+MuonVectorExpr *muon_vector_expr(
     MuonEngine *engine, size_t argc, MuonExpr *const argv[/* argc */])
   __attribute__((malloc, nonnull(1)));
 
@@ -327,24 +327,24 @@ typedef const struct MuonVectorSign {
   MuonSign *matter;
 } MuonVectorSign;
 
-MuonBooleanSign *mu_boolean_sign(MuonEngine *engine)
+MuonBooleanSign *muon_boolean_sign(MuonEngine *engine)
   __attribute__((malloc, nonnull));
 
-MuonIntegerSign *mu_integer_sign(MuonEngine *engine)
+MuonIntegerSign *muon_integer_sign(MuonEngine *engine)
   __attribute__((malloc, nonnull));
 
-MuonLambdaSign *mu_lambda_sign(
+MuonLambdaSign *muon_lambda_sign(
     MuonEngine *engine, MuonSign *argument, MuonSign *output)
   __attribute__((malloc, nonnull));
 
-MuonNameSign *mu_name_sign(MuonEngine *engine, MuonName *name)
+MuonNameSign *muon_name_sign(MuonEngine *engine, MuonName *name)
   __attribute__((malloc, nonnull));
 
-MuonRecordSign *mu_record_sign(
+MuonRecordSign *muon_record_sign(
     MuonEngine *engine, size_t argc, const MuonSignMember argv[/* argc */])
   __attribute__((malloc, nonnull(1)));
 
-MuonVectorSign *mu_vector_sign(MuonEngine *engine, MuonSign *matter)
+MuonVectorSign *muon_vector_sign(MuonEngine *engine, MuonSign *matter)
   __attribute__((malloc, nonnull));
 
 /// The header that each concrete stmt must have
@@ -384,21 +384,21 @@ typedef const struct MuonDefineStmt {
   MuonExpr *expr;
 } MuonDefineStmt;
 
-MuonCoercionStmt *mu_coercion_stmt(
+MuonCoercionStmt *muon_coercion_stmt(
     MuonEngine *engine, MuonSign *source, MuonSign *target, MuonExpr *expr)
   __attribute__((malloc, nonnull));
 
-MuonDatatypeOption *mu_datatype_option(MuonEngine *engine, MuonName *name)
+MuonDatatypeOption *muon_datatype_option(MuonEngine *engine, MuonName *name)
   __attribute__((malloc, nonnull));
 
-MuonDatatypeStmt *mu_datatype_stmt(
+MuonDatatypeStmt *muon_datatype_stmt(
     MuonEngine *engine,
     MuonName *name,
     size_t argc,
     MuonDatatypeOption *argv[/* argc */])
   __attribute__((malloc, nonnull(1, 2)));
 
-MuonDefineStmt *mu_define_stmt(
+MuonDefineStmt *muon_define_stmt(
     MuonEngine *engine, MuonName *name, MuonExpr *expr)
   __attribute__((malloc, nonnull));
 
@@ -426,19 +426,19 @@ typedef const struct MuonVariableView {
   MuonName *name;
 } MuonVariableView;
 
-MuonViewMember *mu_view_member(
+MuonViewMember *muon_view_member(
     MuonEngine *engine, MuonName *name, MuonView *view)
   __attribute__((malloc, nonnull));
 
-MuonRecordView *mu_record_view(
+MuonRecordView *muon_record_view(
     MuonEngine *engine, size_t argc, MuonViewMember *argv[/* argc */])
   __attribute__((malloc, nonnull(1)));
 
-MuonVariableView *mu_variable_view(MuonEngine *engine, MuonName *name)
+MuonVariableView *muon_variable_view(MuonEngine *engine, MuonName *name)
   __attribute__((malloc, nonnull));
 
 /// Emit debugging information on the abstract @a node to the debug stream
-void mu_node_debug(MuonNode *node) __attribute__((nonnull));
+void muon_node_debug(MuonNode *node) __attribute__((nonnull));
 
 /// @internal Used to emit each branch in MU_NODE_ENUMERATOR()
 #define MU_NODE_ENUMERATOR_EMIT(l, upper, title) \

@@ -239,7 +239,7 @@ static void type_debug_internal(const mu_type_t *type, _Bool expand, unsigned ch
           for (size_t i = 0; i < core->argc; i++) {
             if (i > 0)
               debug(", ");
-            mu_name_debug(core->argv[i].name);
+            muon_name_debug(core->argv[i].name);
             debug(": ");
             type_debug_internal(core_type->argv[i], expand, 0, 0);
           }

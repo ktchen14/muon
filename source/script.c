@@ -26,7 +26,7 @@ mu_script_t *mu_script(size_t argc, MuonStmt *argv[argc]) {
 
 MuonSequenceExpr *mu_script_to_sequence_expr(
     MuonEngine *engine, const mu_script_t *script) {
-  return mu_sequence_expr(engine, script->argc, script->argv);
+  return muon_sequence_expr(engine, script->argc, script->argv);
 }
 
 MuonSequenceExpr *mu_script_to_sequence_expr_with_prefix(
@@ -54,6 +54,6 @@ void mu_script_debug(const mu_script_t *script) {
 
   WITH_DEBUG_INDENT() {
     for (size_t i = 0; i < script->argc; i++)
-      mu_node_debug(&script->argv[i]->as_node);
+      muon_node_debug(&script->argv[i]->as_node);
   }
 }
