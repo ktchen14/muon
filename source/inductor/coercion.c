@@ -53,11 +53,16 @@ MuonEdgeCoercion *mu_edge_coercion(
 
 MuonIndirectCoercion *mu_indirect_coercion(
     mu_inductor_t *inductor, MuonCoercion *head, MuonCoercion *tail) {
+  MuonType *target = tail->target;
+  // This can be NULL if the tail is an ID coercion
+  if (target == NULL)
+    target = head->target;
+
   struct MuonIndirectCoercion *result;
   if ((result = malloc(sizeof(MuonIndirectCoercion))) == NULL)
     return NULL;
   *result = (MuonIndirectCoercion) {
-    .as_coercion = { .kind = MU_INDIRECT_COERCION },
+    .as_coercion = { .kind = MU_INDIRECT_COERCION, .target = target },
     .head = head,
     .tail = tail,
   };

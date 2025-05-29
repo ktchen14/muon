@@ -416,14 +416,13 @@ MuonType *reduce_node(induce_t *induce, MuonNode *root) {
       node = node_continue(node, next);
 
     MuonCoercion *coercion;
-    MuonType *target_type;
-    if ((coercion = node_coercion(induce, node, &target_type)) == NULL)
+    if ((coercion = node_coercion(induce, node)) == NULL)
       continue;
 
     MuonCoercion *result;
     if ((result = reduce_coercion(induce, coercion)) == NULL)
       return NULL;
-    override_coercion(induce, node, result, target_type);
+    override_coercion(induce, node, result);
   } while ((node = node_return(node)) != NULL);
 
   return node_type(induce, root);

@@ -17,7 +17,6 @@
 typedef struct {
   MuonCoercion *coercion;
   MuonType *source_type;
-  MuonType *target_type;
 } induce_node_t;
 
 typedef struct mu_scheme_t mu_scheme_t;
@@ -80,24 +79,21 @@ static inline MuonType *node_type(
   return result.source_type;
 }
 
-__attribute__((nonnull(1, 2), pure))
+__attribute__((nonnull, pure))
 static inline MuonCoercion *node_coercion(
-    const induce_t *induce, MuonNode *node, MuonType **target) {
+    const induce_t *induce, MuonNode *node) {
   assert(node->id < induce->node_length);
   induce_node_t result = induce->result[node->id];
-  if (target != NULL)
-    *target = result.target_type;
   return result.coercion;
 }
 
 __attribute__((nonnull))
 static inline void override_coercion(
-    induce_t *induce, MuonNode *node, MuonCoercion *coercion, MuonType *target) {
+    induce_t *induce, MuonNode *node, MuonCoercion *coercion) {
   assert(node->engine == induce->engine);
   assert(node->id < induce->node_length);
   induce_node_t *result = &induce->result[node->id];
   result->coercion = coercion;
-  result->target_type = target;
 }
 
 
@@ -114,18 +110,13 @@ static inline void override_coercion(
  */
 __attribute__((nonnull))
 static inline void assign_coercion_to_node(
-    induce_t *induce,
-    MuonNode *node,
-    MuonCoercion *coercion,
-    MuonType *target) {
+    induce_t *induce, MuonNode *node, MuonCoercion *coercion) {
   assert(node->engine == induce->engine);
   assert(node->id < induce->node_length);
 
   induce_node_t *result = &induce->result[node->id];
   assert(result->coercion == NULL);
-  assert(result->target_type == NULL);
   result->coercion = coercion;
-  result->target_type = target;
 }
 
 /**

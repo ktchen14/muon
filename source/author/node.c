@@ -339,13 +339,12 @@ LLVMModuleRef script_emit(author_t *author, MuonNode *root, const char *source_n
     author->node_to_value[node->id] = result;
 
     MuonCoercion *coercion;
-    MuonType *target_type;
-    if ((coercion = node_coercion(author->inductor, node, &target_type)) != NULL) {
+    if ((coercion = node_coercion(author->inductor, node)) != NULL) {
       MuonType *source_muon_type = node_type(author->inductor, node);
       LLVMTypeRef source_type = get_type(author, source_muon_type);
       assert(source_type != NULL);
 
-      MuonType *target_muon_type = target_type;
+      MuonType *target_muon_type = coercion->target;
       LLVMTypeRef target_type = get_type(author, target_muon_type);
       assert(target_type != NULL);
 

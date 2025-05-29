@@ -576,9 +576,8 @@ static inline int debug_node_coercion(MuonNode *node) {
   if (debug_induce == NULL)
     return debug_indent;
 
-  induce_node_t result = debug_induce->result[node->id];
   MuonCoercion *coercion;
-  if ((coercion = result.coercion) == NULL)
+  if ((coercion = node_coercion(debug_induce, node)) == NULL)
     return debug_indent;
 
   if (coercion->kind == MU_ID_COERCION)
@@ -587,8 +586,8 @@ static inline int debug_node_coercion(MuonNode *node) {
   debug("%*s", debug_indent, "");
   mu_coercion_debug(coercion);
   debug(" ∷ ");
-  type_debug(result.target_type, 0);
-  debug(" #%zu", result.target_type->id);
+  type_debug(coercion->target, 0);
+  debug(" #%zu", coercion->target->id);
 
   debug("\n");
 

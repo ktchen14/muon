@@ -85,7 +85,7 @@ __attribute__((nonnull)) static MuonType *cast_expr_return(
   MuonCoercion *coercion;
   if ((coercion = ensure_coercion(induce, matter_type, sign_type)) == NULL)
     return NULL;
-  assign_coercion_to_node(induce, &expr->matter->as_node, coercion, sign_type);
+  assign_coercion_to_node(induce, &expr->matter->as_node, coercion);
 
   return sign_type;
 }
@@ -117,7 +117,7 @@ __attribute__((nonnull)) static MuonType *invoke_expr_return(
   MuonCoercion *coercion;
   if ((coercion = ensure_coercion(induce, operator_type, target)) == NULL)
     return NULL;
-  assign_coercion_to_node(induce, &expr->operator->as_node, coercion, target);
+  assign_coercion_to_node(induce, &expr->operator->as_node, coercion);
 
   return &result->as_type;
 }
@@ -219,7 +219,7 @@ __attribute__((nonnull)) static MuonType *switch_expr_return(
     MuonCoercion *coercion;
     if ((coercion = ensure_coercion(induce, type, &result->as_type)) == NULL)
       return NULL;
-    assign_coercion_to_node(induce, &expr->argv[i]->as_node, coercion, &result->as_type);
+    assign_coercion_to_node(induce, &expr->argv[i]->as_node, coercion);
   }
 
   return &result->as_type;
@@ -245,7 +245,7 @@ __attribute__((nonnull)) static MuonType *vector_expr_return(
     MuonCoercion *coercion;
     if ((coercion = ensure_coercion(induce, type, &matter_type->as_type)) == NULL)
       return NULL;
-    assign_coercion_to_node(induce, &expr->argv[i]->as_node, coercion, &matter_type->as_type);
+    assign_coercion_to_node(induce, &expr->argv[i]->as_node, coercion);
   }
 
   MuonCoreType *result;
@@ -317,7 +317,7 @@ __attribute__((nonnull)) static MuonType *coercion_stmt_return(
   MuonCoercion *coercion;
   if ((coercion = ensure_coercion(induce, expr_type, &lambda_type->as_type)) == NULL)
     return NULL;
-  assign_coercion_to_node(induce, &stmt->expr->as_node, coercion, &lambda_type->as_type);
+  assign_coercion_to_node(induce, &stmt->expr->as_node, coercion);
 
   MuonCoreType *source_core_type = mu_type_cast(source_type, source_core_type);
   assert(source_core_type != NULL);
