@@ -90,8 +90,7 @@ void *redirect_source(
   return induce;
 }
 
-const void *reduce_type_to_join(
-    induce_t *induce, MuonVariableType *target) {
+const void *reduce_type_to_join(induce_t *induce, MuonVariableType *target) {
   if (target->solution != NULL)
     return target->solution;
 
