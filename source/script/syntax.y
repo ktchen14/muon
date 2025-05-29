@@ -9,19 +9,23 @@
 typedef struct {
   MuonEngine *engine;
   mu_script_t *script;
-  mu_stmt_t *stmt[256];
+
+  MuonStmt *stmt[256];
   size_t stmt_i;
-  mu_expr_t *expr[800];
+
+  MuonExpr *expr[800];
   size_t expr_i;
-  const mu_expr_member_t *expr_member[800];
+
+  MuonExprMember *expr_member[800];
   size_t expr_member_i;
-  const mu_view_member_t *view_member[800];
+
+  MuonViewMember *view_member[800];
   size_t view_member_i;
 
-  const mu_switch_case_t *switch_case[800];
+  MuonSwitchCase *switch_case[800];
   size_t switch_case_i;
 
-  const mu_datatype_option_t *datatype_option[200];
+  MuonDatatypeOption *datatype_option[200];
   size_t datatype_option_i;
 } syntax_t;
 }
@@ -48,12 +52,12 @@ typedef struct {
   size_t i;
 
   MuonName *name;
-  mu_expr_t *expr;
-  mu_sign_t *sign;
-  mu_stmt_t *stmt;
-  mu_view_t *view;
+  MuonExpr *expr;
+  MuonSign *sign;
+  MuonStmt *stmt;
+  MuonView *view;
 
-#define MU_EMIT(lower, u, t) const mu_##lower##_t *lower;
+#define MU_EMIT(lower, u, title) Muon##title *lower;
   MU_EACH_NODE_KIND(MU_EMIT)
 #undef MU_EMIT
 }
@@ -348,7 +352,7 @@ view_member: name ':' _ view {
   $$ = mu_view_member(syntax->engine, $name, $view);
 
 } | name ':' {
-  mu_variable_view_t *view = mu_variable_view(syntax->engine, $name);
+  MuonVariableView *view = mu_variable_view(syntax->engine, $name);
   $$ = mu_view_member(syntax->engine, $name, &view->as_view);
 }
 

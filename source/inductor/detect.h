@@ -10,7 +10,7 @@
 typedef struct {
   const MuonEngine *engine;
   size_t length;
-  mu_node_t *data[/* length */];
+  MuonNode *data[/* length */];
 } detect_result_t;
 
 typedef struct {
@@ -19,10 +19,10 @@ typedef struct {
 } detect_t;
 
 __attribute__((nonnull, pure))
-static inline mu_node_t *detect_evince(
-    const detect_result_t *detect, mu_node_t *node) {
+static inline MuonNode *detect_evince(
+    const detect_result_t *detect, MuonNode *node) {
   assert(node->id < detect->length);
-  mu_node_t *result = detect->data[node->id];
+  MuonNode *result = detect->data[node->id];
   assert(result != NULL);
   return result;
 }
@@ -36,6 +36,6 @@ detect_t *detect_initialize(
     detect_t *detect, const MuonEngine *engine, mu_status_t *status)
   __attribute__((nonnull));
 
-detect_t *detect_node(detect_t *detect, mu_node_t *node);
+detect_t *detect_node(detect_t *detect, MuonNode *node);
 
 #endif /* MU_INDUCTOR_DETECT_I */

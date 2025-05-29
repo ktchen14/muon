@@ -43,7 +43,7 @@ const mu_core_t *single_record_core(induce_t *induce, MuonName *name) {
 }
 
 const mu_instance_t *mu_instance(
-    const mu_core_t *source, const mu_core_t *target, mu_expr_t *expr) {
+    const mu_core_t *source, const mu_core_t *target, MuonExpr *expr) {
   mu_instance_t *instance;
   if ((instance = malloc(sizeof(mu_instance_t))) == NULL)
     return NULL;

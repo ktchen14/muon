@@ -54,18 +54,18 @@ int main(int argc, char *argv[argc]) {
   vector_access = mu_name(&engine, strlen("handle_list"), (mu_char8_t[]) { "handle_list" });
   assert(vector_access != NULL);
 
-  mu_native_expr_t *vector_access_expr = mu_native_expr(&engine, vector_access);
+  MuonNativeExpr *vector_access_expr = mu_native_expr(&engine, vector_access);
   assert(vector_access_expr != NULL);
 
-  mu_define_stmt_t *define_vector_access = mu_define_stmt(
+  MuonDefineStmt *define_vector_access = mu_define_stmt(
       &engine, vector_access, &vector_access_expr->as_expr);
   assert(define_vector_access != NULL);
 
-  mu_stmt_t *prefix[] = {
+  MuonStmt *prefix[] = {
     &define_vector_access->as_stmt,
   };
 
-  mu_sequence_expr_t *sequence_expr;
+  MuonSequenceExpr *sequence_expr;
   if ((sequence_expr = mu_script_to_sequence_expr_with_prefix(&engine, script, 1, prefix)) == NULL)
   // if ((sequence_expr = mu_script_to_sequence_expr(&engine, script)) == NULL)
     assert(0);

@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-mu_script_t *mu_script(size_t argc, mu_stmt_t *argv[argc]) {
+mu_script_t *mu_script(size_t argc, MuonStmt *argv[argc]) {
   size_t size;
   if (rare((size = struct_size(mu_script_t, argv, argc)) == 0))
     return errno = ENOMEM, NULL;
@@ -24,19 +24,19 @@ mu_script_t *mu_script(size_t argc, mu_stmt_t *argv[argc]) {
   return script;
 }
 
-mu_sequence_expr_t *mu_script_to_sequence_expr(
+MuonSequenceExpr *mu_script_to_sequence_expr(
     MuonEngine *engine, const mu_script_t *script) {
   return mu_sequence_expr(engine, script->argc, script->argv);
 }
 
-mu_sequence_expr_t *mu_script_to_sequence_expr_with_prefix(
+MuonSequenceExpr *mu_script_to_sequence_expr_with_prefix(
     MuonEngine *engine,
     const mu_script_t *script,
     size_t length,
-    mu_stmt_t *prefix[]) {
+    MuonStmt *prefix[]) {
   size_t argc = script->argc + length;
 
-  struct mu_sequence_expr_t *allocation;
+  struct MuonSequenceExpr *allocation;
   if ((allocation = sequence_expr_allocate(engine, argc)) == NULL)
     return NULL;
 
