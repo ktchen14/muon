@@ -651,11 +651,6 @@ induce_t *induce_initialize(
 
   size_t node_length = engine->node_number;
 
-  MuonType **node_to_type;
-  if ((node_to_type = malloc(sizeof(MuonType *[node_length]))) == NULL)
-    return NULL;
-  for (size_t i = 0; i < node_length; node_to_type[i++] = NULL);
-
   induce_node_t *result;
   if ((result = malloc(sizeof(induce_node_t[node_length]))) == NULL)
     return NULL;
