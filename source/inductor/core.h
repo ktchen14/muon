@@ -16,7 +16,7 @@ typedef struct {
   size_t argv[/* target->argc */];
 } record_instance_t;
 
-const mu_core_t *single_record_core(induce_t *induce, const mu_name_t *name)
+const mu_core_t *single_record_core(induce_t *induce, mu_name_t *name)
   __attribute__((malloc, nonnull));
 
 mu_core_t *record_core_allocate(induce_t *induce, size_t argc)

@@ -21,7 +21,7 @@ typedef enum {
 } mu_variance_t;
 
 typedef struct {
-  const mu_name_t *name;
+  mu_name_t *name;
   mu_variance_t variance;
 } mu_core_member_t;
 
@@ -30,7 +30,7 @@ typedef struct induce_t induce_t;
 typedef struct {
   mu_core_kind_t kind;
   const induce_t *induce;
-  const mu_name_t *name;
+  mu_name_t *name;
   size_t argc;
   mu_core_member_t argv[/* argc */];
 } mu_core_t;
@@ -42,7 +42,7 @@ typedef struct {
   const mu_expr_t *expr;
 } mu_instance_t;
 
-const mu_core_t *mu_simple_core(induce_t *induce, const mu_name_t *name);
+const mu_core_t *mu_simple_core(induce_t *induce, mu_name_t *name);
 
 const mu_instance_t *mu_instance(
     const mu_core_t *source, const mu_core_t *target, const mu_expr_t *expr)

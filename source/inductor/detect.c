@@ -10,7 +10,7 @@
 #include <stdlib.h>
 
 typedef struct {
-  const mu_name_t *name;
+  mu_name_t *name;
   const mu_node_t *node;
 } item_t;
 
@@ -56,7 +56,7 @@ static roster_t *roster_create(
 }
 
 __attribute__((nonnull))
-static const mu_node_t *roster_search(roster_t *roster, const mu_name_t *name) {
+static const mu_node_t *roster_search(roster_t *roster, mu_name_t *name) {
   do {
     for (size_t i = 0; i < roster->length; i++) {
       if (roster->data[i].name == name)
@@ -69,7 +69,7 @@ static const mu_node_t *roster_search(roster_t *roster, const mu_name_t *name) {
 
 __attribute__((nonnull))
 static inline void announce(
-    roster_t *roster, const mu_name_t *name, const mu_node_t *node) {
+    roster_t *roster, mu_name_t *name, const mu_node_t *node) {
   assert(roster->length < roster->volume);
   item_t item = { .name = name, .node = node };
   roster->data[roster->length++] = item;

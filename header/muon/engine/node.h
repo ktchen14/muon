@@ -133,7 +133,7 @@ typedef struct {
 
 typedef struct {
   MU_EXPR_HEADER;
-  const mu_name_t *name;
+  mu_name_t *name;
 } mu_access_expr_t;
 
 typedef struct {
@@ -166,17 +166,17 @@ typedef struct {
 
 typedef struct {
   MU_EXPR_HEADER;
-  const mu_name_t *name;
+  mu_name_t *name;
 } mu_name_expr_t;
 
 typedef struct {
   MU_EXPR_HEADER;
-  const mu_name_t *name;
+  mu_name_t *name;
 } mu_native_expr_t;
 
 typedef struct {
   MU_NODE_HEADER;
-  const mu_name_t *name; // optional
+  mu_name_t *name; // optional
   const mu_expr_t *expr;
 } mu_expr_member_t;
 
@@ -194,7 +194,7 @@ typedef struct {
 
 typedef struct {
   MU_NODE_HEADER;
-  const mu_name_t *name;
+  mu_name_t *name;
   const mu_expr_t *expr;
 } mu_switch_case_t;
 
@@ -211,7 +211,7 @@ typedef struct {
 } mu_vector_expr_t;
 
 const mu_access_expr_t *mu_access_expr(
-    mu_engine_t *engine, const mu_name_t *name)
+    mu_engine_t *engine, mu_name_t *name)
   __attribute__((malloc, nonnull));
 
 const mu_boolean_expr_t *mu_boolean_expr(mu_engine_t *engine, _Bool data)
@@ -232,15 +232,15 @@ const mu_lambda_expr_t *mu_lambda_expr(
     mu_engine_t *engine, const mu_view_t *argument, const mu_expr_t *matter)
   __attribute__((malloc, nonnull));
 
-const mu_name_expr_t *mu_name_expr(mu_engine_t *engine, const mu_name_t *name)
+const mu_name_expr_t *mu_name_expr(mu_engine_t *engine, mu_name_t *name)
   __attribute__((malloc, nonnull));
 
 const mu_native_expr_t *mu_native_expr(
-    mu_engine_t *engine, const mu_name_t *name)
+    mu_engine_t *engine, mu_name_t *name)
   __attribute__((malloc, nonnull));
 
 const mu_expr_member_t *mu_expr_member(
-    mu_engine_t *engine, const mu_name_t *name, const mu_expr_t *expr)
+    mu_engine_t *engine, mu_name_t *name, const mu_expr_t *expr)
   __attribute__((malloc, nonnull));
 
 const mu_record_expr_t *mu_record_expr(
@@ -248,7 +248,7 @@ const mu_record_expr_t *mu_record_expr(
   __attribute__((malloc, nonnull(1)));
 
 const mu_switch_case_t *mu_switch_case(
-    mu_engine_t *engine, const mu_name_t *name, const mu_expr_t *expr)
+    mu_engine_t *engine, mu_name_t *name, const mu_expr_t *expr)
   __attribute__((malloc, nonnull));
 
 const mu_switch_expr_t *mu_switch_expr(
@@ -282,11 +282,11 @@ typedef struct {
 
 typedef struct {
   MU_SIGN_HEADER;
-  const mu_name_t *name;
+  mu_name_t *name;
 } mu_name_sign_t;
 
 typedef struct {
-  const mu_name_t *name; // optional
+  mu_name_t *name; // optional
   const mu_sign_t *sign;
 } mu_sign_member_t;
 
@@ -311,7 +311,7 @@ const mu_lambda_sign_t *mu_lambda_sign(
     mu_engine_t *engine, const mu_sign_t *argument, const mu_sign_t *output)
   __attribute__((malloc, nonnull));
 
-const mu_name_sign_t *mu_name_sign(mu_engine_t *engine, const mu_name_t *name)
+const mu_name_sign_t *mu_name_sign(mu_engine_t *engine, mu_name_t *name)
   __attribute__((malloc, nonnull));
 
 const mu_record_sign_t *mu_record_sign(
@@ -334,26 +334,26 @@ typedef struct {
 
 typedef struct {
   MU_NODE_HEADER;
-  const mu_name_t *name;
+  mu_name_t *name;
   size_t argc;
-  const mu_name_t *argv[/* argc */];
+  mu_name_t *argv[/* argc */];
 } mu_type_node_t;
 
 typedef struct {
   MU_NODE_HEADER;
-  const mu_name_t *name;
+  mu_name_t *name;
 } mu_datatype_option_t;
 
 typedef struct {
   MU_STMT_HEADER;
-  const mu_name_t *name;
+  mu_name_t *name;
   size_t argc;
   const mu_datatype_option_t *argv[/* argc */];
 } mu_datatype_stmt_t;
 
 typedef struct {
   MU_STMT_HEADER;
-  const mu_name_t *name;
+  mu_name_t *name;
   const mu_expr_t *expr;
 } mu_define_stmt_t;
 
@@ -365,18 +365,18 @@ const mu_coercion_stmt_t *mu_coercion_stmt(
   __attribute__((malloc, nonnull));
 
 const mu_datatype_option_t *mu_datatype_option(
-    mu_engine_t *engine, const mu_name_t *name)
+    mu_engine_t *engine, mu_name_t *name)
   __attribute__((malloc, nonnull));
 
 const mu_datatype_stmt_t *mu_datatype_stmt(
     mu_engine_t *engine,
-    const mu_name_t *name,
+    mu_name_t *name,
     size_t argc,
     const mu_datatype_option_t *argv[/* argc */])
   __attribute__((malloc, nonnull(1, 2)));
 
 const mu_define_stmt_t *mu_define_stmt(
-    mu_engine_t *engine, const mu_name_t *name, const mu_expr_t *expr)
+    mu_engine_t *engine, mu_name_t *name, const mu_expr_t *expr)
   __attribute__((malloc, nonnull));
 
 /// The header that each concrete view must have
@@ -385,7 +385,7 @@ const mu_define_stmt_t *mu_define_stmt(
 typedef struct {
   MU_NODE_HEADER;
   size_t announce_length;
-  const mu_name_t *name; // optional
+  mu_name_t *name; // optional
   const mu_view_t *view;
 } mu_view_member_t;
 
@@ -398,11 +398,11 @@ typedef struct {
 
 typedef struct {
   MU_VIEW_HEADER;
-  const mu_name_t *name;
+  mu_name_t *name;
 } mu_variable_view_t;
 
 const mu_view_member_t *mu_view_member(
-    mu_engine_t *engine, const mu_name_t *name, const mu_view_t *view)
+    mu_engine_t *engine, mu_name_t *name, const mu_view_t *view)
   __attribute__((malloc, nonnull));
 
 const mu_record_view_t *mu_record_view(
@@ -410,7 +410,7 @@ const mu_record_view_t *mu_record_view(
   __attribute__((malloc, nonnull(1)));
 
 const mu_variable_view_t *mu_variable_view(
-    mu_engine_t *engine, const mu_name_t *name)
+    mu_engine_t *engine, mu_name_t *name)
   __attribute__((malloc, nonnull));
 
 /// Emit debugging information on the abstract @a node to the debug stream

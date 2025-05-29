@@ -177,7 +177,7 @@ __attribute__((nonnull)) static const mu_type_t *record_expr_induce(
     return NULL;
 
   for (size_t i = 0; i < expr->argc; i++) {
-    const mu_name_t *name = expr->argv[i]->name;
+    mu_name_t *name = expr->argv[i]->name;
 
     mu_core_member_t member = { .name = name };
     core_allocation->argv[i] = member;
@@ -378,7 +378,7 @@ __attribute__((nonnull)) static const mu_type_t *record_view_induce(
     return NULL;
 
   for (size_t i = 0; i < view->argc; i++) {
-    const mu_name_t *name = view->argv[i]->name;
+    mu_name_t *name = view->argv[i]->name;
 
     mu_core_member_t member = { .name = name };
     core_allocation->argv[i] = member;

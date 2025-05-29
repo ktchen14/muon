@@ -10,7 +10,7 @@
 
 /// Compare name @a a to name @a b
 __attribute__((nonnull, pure))
-static inline int name_cmp(const mu_name_t *a, const mu_name_t *b) {
+static inline int name_cmp(mu_name_t *a, mu_name_t *b) {
   int result;
   if ((result = memcmp(a->text, b->text, minimum(a->length, b->length))) != 0)
     return result;

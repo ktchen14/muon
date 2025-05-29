@@ -53,7 +53,7 @@ static inline mu_node_t *assign_node(mu_engine_t *engine, mu_node_t *node) {
 /* } */
 
 const mu_access_expr_t *mu_access_expr(
-    mu_engine_t *engine, const mu_name_t *name) {
+    mu_engine_t *engine, mu_name_t *name) {
   assert(name->engine == engine);
 
   mu_access_expr_t *result;
@@ -124,7 +124,7 @@ const mu_lambda_expr_t *mu_lambda_expr(
   return assign_node(engine, &result->as_node), result;
 }
 
-const mu_name_expr_t *mu_name_expr(mu_engine_t *engine, const mu_name_t *name) {
+const mu_name_expr_t *mu_name_expr(mu_engine_t *engine, mu_name_t *name) {
   assert(name->engine == engine);
 
   mu_name_expr_t *result;
@@ -135,7 +135,7 @@ const mu_name_expr_t *mu_name_expr(mu_engine_t *engine, const mu_name_t *name) {
 }
 
 const mu_native_expr_t *mu_native_expr(
-    mu_engine_t *engine, const mu_name_t *name) {
+    mu_engine_t *engine, mu_name_t *name) {
   assert(name->engine == engine);
 
   mu_native_expr_t *result;
@@ -148,7 +148,7 @@ const mu_native_expr_t *mu_native_expr(
 }
 
 const mu_expr_member_t *mu_expr_member(
-    mu_engine_t *engine, const mu_name_t *name, const mu_expr_t *expr) {
+    mu_engine_t *engine, mu_name_t *name, const mu_expr_t *expr) {
   assert(name == NULL || name->engine == engine);
   assert(expr->as_node.engine == engine);
 
@@ -174,7 +174,7 @@ const mu_record_expr_t *mu_record_expr(
 }
 
 const mu_switch_case_t *mu_switch_case(
-    mu_engine_t *engine, const mu_name_t *name, const mu_expr_t *expr) {
+    mu_engine_t *engine, mu_name_t *name, const mu_expr_t *expr) {
   assert(name->engine == engine);
   assert(expr->as_node.engine == engine);
 
@@ -344,7 +344,7 @@ const mu_lambda_sign_t *mu_lambda_sign(
   return assign_node(engine, &result->as_node), result;
 }
 
-const mu_name_sign_t *mu_name_sign(mu_engine_t *engine, const mu_name_t *name) {
+const mu_name_sign_t *mu_name_sign(mu_engine_t *engine, mu_name_t *name) {
   assert(name->engine == engine);
 
   mu_name_sign_t *result;
@@ -359,7 +359,7 @@ const mu_record_sign_t *mu_record_sign(
   assert(argc == 0 || argv != NULL);
 
   for (size_t i = 0; i < argc; i++) {
-    const mu_name_t *member_name = argv[i].name;
+    mu_name_t *member_name = argv[i].name;
     const mu_sign_t *member_sign = argv[i].sign;
     assert(member_name == NULL || member_name->engine == engine);
     assert(member_sign != NULL);
@@ -418,7 +418,7 @@ const mu_coercion_stmt_t *mu_coercion_stmt(
 }
 
 const mu_datatype_option_t *mu_datatype_option(
-    mu_engine_t *engine, const mu_name_t *name) {
+    mu_engine_t *engine, mu_name_t *name) {
   assert(name->engine == engine);
 
   mu_datatype_option_t *result;
@@ -432,7 +432,7 @@ const mu_datatype_option_t *mu_datatype_option(
 
 const mu_datatype_stmt_t *mu_datatype_stmt(
     mu_engine_t *engine,
-    const mu_name_t *name,
+    mu_name_t *name,
     size_t argc,
     const mu_datatype_option_t *argv[/* argc */]) {
   mu_datatype_stmt_t *result;
@@ -444,7 +444,7 @@ const mu_datatype_stmt_t *mu_datatype_stmt(
 }
 
 const mu_define_stmt_t *mu_define_stmt(
-    mu_engine_t *engine, const mu_name_t *name, const mu_expr_t *expr) {
+    mu_engine_t *engine, mu_name_t *name, const mu_expr_t *expr) {
   assert(name->engine == engine);
   assert(expr->as_node.engine == engine);
 
@@ -470,7 +470,7 @@ mu_datatype_stmt_t *datatype_stmt_allocate(mu_engine_t *engine, size_t argc) {
 }
 
 const mu_datatype_stmt_t *datatype_stmt_activate(
-    mu_datatype_stmt_t *stmt, const mu_name_t *name) {
+    mu_datatype_stmt_t *stmt, mu_name_t *name) {
   mu_engine_t *engine = unlock_engine(&stmt->as_node);
 
   assert(name->engine == engine);
@@ -488,7 +488,7 @@ const mu_datatype_stmt_t *datatype_stmt_activate(
 }
 
 const mu_view_member_t *mu_view_member(
-    mu_engine_t *engine, const mu_name_t *name, const mu_view_t *view) {
+    mu_engine_t *engine, mu_name_t *name, const mu_view_t *view) {
   assert(name == NULL || name->engine == engine);
   assert(view->as_node.engine == engine);
 
@@ -515,7 +515,7 @@ const mu_record_view_t *mu_record_view(
 }
 
 const mu_variable_view_t *mu_variable_view(
-    mu_engine_t *engine, const mu_name_t *name) {
+    mu_engine_t *engine, mu_name_t *name) {
   mu_variable_view_t *result;
   if ((result = node_allocate(engine, sizeof(mu_variable_view_t))) == NULL)
     return NULL;

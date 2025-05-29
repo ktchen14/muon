@@ -172,7 +172,7 @@ const mu_type_t *generalize_type(induce_t *induce, const mu_type_t *root)
 mu_scheme_t *mu_scheme(mu_scheme_t *parent)
   __attribute__((malloc));
 
-extern const mu_name_t *vector_access;
-extern const mu_name_t *vector_join;
+extern mu_name_t *vector_access;
+extern mu_name_t *vector_join;
 
 #endif /* MU_INDUCTOR_INDUCE_I */

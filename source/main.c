@@ -18,7 +18,7 @@
 
 unsigned char buffer[4096];
 
-const mu_name_t *vector_access;
+mu_name_t *vector_access;
 
 int main(int argc, char *argv[argc]) {
 #define MU_EMIT(lower, upper, t)

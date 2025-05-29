@@ -47,7 +47,7 @@ typedef struct {
 
   size_t i;
 
-  const mu_name_t *name;
+  mu_name_t *name;
   const mu_expr_t *expr;
   const mu_sign_t *sign;
   const mu_stmt_t *stmt;
