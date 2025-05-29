@@ -8,7 +8,7 @@
 
 #include <stddef.h>
 
-struct mu_edge_coercion_t {
+struct MuonEdgeCoercion {
   MU_COERCION_HEADER;
   MuonType *source;
 };
@@ -20,32 +20,39 @@ enum {
 #undef MU_EMIT
 };
 
-const mu_edge_coercion_t *mu_edge_coercion(
+#define INTERNAL_IS_CONCRETE_COERCION(type, name) \
+  MU_COERCION_ENUMERATOR(type):; __typeof__(type) name = _object;
+
+#define IS_CONCRETE_COERCION(...) INTERNAL_IS_CONCRETE_COERCION(__VA_ARGS__)
+
+#define nominate(name) , name
+
+const MuonEdgeCoercion *mu_edge_coercion(
     mu_inductor_t *inductor, MuonType *target, MuonType *source)
   __attribute__((malloc, nonnull));
 
-mu_variance_coercion_t *variance_coercion_allocate(
+MuonVarianceCoercion *variance_coercion_allocate(
     mu_inductor_t *inductor, const mu_core_t *core)
   __attribute__((malloc));
 
-const mu_variance_coercion_t *variance_coercion_activate(
-    mu_variance_coercion_t *coercion, MuonType *target)
+const MuonVarianceCoercion *variance_coercion_activate(
+    MuonVarianceCoercion *coercion, MuonType *target)
   __attribute__((nonnull));
 
-mu_unjoin_coercion_t *unjoin_coercion_allocate(
+MuonUnjoinCoercion *unjoin_coercion_allocate(
     mu_inductor_t *inductor, size_t argc)
   __attribute__((malloc));
 
-const mu_unjoin_coercion_t *unjoin_coercion_activate(
-    mu_unjoin_coercion_t *coercion, MuonType *target)
+const MuonUnjoinCoercion *unjoin_coercion_activate(
+    MuonUnjoinCoercion *coercion, MuonType *target)
   __attribute__((nonnull));
 
-mu_meet_coercion_t *meet_coercion_allocate(
+MuonMeetCoercion *meet_coercion_allocate(
     mu_inductor_t *inductor, size_t argc)
   __attribute__((malloc));
 
-const mu_meet_coercion_t *meet_coercion_activate(
-    mu_meet_coercion_t *coercion, MuonType *target)
+const MuonMeetCoercion *meet_coercion_activate(
+    MuonMeetCoercion *coercion, MuonType *target)
   __attribute__((nonnull));
 
 #endif /* MU_INDUCTOR_COERCION_I */

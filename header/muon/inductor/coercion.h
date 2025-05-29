@@ -40,36 +40,36 @@ typedef const struct MuonCoercion {
 
 typedef struct {
   MU_COERCION_HEADER;
-} mu_id_coercion_t;
+} MuonIdCoercion;
 
-typedef struct mu_edge_coercion_t mu_edge_coercion_t;
+typedef struct MuonEdgeCoercion MuonEdgeCoercion;
 
 typedef struct {
   MU_COERCION_HEADER;
   MuonCoercion *head;
   MuonCoercion *tail;
-} mu_indirect_coercion_t;
+} MuonIndirectCoercion;
 
 typedef struct {
   MU_COERCION_HEADER;
   const mu_instance_t *instance;
-} mu_instance_coercion_t;
+} MuonInstanceCoercion;
 
 typedef struct {
   MU_COERCION_HEADER;
   const mu_core_t *core;
   MuonCoercion *argv[/* target->core->argc */];
-} mu_variance_coercion_t;
+} MuonVarianceCoercion;
 
 typedef struct {
   MU_COERCION_HEADER;
-} mu_slot_coercion_t;
+} MuonSlotCoercion;
 
 /// Coercion of τ to a join type with τ at discriminant @c i
 typedef struct {
   MU_COERCION_HEADER;
   size_t i;
-} mu_join_coercion_t;
+} MuonJoinCoercion;
 
 /// Coercion of a join type to type τ. Each coercion in argv specifies the
 /// coercion to use for that discriminant.
@@ -77,7 +77,7 @@ typedef struct {
   MU_COERCION_HEADER;
   size_t argc;
   MuonCoercion *argv[/* argc */];
-} mu_unjoin_coercion_t;
+} MuonUnjoinCoercion;
 
 /// Coercion of τ to a meet type. Each coercion in argv specifies the coercion
 /// of τ to the type at that location.
@@ -85,75 +85,83 @@ typedef struct {
   MU_COERCION_HEADER;
   size_t argc;
   MuonCoercion *argv[/* argc */];
-} mu_meet_coercion_t;
+} MuonMeetCoercion;
 
 /// Coercion of a meet type to type τ, where τ is at index @a i in the meet type
 typedef struct {
   MU_COERCION_HEADER;
   size_t i;
-} mu_unmeet_coercion_t;
+} MuonUnmeetCoercion;
 
 /// Coercion of a scheme type to an instance of its type
 typedef struct {
   MU_COERCION_HEADER;
-} mu_unscheme_coercion_t;
+} MuonUnschemeCoercion;
 
 extern const void *const MU_NO_SUCH_COERCION;
 
-const mu_id_coercion_t *mu_id_coercion(
+const MuonIdCoercion *mu_id_coercion(
     mu_inductor_t *inductor, MuonType *target)
   __attribute__((malloc, nonnull));
 
-const mu_slot_coercion_t *mu_slot_coercion(
+const MuonSlotCoercion *mu_slot_coercion(
     mu_inductor_t *inductor, MuonType *target)
   __attribute__((malloc, nonnull));
 
-const mu_indirect_coercion_t *mu_indirect_coercion(
+const MuonIndirectCoercion *mu_indirect_coercion(
     mu_inductor_t *inductor,
     MuonCoercion *head, MuonCoercion *tail)
   __attribute__((malloc, nonnull));
 
-const mu_instance_coercion_t *mu_instance_coercion(
+const MuonInstanceCoercion *mu_instance_coercion(
     mu_inductor_t *inductor,
     MuonType *target,
     const mu_instance_t *instance)
   __attribute__((malloc, nonnull));
 
-const mu_variance_coercion_t *mu_variance_coercion(
+const MuonVarianceCoercion *mu_variance_coercion(
     mu_inductor_t *inductor,
     MuonType *target,
     const mu_core_t *core,
     MuonCoercion *argv[/* target->core->argc */])
   __attribute__((malloc, nonnull(1)));
 
-const mu_join_coercion_t *mu_join_coercion(
+const MuonJoinCoercion *mu_join_coercion(
     mu_inductor_t *inductor, MuonType *target, size_t i)
   __attribute__((malloc));
 
-const mu_unjoin_coercion_t *mu_unjoin_coercion(
+const MuonUnjoinCoercion *mu_unjoin_coercion(
     mu_inductor_t *inductor,
     MuonType *target,
     size_t argc,
     MuonCoercion *argv[/* argc */])
   __attribute__((malloc));
 
-const mu_meet_coercion_t *mu_meet_coercion(
+const MuonMeetCoercion *mu_meet_coercion(
     mu_inductor_t *inductor,
     MuonType *target,
     size_t argc,
     MuonCoercion *argv[/* argc */])
   __attribute__((malloc));
 
-const mu_unmeet_coercion_t *mu_unmeet_coercion(
+const MuonUnmeetCoercion *mu_unmeet_coercion(
     mu_inductor_t *inductor, MuonType *target, size_t i)
   __attribute__((malloc));
 
-const mu_unscheme_coercion_t *mu_unscheme_coercion(
+const MuonUnschemeCoercion *mu_unscheme_coercion(
     mu_inductor_t *inductor, MuonType *target)
   __attribute__((malloc));
 
 void mu_coercion_debug(MuonCoercion *coercion)
   __attribute__((nonnull));
+
+/// @internal Used to emit each branch in MU_COERCION_ENUMERATOR()
+#define MU_COERCION_ENUMERATOR_EMIT(l, upper, title) \
+  , const Muon##title##Coercion *: MU_##upper##_COERCION
+
+/// Return the enumerator indicative of the @a concrete coercion
+#define MU_COERCION_ENUMERATOR(concrete) \
+  _Generic((concrete) {0} MU_EACH_COERCION_KIND(MU_COERCION_ENUMERATOR_EMIT))
 
 /// @internal Used to emit each branch in mu_coercion_cast()
 #define MU_COERCION_CAST_EMIT(lower, upper, t) \

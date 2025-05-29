@@ -29,25 +29,25 @@ static inline MuonCoercion *assign_coercion(
   return coercion;
 }
 
-const mu_edge_coercion_t *mu_edge_coercion(
+const MuonEdgeCoercion *mu_edge_coercion(
     mu_inductor_t *inductor, MuonType *target, MuonType *source) {
-  mu_edge_coercion_t *result;
-  if ((result = malloc(sizeof(mu_edge_coercion_t))) == NULL)
+  MuonEdgeCoercion *result;
+  if ((result = malloc(sizeof(MuonEdgeCoercion))) == NULL)
     return NULL;
-  *result = (mu_edge_coercion_t) {
+  *result = (MuonEdgeCoercion) {
     .as_coercion = { .kind = MU_EDGE_COERCION, .target = target },
     .source = source,
   };
   return assign_coercion(inductor, &result->as_coercion), result;
 }
 
-const mu_indirect_coercion_t *mu_indirect_coercion(
+const MuonIndirectCoercion *mu_indirect_coercion(
     mu_inductor_t *inductor,
     MuonCoercion *head, MuonCoercion *tail) {
-  mu_indirect_coercion_t *result;
-  if ((result = malloc(sizeof(mu_indirect_coercion_t))) == NULL)
+  MuonIndirectCoercion *result;
+  if ((result = malloc(sizeof(MuonIndirectCoercion))) == NULL)
     return NULL;
-  *result = (mu_indirect_coercion_t) {
+  *result = (MuonIndirectCoercion) {
     .as_coercion = { .kind = MU_INDIRECT_COERCION },
     .head = head,
     .tail = tail,
@@ -55,28 +55,28 @@ const mu_indirect_coercion_t *mu_indirect_coercion(
   return assign_coercion(inductor, &result->as_coercion), result;
 }
 
-const mu_instance_coercion_t *mu_instance_coercion(
+const MuonInstanceCoercion *mu_instance_coercion(
     mu_inductor_t *inductor,
     MuonType *target,
     const mu_instance_t *instance) {
-  mu_instance_coercion_t *result;
-  if ((result = malloc(sizeof(mu_instance_coercion_t))) == NULL)
+  MuonInstanceCoercion *result;
+  if ((result = malloc(sizeof(MuonInstanceCoercion))) == NULL)
     return NULL;
-  *result = (mu_instance_coercion_t) {
+  *result = (MuonInstanceCoercion) {
     .as_coercion = { .kind = MU_INSTANCE_COERCION, .target = target },
     .instance = instance,
   };
   return assign_coercion(inductor, &result->as_coercion), result;
 }
 
-const mu_variance_coercion_t *mu_variance_coercion(
+const MuonVarianceCoercion *mu_variance_coercion(
     mu_inductor_t *inductor,
     MuonType *target,
     const mu_core_t *core,
     MuonCoercion *argv[/* target->core->argc */]) {
   assert(core->argc == 0 || argv != NULL);
 
-  mu_variance_coercion_t *allocation;
+  MuonVarianceCoercion *allocation;
   if ((allocation = variance_coercion_allocate(inductor, core)) == NULL)
     return NULL;
   for (size_t i = 0; i < core->argc; i++)
@@ -84,25 +84,25 @@ const mu_variance_coercion_t *mu_variance_coercion(
   return variance_coercion_activate(allocation, target);
 }
 
-const mu_join_coercion_t *mu_join_coercion(
+const MuonJoinCoercion *mu_join_coercion(
     mu_inductor_t *inductor, MuonType *target, size_t i) {
-  mu_join_coercion_t *result;
-  if ((result = malloc(sizeof(mu_join_coercion_t))) == NULL)
+  MuonJoinCoercion *result;
+  if ((result = malloc(sizeof(MuonJoinCoercion))) == NULL)
     return NULL;
-  *result = (mu_join_coercion_t) {
+  *result = (MuonJoinCoercion) {
     .as_coercion = { .kind = MU_JOIN_COERCION, .target = target }, .i = i,
   };
   return assign_coercion(inductor, &result->as_coercion), result;
 }
 
-const mu_unjoin_coercion_t *mu_unjoin_coercion(
+const MuonUnjoinCoercion *mu_unjoin_coercion(
     mu_inductor_t *inductor,
     MuonType *target,
     size_t argc,
     MuonCoercion *argv[/* argc */]) {
   assert(argc == 0 || argv != NULL);
 
-  mu_unjoin_coercion_t *allocation;
+  MuonUnjoinCoercion *allocation;
   if ((allocation = unjoin_coercion_allocate(inductor, argc)) == NULL)
     return NULL;
   for (size_t i = 0; i < argc; i++)
@@ -110,14 +110,14 @@ const mu_unjoin_coercion_t *mu_unjoin_coercion(
   return unjoin_coercion_activate(allocation, target);
 }
 
-const mu_meet_coercion_t *mu_meet_coercion(
+const MuonMeetCoercion *mu_meet_coercion(
     mu_inductor_t *inductor,
     MuonType *target,
     size_t argc,
     MuonCoercion *argv[/* argc */]) {
   assert(argc == 0 || argv != NULL);
 
-  mu_meet_coercion_t *allocation;
+  MuonMeetCoercion *allocation;
   if ((allocation = meet_coercion_allocate(inductor, argc)) == NULL)
     return NULL;
   for (size_t i = 0; i < argc; i++)
@@ -125,47 +125,47 @@ const mu_meet_coercion_t *mu_meet_coercion(
   return meet_coercion_activate(allocation, target);
 }
 
-const mu_unmeet_coercion_t *mu_unmeet_coercion(
+const MuonUnmeetCoercion *mu_unmeet_coercion(
     mu_inductor_t *inductor, MuonType *target, size_t i) {
-  mu_unmeet_coercion_t *result;
-  if ((result = malloc(sizeof(mu_unmeet_coercion_t))) == NULL)
+  MuonUnmeetCoercion *result;
+  if ((result = malloc(sizeof(MuonUnmeetCoercion))) == NULL)
     return NULL;
-  *result = (mu_unmeet_coercion_t) {
+  *result = (MuonUnmeetCoercion) {
     .as_coercion = { .kind = MU_UNMEET_COERCION, .target = target },
     .i = i,
   };
   return assign_coercion(inductor, &result->as_coercion), result;
 }
 
-const mu_unscheme_coercion_t *mu_unscheme_coercion(
+const MuonUnschemeCoercion *mu_unscheme_coercion(
     mu_inductor_t *inductor, MuonType *target) {
-  mu_unscheme_coercion_t *result;
-  if ((result = malloc(sizeof(mu_unscheme_coercion_t))) == NULL)
+  MuonUnschemeCoercion *result;
+  if ((result = malloc(sizeof(MuonUnschemeCoercion))) == NULL)
     return NULL;
-  *result = (mu_unscheme_coercion_t) {
+  *result = (MuonUnschemeCoercion) {
     .as_coercion = { .kind = MU_UNSCHEME_COERCION, .target = target },
   };
   return assign_coercion(inductor, &result->as_coercion), result;
 }
 
-mu_variance_coercion_t *variance_coercion_allocate(
+MuonVarianceCoercion *variance_coercion_allocate(
     mu_inductor_t *inductor, const mu_core_t *core) {
   size_t size;
-  if (rare((size = struct_size(mu_variance_coercion_t, argv, core->argc)) == 0))
+  if (rare((size = struct_size(MuonVarianceCoercion, argv, core->argc)) == 0))
     return errno = ENOMEM, NULL;
 
-  mu_variance_coercion_t *allocation;
+  MuonVarianceCoercion *allocation;
   if ((allocation = malloc(size)) == NULL)
     return NULL;
 
-  *allocation = (mu_variance_coercion_t) {
+  *allocation = (MuonVarianceCoercion) {
     .as_coercion.inductor = inductor, .core = core,
   };
   return allocation;
 }
 
-const mu_variance_coercion_t *variance_coercion_activate(
-    mu_variance_coercion_t *coercion, MuonType *target) {
+const MuonVarianceCoercion *variance_coercion_activate(
+    MuonVarianceCoercion *coercion, MuonType *target) {
   mu_inductor_t *inductor = unlock_inductor(&coercion->as_coercion);
 
   for (size_t i = 0; i < coercion->core->argc; i++) {
@@ -173,32 +173,32 @@ const mu_variance_coercion_t *variance_coercion_activate(
     assert(coercion->argv[i]->inductor == inductor);
   }
 
-  mu_variance_coercion_t source = {
+  MuonVarianceCoercion source = {
     .as_coercion = { .kind = MU_VARIANCE_COERCION, .target = target },
     .core = coercion->core,
   };
-  memcpy(coercion, &source, offsetof(mu_variance_coercion_t, argv));
+  memcpy(coercion, &source, offsetof(MuonVarianceCoercion, argv));
   return assign_coercion(inductor, &coercion->as_coercion), coercion;
 }
 
-mu_unjoin_coercion_t *unjoin_coercion_allocate(
+MuonUnjoinCoercion *unjoin_coercion_allocate(
     mu_inductor_t *inductor, size_t argc) {
   size_t size;
-  if (rare((size = struct_size(mu_unjoin_coercion_t, argv, argc)) == 0))
+  if (rare((size = struct_size(MuonUnjoinCoercion, argv, argc)) == 0))
     return errno = ENOMEM, NULL;
 
-  mu_unjoin_coercion_t *allocation;
+  MuonUnjoinCoercion *allocation;
   if ((allocation = malloc(size)) == NULL)
     return NULL;
 
-  *allocation = (mu_unjoin_coercion_t) {
+  *allocation = (MuonUnjoinCoercion) {
     .as_coercion.inductor = inductor, .argc = argc,
   };
   return allocation;
 }
 
-const mu_unjoin_coercion_t *unjoin_coercion_activate(
-    mu_unjoin_coercion_t *coercion, MuonType *target) {
+const MuonUnjoinCoercion *unjoin_coercion_activate(
+    MuonUnjoinCoercion *coercion, MuonType *target) {
   mu_inductor_t *inductor = unlock_inductor(&coercion->as_coercion);
 
   for (size_t i = 0; i < coercion->argc; i++) {
@@ -206,32 +206,32 @@ const mu_unjoin_coercion_t *unjoin_coercion_activate(
     assert(coercion->argv[i]->inductor == inductor);
   }
 
-  mu_unjoin_coercion_t source = {
+  MuonUnjoinCoercion source = {
     .as_coercion = { .kind = MU_UNJOIN_COERCION, .target = target },
     .argc = coercion->argc,
   };
-  memcpy(coercion, &source, offsetof(mu_unjoin_coercion_t, argv));
+  memcpy(coercion, &source, offsetof(MuonUnjoinCoercion, argv));
   return assign_coercion(inductor, &coercion->as_coercion), coercion;
 }
 
-mu_meet_coercion_t *meet_coercion_allocate(
+MuonMeetCoercion *meet_coercion_allocate(
     mu_inductor_t *inductor, size_t argc) {
   size_t size;
-  if (rare((size = struct_size(mu_meet_coercion_t, argv, argc)) == 0))
+  if (rare((size = struct_size(MuonMeetCoercion, argv, argc)) == 0))
     return errno = ENOMEM, NULL;
 
-  mu_meet_coercion_t *allocation;
+  MuonMeetCoercion *allocation;
   if ((allocation = malloc(size)) == NULL)
     return NULL;
 
-  *allocation = (mu_meet_coercion_t) {
+  *allocation = (MuonMeetCoercion) {
     .as_coercion.inductor = inductor, .argc = argc,
   };
   return allocation;
 }
 
-const mu_meet_coercion_t *meet_coercion_activate(
-    mu_meet_coercion_t *coercion, MuonType *target) {
+const MuonMeetCoercion *meet_coercion_activate(
+    MuonMeetCoercion *coercion, MuonType *target) {
   mu_inductor_t *inductor = unlock_inductor(&coercion->as_coercion);
 
   for (size_t i = 0; i < coercion->argc; i++) {
@@ -239,11 +239,11 @@ const mu_meet_coercion_t *meet_coercion_activate(
     assert(coercion->argv[i]->inductor == inductor);
   }
 
-  mu_meet_coercion_t source = {
+  MuonMeetCoercion source = {
     .as_coercion = { .kind = MU_MEET_COERCION, .target = target },
     .argc = coercion->argc,
   };
-  memcpy(coercion, &source, offsetof(mu_meet_coercion_t, argv));
+  memcpy(coercion, &source, offsetof(MuonMeetCoercion, argv));
   return assign_coercion(inductor, &coercion->as_coercion), coercion;
 }
 
@@ -265,7 +265,7 @@ void mu_coercion_debug(MuonCoercion *coercion) {
   switch ON_ABSTRACT_OBJECT(coercion) {
     case MU_ID_COERCION: return;
 
-    case IS_KIND_OF(edge_coercion): {
+    case IS_CONCRETE_COERCION(const MuonEdgeCoercion *nominate(edge_coercion)) {
       debug(PRIsKIND, DEBUG_COERCION_KIND("⟨"));
       type_debug(edge_coercion->source, 0);
       debug(" ");
@@ -276,7 +276,7 @@ void mu_coercion_debug(MuonCoercion *coercion) {
       return;
     }
 
-    case IS_KIND_OF(indirect_coercion):
+    case IS_CONCRETE_COERCION(const MuonIndirectCoercion *nominate(indirect_coercion))
       mu_coercion_debug(indirect_coercion->head);
       debug(" ");
       debug(PRIsKIND, DEBUG_COERCION_KIND("∘"));
@@ -284,11 +284,11 @@ void mu_coercion_debug(MuonCoercion *coercion) {
       mu_coercion_debug(indirect_coercion->tail);
       return;
 
-    case IS_KIND_OF(instance_coercion):
+    case IS_CONCRETE_COERCION(const MuonInstanceCoercion *nominate(instance_coercion))
       mu_instance_debug(instance_coercion->instance);
       return;
 
-    case IS_KIND_OF(variance_coercion):
+    case IS_CONCRETE_COERCION(const MuonVarianceCoercion *nominate(variance_coercion))
       debug("(");
       const mu_core_t *core = variance_coercion->core;
       mu_core_debug(core);
@@ -306,11 +306,11 @@ void mu_coercion_debug(MuonCoercion *coercion) {
     case MU_UNSCHEME_COERCION:
       return;
 
-    case IS_KIND_OF(join_coercion):
+    case IS_CONCRETE_COERCION(const MuonJoinCoercion *nominate(join_coercion))
       debug("(%zu)", join_coercion->i);
       return;
 
-    case IS_KIND_OF(unjoin_coercion):
+    case IS_CONCRETE_COERCION(const MuonUnjoinCoercion *nominate(unjoin_coercion))
       debug("(");
       for (size_t i = 0; i < unjoin_coercion->argc; i++) {
         if (i > 0)
@@ -320,7 +320,7 @@ void mu_coercion_debug(MuonCoercion *coercion) {
       debug(")");
       return;
 
-    case IS_KIND_OF(meet_coercion):
+    case IS_CONCRETE_COERCION(const MuonMeetCoercion *nominate(meet_coercion))
       debug("(");
       for (size_t i = 0; i < meet_coercion->argc; i++) {
         if (i > 0)
@@ -330,7 +330,7 @@ void mu_coercion_debug(MuonCoercion *coercion) {
       debug(")");
       return;
 
-    case IS_KIND_OF(unmeet_coercion):
+    case IS_CONCRETE_COERCION(const MuonUnmeetCoercion *nominate(unmeet_coercion))
       debug("(%zu)", unmeet_coercion->i);
       return;
   }
