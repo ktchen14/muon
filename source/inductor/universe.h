@@ -18,7 +18,7 @@ typedef struct {
     MuonType *vertex[2];
   };
 
-  const mu_coercion_t *coercion;  // optional
+  const MuonCoercion *coercion;  // optional
   _Bool indirect : 1;
   _Bool transitive : 1;
 } type_edge_t;
@@ -71,7 +71,7 @@ static inline type_edge_t *universe_next(universe_iterator_t *iterator) {
 }
 
 __attribute__((nonnull))
-static inline const mu_coercion_t *coerce_with(
+static inline const MuonCoercion *coerce_with(
     mu_inductor_t *inductor, type_edge_t *edge) {
   // If the edge has a coercion, return it
   if (edge->coercion != NULL)
@@ -85,16 +85,16 @@ static inline const mu_coercion_t *coerce_with(
 }
 
 __attribute__((nonnull, pure))
-static inline const mu_coercion_t *course_coercion(const type_edge_t *edge) {
-  const mu_coercion_t *result;
+static inline const MuonCoercion *course_coercion(const type_edge_t *edge) {
+  const MuonCoercion *result;
   if ((result = edge->coercion) == NULL || result->kind == MU_EDGE_COERCION)
     return NULL;
   return result;
 }
 
 __attribute__((nonnull))
-static inline const mu_coercion_t *edge_assign(
-    type_edge_t *edge, const mu_coercion_t *coercion) {
+static inline const MuonCoercion *edge_assign(
+    type_edge_t *edge, const MuonCoercion *coercion) {
   assert(coercion->kind != MU_EDGE_COERCION);
 
   if (coercion->kind == MU_INDIRECT_COERCION)

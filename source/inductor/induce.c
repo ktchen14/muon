@@ -20,10 +20,10 @@ static MuonType *instantiate_scheme(
     induce_t *induce, MuonSchemeType *scheme)
   __attribute__((nonnull));
 
-static const mu_coercion_t *retrieve_core_coercion(
+static const MuonCoercion *retrieve_core_coercion(
     induce_t *induce, MuonCoreType *source, MuonCoreType *target);
 
-const mu_coercion_t *ensure_coercion(
+const MuonCoercion *ensure_coercion(
     induce_t *induce, MuonType *source, MuonType *target) {
   // If source is the same type as target, then just return the id coercion
   if (source == target)
@@ -167,7 +167,7 @@ const mu_coercion_t *ensure_coercion(
     for (size_t i = 0; i < join_type->argc; i++) {
       MuonType *argument = join_type->argv[i];
 
-      const mu_coercion_t *coercion;
+      const MuonCoercion *coercion;
       if ((coercion = ensure_coercion(induce, argument, target)) == NULL)
         return NULL;
       if (coercion == MU_NO_SUCH_COERCION)
@@ -203,7 +203,7 @@ const mu_coercion_t *ensure_coercion(
     edge->coercion = &head->as_coercion;
 
     // Ensure that we're able to coerce instance ⇝ target
-    const mu_coercion_t *coercion;
+    const MuonCoercion *coercion;
     if ((coercion = ensure_coercion(induce, instance, target)) == NULL)
       return NULL;
     if (coercion == MU_NO_SUCH_COERCION)
@@ -267,7 +267,7 @@ const mu_coercion_t *ensure_coercion(
       t = next_source; next_source = next_target; next_target = t;
     }
 
-    const mu_coercion_t *coercion;
+    const MuonCoercion *coercion;
     if ((coercion = ensure_coercion(induce, next_source, next_target)) == NULL)
       return NULL;
     allocation->argv[i] = coercion;
@@ -566,7 +566,7 @@ static MuonType *instantiate_scheme(induce_t *induce, MuonSchemeType *scheme) {
 
 
 
-static const mu_coercion_t *retrieve_core_coercion(
+static const MuonCoercion *retrieve_core_coercion(
     induce_t *induce, MuonCoreType *source, MuonCoreType *target) {
   const mu_core_t *source_core = source->core;
   const mu_core_t *target_core = target->core;
@@ -597,7 +597,7 @@ static const mu_coercion_t *retrieve_core_coercion(
       t = next_source; next_source = next_target; next_target = t;
     }
 
-    const mu_coercion_t *coercion = retrieve_coercion(induce, next_source, next_target);
+    const MuonCoercion *coercion = retrieve_coercion(induce, next_source, next_target);
     if (coercion == NULL || coercion == MU_NO_SUCH_COERCION) {
       free(allocation);
       return coercion;
@@ -611,7 +611,7 @@ static const mu_coercion_t *retrieve_core_coercion(
   return &result->as_coercion;
 }
 
-const mu_coercion_t *retrieve_coercion(
+const MuonCoercion *retrieve_coercion(
     induce_t *induce, MuonType *source, MuonType *target) {
   assert(source->kind != MU_SCHEME_TYPE && target->kind != MU_SCHEME_TYPE);
 
@@ -627,7 +627,7 @@ const mu_coercion_t *retrieve_coercion(
     MuonCoreType *next_source = (MuonCoreType *) source;
     MuonCoreType *next_target = (MuonCoreType *) target;
 
-    const mu_coercion_t *result;
+    const MuonCoercion *result;
     if ((result = retrieve_core_coercion(induce, next_source, next_target)) == NULL)
       return NULL;
 

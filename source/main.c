@@ -126,7 +126,7 @@ int main(int argc, char *argv[argc]) {
       if (edge.indirect)
         debug(" [style=dashed]");
 
-      const mu_coercion_t *coercion;
+      const MuonCoercion *coercion;
       if ((coercion = course_coercion(&edge)) != NULL) {
         debug(" [label=\" ");
         mu_coercion_debug(edge.coercion);

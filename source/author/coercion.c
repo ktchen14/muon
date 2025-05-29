@@ -216,7 +216,7 @@ __attribute__((nonnull)) static LLVMValueRef unmeet_coercion_emit(
   abort();
 }
 
-LLVMValueRef coercion_emit(author_t *author, const mu_coercion_t *coercion, info_t info) {
+LLVMValueRef coercion_emit(author_t *author, const MuonCoercion *coercion, info_t info) {
   switch (coercion->kind) {
 #define MU_EMIT(lower, upper, t) case MU_##upper##_COERCION: \
       return lower##_coercion_emit( \

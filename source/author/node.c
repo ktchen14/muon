@@ -338,7 +338,7 @@ LLVMModuleRef script_emit(author_t *author, MuonNode *root, const char *source_n
       continue;
     author->node_to_value[node->id] = result;
 
-    const mu_coercion_t *coercion;
+    const MuonCoercion *coercion;
     MuonType *target_type;
     if ((coercion = evince_coercion(author->inductor, node, &target_type)) != NULL) {
       MuonType *source_muon_type = evince_type(author->inductor, node);

@@ -13,7 +13,7 @@
 const void *const MU_NO_SUCH_COERCION = &MU_NO_SUCH_COERCION;
 
 /// @internal Return the mutable inductor of the @a coercion
-static inline mu_inductor_t *unlock_inductor(mu_coercion_t *coercion) {
+static inline mu_inductor_t *unlock_inductor(MuonCoercion *coercion) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-qual"
   return (mu_inductor_t *) coercion->inductor;
@@ -22,8 +22,8 @@ static inline mu_inductor_t *unlock_inductor(mu_coercion_t *coercion) {
 
 /// @internal Assign the abstract @a coercion to the @a inductor
 __attribute__((nonnull, returns_nonnull))
-static inline mu_coercion_t *assign_coercion(
-    mu_inductor_t *inductor, mu_coercion_t *coercion) {
+static inline MuonCoercion *assign_coercion(
+    mu_inductor_t *inductor, MuonCoercion *coercion) {
   coercion->inductor = inductor;
   coercion->id = inductor->coercion_number++;
   return coercion;
@@ -43,7 +43,7 @@ const mu_edge_coercion_t *mu_edge_coercion(
 
 const mu_indirect_coercion_t *mu_indirect_coercion(
     mu_inductor_t *inductor,
-    const mu_coercion_t *head, const mu_coercion_t *tail) {
+    const MuonCoercion *head, const MuonCoercion *tail) {
   mu_indirect_coercion_t *result;
   if ((result = malloc(sizeof(mu_indirect_coercion_t))) == NULL)
     return NULL;
@@ -73,7 +73,7 @@ const mu_variance_coercion_t *mu_variance_coercion(
     mu_inductor_t *inductor,
     MuonType *target,
     const mu_core_t *core,
-    const mu_coercion_t *argv[/* target->core->argc */]) {
+    const MuonCoercion *argv[/* target->core->argc */]) {
   assert(core->argc == 0 || argv != NULL);
 
   mu_variance_coercion_t *allocation;
@@ -99,7 +99,7 @@ const mu_unjoin_coercion_t *mu_unjoin_coercion(
     mu_inductor_t *inductor,
     MuonType *target,
     size_t argc,
-    const mu_coercion_t *argv[/* argc */]) {
+    const MuonCoercion *argv[/* argc */]) {
   assert(argc == 0 || argv != NULL);
 
   mu_unjoin_coercion_t *allocation;
@@ -114,7 +114,7 @@ const mu_meet_coercion_t *mu_meet_coercion(
     mu_inductor_t *inductor,
     MuonType *target,
     size_t argc,
-    const mu_coercion_t *argv[/* argc */]) {
+    const MuonCoercion *argv[/* argc */]) {
   assert(argc == 0 || argv != NULL);
 
   mu_meet_coercion_t *allocation;
@@ -248,7 +248,7 @@ const mu_meet_coercion_t *meet_coercion_activate(
 }
 
 // NOLINTNEXTLINE(misc-no-recursion)
-void mu_coercion_debug(const mu_coercion_t *coercion) {
+void mu_coercion_debug(const MuonCoercion *coercion) {
   // Kind -> Text, e.g. [MU_ID_COERCION] = "Id"
   static const char *KIND_TEXT[] = {
 #define MU_EMIT(l, upper, title) [MU_##upper##_COERCION] = #title,
