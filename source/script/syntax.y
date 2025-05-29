@@ -9,7 +9,7 @@
 typedef struct {
   mu_engine_t *engine;
   mu_script_t *script;
-  const mu_stmt_t *stmt[256];
+  mu_stmt_t *stmt[256];
   size_t stmt_i;
   mu_expr_t *expr[800];
   size_t expr_i;
@@ -49,9 +49,9 @@ typedef struct {
 
   mu_name_t *name;
   mu_expr_t *expr;
-  const mu_sign_t *sign;
-  const mu_stmt_t *stmt;
-  const mu_view_t *view;
+  mu_sign_t *sign;
+  mu_stmt_t *stmt;
+  mu_view_t *view;
 
 #define MU_EMIT(lower, u, t) const mu_##lower##_t *lower;
   MU_EACH_NODE_KIND(MU_EMIT)

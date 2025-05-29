@@ -76,7 +76,7 @@ static inline void announce(
 }
 
 __attribute__((nonnull))
-static void view_announce(roster_t *roster, const mu_view_t *root) {
+static void view_announce(roster_t *roster, mu_view_t *root) {
   mu_node_t *node = &root->as_node, *next;
   do {
     while ((next = node_at(node, node_cursor(node)->i++)) != NULL)
@@ -97,7 +97,7 @@ roster_t *handle_sequence_expr(
     roster_t *roster, const mu_sequence_expr_t *sequence_expr) {
   size_t announce_length = 0;
   for (size_t i = 0; i < sequence_expr->argc; i++) {
-    const mu_stmt_t *stmt = sequence_expr->argv[i];
+    mu_stmt_t *stmt = sequence_expr->argv[i];
     announce_length += node_announce_length(&stmt->as_node);
   }
 
@@ -105,7 +105,7 @@ roster_t *handle_sequence_expr(
     return NULL;
 
   for (size_t i = 0; i < sequence_expr->argc; i++) {
-    const mu_stmt_t *stmt = sequence_expr->argv[i];
+    mu_stmt_t *stmt = sequence_expr->argv[i];
 
     switch ON_ABSTRACT_OBJECT(stmt) {
       case IS_KIND_OF(datatype_stmt):

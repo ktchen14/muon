@@ -61,7 +61,7 @@ int main(int argc, char *argv[argc]) {
       &engine, vector_access, &vector_access_expr->as_expr);
   assert(define_vector_access != NULL);
 
-  const mu_stmt_t *prefix[] = {
+  mu_stmt_t *prefix[] = {
     &define_vector_access->as_stmt,
   };
 

@@ -77,7 +77,7 @@ const mu_boolean_expr_t *mu_boolean_expr(mu_engine_t *engine, _Bool data) {
 }
 
 const mu_cast_expr_t *mu_cast_expr(
-    mu_engine_t *engine, const mu_sign_t *sign, mu_expr_t *matter) {
+    mu_engine_t *engine, mu_sign_t *sign, mu_expr_t *matter) {
   mu_cast_expr_t *result;
   if ((result = node_allocate(engine, sizeof(mu_cast_expr_t))) == NULL)
     return NULL;
@@ -112,7 +112,7 @@ const mu_invoke_expr_t *mu_invoke_expr(
 }
 
 const mu_lambda_expr_t *mu_lambda_expr(
-    mu_engine_t *engine, const mu_view_t *argument, mu_expr_t *matter) {
+    mu_engine_t *engine, mu_view_t *argument, mu_expr_t *matter) {
   assert(argument->as_node.engine == engine);
   assert(matter->as_node.engine == engine);
 
@@ -199,7 +199,7 @@ const mu_switch_expr_t *mu_switch_expr(
 }
 
 const mu_sequence_expr_t *mu_sequence_expr(
-    mu_engine_t *engine, size_t argc, const mu_stmt_t *const argv[argc]) {
+    mu_engine_t *engine, size_t argc, mu_stmt_t *const argv[argc]) {
   mu_sequence_expr_t *result;
   if ((result = sequence_expr_allocate(engine, argc)) == NULL)
     return NULL;
@@ -332,7 +332,7 @@ const mu_integer_sign_t *mu_integer_sign(mu_engine_t *engine) {
 }
 
 const mu_lambda_sign_t *mu_lambda_sign(
-    mu_engine_t *engine, const mu_sign_t *argument, const mu_sign_t *output) {
+    mu_engine_t *engine, mu_sign_t *argument, mu_sign_t *output) {
   assert(argument->as_node.engine == engine);
   assert(output->as_node.engine == engine);
 
@@ -361,7 +361,7 @@ const mu_record_sign_t *mu_record_sign(
 
   for (size_t i = 0; i < argc; i++) {
     mu_name_t *member_name = argv[i].name;
-    const mu_sign_t *member_sign = argv[i].sign;
+    mu_sign_t *member_sign = argv[i].sign;
     assert(member_name == NULL || member_name->engine == engine);
     assert(member_sign != NULL);
     assert(member_sign->as_node.engine == engine);
@@ -385,7 +385,7 @@ const mu_record_sign_t *mu_record_sign(
 }
 
 const mu_vector_sign_t *mu_vector_sign(
-    mu_engine_t *engine, const mu_sign_t *matter) {
+    mu_engine_t *engine, mu_sign_t *matter) {
   assert(matter->as_node.engine == engine);
 
   mu_vector_sign_t *result;
@@ -399,8 +399,8 @@ const mu_vector_sign_t *mu_vector_sign(
 
 const mu_coercion_stmt_t *mu_coercion_stmt(
     mu_engine_t *engine,
-    const mu_sign_t *source,
-    const mu_sign_t *target,
+    mu_sign_t *source,
+    mu_sign_t *target,
     mu_expr_t *expr) {
   assert(source->as_node.engine == engine);
   assert(target->as_node.engine == engine);
@@ -489,7 +489,7 @@ const mu_datatype_stmt_t *datatype_stmt_activate(
 }
 
 const mu_view_member_t *mu_view_member(
-    mu_engine_t *engine, mu_name_t *name, const mu_view_t *view) {
+    mu_engine_t *engine, mu_name_t *name, mu_view_t *view) {
   assert(name == NULL || name->engine == engine);
   assert(view->as_node.engine == engine);
 
