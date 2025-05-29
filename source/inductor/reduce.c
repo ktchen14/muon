@@ -410,10 +410,10 @@ const mu_coercion_t *reduce_coercion(
   __builtin_unreachable();
 }
 
-const mu_type_t *reduce_node(induce_t *induce, const mu_node_t *root) {
+const mu_type_t *reduce_node(induce_t *induce, mu_node_t *root) {
   assert(root->id < induce->node_length);
 
-  const mu_node_t *node = root, *next;
+  mu_node_t *node = root, *next;
   do {
     while ((next = node_at(node, node_cursor(node)->i++)) != NULL)
       node = node_continue(node, next);

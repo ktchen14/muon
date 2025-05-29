@@ -11,7 +11,7 @@ typedef struct {
   mu_script_t *script;
   const mu_stmt_t *stmt[256];
   size_t stmt_i;
-  const mu_expr_t *expr[800];
+  mu_expr_t *expr[800];
   size_t expr_i;
   const mu_expr_member_t *expr_member[800];
   size_t expr_member_i;
@@ -48,7 +48,7 @@ typedef struct {
   size_t i;
 
   mu_name_t *name;
-  const mu_expr_t *expr;
+  mu_expr_t *expr;
   const mu_sign_t *sign;
   const mu_stmt_t *stmt;
   const mu_view_t *view;

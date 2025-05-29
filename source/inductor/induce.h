@@ -73,7 +73,7 @@ induce_t *induce_initialize(
 
 __attribute__((nonnull, pure, returns_nonnull))
 static inline const mu_type_t *evince_type(
-    const induce_t *induce, const mu_node_t *node) {
+    const induce_t *induce, mu_node_t *node) {
   assert(node->id < induce->node_length);
   induce_node_t result = induce->result[node->id];
   assert(result.source_type != NULL);
@@ -82,7 +82,7 @@ static inline const mu_type_t *evince_type(
 
 __attribute__((nonnull(1, 2), pure))
 static inline const mu_coercion_t *evince_coercion(
-    const induce_t *induce, const mu_node_t *node, const mu_type_t **target) {
+    const induce_t *induce, mu_node_t *node, const mu_type_t **target) {
   assert(node->id < induce->node_length);
   induce_node_t result = induce->result[node->id];
   if (target != NULL)
@@ -92,7 +92,7 @@ static inline const mu_coercion_t *evince_coercion(
 
 __attribute__((nonnull))
 static inline void override_coercion(
-    induce_t *induce, const mu_node_t *node, const mu_coercion_t *coercion, const mu_type_t *target) {
+    induce_t *induce, mu_node_t *node, const mu_coercion_t *coercion, const mu_type_t *target) {
   assert(node->engine == induce->engine);
   assert(node->id < induce->node_length);
   induce_node_t *result = &induce->result[node->id];
@@ -115,7 +115,7 @@ static inline void override_coercion(
 __attribute__((nonnull))
 static inline void assign_coercion_to_node(
     induce_t *induce,
-    const mu_node_t *node,
+    mu_node_t *node,
     const mu_coercion_t *coercion,
     const mu_type_t *target) {
   assert(node->engine == induce->engine);
@@ -134,10 +134,10 @@ static inline void assign_coercion_to_node(
  * This will traverse each node reachable from the @a node and will add all
  * constraints to the @a inductor.
  */
-const mu_type_t *induce_node(induce_t *inductor, const mu_node_t *node)
+const mu_type_t *induce_node(induce_t *inductor, mu_node_t *node)
   __attribute__((nonnull));
 
-const mu_type_t *reduce_node(induce_t *induce, const mu_node_t *root);
+const mu_type_t *reduce_node(induce_t *induce, mu_node_t *root);
 
 /**
  * @brief If the coercion source => target is ensured, then return it

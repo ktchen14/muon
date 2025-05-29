@@ -10,15 +10,15 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-static const mu_type_t *node_induce(induce_t *induce, const mu_node_t *node);
+static const mu_type_t *node_induce(induce_t *induce, mu_node_t *node);
 
-const mu_type_t *induce_node(induce_t *induce, const mu_node_t *root) {
+const mu_type_t *induce_node(induce_t *induce, mu_node_t *root) {
   assert(induce->scheme == NULL);
   induce->scheme = &(mu_scheme_t) { .induce = induce, .id = induce->type_number };
 
   assert(root->id < induce->node_length);
 
-  const mu_node_t *node = root, *next;
+  mu_node_t *node = root, *next;
   do {
     while ((next = node_at(node, node_cursor(node)->i++)) != NULL) {
       node = node_continue(node, next);
@@ -147,7 +147,7 @@ __attribute__((nonnull)) static const mu_type_t *lambda_expr_induce(
 
 __attribute__((nonnull)) static const mu_type_t *name_expr_induce(
     induce_t *induce, const mu_name_expr_t *expr) {
-  const mu_node_t *target = detect_evince(induce->detect, &expr->as_node);
+  mu_node_t *target = detect_evince(induce->detect, &expr->as_node);
   assert(target != NULL);
   return evince_type(induce, target);
 }
@@ -205,7 +205,7 @@ __attribute__((nonnull)) static const mu_type_t *record_expr_induce(
 
 __attribute__((nonnull)) static const mu_type_t *switch_case_induce(
     induce_t *induce, const mu_switch_case_t *node) {
-  const mu_node_t *target;
+  mu_node_t *target;
   if ((target = detect_evince(induce->detect, &node->as_node)) == NULL)
     abort();
   const mu_type_t *case_type = evince_type(induce, target);
@@ -295,7 +295,7 @@ __attribute__((nonnull)) static const mu_type_t *lambda_sign_induce(
 
 __attribute__((nonnull)) static const mu_type_t *name_sign_induce(
     induce_t *induce, const mu_name_sign_t *sign) {
-  const mu_node_t *target = detect_evince(induce->detect, &sign->as_node);
+  mu_node_t *target = detect_evince(induce->detect, &sign->as_node);
   assert(target != NULL);
   return evince_type(induce, target);
 }
@@ -422,7 +422,7 @@ __attribute__((nonnull)) static const mu_type_t *view_member_induce(
   return evince_type(induce, &member->view->as_node);
 }
 
-static const mu_type_t *node_induce(induce_t *induce, const mu_node_t *node) {
+static const mu_type_t *node_induce(induce_t *induce, mu_node_t *node) {
   switch (node->kind) {
 #define MU_EMIT(lower, upper, t) \
     case MU_##upper##_NODE: \

@@ -19,7 +19,7 @@ enum {
 };
 
 typedef struct {
-  const mu_node_t *anterior;
+  mu_node_t *anterior;
   size_t i;
 } node_cursor_t;
 
@@ -34,7 +34,7 @@ typedef struct {
 
 /// Return the cursor attached to the @a node
 __attribute__((const, nonnull, returns_nonnull))
-static inline node_cursor_t *node_cursor(const mu_node_t *node) {
+static inline node_cursor_t *node_cursor(mu_node_t *node) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-align"
 #pragma GCC diagnostic ignored "-Wcast-qual"
@@ -45,8 +45,8 @@ static inline node_cursor_t *node_cursor(const mu_node_t *node) {
 }
 
 /// Continue into the node
-static inline const mu_node_t *node_continue(
-    const mu_node_t *node, const mu_node_t *next) {
+static inline mu_node_t *node_continue(
+    mu_node_t *node, mu_node_t *next) {
   node_cursor_t *cursor = node_cursor(next);
   assert(cursor->anterior == NULL && cursor->i == 0);
   cursor->anterior = node;
@@ -55,9 +55,9 @@ static inline const mu_node_t *node_continue(
 
 /// Return from the node
 __attribute__((nonnull))
-static inline const mu_node_t *node_return(const mu_node_t *node) {
+static inline mu_node_t *node_return(mu_node_t *node) {
   node_cursor_t *cursor = node_cursor(node);
-  const mu_node_t *anterior = cursor->anterior;
+  mu_node_t *anterior = cursor->anterior;
   *cursor = (node_cursor_t) {0};
   return anterior;
 }
@@ -70,7 +70,7 @@ static inline const mu_node_t *node_return(const mu_node_t *node) {
 #define nominate(name) , name
 
 /// Return the <em>i</em>th node in the abstract @a node
-static inline const mu_node_t *node_at(const mu_node_t *node, size_t i) {
+static inline mu_node_t *node_at(mu_node_t *node, size_t i) {
   switch ON_ABSTRACT_OBJECT(node) {
     case MU_ACCESS_EXPR:
     case MU_BOOLEAN_EXPR:
@@ -85,22 +85,22 @@ static inline const mu_node_t *node_at(const mu_node_t *node, size_t i) {
       return NULL;
 
     case IS_CONCRETE_NODE(const mu_cast_expr_t *nominate(cast_expr))
-      return (const mu_node_t *[]) {
+      return (mu_node_t *[]) {
         &cast_expr->sign->as_node, &cast_expr->matter->as_node, NULL,
       }[i];
 
     case IS_CONCRETE_NODE(const mu_invoke_expr_t *nominate(invoke_expr))
-      return (const mu_node_t *[]) {
+      return (mu_node_t *[]) {
         &invoke_expr->operator->as_node, &invoke_expr->argument->as_node, NULL,
       }[i];
 
     case IS_CONCRETE_NODE(const mu_lambda_expr_t *nominate(lambda_expr))
-      return (const mu_node_t *[]) {
+      return (mu_node_t *[]) {
         &lambda_expr->argument->as_node, &lambda_expr->matter->as_node, NULL,
       }[i];
 
     case IS_CONCRETE_NODE(const mu_expr_member_t *nominate(expr_member))
-      return (const mu_node_t *[]) { &expr_member->expr->as_node, NULL }[i];
+      return (mu_node_t *[]) { &expr_member->expr->as_node, NULL }[i];
 
     case IS_CONCRETE_NODE(const mu_record_expr_t *nominate(record_expr))
       return i < record_expr->argc ? &record_expr->argv[i]->as_node : NULL;
@@ -109,13 +109,13 @@ static inline const mu_node_t *node_at(const mu_node_t *node, size_t i) {
       return i < sequence_expr->argc ? &sequence_expr->argv[i]->as_node : NULL;
 
     case IS_CONCRETE_NODE(const mu_switch_case_t *nominate(switch_case))
-      return (const mu_node_t *[]) { &switch_case->expr->as_node, NULL }[i];
+      return (mu_node_t *[]) { &switch_case->expr->as_node, NULL }[i];
 
     case IS_CONCRETE_NODE(const mu_switch_expr_t *nominate(switch_expr))
       return i < switch_expr->argc ? &switch_expr->argv[i]->as_node : NULL;
 
     case IS_CONCRETE_NODE(const mu_lambda_sign_t *nominate(lambda_sign))
-      return (const mu_node_t *[]) {
+      return (mu_node_t *[]) {
         &lambda_sign->argument->as_node, &lambda_sign->output->as_node, NULL,
       }[i];
 
@@ -126,10 +126,10 @@ static inline const mu_node_t *node_at(const mu_node_t *node, size_t i) {
       return i < record_sign->argc ? &record_sign->argv[i].sign->as_node : NULL;
 
     case IS_CONCRETE_NODE(const mu_vector_sign_t *nominate(vector_sign))
-      return (const mu_node_t *[]) { &vector_sign->matter->as_node, NULL }[i];
+      return (mu_node_t *[]) { &vector_sign->matter->as_node, NULL }[i];
 
     case IS_CONCRETE_NODE(const mu_coercion_stmt_t *nominate(coercion_stmt))
-      return (const mu_node_t *[]) {
+      return (mu_node_t *[]) {
         &coercion_stmt->source->as_node,
         &coercion_stmt->target->as_node,
         &coercion_stmt->expr->as_node, NULL,
@@ -139,10 +139,10 @@ static inline const mu_node_t *node_at(const mu_node_t *node, size_t i) {
       return i < datatype_stmt->argc ? &datatype_stmt->argv[i]->as_node : NULL;
 
     case IS_CONCRETE_NODE(const mu_define_stmt_t *nominate(define_stmt))
-      return (const mu_node_t *[]) { &define_stmt->expr->as_node, NULL }[i];
+      return (mu_node_t *[]) { &define_stmt->expr->as_node, NULL }[i];
 
     case IS_CONCRETE_NODE(const mu_view_member_t *nominate(view_member))
-      return (const mu_node_t *[]) { &view_member->view->as_node, NULL }[i];
+      return (mu_node_t *[]) { &view_member->view->as_node, NULL }[i];
 
     case IS_CONCRETE_NODE(const mu_record_view_t *nominate(record_view))
       return i < record_view->argc ? &record_view->argv[i]->as_node : NULL;
@@ -151,7 +151,7 @@ static inline const mu_node_t *node_at(const mu_node_t *node, size_t i) {
 }
 
 /// Return the announce length of the abstract @a node
-static inline size_t node_announce_length(const mu_node_t *node) {
+static inline size_t node_announce_length(mu_node_t *node) {
   switch ON_ABSTRACT_OBJECT(node) {
     case IS_KIND_OF(datatype_stmt):
       return datatype_stmt->argc + 1;

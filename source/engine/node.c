@@ -36,14 +36,15 @@ static inline void *node_allocate(mu_engine_t *engine, size_t size) {
 
 /// @internal Assign the abstract @a node to the @a engine
 __attribute__((nonnull, returns_nonnull))
-static inline mu_node_t *assign_node(mu_engine_t *engine, mu_node_t *node) {
+static inline mu_node_t *assign_node(
+    mu_engine_t *engine, struct mu_node_t *node) {
   node->engine = engine;
   node->id = engine->node_number++;
   return node;
 }
 
 /* __attribute__((malloc, nonnull)) */
-/* static inline const mu_node_t *node_create( */
+/* static inline mu_node_t *node_create( */
 /*     mu_engine_t *engine, size_t size, void *data) { */
 /*   mu_node_t *result; */
 /*   if ((result = node_allocate(engine, size)) == NULL) */
@@ -76,7 +77,7 @@ const mu_boolean_expr_t *mu_boolean_expr(mu_engine_t *engine, _Bool data) {
 }
 
 const mu_cast_expr_t *mu_cast_expr(
-    mu_engine_t *engine, const mu_sign_t *sign, const mu_expr_t *matter) {
+    mu_engine_t *engine, const mu_sign_t *sign, mu_expr_t *matter) {
   mu_cast_expr_t *result;
   if ((result = node_allocate(engine, sizeof(mu_cast_expr_t))) == NULL)
     return NULL;
@@ -97,7 +98,7 @@ const mu_integer_expr_t *mu_integer_expr(mu_engine_t *engine, uint64_t data) {
 }
 
 const mu_invoke_expr_t *mu_invoke_expr(
-    mu_engine_t *engine, const mu_expr_t *operator, const mu_expr_t *argument) {
+    mu_engine_t *engine, mu_expr_t *operator, mu_expr_t *argument) {
   assert(operator->as_node.engine == engine);
   assert(argument->as_node.engine == engine);
 
@@ -111,7 +112,7 @@ const mu_invoke_expr_t *mu_invoke_expr(
 }
 
 const mu_lambda_expr_t *mu_lambda_expr(
-    mu_engine_t *engine, const mu_view_t *argument, const mu_expr_t *matter) {
+    mu_engine_t *engine, const mu_view_t *argument, mu_expr_t *matter) {
   assert(argument->as_node.engine == engine);
   assert(matter->as_node.engine == engine);
 
@@ -148,7 +149,7 @@ const mu_native_expr_t *mu_native_expr(
 }
 
 const mu_expr_member_t *mu_expr_member(
-    mu_engine_t *engine, mu_name_t *name, const mu_expr_t *expr) {
+    mu_engine_t *engine, mu_name_t *name, mu_expr_t *expr) {
   assert(name == NULL || name->engine == engine);
   assert(expr->as_node.engine == engine);
 
@@ -174,7 +175,7 @@ const mu_record_expr_t *mu_record_expr(
 }
 
 const mu_switch_case_t *mu_switch_case(
-    mu_engine_t *engine, mu_name_t *name, const mu_expr_t *expr) {
+    mu_engine_t *engine, mu_name_t *name, mu_expr_t *expr) {
   assert(name->engine == engine);
   assert(expr->as_node.engine == engine);
 
@@ -208,7 +209,7 @@ const mu_sequence_expr_t *mu_sequence_expr(
 }
 
 const mu_vector_expr_t *mu_vector_expr(
-    mu_engine_t *engine, size_t argc, const mu_expr_t *const argv[]) {
+    mu_engine_t *engine, size_t argc, mu_expr_t *const argv[]) {
   assert(argc == 0 || argv != NULL);
 
   for (size_t i = 0; i < argc; i++) {
@@ -400,7 +401,7 @@ const mu_coercion_stmt_t *mu_coercion_stmt(
     mu_engine_t *engine,
     const mu_sign_t *source,
     const mu_sign_t *target,
-    const mu_expr_t *expr) {
+    mu_expr_t *expr) {
   assert(source->as_node.engine == engine);
   assert(target->as_node.engine == engine);
   assert(expr->as_node.engine == engine);
@@ -444,7 +445,7 @@ const mu_datatype_stmt_t *mu_datatype_stmt(
 }
 
 const mu_define_stmt_t *mu_define_stmt(
-    mu_engine_t *engine, mu_name_t *name, const mu_expr_t *expr) {
+    mu_engine_t *engine, mu_name_t *name, mu_expr_t *expr) {
   assert(name->engine == engine);
   assert(expr->as_node.engine == engine);
 
@@ -563,7 +564,7 @@ const mu_record_view_t *record_view_activate(mu_record_view_t *view) {
 #include "../inductor.h"
 
 __attribute__((nonnull))
-static inline void debug_node_type(const mu_node_t *node) {
+static inline void debug_node_type(mu_node_t *node) {
   if (debug_induce == NULL)
     return;
 
@@ -577,7 +578,7 @@ static inline void debug_node_type(const mu_node_t *node) {
 }
 
 __attribute__((nonnull))
-static inline int debug_node_coercion(const mu_node_t *node) {
+static inline int debug_node_coercion(mu_node_t *node) {
   if (debug_induce == NULL)
     return debug_indent;
 
@@ -601,7 +602,7 @@ static inline int debug_node_coercion(const mu_node_t *node) {
 }
 
 /// Emit debugging information on the abstract @a node to the debug stream
-void mu_node_debug(const mu_node_t *node) {  // NOLINT(misc-no-recursion)
+void mu_node_debug(mu_node_t *node) {  // NOLINT(misc-no-recursion)
   // Kind -> Text, e.g. [MU_ACCESS_EXPR_NODE] = "AccessExpr"
   static const char *const KIND_TEXT[] = {
 #define MU_EMIT(l, upper, title) [MU_##upper##_NODE] = #title,
@@ -670,7 +671,7 @@ void mu_node_debug(const mu_node_t *node) {  // NOLINT(misc-no-recursion)
 
   WITH_DEBUG_INDENT() {
     size_t i = 0;
-    for (const mu_node_t *next; (next = node_at(node, i)) != NULL; i++)
+    for (mu_node_t *next; (next = node_at(node, i)) != NULL; i++)
       mu_node_debug(next);
   }
 

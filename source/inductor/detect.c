@@ -11,13 +11,13 @@
 
 typedef struct {
   mu_name_t *name;
-  const mu_node_t *node;
+  mu_node_t *node;
 } item_t;
 
 typedef struct roster_t roster_t;
 struct roster_t {
   roster_t *parent;
-  const mu_node_t *origin;
+  mu_node_t *origin;
   size_t length;
   size_t volume;
   item_t data[];
@@ -43,7 +43,7 @@ detect_t *detect_initialize(
 
 __attribute__((malloc))
 static roster_t *roster_create(
-    roster_t *roster, size_t volume, const mu_node_t *origin) {
+    roster_t *roster, size_t volume, mu_node_t *origin) {
   size_t size;
   if (rare((size = struct_size(roster_t, data, volume)) == 0))
     return errno = ENOMEM, NULL;
@@ -56,7 +56,7 @@ static roster_t *roster_create(
 }
 
 __attribute__((nonnull))
-static const mu_node_t *roster_search(roster_t *roster, mu_name_t *name) {
+static mu_node_t *roster_search(roster_t *roster, mu_name_t *name) {
   do {
     for (size_t i = 0; i < roster->length; i++) {
       if (roster->data[i].name == name)
@@ -69,7 +69,7 @@ static const mu_node_t *roster_search(roster_t *roster, mu_name_t *name) {
 
 __attribute__((nonnull))
 static inline void announce(
-    roster_t *roster, mu_name_t *name, const mu_node_t *node) {
+    roster_t *roster, mu_name_t *name, mu_node_t *node) {
   assert(roster->length < roster->volume);
   item_t item = { .name = name, .node = node };
   roster->data[roster->length++] = item;
@@ -77,7 +77,7 @@ static inline void announce(
 
 __attribute__((nonnull))
 static void view_announce(roster_t *roster, const mu_view_t *root) {
-  const mu_node_t *node = &root->as_node, *next;
+  mu_node_t *node = &root->as_node, *next;
   do {
     while ((next = node_at(node, node_cursor(node)->i++)) != NULL)
       node = node_continue(node, next);
@@ -127,7 +127,7 @@ roster_t *handle_sequence_expr(
   return roster;
 }
 
-detect_t *detect_node(detect_t *detect, const mu_node_t *root) {
+detect_t *detect_node(detect_t *detect, mu_node_t *root) {
   const mu_sequence_expr_t *sequence_expr = mu_node_cast(root, sequence_expr);
   assert(sequence_expr != NULL);
 
@@ -135,7 +135,7 @@ detect_t *detect_node(detect_t *detect, const mu_node_t *root) {
   if ((roster = handle_sequence_expr(roster, sequence_expr)) == NULL)
     return NULL;
 
-  const mu_node_t *node = root, *next;
+  mu_node_t *node = root, *next;
   do {
     while ((next = node_at(node, node_cursor(node)->i++)) != NULL) {
       switch ON_ABSTRACT_OBJECT(node) {
@@ -172,21 +172,21 @@ detect_t *detect_node(detect_t *detect, const mu_node_t *root) {
 
     switch ON_ABSTRACT_OBJECT(node) {
       case IS_KIND_OF(name_expr): {
-        const mu_node_t *target = roster_search(roster, name_expr->name);
+        mu_node_t *target = roster_search(roster, name_expr->name);
         assert(target != NULL);
         detect->result->data[name_expr->as_node.id] = target;
         break;
       }
 
       case IS_KIND_OF(switch_case): {
-        const mu_node_t *target = roster_search(roster, switch_case->name);
+        mu_node_t *target = roster_search(roster, switch_case->name);
         assert(target != NULL);
         detect->result->data[switch_case->as_node.id] = target;
         break;
       }
 
       case IS_KIND_OF(name_sign): {
-        const mu_node_t *target = roster_search(roster, name_sign->name);
+        mu_node_t *target = roster_search(roster, name_sign->name);
         assert(target != NULL);
         detect->result->data[name_sign->as_node.id] = target;
         break;

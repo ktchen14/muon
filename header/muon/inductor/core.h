@@ -35,17 +35,17 @@ typedef struct {
   mu_core_member_t argv[/* argc */];
 } mu_core_t;
 
-typedef struct mu_expr_t mu_expr_t;
+typedef const struct mu_expr_t mu_expr_t;
 typedef struct {
   const mu_core_t *source;
   const mu_core_t *target;
-  const mu_expr_t *expr;
+  mu_expr_t *expr;
 } mu_instance_t;
 
 const mu_core_t *mu_simple_core(induce_t *induce, mu_name_t *name);
 
 const mu_instance_t *mu_instance(
-    const mu_core_t *source, const mu_core_t *target, const mu_expr_t *expr)
+    const mu_core_t *source, const mu_core_t *target, mu_expr_t *expr)
   __attribute__((malloc, nonnull));
 
 /// Emit debugging information on the abstract @a core to the debug stream

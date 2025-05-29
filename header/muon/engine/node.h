@@ -97,21 +97,30 @@ typedef enum {
 #undef MU_EMIT
 } mu_view_kind_t;
 
-/// An abstract node
-typedef struct mu_node_t {
+/**
+ * @brief An abstract node
+ *
+ * Note that a mu_node_t is a constant object; the mutable equivalent is a
+ * struct mu_node_t.
+ */
+typedef const struct mu_node_t {
   mu_node_kind_t kind;
   const mu_engine_t *engine;
   size_t id;
 } mu_node_t;
 
 /// The header that each concrete node must have
-#define MU_NODE_HEADER mu_node_t as_node
+#define MU_NODE_HEADER struct mu_node_t as_node
 
-/// An abstract expr
-typedef struct mu_expr_t mu_expr_t;
-struct mu_expr_t {
+/**
+ * @brief An abstract expr
+ *
+ * Note that a mu_expr_t is a constant object; the mutable equivalent is a
+ * struct mu_expr_t.
+ */
+typedef const struct mu_expr_t {
   union { MU_NODE_HEADER; mu_expr_kind_t kind; };
-};
+} mu_expr_t;
 
 /// An abstract sign
 typedef struct {
@@ -129,7 +138,10 @@ typedef struct {
 } mu_view_t;
 
 /// The header that each concrete expr must have
-#define MU_EXPR_HEADER union { mu_expr_t as_expr; mu_node_t as_node; }
+#define MU_EXPR_HEADER union { \
+  struct mu_expr_t as_expr; \
+  struct mu_node_t as_node; \
+}
 
 typedef struct {
   MU_EXPR_HEADER;
@@ -144,7 +156,7 @@ typedef struct {
 typedef struct {
   MU_EXPR_HEADER;
   const mu_sign_t *sign;
-  const mu_expr_t *matter;
+  mu_expr_t *matter;
 } mu_cast_expr_t;
 
 typedef struct {
@@ -154,14 +166,14 @@ typedef struct {
 
 typedef struct {
   MU_EXPR_HEADER;
-  const mu_expr_t *operator;
-  const mu_expr_t *argument;
+  mu_expr_t *operator;
+  mu_expr_t *argument;
 } mu_invoke_expr_t;
 
 typedef struct {
   MU_EXPR_HEADER;
   const mu_view_t *argument;
-  const mu_expr_t *matter;
+  mu_expr_t *matter;
 } mu_lambda_expr_t;
 
 typedef struct {
@@ -177,7 +189,7 @@ typedef struct {
 typedef struct {
   MU_NODE_HEADER;
   mu_name_t *name; // optional
-  const mu_expr_t *expr;
+  mu_expr_t *expr;
 } mu_expr_member_t;
 
 typedef struct {
@@ -195,7 +207,7 @@ typedef struct {
 typedef struct {
   MU_NODE_HEADER;
   mu_name_t *name;
-  const mu_expr_t *expr;
+  mu_expr_t *expr;
 } mu_switch_case_t;
 
 typedef struct {
@@ -207,7 +219,7 @@ typedef struct {
 typedef struct {
   MU_EXPR_HEADER;
   size_t argc;
-  const mu_expr_t *argv[/* argc */];
+  mu_expr_t *argv[/* argc */];
 } mu_vector_expr_t;
 
 const mu_access_expr_t *mu_access_expr(
@@ -218,18 +230,18 @@ const mu_boolean_expr_t *mu_boolean_expr(mu_engine_t *engine, _Bool data)
   __attribute__((malloc, nonnull));
 
 const mu_cast_expr_t *mu_cast_expr(
-    mu_engine_t *engine, const mu_sign_t *sign, const mu_expr_t *matter)
+    mu_engine_t *engine, const mu_sign_t *sign, mu_expr_t *matter)
   __attribute__((malloc, nonnull));
 
 const mu_integer_expr_t *mu_integer_expr(mu_engine_t *engine, uint64_t data)
   __attribute__((malloc, nonnull));
 
 const mu_invoke_expr_t *mu_invoke_expr(
-    mu_engine_t *engine, const mu_expr_t *operator, const mu_expr_t *argument)
+    mu_engine_t *engine, mu_expr_t *operator, mu_expr_t *argument)
   __attribute__((malloc, nonnull));
 
 const mu_lambda_expr_t *mu_lambda_expr(
-    mu_engine_t *engine, const mu_view_t *argument, const mu_expr_t *matter)
+    mu_engine_t *engine, const mu_view_t *argument, mu_expr_t *matter)
   __attribute__((malloc, nonnull));
 
 const mu_name_expr_t *mu_name_expr(mu_engine_t *engine, mu_name_t *name)
@@ -240,7 +252,7 @@ const mu_native_expr_t *mu_native_expr(
   __attribute__((malloc, nonnull));
 
 const mu_expr_member_t *mu_expr_member(
-    mu_engine_t *engine, mu_name_t *name, const mu_expr_t *expr)
+    mu_engine_t *engine, mu_name_t *name, mu_expr_t *expr)
   __attribute__((malloc, nonnull));
 
 const mu_record_expr_t *mu_record_expr(
@@ -248,7 +260,7 @@ const mu_record_expr_t *mu_record_expr(
   __attribute__((malloc, nonnull(1)));
 
 const mu_switch_case_t *mu_switch_case(
-    mu_engine_t *engine, mu_name_t *name, const mu_expr_t *expr)
+    mu_engine_t *engine, mu_name_t *name, mu_expr_t *expr)
   __attribute__((malloc, nonnull));
 
 const mu_switch_expr_t *mu_switch_expr(
@@ -260,11 +272,11 @@ const mu_sequence_expr_t *mu_sequence_expr(
   __attribute__((malloc, nonnull));
 
 const mu_vector_expr_t *mu_vector_expr(
-    mu_engine_t *engine, size_t argc, const mu_expr_t *const argv[/* argc */])
+    mu_engine_t *engine, size_t argc, mu_expr_t *const argv[/* argc */])
   __attribute__((malloc, nonnull(1)));
 
 /// The header that each concrete sign must have
-#define MU_SIGN_HEADER union { mu_sign_t as_sign; mu_node_t as_node; }
+#define MU_SIGN_HEADER union { mu_sign_t as_sign; struct mu_node_t as_node; }
 
 typedef struct {
   MU_SIGN_HEADER;
@@ -323,13 +335,13 @@ const mu_vector_sign_t *mu_vector_sign(
   __attribute__((malloc, nonnull));
 
 /// The header that each concrete stmt must have
-#define MU_STMT_HEADER union { mu_stmt_t as_stmt; mu_node_t as_node; }
+#define MU_STMT_HEADER union { mu_stmt_t as_stmt; struct mu_node_t as_node; }
 
 typedef struct {
   MU_STMT_HEADER;
   const mu_sign_t *source;
   const mu_sign_t *target;
-  const mu_expr_t *expr;
+  mu_expr_t *expr;
 } mu_coercion_stmt_t;
 
 typedef struct {
@@ -354,14 +366,14 @@ typedef struct {
 typedef struct {
   MU_STMT_HEADER;
   mu_name_t *name;
-  const mu_expr_t *expr;
+  mu_expr_t *expr;
 } mu_define_stmt_t;
 
 const mu_coercion_stmt_t *mu_coercion_stmt(
     mu_engine_t *engine,
     const mu_sign_t *source,
     const mu_sign_t *target,
-    const mu_expr_t *expr)
+    mu_expr_t *expr)
   __attribute__((malloc, nonnull));
 
 const mu_datatype_option_t *mu_datatype_option(
@@ -376,11 +388,11 @@ const mu_datatype_stmt_t *mu_datatype_stmt(
   __attribute__((malloc, nonnull(1, 2)));
 
 const mu_define_stmt_t *mu_define_stmt(
-    mu_engine_t *engine, mu_name_t *name, const mu_expr_t *expr)
+    mu_engine_t *engine, mu_name_t *name, mu_expr_t *expr)
   __attribute__((malloc, nonnull));
 
 /// The header that each concrete view must have
-#define MU_VIEW_HEADER union { mu_view_t as_view; mu_node_t as_node; }
+#define MU_VIEW_HEADER union { mu_view_t as_view; struct mu_node_t as_node; }
 
 typedef struct {
   MU_NODE_HEADER;
@@ -414,7 +426,7 @@ const mu_variable_view_t *mu_variable_view(
   __attribute__((malloc, nonnull));
 
 /// Emit debugging information on the abstract @a node to the debug stream
-void mu_node_debug(const mu_node_t *node) __attribute__((nonnull));
+void mu_node_debug(mu_node_t *node) __attribute__((nonnull));
 
 /// @internal Used to emit each branch in MU_NODE_ENUMERATOR()
 #define MU_NODE_ENUMERATOR_EMIT(lower, upper, t) \
@@ -443,10 +455,10 @@ void mu_node_debug(const mu_node_t *node) __attribute__((nonnull));
 /**
  * @brief Downcast the @a abstract node to the <tt>typeof(concrete)</tt>
  *
- * @a abstract should have type <tt>const mu_node_t *</tt>. @a concrete should
+ * @a abstract should have type <tt>mu_node_t *</tt>. @a concrete should
  * be, or have, the type of a pointer to a const qualified concrete node, or:
  *
- * - <tt>const mu_expr_t *</tt>
+ * - <tt>mu_expr_t *</tt>
  * - <tt>const mu_sign_t *</tt>
  * - <tt>const mu_stmt_t *</tt>
  * - <tt>const mu_view_t *</tt>
@@ -465,16 +477,16 @@ void mu_node_debug(const mu_node_t *node) __attribute__((nonnull));
  *
  * The behavior is undefined if:
  * - @a abstract is @c NULL
- * - @a abstract doesn't have type <tt>const mu_node_t *</tt>
+ * - @a abstract doesn't have type <tt>mu_node_t *</tt>
  * - @a concrete isn't, or doesn't have, the type of:
- *   - <tt>const mu_expr_t *</tt>
+ *   - <tt>mu_expr_t *</tt>
  *   - <tt>const mu_sign_t *</tt>
  *   - <tt>const mu_stmt_t *</tt>
  *   - <tt>const mu_view_t *</tt>
  *   - or a const qualified pointer to a concrete node
  */
 #define mu_node_cast(abstract, concrete) __extension__ ({ \
-  const mu_node_t *_abstract = (abstract); \
+  mu_node_t *_abstract = (abstract); \
   __typeof__(concrete) _concrete; \
   _abstract->kind == MU_NODE_ENUMERATOR(__typeof__(_concrete)) ? \
     (__typeof__(_concrete)) _abstract : NULL; \
@@ -483,7 +495,7 @@ void mu_node_debug(const mu_node_t *node) __attribute__((nonnull));
 /**
  * @brief Downcast the @a abstract expr to the <tt>typeof(concrete)</tt>
  *
- * @a abstract should have type <tt>const mu_expr_t *</tt>. @a concrete should
+ * @a abstract should have type <tt>mu_expr_t *</tt>. @a concrete should
  * be, or have, the type of a pointer to a const qualified concrete expr. Then
  * if @a abstract is an instance of that type, it will be cast to that type and
  * returned. Otherwise, this will return @c NULL.
@@ -499,12 +511,12 @@ void mu_node_debug(const mu_node_t *node) __attribute__((nonnull));
  *
  * The behavior is undefined if:
  * - @a abstract is @c NULL
- * - @a abstract doesn't have type <tt>const mu_expr_t *</tt>
+ * - @a abstract doesn't have type <tt>mu_expr_t *</tt>
  * - @a concrete isn't, or doesn't have, the type of a const qualified pointer
  *   to a concrete expr
  */
 #define mu_expr_cast(abstract, concrete) __extension__ ({ \
-    const mu_expr_t *_abstract = (abstract); \
+    mu_expr_t *_abstract = (abstract); \
     typeof(concrete) _concrete; \
     mu_expr_kind_t _kind = _abstract->kind; \
     int _castable = _Generic(_concrete MU_EACH_EXPR_KIND(MU_EXPR_CAST_EMIT)); \
