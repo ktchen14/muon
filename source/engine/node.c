@@ -577,7 +577,7 @@ static inline int debug_node_coercion(MuonNode *node) {
     return debug_indent;
 
   induce_node_t result = debug_induce->result[node->id];
-  const MuonCoercion *coercion;
+  MuonCoercion *coercion;
   if ((coercion = result.coercion) == NULL)
     return debug_indent;
 

@@ -82,7 +82,7 @@ __attribute__((nonnull)) static MuonType *cast_expr_return(
   MuonType *sign_type = evince_type(induce, &expr->sign->as_node);
   MuonType *matter_type = evince_type(induce, &expr->matter->as_node);
 
-  const MuonCoercion *coercion;
+  MuonCoercion *coercion;
   if ((coercion = ensure_coercion(induce, matter_type, sign_type)) == NULL)
     return NULL;
   assign_coercion_to_node(induce, &expr->matter->as_node, coercion, sign_type);
@@ -114,7 +114,7 @@ __attribute__((nonnull)) static MuonType *invoke_expr_return(
     return NULL;
 
   MuonType *target = &lambda_type->as_type;
-  const MuonCoercion *coercion;
+  MuonCoercion *coercion;
   if ((coercion = ensure_coercion(induce, operator_type, target)) == NULL)
     return NULL;
   assign_coercion_to_node(induce, &expr->operator->as_node, coercion, target);
@@ -216,7 +216,7 @@ __attribute__((nonnull)) static MuonType *switch_expr_return(
   for (size_t i = 0; i < expr->argc; i++) {
     MuonType *type = evince_type(induce, &expr->argv[i]->as_node);
 
-    const MuonCoercion *coercion;
+    MuonCoercion *coercion;
     if ((coercion = ensure_coercion(induce, type, &result->as_type)) == NULL)
       return NULL;
     assign_coercion_to_node(induce, &expr->argv[i]->as_node, coercion, &result->as_type);
@@ -242,7 +242,7 @@ __attribute__((nonnull)) static MuonType *vector_expr_return(
   for (size_t i = 0; i < expr->argc; i++) {
     MuonType *type = evince_type(induce, &expr->argv[i]->as_node);
 
-    const MuonCoercion *coercion;
+    MuonCoercion *coercion;
     if ((coercion = ensure_coercion(induce, type, &matter_type->as_type)) == NULL)
       return NULL;
     assign_coercion_to_node(induce, &expr->argv[i]->as_node, coercion, &matter_type->as_type);
@@ -314,7 +314,7 @@ __attribute__((nonnull)) static MuonType *coercion_stmt_return(
     return NULL;
 
   // TODO: ensure that this isn't tautological
-  const MuonCoercion *coercion;
+  MuonCoercion *coercion;
   if ((coercion = ensure_coercion(induce, expr_type, &lambda_type->as_type)) == NULL)
     return NULL;
   assign_coercion_to_node(induce, &stmt->expr->as_node, coercion, &lambda_type->as_type);

@@ -84,7 +84,7 @@ LLVMTypeRef get_type(author_t *author, MuonType *root);
 LLVMModuleRef script_emit(
     author_t *author, MuonNode *root, const char *source_name);
 
-LLVMValueRef coercion_emit(author_t *author, const MuonCoercion *coercion, info_t info);
+LLVMValueRef coercion_emit(author_t *author, MuonCoercion *coercion, info_t info);
 
 static inline LLVMValueRef author_continue(
     author_t *author, LLVMValueRef lambda, LLVMBuilderRef tail) {

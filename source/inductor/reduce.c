@@ -11,13 +11,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-const MuonCoercion *reduce_coercion(
-    induce_t *induce, const MuonCoercion *coercion);
+MuonCoercion *reduce_coercion(
+    induce_t *induce, MuonCoercion *coercion);
 
 /// Load the coercion that is assigned to the <em>coercion</em>'s edge. If that
 /// coercion is the edge @a coercion itself, then return @c NULL.
 __attribute__((nonnull, pure))
-const MuonCoercion *mu_edge_coercion_reload(
+MuonCoercion *mu_edge_coercion_reload(
     const universe_t *universe, const mu_edge_coercion_t *coercion) {
   MuonType *source = coercion->source;
   MuonType *target = coercion->as_coercion.target;
@@ -25,7 +25,7 @@ const MuonCoercion *mu_edge_coercion_reload(
   type_edge_t *edge = universe_search(universe, source, target);
   assert(edge != NULL);
 
-  const MuonCoercion *result;
+  MuonCoercion *result;
   if ((result = edge->coercion) == &coercion->as_coercion)
     return NULL;
   return result;
@@ -49,7 +49,7 @@ void *redirect_source(
     induce_t *induce,
     type_edge_t *origin,
     MuonType *center,
-    const MuonCoercion *coercion) {
+    MuonCoercion *coercion) {
   MuonType *source = origin->source;
 
   universe_iterator_t it;
@@ -74,7 +74,7 @@ void *redirect_source(
     assert(direct != NULL);
 
     // Retrieve β ⇝ τ
-    const MuonCoercion *direct_coercion;
+    MuonCoercion *direct_coercion;
     if ((direct_coercion = coerce_with(induce, direct)) == NULL)
       return NULL;
 
@@ -140,7 +140,7 @@ const void *reduce_type_to_join(induce_t *induce, MuonVariableType *target) {
         continue;
 
       // If we have b ⇝ a, then assign b ⇝ a ⇝ v to ⟨b ⇒ v⟩ and skip this b
-      const MuonCoercion *coercion;
+      MuonCoercion *coercion;
       if ((coercion = retrieve_coercion(induce, b, a)) == NULL)
         return NULL;
       if (coercion != MU_NO_SUCH_COERCION) {
@@ -234,14 +234,14 @@ const void *reduce_type_to_join(induce_t *induce, MuonVariableType *target) {
   return assign_solution(target, &join_type->as_type);
 }
 
-const MuonCoercion *reduce_coercion(
-    induce_t *induce, const MuonCoercion *coercion) {
+MuonCoercion *reduce_coercion(
+    induce_t *induce, MuonCoercion *coercion) {
   switch ON_ABSTRACT_OBJECT(coercion) {
     case MU_ID_COERCION:
       return coercion;
 
     case IS_KIND_OF(edge_coercion): {
-      const MuonCoercion *next_coercion;
+      MuonCoercion *next_coercion;
       if ((next_coercion = mu_edge_coercion_reload(&induce->universe, edge_coercion)) != NULL)
         return reduce_coercion(induce, next_coercion);
 
@@ -276,7 +276,7 @@ const MuonCoercion *reduce_coercion(
             edge = universe_search(&induce->universe, &core_type->as_type, target);
             assert(edge != NULL);
 
-            const MuonCoercion *coercion = course_coercion(edge);
+            MuonCoercion *coercion = course_coercion(edge);
             assert(coercion != NULL);
 
             if ((coercion = reduce_coercion(induce, coercion)) == NULL)
@@ -289,7 +289,7 @@ const MuonCoercion *reduce_coercion(
             edge = universe_search(&induce->universe, &scheme_type->as_type, target);
             assert(edge != NULL);
 
-            const MuonCoercion *coercion = course_coercion(edge);
+            MuonCoercion *coercion = course_coercion(edge);
             assert(coercion != NULL);
 
             if ((coercion = reduce_coercion(induce, coercion)) == NULL)
@@ -307,7 +307,7 @@ const MuonCoercion *reduce_coercion(
               edge = universe_search(&induce->universe, join_type->argv[i], target);
               assert(edge != NULL);
 
-              const MuonCoercion *coercion = course_coercion(edge);
+              MuonCoercion *coercion = course_coercion(edge);
               assert(coercion != NULL);
 
               allocation->argv[i] = reduce_coercion(induce, coercion);
@@ -329,10 +329,10 @@ const MuonCoercion *reduce_coercion(
     }
 
     case IS_KIND_OF(indirect_coercion): {
-      const MuonCoercion *head = indirect_coercion->head;
+      MuonCoercion *head = indirect_coercion->head;
       head = reduce_coercion(induce, head);
 
-      const MuonCoercion *tail = indirect_coercion->tail;
+      MuonCoercion *tail = indirect_coercion->tail;
       tail = reduce_coercion(induce, tail);
 
       const mu_indirect_coercion_t *result;
@@ -352,7 +352,7 @@ const MuonCoercion *reduce_coercion(
         return NULL;
 
       for (size_t i = 0; i < core->argc; i++) {
-        const MuonCoercion *argument = variance_coercion->argv[i];
+        MuonCoercion *argument = variance_coercion->argv[i];
         allocation->argv[i] = reduce_coercion(induce, argument);
       }
 
@@ -417,12 +417,12 @@ MuonType *reduce_node(induce_t *induce, MuonNode *root) {
     while ((next = node_at(node, node_cursor(node)->i++)) != NULL)
       node = node_continue(node, next);
 
-    const MuonCoercion *coercion;
+    MuonCoercion *coercion;
     MuonType *target_type;
     if ((coercion = evince_coercion(induce, node, &target_type)) == NULL)
       continue;
 
-    const MuonCoercion *result;
+    MuonCoercion *result;
     if ((result = reduce_coercion(induce, coercion)) == NULL)
       return NULL;
     override_coercion(induce, node, result, target_type);

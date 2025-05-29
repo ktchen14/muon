@@ -28,7 +28,7 @@ typedef enum {
 } MuonCoercionKind;
 
 /// An abstract coercion
-typedef struct {
+typedef const struct MuonCoercion {
   MuonCoercionKind kind;
   const mu_inductor_t *inductor;
   size_t id;
@@ -36,7 +36,7 @@ typedef struct {
 } MuonCoercion;
 
 /// The header that each concrete coercion must have
-#define MU_COERCION_HEADER MuonCoercion as_coercion
+#define MU_COERCION_HEADER struct MuonCoercion as_coercion
 
 typedef struct {
   MU_COERCION_HEADER;
@@ -46,8 +46,8 @@ typedef struct mu_edge_coercion_t mu_edge_coercion_t;
 
 typedef struct {
   MU_COERCION_HEADER;
-  const MuonCoercion *head;
-  const MuonCoercion *tail;
+  MuonCoercion *head;
+  MuonCoercion *tail;
 } mu_indirect_coercion_t;
 
 typedef struct {
@@ -58,7 +58,7 @@ typedef struct {
 typedef struct {
   MU_COERCION_HEADER;
   const mu_core_t *core;
-  const MuonCoercion *argv[/* target->core->argc */];
+  MuonCoercion *argv[/* target->core->argc */];
 } mu_variance_coercion_t;
 
 typedef struct {
@@ -76,7 +76,7 @@ typedef struct {
 typedef struct {
   MU_COERCION_HEADER;
   size_t argc;
-  const MuonCoercion *argv[/* argc */];
+  MuonCoercion *argv[/* argc */];
 } mu_unjoin_coercion_t;
 
 /// Coercion of τ to a meet type. Each coercion in argv specifies the coercion
@@ -84,7 +84,7 @@ typedef struct {
 typedef struct {
   MU_COERCION_HEADER;
   size_t argc;
-  const MuonCoercion *argv[/* argc */];
+  MuonCoercion *argv[/* argc */];
 } mu_meet_coercion_t;
 
 /// Coercion of a meet type to type τ, where τ is at index @a i in the meet type
@@ -110,7 +110,7 @@ const mu_slot_coercion_t *mu_slot_coercion(
 
 const mu_indirect_coercion_t *mu_indirect_coercion(
     mu_inductor_t *inductor,
-    const MuonCoercion *head, const MuonCoercion *tail)
+    MuonCoercion *head, MuonCoercion *tail)
   __attribute__((malloc, nonnull));
 
 const mu_instance_coercion_t *mu_instance_coercion(
@@ -123,7 +123,7 @@ const mu_variance_coercion_t *mu_variance_coercion(
     mu_inductor_t *inductor,
     MuonType *target,
     const mu_core_t *core,
-    const MuonCoercion *argv[/* target->core->argc */])
+    MuonCoercion *argv[/* target->core->argc */])
   __attribute__((malloc, nonnull(1)));
 
 const mu_join_coercion_t *mu_join_coercion(
@@ -134,14 +134,14 @@ const mu_unjoin_coercion_t *mu_unjoin_coercion(
     mu_inductor_t *inductor,
     MuonType *target,
     size_t argc,
-    const MuonCoercion *argv[/* argc */])
+    MuonCoercion *argv[/* argc */])
   __attribute__((malloc));
 
 const mu_meet_coercion_t *mu_meet_coercion(
     mu_inductor_t *inductor,
     MuonType *target,
     size_t argc,
-    const MuonCoercion *argv[/* argc */])
+    MuonCoercion *argv[/* argc */])
   __attribute__((malloc));
 
 const mu_unmeet_coercion_t *mu_unmeet_coercion(
@@ -152,7 +152,7 @@ const mu_unscheme_coercion_t *mu_unscheme_coercion(
     mu_inductor_t *inductor, MuonType *target)
   __attribute__((malloc));
 
-void mu_coercion_debug(const MuonCoercion *coercion)
+void mu_coercion_debug(MuonCoercion *coercion)
   __attribute__((nonnull));
 
 /// @internal Used to emit each branch in mu_coercion_cast()
@@ -162,7 +162,7 @@ void mu_coercion_debug(const MuonCoercion *coercion)
 /**
  * @brief Downcast the @a abstract coercion to the <tt>typeof(concrete)</tt>
  *
- * @a abstract should have type <tt>const MuonCoercion *</tt>. @a concrete should
+ * @a abstract should have type <tt>MuonCoercion *</tt>. @a concrete should
  * be, or have, the type of a pointer to a const qualified concrete coercion. Then
  * if @a abstract is an instance of that type, it will be cast to that type and
  * returned. Otherwise, this will return @c NULL.
@@ -178,12 +178,12 @@ void mu_coercion_debug(const MuonCoercion *coercion)
  *
  * The behavior is undefined if:
  * - @a abstract is @c NULL
- * - @a abstract doesn't have type <tt>const MuonCoercion *</tt>
+ * - @a abstract doesn't have type <tt>MuonCoercion *</tt>
  * - @a concrete isn't, or doesn't have, the type of a const qualified pointer
  *   to a concrete coercion
  */
 #define mu_coercion_cast(abstract, concrete) __extension__ ({ \
-    const MuonCoercion *_abstract = (abstract); \
+    MuonCoercion *_abstract = (abstract); \
     typeof(concrete) _concrete; \
     mu_coercion_kind_t _kind = _abstract->kind; \
     int _castable = _Generic(_concrete \
