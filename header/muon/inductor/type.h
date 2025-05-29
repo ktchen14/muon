@@ -37,7 +37,7 @@ typedef struct {
   MU_TYPE_HEADER;
   const mu_core_t *core;
   MuonType *argv[/* core->argc */];
-} mu_core_type_t;
+} MuonCoreType;
 
 /// A scheme type
 typedef struct {
@@ -48,14 +48,14 @@ typedef struct {
   /// Length of list of polymorphic variables
   size_t argc;
   MuonType *argv[/* argc */];
-} mu_scheme_type_t;
+} MuonSchemeType;
 
 /// A join type
 typedef struct {
   MU_TYPE_HEADER;
   size_t argc;
   MuonType *argv[/* argc */];
-} mu_join_type_t;
+} MuonJoinType;
 
 /// A variable type
 typedef struct {
@@ -69,8 +69,50 @@ typedef struct {
   // Polymorphism
   _Bool reduced;
 
-  const mu_scheme_type_t *scheme;
-} mu_variable_type_t;
+  const MuonSchemeType *scheme;
+} MuonVariableType;
+
+const MuonCoreType *mu_core_type(
+    mu_inductor_t *inductor,
+    const mu_core_t *core,
+    MuonType *const argv[/* core->argc */])
+  __attribute__((malloc, nonnull(1, 2)));
+
+/// Create a boolean type in the @a inductor
+const MuonCoreType *mu_boolean_type(induce_t *induce)
+  __attribute__((malloc, nonnull));
+
+/// Create an integer type in the @a inductor
+const MuonCoreType *mu_integer_type(induce_t *induce)
+  __attribute__((malloc, nonnull));
+
+/// Create a lambda type in the @a inductor
+const MuonCoreType *mu_lambda_type(
+    induce_t *induce, MuonType *argument, MuonType *output)
+  __attribute__((malloc, nonnull));
+
+/// Create a vector type in the @a inductor
+const MuonCoreType *mu_vector_type(
+    induce_t *induce, MuonType *matter)
+  __attribute__((malloc, nonnull));
+
+const MuonSchemeType *mu_scheme_type(
+    induce_t *induce,
+    MuonType *matter,
+    size_t argc,
+    MuonType *const argv[argc])
+  __attribute__((malloc, nonnull(1, 2)));
+
+const MuonVariableType *mu_variable_type(induce_t *induce)
+  __attribute__((malloc, nonnull));
+
+/// @internal Used to emit each branch in MU_TYPE_ENUMERATOR()
+#define MU_TYPE_ENUMERATOR_EMIT(l, upper, title) \
+  , const Muon##title##Type *: MU_##upper##_TYPE
+
+/// Return the enumerator indicative of the @a concrete type
+#define MU_TYPE_ENUMERATOR(concrete) \
+  _Generic((concrete) {0} MU_EACH_TYPE_KIND(MU_TYPE_ENUMERATOR_EMIT))
 
 /**
  * @brief Downcast the @a abstract type to the <tt>typeof(concrete)</tt>
@@ -98,47 +140,8 @@ typedef struct {
 #define mu_type_cast(abstract, concrete) __extension__ ({ \
   MuonType *_abstract = (abstract); \
   typeof(concrete) _concrete; \
-  typeof(_abstract->kind) _kind = _abstract->kind; \
-  int _castable = _Generic(_concrete, \
-    const mu_core_type_t *: _kind == MU_CORE_TYPE, \
-    const mu_join_type_t *: _kind == MU_JOIN_TYPE, \
-    const mu_scheme_type_t *: _kind == MU_SCHEME_TYPE, \
-    const mu_variable_type_t *: _kind == MU_VARIABLE_TYPE); \
-  _castable ? (typeof(_concrete)) _abstract : NULL; \
+  _abstract->kind == MU_TYPE_ENUMERATOR(__typeof__(_concrete)) ? \
+    (__typeof__(_concrete)) _abstract : NULL; \
 })
-
-const mu_core_type_t *mu_core_type(
-    mu_inductor_t *inductor,
-    const mu_core_t *core,
-    MuonType *const argv[/* core->argc */])
-  __attribute__((malloc, nonnull(1, 2)));
-
-/// Create a boolean type in the @a inductor
-const mu_core_type_t *mu_boolean_type(induce_t *induce)
-  __attribute__((malloc, nonnull));
-
-/// Create an integer type in the @a inductor
-const mu_core_type_t *mu_integer_type(induce_t *induce)
-  __attribute__((malloc, nonnull));
-
-/// Create a lambda type in the @a inductor
-const mu_core_type_t *mu_lambda_type(
-    induce_t *induce, MuonType *argument, MuonType *output)
-  __attribute__((malloc, nonnull));
-
-/// Create a vector type in the @a inductor
-const mu_core_type_t *mu_vector_type(
-    induce_t *induce, MuonType *matter)
-  __attribute__((malloc, nonnull));
-
-const mu_scheme_type_t *mu_scheme_type(
-    induce_t *induce,
-    MuonType *matter,
-    size_t argc,
-    MuonType *const argv[argc])
-  __attribute__((malloc, nonnull(1, 2)));
-
-const mu_variable_type_t *mu_variable_type(induce_t *induce)
-  __attribute__((malloc, nonnull));
 
 #endif /* MU_INDUCTOR_TYPE_H */

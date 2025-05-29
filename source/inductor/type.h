@@ -19,6 +19,13 @@ enum {
 #undef MU_EMIT
 };
 
+#define INTERNAL_IS_CONCRETE_TYPE(type, name) \
+  MU_TYPE_ENUMERATOR(type):; __typeof__(type) name = _object;
+
+#define IS_CONCRETE_TYPE(...) INTERNAL_IS_CONCRETE_TYPE(__VA_ARGS__)
+
+#define nominate(name) , name
+
 typedef struct {
   MuonType *anterior;
   size_t i : sizeof(size_t) * CHAR_BIT - 1;
@@ -39,7 +46,7 @@ typedef struct {
   };
 
   _Alignas(union {
-#define MU_EMIT(lower, u, t) mu_##lower##_type_t lower;
+#define MU_EMIT(lower, u, title) Muon##title##Type lower;
     MU_EACH_TYPE_KIND(MU_EMIT)
 #undef MU_EMIT
   }) char data[];
@@ -92,7 +99,7 @@ static inline MuonType *type_next(
   *next_charge = charge;
 
   switch ON_ABSTRACT_OBJECT(type) {
-    case IS_KIND_OF(core_type): {
+    case IS_CONCRETE_TYPE(const MuonCoreType *nominate(core_type)) {
       const mu_core_t *core = core_type->core;
 
       if (cursor->i >= core->argc)
@@ -105,12 +112,12 @@ static inline MuonType *type_next(
       return core_type->argv[cursor->i++];
     }
 
-    case IS_KIND_OF(scheme_type):
+    case IS_CONCRETE_TYPE(const MuonSchemeType *nominate(scheme_type))
       if (cursor->i > 0)
         return NULL;
       return cursor->i++, scheme_type->matter;
 
-    case IS_KIND_OF(join_type):
+    case IS_CONCRETE_TYPE(const MuonJoinType *nominate(join_type))
       assert(charge == 0);
       return cursor->i < join_type->argc ? join_type->argv[cursor->i++] : NULL;
 
@@ -128,23 +135,23 @@ static inline MuonType *type_next(
   __builtin_unreachable();
 }
 
-mu_core_type_t *core_type_allocate(induce_t *induce, const mu_core_t *core)
+MuonCoreType *core_type_allocate(induce_t *induce, const mu_core_t *core)
   __attribute__((malloc, nonnull));
 
-const mu_core_type_t *core_type_activate(mu_core_type_t *type)
+const MuonCoreType *core_type_activate(MuonCoreType *type)
   __attribute__((nonnull, warn_unused_result));
 
-mu_scheme_type_t *scheme_type_allocate(induce_t *induce, size_t argc)
+MuonSchemeType *scheme_type_allocate(induce_t *induce, size_t argc)
   __attribute__((malloc, nonnull));
 
-const mu_scheme_type_t *scheme_type_activate(
-    mu_scheme_type_t *type, MuonType *matter)
+const MuonSchemeType *scheme_type_activate(
+    MuonSchemeType *type, MuonType *matter)
   __attribute__((nonnull, warn_unused_result));
 
-mu_join_type_t *join_type_allocate(induce_t *induce, size_t argc)
+MuonJoinType *join_type_allocate(induce_t *induce, size_t argc)
   __attribute__((malloc, nonnull));
 
-const mu_join_type_t *join_type_activate(mu_join_type_t *join)
+const MuonJoinType *join_type_activate(MuonJoinType *join)
   __attribute__((nonnull, warn_unused_result));
 
 void type_debug(MuonType *type, _Bool expand)
@@ -152,8 +159,8 @@ void type_debug(MuonType *type, _Bool expand)
 
 __attribute__((nonnull))
 static inline MuonType *assign_solution(
-    const mu_variable_type_t *variable_type, MuonType *solution) {
-  return ((mu_variable_type_t *) variable_type)->solution = solution;
+    const MuonVariableType *variable_type, MuonType *solution) {
+  return ((MuonVariableType *) variable_type)->solution = solution;
 }
 
 #endif /* MU_INDUCTOR_TYPE_I */

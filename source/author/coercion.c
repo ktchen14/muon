@@ -122,7 +122,7 @@ __attribute__((nonnull)) static LLVMValueRef join_coercion_emit(
 __attribute__((nonnull)) static LLVMValueRef unjoin_coercion_emit(
     author_t *author, const mu_unjoin_coercion_t *coercion, info_t info) {
   // Ensure that the source type is a join type
-  const mu_join_type_t *source_type = mu_type_cast(info.source_type, source_type);
+  const MuonJoinType *source_type = mu_type_cast(info.source_type, source_type);
   assert(source_type != NULL);
 
   unsigned int argc;

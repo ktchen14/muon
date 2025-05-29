@@ -11,6 +11,13 @@
 #include <assert.h>
 #include <stddef.h>
 
+#define INTERNAL_IS_CONCRETE_NODE(type, name) \
+  MU_NODE_ENUMERATOR(type):; __typeof__(type) name = _object;
+
+#define IS_CONCRETE_NODE(...) INTERNAL_IS_CONCRETE_NODE(__VA_ARGS__)
+
+#define nominate(name) , name
+
 typedef struct {
   MuonNode *anterior;
   size_t i;
@@ -53,13 +60,6 @@ static inline MuonNode *node_return(MuonNode *node) {
   *cursor = (NodeCursor) {0};
   return anterior;
 }
-
-#define INTERNAL_IS_CONCRETE_NODE(type, name) \
-  MU_NODE_ENUMERATOR(type):; __typeof__(type) name = _object;
-
-#define IS_CONCRETE_NODE(...) INTERNAL_IS_CONCRETE_NODE(__VA_ARGS__)
-
-#define nominate(name) , name
 
 /// Return the <em>i</em>th node in the abstract @a node
 static inline MuonNode *node_at(MuonNode *node, size_t i) {

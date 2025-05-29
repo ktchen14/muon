@@ -444,9 +444,9 @@ void muon_node_debug(MuonNode *node) __attribute__((nonnull));
 #define MU_NODE_ENUMERATOR_EMIT(l, upper, title) \
   , Muon##title *: MUON_##upper##_NODE
 
-/// Return the enumerator constant indicative of the concrete node @a type
-#define MU_NODE_ENUMERATOR(type) \
-  _Generic((type) {0} MU_EACH_NODE_KIND(MU_NODE_ENUMERATOR_EMIT))
+/// Return the enumerator indicative of the @a concrete node
+#define MU_NODE_ENUMERATOR(concrete) \
+  _Generic((concrete) {0} MU_EACH_NODE_KIND(MU_NODE_ENUMERATOR_EMIT))
 
 /// @internal Used to emit each branch in mu_expr_cast()
 #define MU_EXPR_CAST_EMIT(l, upper, title, ...) \

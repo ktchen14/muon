@@ -34,11 +34,11 @@ static inline MuonType *assign_type(
   return type;
 }
 
-const mu_core_type_t *mu_core_type(
+const MuonCoreType *mu_core_type(
     mu_inductor_t *inductor,
     const mu_core_t *core,
     MuonType *const argv[/* core->argc */]) {
-  mu_core_type_t *result;
+  MuonCoreType *result;
   if ((result = core_type_allocate(inductor, core)) == NULL)
     return NULL;
   for (size_t i = 0; i < core->argc; i++)
@@ -46,31 +46,31 @@ const mu_core_type_t *mu_core_type(
   return core_type_activate(result);
 }
 
-const mu_core_type_t *mu_boolean_type(induce_t *induce) {
+const MuonCoreType *mu_boolean_type(induce_t *induce) {
   return mu_core_type(induce, induce->boolean_core, NULL);
 }
 
-const mu_core_type_t *mu_integer_type(induce_t *induce) {
+const MuonCoreType *mu_integer_type(induce_t *induce) {
   return mu_core_type(induce, induce->integer_core, NULL);
 }
 
-const mu_core_type_t *mu_lambda_type(
+const MuonCoreType *mu_lambda_type(
     induce_t *induce, MuonType *argument, MuonType *output) {
   MuonType *argv[] = { argument, output };
   return mu_core_type(induce, induce->lambda_core, argv);
 }
 
-const mu_core_type_t *mu_vector_type(
+const MuonCoreType *mu_vector_type(
     induce_t *induce, MuonType *matter) {
   MuonType *argv[] = { matter };
   return mu_core_type(induce, induce->vector_core, argv);
 }
 
-const mu_variable_type_t *mu_variable_type(induce_t *induce) {
-  mu_variable_type_t *result;
-  if ((result = type_allocate(induce, sizeof(mu_variable_type_t))) == NULL)
+const MuonVariableType *mu_variable_type(induce_t *induce) {
+  MuonVariableType *result;
+  if ((result = type_allocate(induce, sizeof(MuonVariableType))) == NULL)
     return NULL;
-  *result = (mu_variable_type_t) { .as_type.kind = MU_VARIABLE_TYPE };
+  *result = (MuonVariableType) { .as_type.kind = MU_VARIABLE_TYPE };
   return assign_type(induce, &result->as_type), result;
 }
 
@@ -86,14 +86,14 @@ mu_scheme_t *mu_scheme(mu_scheme_t *parent) {
   return result;
 }
 
-const mu_scheme_type_t *mu_scheme_type(
+const MuonSchemeType *mu_scheme_type(
     induce_t *induce,
     MuonType *matter,
     size_t argc,
     MuonType *const argv[argc]) {
   assert(argc == 0 || argv != NULL);
 
-  mu_scheme_type_t *allocation;
+  MuonSchemeType *allocation;
   if ((allocation = scheme_type_allocate(induce, argc)) == NULL)
     return NULL;
   for (size_t i = 0; i < argc; i++)
@@ -101,23 +101,23 @@ const mu_scheme_type_t *mu_scheme_type(
   return scheme_type_activate(allocation, matter);
 }
 
-mu_core_type_t *core_type_allocate(induce_t *induce, const mu_core_t *core) {
+MuonCoreType *core_type_allocate(induce_t *induce, const mu_core_t *core) {
   assert(core->induce == induce);
 
   size_t size;
-  if (rare((size = struct_size(mu_core_type_t, argv, core->argc)) == 0))
+  if (rare((size = struct_size(MuonCoreType, argv, core->argc)) == 0))
     return errno = ENOMEM, NULL;
 
-  mu_core_type_t *result;
+  MuonCoreType *result;
   if ((result = type_allocate(induce, size)) == NULL)
     return NULL;
-  *result = (mu_core_type_t) {
+  *result = (MuonCoreType) {
     .as_type = { .kind = MU_CORE_TYPE, .induce = induce }, .core = core,
   };
   return result;
 }
 
-const mu_core_type_t *core_type_activate(mu_core_type_t *type) {
+const MuonCoreType *core_type_activate(MuonCoreType *type) {
   mu_inductor_t *inductor = (mu_inductor_t *) type->as_type.induce;
 
   for (size_t i = 0; i < type->core->argc; i++) {
@@ -128,22 +128,22 @@ const mu_core_type_t *core_type_activate(mu_core_type_t *type) {
   return assign_type(inductor, &type->as_type), type;
 }
 
-mu_scheme_type_t *scheme_type_allocate(induce_t *induce, size_t argc) {
+MuonSchemeType *scheme_type_allocate(induce_t *induce, size_t argc) {
   size_t size;
-  if (rare((size = struct_size(mu_scheme_type_t, argv, argc)) == 0))
+  if (rare((size = struct_size(MuonSchemeType, argv, argc)) == 0))
     return errno = ENOMEM, NULL;
 
-  mu_scheme_type_t *result;
+  MuonSchemeType *result;
   if ((result = type_allocate(induce, size)) == NULL)
     return NULL;
-  *result = (mu_scheme_type_t) {
+  *result = (MuonSchemeType) {
     .as_type = { .kind = MU_SCHEME_TYPE, .induce = induce }, .argc = argc,
   };
   return result;
 }
 
-const mu_scheme_type_t *scheme_type_activate(
-    mu_scheme_type_t *type, MuonType *matter) {
+const MuonSchemeType *scheme_type_activate(
+    MuonSchemeType *type, MuonType *matter) {
   induce_t *induce = (induce_t *) type->as_type.induce;
 
   for (size_t i = 0; i < type->argc; i++) {
@@ -154,21 +154,21 @@ const mu_scheme_type_t *scheme_type_activate(
   return assign_type(induce, &type->as_type), type;
 }
 
-mu_join_type_t *join_type_allocate(induce_t *induce, size_t argc) {
+MuonJoinType *join_type_allocate(induce_t *induce, size_t argc) {
   size_t size;
-  if (rare((size = struct_size(mu_join_type_t, argv, argc)) == 0))
+  if (rare((size = struct_size(MuonJoinType, argv, argc)) == 0))
     return errno = ENOMEM, NULL;
 
-  mu_join_type_t *result;
+  MuonJoinType *result;
   if ((result = type_allocate(induce, size)) == NULL)
     return NULL;
-  *result = (mu_join_type_t) {
+  *result = (MuonJoinType) {
     .as_type = { .kind = MU_JOIN_TYPE, .induce = induce }, .argc = argc,
   };
   return result;
 }
 
-const mu_join_type_t *join_type_activate(mu_join_type_t *type) {
+const MuonJoinType *join_type_activate(MuonJoinType *type) {
   induce_t *induce = (induce_t *) type->as_type.induce;
 
   for (size_t i = 0; i < type->argc; i++) {
@@ -180,7 +180,7 @@ const mu_join_type_t *join_type_activate(mu_join_type_t *type) {
 
 static void type_debug_internal(MuonType *type, _Bool expand, unsigned char prec, int assoc);
 
-static void debug_variable_type_name(const mu_variable_type_t *type) {
+static void debug_variable_type_name(const MuonVariableType *type) {
   static _Atomic size_t next_number = 0;
   static const char *alphabet[] = {
     "α", "β", "γ", "δ", "ε", "ζ", "η", "θ", "ι", "κ", "μ", "ν", "ξ", "ο", "π",
@@ -189,7 +189,7 @@ static void debug_variable_type_name(const mu_variable_type_t *type) {
 
   // Assign the variable type a number
   if (type->number == 0)
-    ((mu_variable_type_t *) type)->number = ++next_number;
+    ((MuonVariableType *) type)->number = ++next_number;
 
   char buffer[256];
 
@@ -207,7 +207,7 @@ static void debug_variable_type_name(const mu_variable_type_t *type) {
 // NOLINTNEXTLINE(misc-no-recursion)
 static void type_debug_internal(MuonType *type, _Bool expand, unsigned char prec, int assoc) {
   switch ON_ABSTRACT_OBJECT(type) {
-    case IS_KIND_OF(core_type): {
+    case IS_CONCRETE_TYPE(const MuonCoreType *nominate(core_type)) {
       const mu_core_t *core = core_type->core;
 
       switch (core->kind) {
@@ -250,7 +250,7 @@ static void type_debug_internal(MuonType *type, _Bool expand, unsigned char prec
       break;
     }
 
-    case IS_KIND_OF(variable_type): {
+    case IS_CONCRETE_TYPE(const MuonVariableType *nominate(variable_type)) {
       if (!debug_dot && variable_type->solution != NULL) {
         type_debug_internal(variable_type->solution, expand, prec, assoc);
         break;
@@ -274,7 +274,7 @@ static void type_debug_internal(MuonType *type, _Bool expand, unsigned char prec
           if (length++)
             debug(" ⊓ ");
 
-          const mu_variable_type_t *upper_variable_type;
+          const MuonVariableType *upper_variable_type;
           if ((upper_variable_type = mu_type_cast(edge.target, upper_variable_type)) == NULL)
             type_debug_internal(edge.target, expand, 2, 1);
           else
@@ -293,7 +293,7 @@ static void type_debug_internal(MuonType *type, _Bool expand, unsigned char prec
           if (length++)
             debug(" ⊔ ");
 
-          const mu_variable_type_t *lower_variable_type;
+          const MuonVariableType *lower_variable_type;
           if ((lower_variable_type = mu_type_cast(edge.source, lower_variable_type)) == NULL)
             type_debug_internal(edge.source, expand, 2, 1);
           else
@@ -310,12 +310,12 @@ static void type_debug_internal(MuonType *type, _Bool expand, unsigned char prec
       break;
     }
 
-    case IS_KIND_OF(scheme_type):
+    case IS_CONCRETE_TYPE(const MuonSchemeType *nominate(scheme_type))
       debug("∀(");
 
       _Bool seen = 0;
       for (size_t i = 0; i < scheme_type->argc; i++) {
-        const mu_variable_type_t *v;
+        const MuonVariableType *v;
         if ((v = mu_type_cast(scheme_type->argv[i], v)) == NULL)
           continue;
 
@@ -330,7 +330,7 @@ static void type_debug_internal(MuonType *type, _Bool expand, unsigned char prec
       debug(")");
       break;
 
-    case IS_KIND_OF(join_type):
+    case IS_CONCRETE_TYPE(const MuonJoinType *nominate(join_type))
       if (join_type->argc == 0)
         debug("⊥");
       else {
