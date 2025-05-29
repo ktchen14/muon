@@ -27,32 +27,32 @@ enum {
 
 #define nominate(name) , name
 
-const MuonEdgeCoercion *mu_edge_coercion(
+MuonEdgeCoercion *mu_edge_coercion(
     mu_inductor_t *inductor, MuonType *target, MuonType *source)
   __attribute__((malloc, nonnull));
 
-MuonVarianceCoercion *variance_coercion_allocate(
+struct MuonVarianceCoercion *variance_coercion_allocate(
     mu_inductor_t *inductor, const mu_core_t *core)
   __attribute__((malloc));
 
-const MuonVarianceCoercion *variance_coercion_activate(
-    MuonVarianceCoercion *coercion, MuonType *target)
+MuonVarianceCoercion *variance_coercion_activate(
+    struct MuonVarianceCoercion *coercion, MuonType *target)
   __attribute__((nonnull));
 
-MuonUnjoinCoercion *unjoin_coercion_allocate(
+struct MuonUnjoinCoercion *unjoin_coercion_allocate(
     mu_inductor_t *inductor, size_t argc)
   __attribute__((malloc));
 
-const MuonUnjoinCoercion *unjoin_coercion_activate(
-    MuonUnjoinCoercion *coercion, MuonType *target)
+MuonUnjoinCoercion *unjoin_coercion_activate(
+    struct MuonUnjoinCoercion *coercion, MuonType *target)
   __attribute__((nonnull));
 
-MuonMeetCoercion *meet_coercion_allocate(
+struct MuonMeetCoercion *meet_coercion_allocate(
     mu_inductor_t *inductor, size_t argc)
   __attribute__((malloc));
 
-const MuonMeetCoercion *meet_coercion_activate(
-    MuonMeetCoercion *coercion, MuonType *target)
+MuonMeetCoercion *meet_coercion_activate(
+    struct MuonMeetCoercion *coercion, MuonType *target)
   __attribute__((nonnull));
 
 #endif /* MU_INDUCTOR_COERCION_I */

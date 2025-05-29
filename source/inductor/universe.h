@@ -78,7 +78,7 @@ static inline MuonCoercion *coerce_with(
     return edge->coercion;
 
   // Otherwise, return an edge coercion for the edge
-  const MuonEdgeCoercion *result;
+  MuonEdgeCoercion *result;
   if ((result = mu_edge_coercion(inductor, edge->target, edge->source)) == NULL)
     return NULL;
   return edge->coercion = &result->as_coercion;

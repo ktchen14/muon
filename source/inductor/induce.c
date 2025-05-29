@@ -160,7 +160,7 @@ MuonCoercion *ensure_coercion(
 
   MuonJoinType *join_type;
   if ((join_type = mu_type_cast(source, join_type)) != NULL) {
-    MuonUnjoinCoercion *allocation;
+    struct MuonUnjoinCoercion *allocation;
     if ((allocation = unjoin_coercion_allocate(induce, join_type->argc)) == NULL)
       return NULL;
 
@@ -176,7 +176,7 @@ MuonCoercion *ensure_coercion(
       allocation->argv[i] = coercion;
     }
 
-    const MuonUnjoinCoercion *result;
+    MuonUnjoinCoercion *result;
     if ((result = unjoin_coercion_activate(allocation, target)) == NULL)
       return NULL;
     return edge_assign(result_edge, &result->as_coercion);
@@ -193,7 +193,7 @@ MuonCoercion *ensure_coercion(
     if ((instance = instantiate_scheme(induce, scheme_type)) == NULL)
       return NULL;
 
-    const MuonUnschemeCoercion *head;
+    MuonUnschemeCoercion *head;
     if ((head = mu_unscheme_coercion(induce, instance)) == NULL)
       return NULL;
 
@@ -210,7 +210,7 @@ MuonCoercion *ensure_coercion(
       return MU_NO_SUCH_COERCION;
 
     // Then return the coercion (source ⇝ instance) ∘ (instance ⇝ target)
-    const MuonIndirectCoercion *result;
+    MuonIndirectCoercion *result;
     if ((result = mu_indirect_coercion(induce, &head->as_coercion, coercion)) == NULL)
       return NULL;
     return edge_assign(result_edge, &result->as_coercion);
@@ -244,7 +244,7 @@ MuonCoercion *ensure_coercion(
     abort();
 
   instance_coercion:;
-    const MuonInstanceCoercion *result;
+    MuonInstanceCoercion *result;
     if ((result = mu_instance_coercion(induce, target, instance)) == NULL)
       return NULL;
     return edge_assign(result_edge, &result->as_coercion);
@@ -252,7 +252,7 @@ MuonCoercion *ensure_coercion(
 
   const mu_core_t *core = source_core;
 
-  MuonVarianceCoercion *allocation;
+  struct MuonVarianceCoercion *allocation;
   if ((allocation = variance_coercion_allocate(induce, core)) == NULL)
     return NULL;
 
@@ -273,7 +273,7 @@ MuonCoercion *ensure_coercion(
     allocation->argv[i] = coercion;
   }
 
-  const MuonVarianceCoercion *result;
+  MuonVarianceCoercion *result;
   if ((result = variance_coercion_activate(allocation, target)) == NULL)
     return NULL;
   return edge_assign(result_edge, &result->as_coercion);
@@ -582,7 +582,7 @@ static MuonCoercion *retrieve_core_coercion(
 
   const mu_core_t *core = source_core;
 
-  MuonVarianceCoercion *allocation;
+  struct MuonVarianceCoercion *allocation;
   if ((allocation = variance_coercion_allocate(induce, core)) == NULL)
     return NULL;
 
@@ -605,7 +605,7 @@ static MuonCoercion *retrieve_core_coercion(
     allocation->argv[i] = coercion;
   }
 
-  const MuonVarianceCoercion *result;
+  MuonVarianceCoercion *result;
   if ((result = variance_coercion_activate(allocation, &target->as_type)) == NULL)
     return NULL;
   return &result->as_coercion;
@@ -666,12 +666,12 @@ induce_t *induce_initialize(
   if (rare(universe_initialize(&universe) == NULL))
     return NULL;
 
-  MuonIdCoercion *id_coercion;
+  struct MuonIdCoercion *id_coercion;
   if ((id_coercion = malloc(sizeof(MuonIdCoercion))) == NULL)
     return NULL;
   *id_coercion = (MuonIdCoercion) { .as_coercion.kind = MU_ID_COERCION };
 
-  MuonSlotCoercion *slot_coercion;
+  struct MuonSlotCoercion *slot_coercion;
   if ((slot_coercion = malloc(sizeof(MuonSlotCoercion))) == NULL)
     return NULL;
   *slot_coercion = (MuonSlotCoercion) { .as_coercion.kind = MU_SLOT_COERCION };
