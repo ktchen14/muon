@@ -21,6 +21,10 @@ unsigned char buffer[4096];
 const mu_name_t *vector_access;
 
 int main(int argc, char *argv[argc]) {
+#define MU_EMIT(lower, upper, t)
+    MU_EACH_EXPR_KIND(MU_EMIT);
+#undef MU_EMIT
+
   const char *muon_name = argc > 0 ? argv[0] : "muon";
   if (argc < 2) {
     fprintf(stderr, "Usage: %s source\n", muon_name);

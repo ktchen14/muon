@@ -416,8 +416,13 @@ const mu_variable_view_t *mu_variable_view(
 /// Emit debugging information on the abstract @a node to the debug stream
 void mu_node_debug(const mu_node_t *node) __attribute__((nonnull));
 
-/// @internal Used to emit each abstract branch in a cast
-#define MU_NODE_CAST_EMIT(l, upper, t, ...) || _kind == MU_##upper##__VA_ARGS__
+/// @internal Used to emit each branch in MU_NODE_ENUMERATOR()
+#define MU_NODE_ENUMERATOR_EMIT(lower, upper, t) \
+  , const mu_##lower##_t *: MU_##upper##_NODE
+
+/// Return the enumerator constant indicative of the concrete node @a type
+#define MU_NODE_ENUMERATOR(type) \
+  _Generic((type) {0} MU_EACH_NODE_KIND(MU_NODE_ENUMERATOR_EMIT))
 
 /// @internal Used to emit each branch in mu_expr_cast()
 #define MU_EXPR_CAST_EMIT(lower, upper, t, ...) \
@@ -469,22 +474,11 @@ void mu_node_debug(const mu_node_t *node) __attribute__((nonnull));
  *   - or a const qualified pointer to a concrete node
  */
 #define mu_node_cast(abstract, concrete) __extension__ ({ \
-    const mu_node_t *_abstract = (abstract); \
-    typeof(concrete) _concrete; \
-    mu_node_kind_t _kind = _abstract->kind; \
-    _Bool _castable = _Generic(_concrete, \
-      const mu_expr_t *: 0 MU_EACH_EXPR_KIND(MU_NODE_CAST_EMIT, _EXPR_NODE), \
-      const mu_sign_t *: 0 MU_EACH_SIGN_KIND(MU_NODE_CAST_EMIT, _SIGN_NODE), \
-      const mu_stmt_t *: 0 MU_EACH_STMT_KIND(MU_NODE_CAST_EMIT, _STMT_NODE), \
-      const mu_view_t *: 0 MU_EACH_VIEW_KIND(MU_NODE_CAST_EMIT, _VIEW_NODE) \
-      MU_EACH_EXPR_KIND(MU_EXPR_CAST_EMIT, _NODE) \
-      MU_EACH_SIGN_KIND(MU_SIGN_CAST_EMIT, _NODE) \
-      MU_EACH_STMT_KIND(MU_STMT_CAST_EMIT, _NODE) \
-      MU_EACH_VIEW_KIND(MU_VIEW_CAST_EMIT, _NODE), \
-      const mu_expr_member_t *: _kind == MU_EXPR_MEMBER_NODE, \
-      const mu_switch_case_t *: _kind == MU_SWITCH_CASE_NODE); \
-    _castable ? (typeof(_concrete)) _abstract : NULL; \
-  })
+  const mu_node_t *_abstract = (abstract); \
+  __typeof__(concrete) _concrete; \
+  _abstract->kind == MU_NODE_ENUMERATOR(__typeof__(_concrete)) ? \
+    (__typeof__(_concrete)) _abstract : NULL; \
+})
 
 /**
  * @brief Downcast the @a abstract expr to the <tt>typeof(concrete)</tt>
