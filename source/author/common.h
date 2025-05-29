@@ -28,7 +28,7 @@ struct author_t {
   size_t node_length;
 
   LLVMValueRef (*native_expr_emit)(
-      author_t *author, const mu_native_expr_t *expr)
+      author_t *author, mu_native_expr_t *expr)
     __attribute__((nonnull));
 
   /// LLVM data layout

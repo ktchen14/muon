@@ -348,7 +348,7 @@ view_member: name ':' _ view {
   $$ = mu_view_member(syntax->engine, $name, $view);
 
 } | name ':' {
-  const mu_variable_view_t *view = mu_variable_view(syntax->engine, $name);
+  mu_variable_view_t *view = mu_variable_view(syntax->engine, $name);
   $$ = mu_view_member(syntax->engine, $name, &view->as_view);
 }
 

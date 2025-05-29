@@ -16,7 +16,7 @@ uint64_t handle_list(struct { uint64_t length; void *data; } argument) {
 }
 
 __attribute__((nonnull))
-static LLVMValueRef handle_list_emit(author_t *author, const mu_native_expr_t *expr) {
+static LLVMValueRef handle_list_emit(author_t *author, mu_native_expr_t *expr) {
   LLVMTypeRef integer_type = LLVMInt64Type();
   LLVMTypeRef argv[] = { author->vector_type };
   LLVMTypeRef type = LLVMFunctionType(integer_type, argv, 1, 0);
@@ -28,6 +28,6 @@ static LLVMValueRef handle_list_emit(author_t *author, const mu_native_expr_t *e
 }
 
 LLVMValueRef standard_native_expr_emit(
-    author_t *author, const mu_native_expr_t *expr) {
+    author_t *author, mu_native_expr_t *expr) {
   return handle_list_emit(author, expr);
 }

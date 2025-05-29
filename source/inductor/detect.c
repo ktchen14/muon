@@ -94,7 +94,7 @@ static void view_announce(roster_t *roster, mu_view_t *root) {
 
 __attribute__((nonnull(2)))
 roster_t *handle_sequence_expr(
-    roster_t *roster, const mu_sequence_expr_t *sequence_expr) {
+    roster_t *roster, mu_sequence_expr_t *sequence_expr) {
   size_t announce_length = 0;
   for (size_t i = 0; i < sequence_expr->argc; i++) {
     mu_stmt_t *stmt = sequence_expr->argv[i];
@@ -128,7 +128,7 @@ roster_t *handle_sequence_expr(
 }
 
 detect_t *detect_node(detect_t *detect, mu_node_t *root) {
-  const mu_sequence_expr_t *sequence_expr = mu_node_cast(root, sequence_expr);
+  mu_sequence_expr_t *sequence_expr = mu_node_cast(root, sequence_expr);
   assert(sequence_expr != NULL);
 
   roster_t *roster = NULL;

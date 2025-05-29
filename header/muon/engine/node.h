@@ -157,135 +157,135 @@ typedef const struct mu_view_t {
   struct mu_expr_t as_expr; struct mu_node_t as_node; \
 }
 
-typedef struct {
+typedef const struct mu_access_expr_t {
   MU_EXPR_HEADER;
   mu_name_t *name;
 } mu_access_expr_t;
 
-typedef struct {
+typedef const struct mu_boolean_expr_t {
   MU_EXPR_HEADER;
   _Bool data;
 } mu_boolean_expr_t;
 
-typedef struct {
+typedef const struct mu_cast_expr_t {
   MU_EXPR_HEADER;
   mu_sign_t *sign;
   mu_expr_t *matter;
 } mu_cast_expr_t;
 
-typedef struct {
+typedef const struct mu_integer_expr_t {
   MU_EXPR_HEADER;
   uint64_t data;
 } mu_integer_expr_t;
 
-typedef struct {
+typedef const struct mu_invoke_expr_t {
   MU_EXPR_HEADER;
   mu_expr_t *operator;
   mu_expr_t *argument;
 } mu_invoke_expr_t;
 
-typedef struct {
+typedef const struct mu_lambda_expr_t {
   MU_EXPR_HEADER;
   mu_view_t *argument;
   mu_expr_t *matter;
 } mu_lambda_expr_t;
 
-typedef struct {
+typedef const struct mu_name_expr_t {
   MU_EXPR_HEADER;
   mu_name_t *name;
 } mu_name_expr_t;
 
-typedef struct {
+typedef const struct mu_native_expr_t {
   MU_EXPR_HEADER;
   mu_name_t *name;
 } mu_native_expr_t;
 
-typedef struct {
+typedef const struct mu_expr_member_t {
   MU_NODE_HEADER;
   mu_name_t *name; // optional
   mu_expr_t *expr;
 } mu_expr_member_t;
 
-typedef struct {
+typedef const struct mu_record_expr_t {
   MU_EXPR_HEADER;
   size_t argc;
-  const mu_expr_member_t *argv[/* argc */];
+  mu_expr_member_t *argv[/* argc */];
 } mu_record_expr_t;
 
-typedef struct {
+typedef const struct mu_sequence_expr_t {
   MU_EXPR_HEADER;
   size_t argc;
   mu_stmt_t *argv[/* argc */];
 } mu_sequence_expr_t;
 
-typedef struct {
+typedef const struct mu_switch_case_t {
   MU_NODE_HEADER;
   mu_name_t *name;
   mu_expr_t *expr;
 } mu_switch_case_t;
 
-typedef struct {
+typedef const struct mu_switch_expr_t {
   MU_EXPR_HEADER;
   size_t argc;
-  const mu_switch_case_t *argv[/* argc */];
+  mu_switch_case_t *argv[/* argc */];
 } mu_switch_expr_t;
 
-typedef struct {
+typedef const struct mu_vector_expr_t {
   MU_EXPR_HEADER;
   size_t argc;
   mu_expr_t *argv[/* argc */];
 } mu_vector_expr_t;
 
-const mu_access_expr_t *mu_access_expr(
+mu_access_expr_t *mu_access_expr(
     mu_engine_t *engine, mu_name_t *name)
   __attribute__((malloc, nonnull));
 
-const mu_boolean_expr_t *mu_boolean_expr(mu_engine_t *engine, _Bool data)
+mu_boolean_expr_t *mu_boolean_expr(mu_engine_t *engine, _Bool data)
   __attribute__((malloc, nonnull));
 
-const mu_cast_expr_t *mu_cast_expr(
+mu_cast_expr_t *mu_cast_expr(
     mu_engine_t *engine, mu_sign_t *sign, mu_expr_t *matter)
   __attribute__((malloc, nonnull));
 
-const mu_integer_expr_t *mu_integer_expr(mu_engine_t *engine, uint64_t data)
+mu_integer_expr_t *mu_integer_expr(mu_engine_t *engine, uint64_t data)
   __attribute__((malloc, nonnull));
 
-const mu_invoke_expr_t *mu_invoke_expr(
+mu_invoke_expr_t *mu_invoke_expr(
     mu_engine_t *engine, mu_expr_t *operator, mu_expr_t *argument)
   __attribute__((malloc, nonnull));
 
-const mu_lambda_expr_t *mu_lambda_expr(
+mu_lambda_expr_t *mu_lambda_expr(
     mu_engine_t *engine, mu_view_t *argument, mu_expr_t *matter)
   __attribute__((malloc, nonnull));
 
-const mu_name_expr_t *mu_name_expr(mu_engine_t *engine, mu_name_t *name)
+mu_name_expr_t *mu_name_expr(mu_engine_t *engine, mu_name_t *name)
   __attribute__((malloc, nonnull));
 
-const mu_native_expr_t *mu_native_expr(
+mu_native_expr_t *mu_native_expr(
     mu_engine_t *engine, mu_name_t *name)
   __attribute__((malloc, nonnull));
 
-const mu_expr_member_t *mu_expr_member(
+mu_expr_member_t *mu_expr_member(
     mu_engine_t *engine, mu_name_t *name, mu_expr_t *expr)
   __attribute__((malloc, nonnull));
 
-const mu_record_expr_t *mu_record_expr(
-    mu_engine_t *engine, size_t argc, const mu_expr_member_t *argv[/* argc */])
+mu_record_expr_t *mu_record_expr(
+    mu_engine_t *engine, size_t argc, mu_expr_member_t *argv[/* argc */])
   __attribute__((malloc, nonnull(1)));
 
-const mu_switch_case_t *mu_switch_case(
+mu_switch_case_t *mu_switch_case(
     mu_engine_t *engine, mu_name_t *name, mu_expr_t *expr)
   __attribute__((malloc, nonnull));
 
-const mu_switch_expr_t *mu_switch_expr(
-    mu_engine_t *engine, size_t argc, const mu_switch_case_t *const argv[argc])
+mu_switch_expr_t *mu_switch_expr(
+    mu_engine_t *engine, size_t argc, mu_switch_case_t *const argv[argc])
   __attribute__((malloc, nonnull));
 
-const mu_sequence_expr_t *mu_sequence_expr(
+mu_sequence_expr_t *mu_sequence_expr(
     mu_engine_t *engine, size_t argc, mu_stmt_t *const argv[argc])
   __attribute__((malloc, nonnull));
 
-const mu_vector_expr_t *mu_vector_expr(
+mu_vector_expr_t *mu_vector_expr(
     mu_engine_t *engine, size_t argc, mu_expr_t *const argv[/* argc */])
   __attribute__((malloc, nonnull(1)));
 
@@ -294,21 +294,21 @@ const mu_vector_expr_t *mu_vector_expr(
   struct mu_sign_t as_sign; struct mu_node_t as_node; \
 }
 
-typedef struct {
+typedef const struct mu_boolean_sign_t {
   MU_SIGN_HEADER;
 } mu_boolean_sign_t;
 
-typedef struct {
+typedef const struct mu_integer_sign_t {
   MU_SIGN_HEADER;
 } mu_integer_sign_t;
 
-typedef struct {
+typedef const struct mu_lambda_sign_t {
   MU_SIGN_HEADER;
   mu_sign_t *argument;
   mu_sign_t *output;
 } mu_lambda_sign_t;
 
-typedef struct {
+typedef const struct mu_name_sign_t {
   MU_SIGN_HEADER;
   mu_name_t *name;
 } mu_name_sign_t;
@@ -318,35 +318,35 @@ typedef struct {
   mu_sign_t *sign;
 } mu_sign_member_t;
 
-typedef struct {
+typedef const struct mu_record_sign_t {
   MU_SIGN_HEADER;
   size_t argc;
   mu_sign_member_t argv[/* argc */];
 } mu_record_sign_t;
 
-typedef struct {
+typedef const struct mu_vector_sign_t {
   MU_SIGN_HEADER;
   mu_sign_t *matter;
 } mu_vector_sign_t;
 
-const mu_boolean_sign_t *mu_boolean_sign(mu_engine_t *engine)
+mu_boolean_sign_t *mu_boolean_sign(mu_engine_t *engine)
   __attribute__((malloc, nonnull));
 
-const mu_integer_sign_t *mu_integer_sign(mu_engine_t *engine)
+mu_integer_sign_t *mu_integer_sign(mu_engine_t *engine)
   __attribute__((malloc, nonnull));
 
-const mu_lambda_sign_t *mu_lambda_sign(
+mu_lambda_sign_t *mu_lambda_sign(
     mu_engine_t *engine, mu_sign_t *argument, mu_sign_t *output)
   __attribute__((malloc, nonnull));
 
-const mu_name_sign_t *mu_name_sign(mu_engine_t *engine, mu_name_t *name)
+mu_name_sign_t *mu_name_sign(mu_engine_t *engine, mu_name_t *name)
   __attribute__((malloc, nonnull));
 
-const mu_record_sign_t *mu_record_sign(
+mu_record_sign_t *mu_record_sign(
     mu_engine_t *engine, size_t argc, const mu_sign_member_t argv[/* argc */])
   __attribute__((malloc, nonnull(1)));
 
-const mu_vector_sign_t *mu_vector_sign(
+mu_vector_sign_t *mu_vector_sign(
     mu_engine_t *engine, mu_sign_t *matter)
   __attribute__((malloc, nonnull));
 
@@ -355,57 +355,53 @@ const mu_vector_sign_t *mu_vector_sign(
   struct mu_stmt_t as_stmt; struct mu_node_t as_node; \
 }
 
-typedef struct {
+typedef const struct mu_coercion_stmt_t {
   MU_STMT_HEADER;
   mu_sign_t *source;
   mu_sign_t *target;
   mu_expr_t *expr;
 } mu_coercion_stmt_t;
 
-typedef struct {
+typedef const struct mu_type_node_t {
   MU_NODE_HEADER;
   mu_name_t *name;
   size_t argc;
   mu_name_t *argv[/* argc */];
 } mu_type_node_t;
 
-typedef struct {
+typedef const struct mu_datatype_option_t {
   MU_NODE_HEADER;
   mu_name_t *name;
 } mu_datatype_option_t;
 
-typedef struct {
+typedef const struct mu_datatype_stmt_t {
   MU_STMT_HEADER;
   mu_name_t *name;
   size_t argc;
-  const mu_datatype_option_t *argv[/* argc */];
+  mu_datatype_option_t *argv[/* argc */];
 } mu_datatype_stmt_t;
 
-typedef struct {
+typedef const struct mu_define_stmt_t {
   MU_STMT_HEADER;
   mu_name_t *name;
   mu_expr_t *expr;
 } mu_define_stmt_t;
 
-const mu_coercion_stmt_t *mu_coercion_stmt(
-    mu_engine_t *engine,
-    mu_sign_t *source,
-    mu_sign_t *target,
-    mu_expr_t *expr)
+mu_coercion_stmt_t *mu_coercion_stmt(
+    mu_engine_t *engine, mu_sign_t *source, mu_sign_t *target, mu_expr_t *expr)
   __attribute__((malloc, nonnull));
 
-const mu_datatype_option_t *mu_datatype_option(
-    mu_engine_t *engine, mu_name_t *name)
+mu_datatype_option_t *mu_datatype_option(mu_engine_t *engine, mu_name_t *name)
   __attribute__((malloc, nonnull));
 
-const mu_datatype_stmt_t *mu_datatype_stmt(
+mu_datatype_stmt_t *mu_datatype_stmt(
     mu_engine_t *engine,
     mu_name_t *name,
     size_t argc,
-    const mu_datatype_option_t *argv[/* argc */])
+    mu_datatype_option_t *argv[/* argc */])
   __attribute__((malloc, nonnull(1, 2)));
 
-const mu_define_stmt_t *mu_define_stmt(
+mu_define_stmt_t *mu_define_stmt(
     mu_engine_t *engine, mu_name_t *name, mu_expr_t *expr)
   __attribute__((malloc, nonnull));
 
@@ -414,35 +410,34 @@ const mu_define_stmt_t *mu_define_stmt(
   struct mu_view_t as_view; struct mu_node_t as_node; \
 }
 
-typedef struct {
+typedef const struct mu_view_member_t {
   MU_NODE_HEADER;
   size_t announce_length;
   mu_name_t *name; // optional
   mu_view_t *view;
 } mu_view_member_t;
 
-typedef struct {
+typedef const struct mu_record_view_t {
   MU_VIEW_HEADER;
   size_t announce_length;
   size_t argc;
-  const mu_view_member_t *argv[/* argc */];
+  mu_view_member_t *argv[/* argc */];
 } mu_record_view_t;
 
-typedef struct {
+typedef const struct mu_variable_view_t {
   MU_VIEW_HEADER;
   mu_name_t *name;
 } mu_variable_view_t;
 
-const mu_view_member_t *mu_view_member(
+mu_view_member_t *mu_view_member(
     mu_engine_t *engine, mu_name_t *name, mu_view_t *view)
   __attribute__((malloc, nonnull));
 
-const mu_record_view_t *mu_record_view(
-    mu_engine_t *engine, size_t argc, const mu_view_member_t *argv[/* argc */])
+mu_record_view_t *mu_record_view(
+    mu_engine_t *engine, size_t argc, mu_view_member_t *argv[/* argc */])
   __attribute__((malloc, nonnull(1)));
 
-const mu_variable_view_t *mu_variable_view(
-    mu_engine_t *engine, mu_name_t *name)
+mu_variable_view_t *mu_variable_view(mu_engine_t *engine, mu_name_t *name)
   __attribute__((malloc, nonnull));
 
 /// Emit debugging information on the abstract @a node to the debug stream
@@ -450,7 +445,7 @@ void mu_node_debug(mu_node_t *node) __attribute__((nonnull));
 
 /// @internal Used to emit each branch in MU_NODE_ENUMERATOR()
 #define MU_NODE_ENUMERATOR_EMIT(lower, upper, t) \
-  , const mu_##lower##_t *: MU_##upper##_NODE
+  , mu_##lower##_t *: MU_##upper##_NODE
 
 /// Return the enumerator constant indicative of the concrete node @a type
 #define MU_NODE_ENUMERATOR(type) \
@@ -458,19 +453,19 @@ void mu_node_debug(mu_node_t *node) __attribute__((nonnull));
 
 /// @internal Used to emit each branch in mu_expr_cast()
 #define MU_EXPR_CAST_EMIT(lower, upper, t, ...) \
-  , const mu_##lower##_expr_t *: _kind == MU_##upper##_EXPR##__VA_ARGS__
+  , mu_##lower##_expr_t *: _kind == MU_##upper##_EXPR##__VA_ARGS__
 
 /// @internal Used to emit each branch in mu_sign_cast()
 #define MU_SIGN_CAST_EMIT(lower, upper, t, ...) \
-  , const mu_##lower##_sign_t *: _kind == MU_##upper##_SIGN##__VA_ARGS__
+  , mu_##lower##_sign_t *: _kind == MU_##upper##_SIGN##__VA_ARGS__
 
 /// @internal Used to emit each branch in mu_stmt_cast()
 #define MU_STMT_CAST_EMIT(lower, upper, t, ...) \
-  , const mu_##lower##_stmt_t *: _kind == MU_##upper##_STMT##__VA_ARGS__
+  , mu_##lower##_stmt_t *: _kind == MU_##upper##_STMT##__VA_ARGS__
 
 /// @internal Used to emit each branch in mu_view_cast()
 #define MU_VIEW_CAST_EMIT(lower, upper, t, ...) \
-  , const mu_##lower##_view_t *: _kind == MU_##upper##_VIEW##__VA_ARGS__
+  , mu_##lower##_view_t *: _kind == MU_##upper##_VIEW##__VA_ARGS__
 
 /**
  * @brief Downcast the @a abstract node to the <tt>typeof(concrete)</tt>

@@ -34,7 +34,7 @@ static LLVMValueRef evince_result(const author_t *author, mu_node_t *node) {
 }
 
 __attribute__((nonnull)) static LLVMValueRef access_expr_emit(
-    author_t *author, const mu_access_expr_t *expr) {
+    author_t *author, mu_access_expr_t *expr) {
   const mu_type_t *lambda_type = evince_type(author->inductor, &expr->as_node);
   LLVMTypeRef lambda_ty;
   if ((lambda_ty = get_type(author, lambda_type)) == NULL)
@@ -61,22 +61,22 @@ __attribute__((nonnull)) static LLVMValueRef access_expr_emit(
 }
 
 __attribute__((nonnull)) static LLVMValueRef boolean_expr_emit(
-    author_t *author, const mu_boolean_expr_t *expr) {
+    author_t *author, mu_boolean_expr_t *expr) {
   return LLVMConstInt(author->bool_type, expr->data, 0);
 }
 
 __attribute__((nonnull)) static LLVMValueRef cast_expr_emit(
-    author_t *author, const mu_cast_expr_t *expr) {
+    author_t *author, mu_cast_expr_t *expr) {
   return evince_result(author, &expr->matter->as_node);
 }
 
 __attribute__((nonnull)) static LLVMValueRef integer_expr_emit(
-    author_t *author, const mu_integer_expr_t *expr) {
+    author_t *author, mu_integer_expr_t *expr) {
   return LLVMConstInt(LLVMInt64Type(), expr->data, 0);
 }
 
 __attribute__((nonnull)) static LLVMValueRef invoke_expr_emit(
-    author_t *author, const mu_invoke_expr_t *expr) {
+    author_t *author, mu_invoke_expr_t *expr) {
   mu_node_t *operator_node = &expr->operator->as_node;
 
   LLVMValueRef operator = evince_result(author, operator_node);
@@ -114,7 +114,7 @@ __attribute__((nonnull)) static LLVMValueRef invoke_expr_emit(
 }
 
 __attribute__((nonnull))
-static LLVMValueRef lambda_expr_emit(author_t *author, const mu_lambda_expr_t *expr) {
+static LLVMValueRef lambda_expr_emit(author_t *author, mu_lambda_expr_t *expr) {
   LLVMValueRef matter = evince_result(author, &expr->matter->as_node);
   LLVMBuildRet(author->tail, matter);
   LLVMDisposeBuilder(author->tail);
@@ -122,7 +122,7 @@ static LLVMValueRef lambda_expr_emit(author_t *author, const mu_lambda_expr_t *e
 }
 
 __attribute__((nonnull))
-static LLVMValueRef name_expr_emit(author_t *author, const mu_name_expr_t *expr) {
+static LLVMValueRef name_expr_emit(author_t *author, mu_name_expr_t *expr) {
   mu_node_t *target = detect_evince(author->detect, &expr->as_node);
   assert(target != NULL);
 
@@ -140,13 +140,13 @@ static LLVMValueRef name_expr_emit(author_t *author, const mu_name_expr_t *expr)
 }
 
 __attribute__((nonnull))
-static LLVMValueRef native_expr_emit(author_t *author, const mu_native_expr_t *expr) {
+static LLVMValueRef native_expr_emit(author_t *author, mu_native_expr_t *expr) {
   assert(author->native_expr_emit != NULL);
   return author->native_expr_emit(author, expr);
 }
 
 __attribute__((nonnull))
-static LLVMValueRef record_expr_emit(author_t *author, const mu_record_expr_t *expr) {
+static LLVMValueRef record_expr_emit(author_t *author, mu_record_expr_t *expr) {
   const mu_type_t *type = evince_type(author->inductor, &expr->as_node);
   LLVMTypeRef ty;
   if ((ty = get_type(author, type)) == NULL)
@@ -168,17 +168,17 @@ static LLVMValueRef record_expr_emit(author_t *author, const mu_record_expr_t *e
 }
 
 __attribute__((nonnull))
-static LLVMValueRef sequence_expr_emit(author_t *author, const mu_sequence_expr_t *expr) {
+static LLVMValueRef sequence_expr_emit(author_t *author, mu_sequence_expr_t *expr) {
   return SKIP;
 }
 
 __attribute__((nonnull))
-static LLVMValueRef switch_expr_emit(author_t *author, const mu_switch_expr_t *expr) {
+static LLVMValueRef switch_expr_emit(author_t *author, mu_switch_expr_t *expr) {
   return SKIP;
 }
 
 __attribute__((nonnull))
-static LLVMValueRef vector_expr_emit(author_t *author, const mu_vector_expr_t *expr) {
+static LLVMValueRef vector_expr_emit(author_t *author, mu_vector_expr_t *expr) {
   const mu_type_t *type = evince_type(author->inductor, &expr->as_node);
   const mu_core_type_t *vector_type = mu_type_cast(type, vector_type);
   assert(vector_type != NULL);
@@ -262,7 +262,7 @@ static LLVMValueRef vector_expr_emit(author_t *author, const mu_vector_expr_t *e
 }
 
 __attribute__((nonnull))
-static LLVMValueRef define_stmt_emit(author_t *author, const mu_define_stmt_t *stmt) {
+static LLVMValueRef define_stmt_emit(author_t *author, mu_define_stmt_t *stmt) {
   LLVMValueRef expr_result = evince_result(author, &stmt->expr->as_node);
   LLVMTypeRef expr_type = LLVMTypeOf(expr_result);
 
@@ -282,7 +282,7 @@ static LLVMValueRef define_stmt_emit(author_t *author, const mu_define_stmt_t *s
 LLVMValueRef node_emit(author_t *author, mu_node_t *node) {
   switch ON_ABSTRACT_OBJECT(node) {
 #define MU_EMIT(lower, upper, t) case MU_##upper##_EXPR: \
-      return lower##_expr_emit(author, (const mu_##lower##_expr_t *) node);
+      return lower##_expr_emit(author, (mu_##lower##_expr_t *) node);
     MU_EACH_EXPR_KIND(MU_EMIT);
 #undef MU_EMIT
 
@@ -306,7 +306,7 @@ LLVMModuleRef script_emit(author_t *author, mu_node_t *root, const char *source_
   mu_node_t *node = root, *next;
   do {
     while ((next = node_at(node, node_cursor(node)->i++)) != NULL) {
-      const mu_lambda_expr_t *lambda_expr;
+      mu_lambda_expr_t *lambda_expr;
 
       if ((lambda_expr = mu_node_cast(next, lambda_expr)) != NULL) {
         const mu_type_t *lambda_type = evince_type(author->inductor, &lambda_expr->as_node);
