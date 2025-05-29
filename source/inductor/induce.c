@@ -430,19 +430,16 @@ MuonType *generalize_type(induce_t *induce, MuonType *root) {
 }
 
 static MuonType *instantiate_scheme(induce_t *induce, MuonSchemeType *scheme) {
-  // TODO: wildly inefficient and unsafe
   size_t length = induce->type_number;
-  MuonType **equation;
-  if ((equation = malloc(sizeof(MuonType *[length]))) == NULL)
+  struct MuonType **equation;
+  if ((equation = malloc(sizeof(struct MuonType *[length]))) == NULL)
     return NULL;
-
-  for (size_t i = 0; i < length; i++)
-    equation[i] = NULL;
+  for (size_t i = 0; i < length; equation[i++] = NULL);
 
   for (size_t i = 0; i < scheme->argc; i++) {
     switch ON_ABSTRACT_OBJECT(scheme->argv[i]) {
       case IS_CONCRETE_TYPE(MuonCoreType *nominate(core_type)) {
-        MuonCoreType *allocation;
+        struct MuonCoreType *allocation;
         if ((allocation = core_type_allocate(induce, core_type->core)) == NULL)
           return NULL;
         equation[core_type->as_type.id] = &allocation->as_type;
@@ -450,7 +447,7 @@ static MuonType *instantiate_scheme(induce_t *induce, MuonSchemeType *scheme) {
       }
 
       case IS_CONCRETE_TYPE(MuonSchemeType *nominate(scheme_type)) {
-        MuonSchemeType *allocation;
+        struct MuonSchemeType *allocation;
         if ((allocation = scheme_type_allocate(induce, scheme_type->argc)) == NULL)
           return NULL;
         equation[scheme_type->as_type.id] = &allocation->as_type;
@@ -458,7 +455,7 @@ static MuonType *instantiate_scheme(induce_t *induce, MuonSchemeType *scheme) {
       }
 
       case IS_CONCRETE_TYPE(MuonJoinType *nominate(join_type)) {
-        MuonJoinType *allocation;
+        struct MuonJoinType *allocation;
         if ((allocation = join_type_allocate(induce, join_type->argc)) == NULL)
           return NULL;
         equation[join_type->as_type.id] = &allocation->as_type;
@@ -467,9 +464,9 @@ static MuonType *instantiate_scheme(induce_t *induce, MuonSchemeType *scheme) {
 
       case IS_CONCRETE_TYPE(MuonVariableType *nominate(variable_type)) {
         MuonVariableType *result;
-        if ((result = (MuonVariableType *) mu_variable_type(induce)) == NULL)
+        if ((result = mu_variable_type(induce)) == NULL)
           return NULL;
-        equation[variable_type->as_type.id] = &result->as_type;
+        equation[variable_type->as_type.id] = (struct MuonType *) &result->as_type;
         break;
       }
     }
@@ -484,8 +481,7 @@ static MuonType *instantiate_scheme(induce_t *induce, MuonSchemeType *scheme) {
 
         for (size_t i = 0; i < core_type->core->argc; i++) {
           MuonType *type = core_type->argv[i];
-          if (equation[type->id] != NULL)
-            type = equation[type->id];
+          type = equation[type->id] == NULL ? type : equation[type->id];
           allocation->argv[i] = type;
         }
 
@@ -500,8 +496,7 @@ static MuonType *instantiate_scheme(induce_t *induce, MuonSchemeType *scheme) {
 
         for (size_t i = 0; i < scheme_type->argc; i++) {
           MuonType *type = scheme_type->argv[i];
-          if (equation[type->id] != NULL)
-            type = equation[type->id];
+          type = equation[type->id] == NULL ? type : equation[type->id];
           allocation->argv[i] = type;
         }
 
@@ -519,8 +514,7 @@ static MuonType *instantiate_scheme(induce_t *induce, MuonSchemeType *scheme) {
 
         for (size_t i = 0; i < join_type->argc; i++) {
           MuonType *type = join_type->argv[i];
-          if (equation[type->id] != NULL)
-            type = equation[type->id];
+          type = equation[type->id] == NULL ? type : equation[type->id];
           allocation->argv[i] = type;
         }
 

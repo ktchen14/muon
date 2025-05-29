@@ -442,7 +442,8 @@ void muon_node_debug(MuonNode *node) __attribute__((nonnull));
 
 /// @internal Used to emit each branch in MU_NODE_ENUMERATOR()
 #define MU_NODE_ENUMERATOR_EMIT(l, upper, title) \
-  , Muon##title *: MUON_##upper##_NODE
+  , Muon##title *: MUON_##upper##_NODE \
+  , struct Muon##title *: MUON_##upper##_NODE
 
 /// Return the enumerator indicative of the @a concrete node
 #define MU_NODE_ENUMERATOR(concrete) \

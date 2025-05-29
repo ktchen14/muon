@@ -108,7 +108,8 @@ MuonVariableType *mu_variable_type(induce_t *induce)
 
 /// @internal Used to emit each branch in MU_TYPE_ENUMERATOR()
 #define MU_TYPE_ENUMERATOR_EMIT(l, upper, title) \
-  , Muon##title##Type *: MU_##upper##_TYPE
+  , Muon##title##Type *: MU_##upper##_TYPE \
+  , struct Muon##title##Type *: MU_##upper##_TYPE
 
 /// Return the enumerator indicative of the @a concrete type
 #define MU_TYPE_ENUMERATOR(concrete) \
