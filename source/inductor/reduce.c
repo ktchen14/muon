@@ -11,8 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-MuonCoercion *reduce_coercion(
-    induce_t *induce, MuonCoercion *coercion);
+MuonCoercion *reduce_coercion(induce_t *induce, MuonCoercion *coercion);
 
 /// Load the coercion that is assigned to the <em>coercion</em>'s edge. If that
 /// coercion is the edge @a coercion itself, then return @c NULL.
@@ -234,8 +233,7 @@ const void *reduce_type_to_join(induce_t *induce, MuonVariableType *target) {
   return assign_solution(target, &join_type->as_type);
 }
 
-MuonCoercion *reduce_coercion(
-    induce_t *induce, MuonCoercion *coercion) {
+MuonCoercion *reduce_coercion(induce_t *induce, MuonCoercion *coercion) {
   switch ON_ABSTRACT_OBJECT(coercion) {
     case MU_ID_COERCION:
       return coercion;

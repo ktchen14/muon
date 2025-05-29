@@ -42,8 +42,7 @@ MuonEdgeCoercion *mu_edge_coercion(
 }
 
 MuonIndirectCoercion *mu_indirect_coercion(
-    mu_inductor_t *inductor,
-    MuonCoercion *head, MuonCoercion *tail) {
+    mu_inductor_t *inductor, MuonCoercion *head, MuonCoercion *tail) {
   struct MuonIndirectCoercion *result;
   if ((result = malloc(sizeof(MuonIndirectCoercion))) == NULL)
     return NULL;
@@ -56,9 +55,7 @@ MuonIndirectCoercion *mu_indirect_coercion(
 }
 
 MuonInstanceCoercion *mu_instance_coercion(
-    mu_inductor_t *inductor,
-    MuonType *target,
-    const mu_instance_t *instance) {
+    mu_inductor_t *inductor, MuonType *target, const mu_instance_t *instance) {
   struct MuonInstanceCoercion *result;
   if ((result = malloc(sizeof(MuonInstanceCoercion))) == NULL)
     return NULL;

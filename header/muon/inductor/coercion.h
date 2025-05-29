@@ -100,23 +100,18 @@ typedef const struct MuonUnschemeCoercion {
 
 extern const void *const MU_NO_SUCH_COERCION;
 
-MuonIdCoercion *mu_id_coercion(
-    mu_inductor_t *inductor, MuonType *target)
+MuonIdCoercion *mu_id_coercion(mu_inductor_t *inductor, MuonType *target)
   __attribute__((malloc, nonnull));
 
-MuonSlotCoercion *mu_slot_coercion(
-    mu_inductor_t *inductor, MuonType *target)
+MuonSlotCoercion *mu_slot_coercion(mu_inductor_t *inductor, MuonType *target)
   __attribute__((malloc, nonnull));
 
 MuonIndirectCoercion *mu_indirect_coercion(
-    mu_inductor_t *inductor,
-    MuonCoercion *head, MuonCoercion *tail)
+    mu_inductor_t *inductor, MuonCoercion *head, MuonCoercion *tail)
   __attribute__((malloc, nonnull));
 
 MuonInstanceCoercion *mu_instance_coercion(
-    mu_inductor_t *inductor,
-    MuonType *target,
-    const mu_instance_t *instance)
+    mu_inductor_t *inductor, MuonType *target, const mu_instance_t *instance)
   __attribute__((malloc, nonnull));
 
 MuonVarianceCoercion *mu_variance_coercion(

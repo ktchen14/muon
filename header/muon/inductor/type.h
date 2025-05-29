@@ -22,7 +22,12 @@ typedef enum {
 #undef MU_EMIT
 } MuonTypeKind;
 
-/// An abstract type
+/**
+ * @brief An abstract type
+ *
+ * Note that a MuonType is a constant object; the mutable equivalent is a
+ * struct MuonType.
+ */
 typedef const struct MuonType {
   MuonTypeKind kind;
   const induce_t *induce;
@@ -30,18 +35,18 @@ typedef const struct MuonType {
 } MuonType;
 
 /// The header that each concrete type must have
-#define MU_TYPE_HEADER struct MuonType as_type
+#define MUON_TYPE_HEADER struct MuonType as_type
 
 /// A core type
 typedef const struct MuonCoreType {
-  MU_TYPE_HEADER;
+  MUON_TYPE_HEADER;
   const mu_core_t *core;
   MuonType *argv[/* core->argc */];
 } MuonCoreType;
 
 /// A scheme type
 typedef const struct MuonSchemeType {
-  MU_TYPE_HEADER;
+  MUON_TYPE_HEADER;
 
   MuonType *matter;
 
@@ -52,14 +57,14 @@ typedef const struct MuonSchemeType {
 
 /// A join type
 typedef const struct MuonJoinType {
-  MU_TYPE_HEADER;
+  MUON_TYPE_HEADER;
   size_t argc;
   MuonType *argv[/* argc */];
 } MuonJoinType;
 
 /// A variable type
 typedef const struct MuonVariableType {
-  MU_TYPE_HEADER;
+  MUON_TYPE_HEADER;
 
   MuonType *solution;
 
@@ -140,9 +145,8 @@ MuonVariableType *mu_variable_type(induce_t *induce)
  */
 #define mu_type_cast(abstract, concrete) __extension__ ({ \
   MuonType *_abstract = (abstract); \
-  typeof(concrete) _concrete; \
-  _abstract->kind == MU_TYPE_ENUMERATOR(__typeof__(_concrete)) ? \
-    (__typeof__(_concrete)) _abstract : NULL; \
+  _abstract->kind == MU_TYPE_ENUMERATOR(__typeof__(concrete)) ? \
+    (__typeof__(concrete)) _abstract : NULL; \
 })
 
 #endif /* MU_INDUCTOR_TYPE_H */
