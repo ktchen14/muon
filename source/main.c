@@ -18,7 +18,7 @@
 
 unsigned char buffer[4096];
 
-mu_name_t *vector_access;
+MuonName *vector_access;
 
 int main(int argc, char *argv[argc]) {
 #define MU_EMIT(lower, upper, t)
@@ -41,7 +41,7 @@ int main(int argc, char *argv[argc]) {
   read = fread(buffer, 1, 4096, stream);
   buffer[read] = '\0';
 
-  mu_engine_t engine = {0};
+  MuonEngine engine = {0};
   mu_status_t status = {0};
 
   mu_script_t *script;

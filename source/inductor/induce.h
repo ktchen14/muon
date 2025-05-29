@@ -32,7 +32,7 @@ struct mu_scheme_t {
 typedef struct induce_t mu_inductor_t;
 typedef struct induce_t induce_t;
 struct induce_t {
-  mu_engine_t *engine;
+  MuonEngine *engine;
   size_t node_length;
   size_t type_number;
   size_t coercion_number;
@@ -68,7 +68,7 @@ extern _Thread_local induce_t *debug_induce;
 
 /// Initialize the @a inductor to handle nodes and types in the @a engine
 induce_t *induce_initialize(
-    induce_t *induce, mu_engine_t *engine, const detect_t *detect)
+    induce_t *induce, MuonEngine *engine, const detect_t *detect)
   __attribute__((nonnull));
 
 __attribute__((nonnull, pure, returns_nonnull))
@@ -172,7 +172,7 @@ const mu_type_t *generalize_type(induce_t *induce, const mu_type_t *root)
 mu_scheme_t *mu_scheme(mu_scheme_t *parent)
   __attribute__((malloc));
 
-extern mu_name_t *vector_access;
-extern mu_name_t *vector_join;
+extern MuonName *vector_access;
+extern MuonName *vector_join;
 
 #endif /* MU_INDUCTOR_INDUCE_I */

@@ -8,7 +8,7 @@
 #include <stddef.h>
 
 typedef struct {
-  const mu_engine_t *engine;
+  const MuonEngine *engine;
   size_t length;
   mu_node_t *data[/* length */];
 } detect_result_t;
@@ -33,7 +33,7 @@ static inline const detect_result_t *detect_result(const detect_t *detect) {
 }
 
 detect_t *detect_initialize(
-    detect_t *detect, const mu_engine_t *engine, mu_status_t *status)
+    detect_t *detect, const MuonEngine *engine, mu_status_t *status)
   __attribute__((nonnull));
 
 detect_t *detect_node(detect_t *detect, mu_node_t *node);

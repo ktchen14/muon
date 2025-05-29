@@ -173,34 +173,34 @@ static inline size_t node_announce_length(mu_node_t *node) {
   __builtin_unreachable();
 }
 
-struct mu_record_expr_t *record_expr_allocate(mu_engine_t *engine, size_t argc)
+struct mu_record_expr_t *record_expr_allocate(MuonEngine *engine, size_t argc)
   __attribute__((malloc, nonnull));
 
 mu_record_expr_t *record_expr_activate(struct mu_record_expr_t *expr)
   __attribute__((nonnull));
 
-struct mu_switch_expr_t *switch_expr_allocate(mu_engine_t *engine, size_t argc)
+struct mu_switch_expr_t *switch_expr_allocate(MuonEngine *engine, size_t argc)
   __attribute__((malloc, nonnull));
 
 mu_switch_expr_t *switch_expr_activate(struct mu_switch_expr_t *expr)
   __attribute__((nonnull));
 
 struct mu_sequence_expr_t *sequence_expr_allocate(
-    mu_engine_t *engine, size_t argc)
+    MuonEngine *engine, size_t argc)
   __attribute__((malloc, nonnull));
 
 mu_sequence_expr_t *sequence_expr_activate(struct mu_sequence_expr_t *expr)
   __attribute__((nonnull));
 
 struct mu_datatype_stmt_t *datatype_stmt_allocate(
-    mu_engine_t *engine, size_t argc)
+    MuonEngine *engine, size_t argc)
   __attribute__((malloc, nonnull));
 
 mu_datatype_stmt_t *datatype_stmt_activate(
-    struct mu_datatype_stmt_t *stmt, mu_name_t *name)
+    struct mu_datatype_stmt_t *stmt, MuonName *name)
   __attribute__((nonnull));
 
-struct mu_record_view_t *record_view_allocate(mu_engine_t *engine, size_t argc)
+struct mu_record_view_t *record_view_allocate(MuonEngine *engine, size_t argc)
   __attribute__((malloc, nonnull));
 
 mu_record_view_t *record_view_activate(struct mu_record_view_t *view)

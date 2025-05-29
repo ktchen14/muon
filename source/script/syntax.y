@@ -7,7 +7,7 @@
 #include "../script.h"
 
 typedef struct {
-  mu_engine_t *engine;
+  MuonEngine *engine;
   mu_script_t *script;
   mu_stmt_t *stmt[256];
   size_t stmt_i;
@@ -47,7 +47,7 @@ typedef struct {
 
   size_t i;
 
-  mu_name_t *name;
+  MuonName *name;
   mu_expr_t *expr;
   mu_sign_t *sign;
   mu_stmt_t *stmt;

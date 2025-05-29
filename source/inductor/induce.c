@@ -654,7 +654,7 @@ const mu_coercion_t *retrieve_coercion(
 
 
 induce_t *induce_initialize(
-    induce_t *induce, mu_engine_t *engine, const detect_t *detect) {
+    induce_t *induce, MuonEngine *engine, const detect_t *detect) {
   assert(detect_result(detect)->engine == engine);
 
   size_t node_length = engine->node_number;

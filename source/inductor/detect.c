@@ -10,7 +10,7 @@
 #include <stdlib.h>
 
 typedef struct {
-  mu_name_t *name;
+  MuonName *name;
   mu_node_t *node;
 } item_t;
 
@@ -24,7 +24,7 @@ struct roster_t {
 };
 
 detect_t *detect_initialize(
-    detect_t *detect, const mu_engine_t *engine, mu_status_t *status) {
+    detect_t *detect, const MuonEngine *engine, mu_status_t *status) {
   size_t length = engine->node_number;
 
   size_t size;
@@ -56,7 +56,7 @@ static roster_t *roster_create(
 }
 
 __attribute__((nonnull))
-static mu_node_t *roster_search(roster_t *roster, mu_name_t *name) {
+static mu_node_t *roster_search(roster_t *roster, MuonName *name) {
   do {
     for (size_t i = 0; i < roster->length; i++) {
       if (roster->data[i].name == name)
@@ -69,7 +69,7 @@ static mu_node_t *roster_search(roster_t *roster, mu_name_t *name) {
 
 __attribute__((nonnull))
 static inline void announce(
-    roster_t *roster, mu_name_t *name, mu_node_t *node) {
+    roster_t *roster, MuonName *name, mu_node_t *node) {
   assert(roster->length < roster->volume);
   item_t item = { .name = name, .node = node };
   roster->data[roster->length++] = item;

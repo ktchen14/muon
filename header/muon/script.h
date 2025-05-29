@@ -14,10 +14,10 @@ mu_script_t *mu_script(size_t argc, mu_stmt_t *argv[argc])
   __attribute__((malloc));
 
 mu_sequence_expr_t *mu_script_to_sequence_expr(
-    mu_engine_t *engine, const mu_script_t *script);
+    MuonEngine *engine, const mu_script_t *script);
 
 mu_sequence_expr_t *mu_script_to_sequence_expr_with_prefix(
-    mu_engine_t *engine,
+    MuonEngine *engine,
     const mu_script_t *script,
     size_t length,
     mu_stmt_t *prefix[]);

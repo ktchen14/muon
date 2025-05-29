@@ -105,7 +105,7 @@ typedef enum {
  */
 typedef const struct mu_node_t {
   mu_node_kind_t kind;
-  const mu_engine_t *engine;
+  const MuonEngine *engine;
   size_t id;
 } mu_node_t;
 
@@ -159,7 +159,7 @@ typedef const struct mu_view_t {
 
 typedef const struct mu_access_expr_t {
   MU_EXPR_HEADER;
-  mu_name_t *name;
+  MuonName *name;
 } mu_access_expr_t;
 
 typedef const struct mu_boolean_expr_t {
@@ -192,17 +192,17 @@ typedef const struct mu_lambda_expr_t {
 
 typedef const struct mu_name_expr_t {
   MU_EXPR_HEADER;
-  mu_name_t *name;
+  MuonName *name;
 } mu_name_expr_t;
 
 typedef const struct mu_native_expr_t {
   MU_EXPR_HEADER;
-  mu_name_t *name;
+  MuonName *name;
 } mu_native_expr_t;
 
 typedef const struct mu_expr_member_t {
   MU_NODE_HEADER;
-  mu_name_t *name; // optional
+  MuonName *name; // optional
   mu_expr_t *expr;
 } mu_expr_member_t;
 
@@ -220,7 +220,7 @@ typedef const struct mu_sequence_expr_t {
 
 typedef const struct mu_switch_case_t {
   MU_NODE_HEADER;
-  mu_name_t *name;
+  MuonName *name;
   mu_expr_t *expr;
 } mu_switch_case_t;
 
@@ -236,57 +236,55 @@ typedef const struct mu_vector_expr_t {
   mu_expr_t *argv[/* argc */];
 } mu_vector_expr_t;
 
-mu_access_expr_t *mu_access_expr(
-    mu_engine_t *engine, mu_name_t *name)
+mu_access_expr_t *mu_access_expr(MuonEngine *engine, MuonName *name)
   __attribute__((malloc, nonnull));
 
-mu_boolean_expr_t *mu_boolean_expr(mu_engine_t *engine, _Bool data)
+mu_boolean_expr_t *mu_boolean_expr(MuonEngine *engine, _Bool data)
   __attribute__((malloc, nonnull));
 
 mu_cast_expr_t *mu_cast_expr(
-    mu_engine_t *engine, mu_sign_t *sign, mu_expr_t *matter)
+    MuonEngine *engine, mu_sign_t *sign, mu_expr_t *matter)
   __attribute__((malloc, nonnull));
 
-mu_integer_expr_t *mu_integer_expr(mu_engine_t *engine, uint64_t data)
+mu_integer_expr_t *mu_integer_expr(MuonEngine *engine, uint64_t data)
   __attribute__((malloc, nonnull));
 
 mu_invoke_expr_t *mu_invoke_expr(
-    mu_engine_t *engine, mu_expr_t *operator, mu_expr_t *argument)
+    MuonEngine *engine, mu_expr_t *operator, mu_expr_t *argument)
   __attribute__((malloc, nonnull));
 
 mu_lambda_expr_t *mu_lambda_expr(
-    mu_engine_t *engine, mu_view_t *argument, mu_expr_t *matter)
+    MuonEngine *engine, mu_view_t *argument, mu_expr_t *matter)
   __attribute__((malloc, nonnull));
 
-mu_name_expr_t *mu_name_expr(mu_engine_t *engine, mu_name_t *name)
+mu_name_expr_t *mu_name_expr(MuonEngine *engine, MuonName *name)
   __attribute__((malloc, nonnull));
 
-mu_native_expr_t *mu_native_expr(
-    mu_engine_t *engine, mu_name_t *name)
+mu_native_expr_t *mu_native_expr(MuonEngine *engine, MuonName *name)
   __attribute__((malloc, nonnull));
 
 mu_expr_member_t *mu_expr_member(
-    mu_engine_t *engine, mu_name_t *name, mu_expr_t *expr)
+    MuonEngine *engine, MuonName *name, mu_expr_t *expr)
   __attribute__((malloc, nonnull));
 
 mu_record_expr_t *mu_record_expr(
-    mu_engine_t *engine, size_t argc, mu_expr_member_t *argv[/* argc */])
+    MuonEngine *engine, size_t argc, mu_expr_member_t *argv[/* argc */])
   __attribute__((malloc, nonnull(1)));
 
 mu_switch_case_t *mu_switch_case(
-    mu_engine_t *engine, mu_name_t *name, mu_expr_t *expr)
+    MuonEngine *engine, MuonName *name, mu_expr_t *expr)
   __attribute__((malloc, nonnull));
 
 mu_switch_expr_t *mu_switch_expr(
-    mu_engine_t *engine, size_t argc, mu_switch_case_t *const argv[argc])
+    MuonEngine *engine, size_t argc, mu_switch_case_t *const argv[argc])
   __attribute__((malloc, nonnull));
 
 mu_sequence_expr_t *mu_sequence_expr(
-    mu_engine_t *engine, size_t argc, mu_stmt_t *const argv[argc])
+    MuonEngine *engine, size_t argc, mu_stmt_t *const argv[argc])
   __attribute__((malloc, nonnull));
 
 mu_vector_expr_t *mu_vector_expr(
-    mu_engine_t *engine, size_t argc, mu_expr_t *const argv[/* argc */])
+    MuonEngine *engine, size_t argc, mu_expr_t *const argv[/* argc */])
   __attribute__((malloc, nonnull(1)));
 
 /// The header that each concrete sign must have
@@ -310,11 +308,11 @@ typedef const struct mu_lambda_sign_t {
 
 typedef const struct mu_name_sign_t {
   MU_SIGN_HEADER;
-  mu_name_t *name;
+  MuonName *name;
 } mu_name_sign_t;
 
 typedef struct {
-  mu_name_t *name; // optional
+  MuonName *name; // optional
   mu_sign_t *sign;
 } mu_sign_member_t;
 
@@ -329,25 +327,24 @@ typedef const struct mu_vector_sign_t {
   mu_sign_t *matter;
 } mu_vector_sign_t;
 
-mu_boolean_sign_t *mu_boolean_sign(mu_engine_t *engine)
+mu_boolean_sign_t *mu_boolean_sign(MuonEngine *engine)
   __attribute__((malloc, nonnull));
 
-mu_integer_sign_t *mu_integer_sign(mu_engine_t *engine)
+mu_integer_sign_t *mu_integer_sign(MuonEngine *engine)
   __attribute__((malloc, nonnull));
 
 mu_lambda_sign_t *mu_lambda_sign(
-    mu_engine_t *engine, mu_sign_t *argument, mu_sign_t *output)
+    MuonEngine *engine, mu_sign_t *argument, mu_sign_t *output)
   __attribute__((malloc, nonnull));
 
-mu_name_sign_t *mu_name_sign(mu_engine_t *engine, mu_name_t *name)
+mu_name_sign_t *mu_name_sign(MuonEngine *engine, MuonName *name)
   __attribute__((malloc, nonnull));
 
 mu_record_sign_t *mu_record_sign(
-    mu_engine_t *engine, size_t argc, const mu_sign_member_t argv[/* argc */])
+    MuonEngine *engine, size_t argc, const mu_sign_member_t argv[/* argc */])
   __attribute__((malloc, nonnull(1)));
 
-mu_vector_sign_t *mu_vector_sign(
-    mu_engine_t *engine, mu_sign_t *matter)
+mu_vector_sign_t *mu_vector_sign(MuonEngine *engine, mu_sign_t *matter)
   __attribute__((malloc, nonnull));
 
 /// The header that each concrete stmt must have
@@ -364,45 +361,45 @@ typedef const struct mu_coercion_stmt_t {
 
 typedef const struct mu_type_node_t {
   MU_NODE_HEADER;
-  mu_name_t *name;
+  MuonName *name;
   size_t argc;
-  mu_name_t *argv[/* argc */];
+  MuonName *argv[/* argc */];
 } mu_type_node_t;
 
 typedef const struct mu_datatype_option_t {
   MU_NODE_HEADER;
-  mu_name_t *name;
+  MuonName *name;
 } mu_datatype_option_t;
 
 typedef const struct mu_datatype_stmt_t {
   MU_STMT_HEADER;
-  mu_name_t *name;
+  MuonName *name;
   size_t argc;
   mu_datatype_option_t *argv[/* argc */];
 } mu_datatype_stmt_t;
 
 typedef const struct mu_define_stmt_t {
   MU_STMT_HEADER;
-  mu_name_t *name;
+  MuonName *name;
   mu_expr_t *expr;
 } mu_define_stmt_t;
 
 mu_coercion_stmt_t *mu_coercion_stmt(
-    mu_engine_t *engine, mu_sign_t *source, mu_sign_t *target, mu_expr_t *expr)
+    MuonEngine *engine, mu_sign_t *source, mu_sign_t *target, mu_expr_t *expr)
   __attribute__((malloc, nonnull));
 
-mu_datatype_option_t *mu_datatype_option(mu_engine_t *engine, mu_name_t *name)
+mu_datatype_option_t *mu_datatype_option(MuonEngine *engine, MuonName *name)
   __attribute__((malloc, nonnull));
 
 mu_datatype_stmt_t *mu_datatype_stmt(
-    mu_engine_t *engine,
-    mu_name_t *name,
+    MuonEngine *engine,
+    MuonName *name,
     size_t argc,
     mu_datatype_option_t *argv[/* argc */])
   __attribute__((malloc, nonnull(1, 2)));
 
 mu_define_stmt_t *mu_define_stmt(
-    mu_engine_t *engine, mu_name_t *name, mu_expr_t *expr)
+    MuonEngine *engine, MuonName *name, mu_expr_t *expr)
   __attribute__((malloc, nonnull));
 
 /// The header that each concrete view must have
@@ -413,7 +410,7 @@ mu_define_stmt_t *mu_define_stmt(
 typedef const struct mu_view_member_t {
   MU_NODE_HEADER;
   size_t announce_length;
-  mu_name_t *name; // optional
+  MuonName *name; // optional
   mu_view_t *view;
 } mu_view_member_t;
 
@@ -426,18 +423,18 @@ typedef const struct mu_record_view_t {
 
 typedef const struct mu_variable_view_t {
   MU_VIEW_HEADER;
-  mu_name_t *name;
+  MuonName *name;
 } mu_variable_view_t;
 
 mu_view_member_t *mu_view_member(
-    mu_engine_t *engine, mu_name_t *name, mu_view_t *view)
+    MuonEngine *engine, MuonName *name, mu_view_t *view)
   __attribute__((malloc, nonnull));
 
 mu_record_view_t *mu_record_view(
-    mu_engine_t *engine, size_t argc, mu_view_member_t *argv[/* argc */])
+    MuonEngine *engine, size_t argc, mu_view_member_t *argv[/* argc */])
   __attribute__((malloc, nonnull(1)));
 
-mu_variable_view_t *mu_variable_view(mu_engine_t *engine, mu_name_t *name)
+mu_variable_view_t *mu_variable_view(MuonEngine *engine, MuonName *name)
   __attribute__((malloc, nonnull));
 
 /// Emit debugging information on the abstract @a node to the debug stream

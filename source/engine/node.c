@@ -13,16 +13,16 @@
 #include <string.h>
 
 /// @internal Return the mutable engine of the @a node
-static inline mu_engine_t *unlock_engine(mu_node_t *node) {
+static inline MuonEngine *unlock_engine(mu_node_t *node) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-qual"
-  return (mu_engine_t *) node->engine;
+  return (MuonEngine *) node->engine;
 #pragma GCC diagnostic pop
 }
 
 /// @internal Allocate a node of size @a size in the @a engine
 __attribute__((malloc, nonnull))
-static inline void *node_allocate(mu_engine_t *engine, size_t size) {
+static inline void *node_allocate(MuonEngine *engine, size_t size) {
   if (rare((size = struct_size(node_header_t, data, size)) == 0))
     return errno = ENOMEM, NULL;
 
@@ -37,7 +37,7 @@ static inline void *node_allocate(mu_engine_t *engine, size_t size) {
 /// @internal Assign the abstract @a node to the @a engine
 __attribute__((nonnull, returns_nonnull))
 static inline mu_node_t *assign_node(
-    mu_engine_t *engine, struct mu_node_t *node) {
+    MuonEngine *engine, struct mu_node_t *node) {
   node->engine = engine;
   node->id = engine->node_number++;
   return node;
@@ -53,8 +53,7 @@ static inline mu_node_t *assign_node(
 /*   return assign_node(engine, result); */
 /* } */
 
-mu_access_expr_t *mu_access_expr(
-    mu_engine_t *engine, mu_name_t *name) {
+mu_access_expr_t *mu_access_expr(MuonEngine *engine, MuonName *name) {
   assert(name->engine == engine);
 
   struct mu_access_expr_t *result;
@@ -66,7 +65,7 @@ mu_access_expr_t *mu_access_expr(
   return assign_node(engine, &result->as_node), result;
 }
 
-mu_boolean_expr_t *mu_boolean_expr(mu_engine_t *engine, _Bool data) {
+mu_boolean_expr_t *mu_boolean_expr(MuonEngine *engine, _Bool data) {
   struct mu_boolean_expr_t *result;
   if ((result = node_allocate(engine, sizeof(mu_boolean_expr_t))) == NULL)
     return NULL;
@@ -77,7 +76,7 @@ mu_boolean_expr_t *mu_boolean_expr(mu_engine_t *engine, _Bool data) {
 }
 
 mu_cast_expr_t *mu_cast_expr(
-    mu_engine_t *engine, mu_sign_t *sign, mu_expr_t *matter) {
+    MuonEngine *engine, mu_sign_t *sign, mu_expr_t *matter) {
   struct mu_cast_expr_t *result;
   if ((result = node_allocate(engine, sizeof(mu_cast_expr_t))) == NULL)
     return NULL;
@@ -87,7 +86,7 @@ mu_cast_expr_t *mu_cast_expr(
   return assign_node(engine, &result->as_node), result;
 }
 
-mu_integer_expr_t *mu_integer_expr(mu_engine_t *engine, uint64_t data) {
+mu_integer_expr_t *mu_integer_expr(MuonEngine *engine, uint64_t data) {
   struct mu_integer_expr_t *result;
   if ((result = node_allocate(engine, sizeof(mu_integer_expr_t))) == NULL)
     return NULL;
@@ -98,7 +97,7 @@ mu_integer_expr_t *mu_integer_expr(mu_engine_t *engine, uint64_t data) {
 }
 
 mu_invoke_expr_t *mu_invoke_expr(
-    mu_engine_t *engine, mu_expr_t *operator, mu_expr_t *argument) {
+    MuonEngine *engine, mu_expr_t *operator, mu_expr_t *argument) {
   assert(operator->as_node.engine == engine);
   assert(argument->as_node.engine == engine);
 
@@ -112,7 +111,7 @@ mu_invoke_expr_t *mu_invoke_expr(
 }
 
 mu_lambda_expr_t *mu_lambda_expr(
-    mu_engine_t *engine, mu_view_t *argument, mu_expr_t *matter) {
+    MuonEngine *engine, mu_view_t *argument, mu_expr_t *matter) {
   assert(argument->as_node.engine == engine);
   assert(matter->as_node.engine == engine);
 
@@ -125,7 +124,7 @@ mu_lambda_expr_t *mu_lambda_expr(
   return assign_node(engine, &result->as_node), result;
 }
 
-mu_name_expr_t *mu_name_expr(mu_engine_t *engine, mu_name_t *name) {
+mu_name_expr_t *mu_name_expr(MuonEngine *engine, MuonName *name) {
   assert(name->engine == engine);
 
   struct mu_name_expr_t *result;
@@ -136,7 +135,7 @@ mu_name_expr_t *mu_name_expr(mu_engine_t *engine, mu_name_t *name) {
 }
 
 mu_native_expr_t *mu_native_expr(
-    mu_engine_t *engine, mu_name_t *name) {
+    MuonEngine *engine, MuonName *name) {
   assert(name->engine == engine);
 
   struct mu_native_expr_t *result;
@@ -149,7 +148,7 @@ mu_native_expr_t *mu_native_expr(
 }
 
 mu_expr_member_t *mu_expr_member(
-    mu_engine_t *engine, mu_name_t *name, mu_expr_t *expr) {
+    MuonEngine *engine, MuonName *name, mu_expr_t *expr) {
   assert(name == NULL || name->engine == engine);
   assert(expr->as_node.engine == engine);
 
@@ -163,7 +162,7 @@ mu_expr_member_t *mu_expr_member(
 }
 
 mu_record_expr_t *mu_record_expr(
-    mu_engine_t *engine, size_t argc, mu_expr_member_t *argv[]) {
+    MuonEngine *engine, size_t argc, mu_expr_member_t *argv[]) {
   assert(argc == 0 || argv != NULL);
 
   struct mu_record_expr_t *result;
@@ -175,7 +174,7 @@ mu_record_expr_t *mu_record_expr(
 }
 
 mu_switch_case_t *mu_switch_case(
-    mu_engine_t *engine, mu_name_t *name, mu_expr_t *expr) {
+    MuonEngine *engine, MuonName *name, mu_expr_t *expr) {
   assert(name->engine == engine);
   assert(expr->as_node.engine == engine);
 
@@ -189,7 +188,7 @@ mu_switch_case_t *mu_switch_case(
 }
 
 mu_switch_expr_t *mu_switch_expr(
-    mu_engine_t *engine, size_t argc, mu_switch_case_t *const argv[argc]) {
+    MuonEngine *engine, size_t argc, mu_switch_case_t *const argv[argc]) {
   struct mu_switch_expr_t *result;
   if ((result = switch_expr_allocate(engine, argc)) == NULL)
     return NULL;
@@ -199,7 +198,7 @@ mu_switch_expr_t *mu_switch_expr(
 }
 
 mu_sequence_expr_t *mu_sequence_expr(
-    mu_engine_t *engine, size_t argc, mu_stmt_t *const argv[argc]) {
+    MuonEngine *engine, size_t argc, mu_stmt_t *const argv[argc]) {
   struct mu_sequence_expr_t *result;
   if ((result = sequence_expr_allocate(engine, argc)) == NULL)
     return NULL;
@@ -209,7 +208,7 @@ mu_sequence_expr_t *mu_sequence_expr(
 }
 
 mu_vector_expr_t *mu_vector_expr(
-    mu_engine_t *engine, size_t argc, mu_expr_t *const argv[]) {
+    MuonEngine *engine, size_t argc, mu_expr_t *const argv[]) {
   assert(argc == 0 || argv != NULL);
 
   for (size_t i = 0; i < argc; i++) {
@@ -234,7 +233,7 @@ mu_vector_expr_t *mu_vector_expr(
   return assign_node(engine, &result->as_node), result;
 }
 
-struct mu_record_expr_t *record_expr_allocate(mu_engine_t *engine, size_t argc) {
+struct mu_record_expr_t *record_expr_allocate(MuonEngine *engine, size_t argc) {
   size_t size;
   if (rare((size = struct_size(mu_record_expr_t, argv, argc)) == 0))
     return errno = ENOMEM, NULL;
@@ -247,7 +246,7 @@ struct mu_record_expr_t *record_expr_allocate(mu_engine_t *engine, size_t argc) 
 }
 
 mu_record_expr_t *record_expr_activate(struct mu_record_expr_t *expr) {
-  mu_engine_t *engine = unlock_engine(&expr->as_node);
+  MuonEngine *engine = unlock_engine(&expr->as_node);
 
   for (size_t i = 0; i < expr->argc; i++) {
     assert(expr->argv[i] != NULL);
@@ -261,7 +260,7 @@ mu_record_expr_t *record_expr_activate(struct mu_record_expr_t *expr) {
   return assign_node(engine, &expr->as_node), expr;
 }
 
-struct mu_switch_expr_t *switch_expr_allocate(mu_engine_t *engine, size_t argc) {
+struct mu_switch_expr_t *switch_expr_allocate(MuonEngine *engine, size_t argc) {
   size_t size;
   if (rare((size = struct_size(mu_switch_expr_t, argv, argc)) == 0))
     return errno = ENOMEM, NULL;
@@ -274,7 +273,7 @@ struct mu_switch_expr_t *switch_expr_allocate(mu_engine_t *engine, size_t argc) 
 }
 
 mu_switch_expr_t *switch_expr_activate(struct mu_switch_expr_t *expr) {
-  mu_engine_t *engine = unlock_engine(&expr->as_node);
+  MuonEngine *engine = unlock_engine(&expr->as_node);
 
   for (size_t i = 0; i < expr->argc; i++) {
     assert(expr->argv[i] != NULL);
@@ -289,7 +288,7 @@ mu_switch_expr_t *switch_expr_activate(struct mu_switch_expr_t *expr) {
 }
 
 struct mu_sequence_expr_t *sequence_expr_allocate(
-    mu_engine_t *engine, size_t argc) {
+    MuonEngine *engine, size_t argc) {
   size_t size;
   if (rare((size = struct_size(mu_sequence_expr_t, argv, argc)) == 0))
     return errno = ENOMEM, NULL;
@@ -302,7 +301,7 @@ struct mu_sequence_expr_t *sequence_expr_allocate(
 }
 
 mu_sequence_expr_t *sequence_expr_activate(struct mu_sequence_expr_t *expr) {
-  mu_engine_t *engine = unlock_engine(&expr->as_node);
+  MuonEngine *engine = unlock_engine(&expr->as_node);
 
   for (size_t i = 0; i < expr->argc; i++) {
     assert(expr->argv[i] != NULL);
@@ -316,7 +315,7 @@ mu_sequence_expr_t *sequence_expr_activate(struct mu_sequence_expr_t *expr) {
   return assign_node(engine, &expr->as_node), expr;
 }
 
-mu_boolean_sign_t *mu_boolean_sign(mu_engine_t *engine) {
+mu_boolean_sign_t *mu_boolean_sign(MuonEngine *engine) {
   struct mu_boolean_sign_t *result;
   if ((result = node_allocate(engine, sizeof(mu_boolean_sign_t))) == NULL)
     return NULL;
@@ -324,7 +323,7 @@ mu_boolean_sign_t *mu_boolean_sign(mu_engine_t *engine) {
   return assign_node(engine, &result->as_node), result;
 }
 
-mu_integer_sign_t *mu_integer_sign(mu_engine_t *engine) {
+mu_integer_sign_t *mu_integer_sign(MuonEngine *engine) {
   struct mu_integer_sign_t *result;
   if ((result = node_allocate(engine, sizeof(mu_integer_sign_t))) == NULL)
     return NULL;
@@ -333,7 +332,7 @@ mu_integer_sign_t *mu_integer_sign(mu_engine_t *engine) {
 }
 
 mu_lambda_sign_t *mu_lambda_sign(
-    mu_engine_t *engine, mu_sign_t *argument, mu_sign_t *output) {
+    MuonEngine *engine, mu_sign_t *argument, mu_sign_t *output) {
   assert(argument->as_node.engine == engine);
   assert(output->as_node.engine == engine);
 
@@ -346,7 +345,7 @@ mu_lambda_sign_t *mu_lambda_sign(
   return assign_node(engine, &result->as_node), result;
 }
 
-mu_name_sign_t *mu_name_sign(mu_engine_t *engine, mu_name_t *name) {
+mu_name_sign_t *mu_name_sign(MuonEngine *engine, MuonName *name) {
   assert(name->engine == engine);
 
   struct mu_name_sign_t *result;
@@ -357,11 +356,11 @@ mu_name_sign_t *mu_name_sign(mu_engine_t *engine, mu_name_t *name) {
 }
 
 mu_record_sign_t *mu_record_sign(
-    mu_engine_t *engine, size_t argc, const mu_sign_member_t argv[]) {
+    MuonEngine *engine, size_t argc, const mu_sign_member_t argv[]) {
   assert(argc == 0 || argv != NULL);
 
   for (size_t i = 0; i < argc; i++) {
-    mu_name_t *member_name = argv[i].name;
+    MuonName *member_name = argv[i].name;
     mu_sign_t *member_sign = argv[i].sign;
     assert(member_name == NULL || member_name->engine == engine);
     assert(member_sign != NULL);
@@ -385,7 +384,7 @@ mu_record_sign_t *mu_record_sign(
   return assign_node(engine, &result->as_node), result;
 }
 
-mu_vector_sign_t *mu_vector_sign(mu_engine_t *engine, mu_sign_t *matter) {
+mu_vector_sign_t *mu_vector_sign(MuonEngine *engine, mu_sign_t *matter) {
   assert(matter->as_node.engine == engine);
 
   struct mu_vector_sign_t *result;
@@ -398,7 +397,7 @@ mu_vector_sign_t *mu_vector_sign(mu_engine_t *engine, mu_sign_t *matter) {
 }
 
 mu_coercion_stmt_t *mu_coercion_stmt(
-    mu_engine_t *engine, mu_sign_t *source, mu_sign_t *target, mu_expr_t *expr) {
+    MuonEngine *engine, mu_sign_t *source, mu_sign_t *target, mu_expr_t *expr) {
   assert(source->as_node.engine == engine);
   assert(target->as_node.engine == engine);
   assert(expr->as_node.engine == engine);
@@ -415,7 +414,7 @@ mu_coercion_stmt_t *mu_coercion_stmt(
   return assign_node(engine, &result->as_node), result;
 }
 
-mu_datatype_option_t *mu_datatype_option(mu_engine_t *engine, mu_name_t *name) {
+mu_datatype_option_t *mu_datatype_option(MuonEngine *engine, MuonName *name) {
   assert(name->engine == engine);
 
   struct mu_datatype_option_t *result;
@@ -428,8 +427,8 @@ mu_datatype_option_t *mu_datatype_option(mu_engine_t *engine, mu_name_t *name) {
 }
 
 mu_datatype_stmt_t *mu_datatype_stmt(
-    mu_engine_t *engine,
-    mu_name_t *name,
+    MuonEngine *engine,
+    MuonName *name,
     size_t argc,
     mu_datatype_option_t *argv[/* argc */]) {
   struct mu_datatype_stmt_t *result;
@@ -441,7 +440,7 @@ mu_datatype_stmt_t *mu_datatype_stmt(
 }
 
 mu_define_stmt_t *mu_define_stmt(
-    mu_engine_t *engine, mu_name_t *name, mu_expr_t *expr) {
+    MuonEngine *engine, MuonName *name, mu_expr_t *expr) {
   assert(name->engine == engine);
   assert(expr->as_node.engine == engine);
 
@@ -455,7 +454,7 @@ mu_define_stmt_t *mu_define_stmt(
 }
 
 struct mu_datatype_stmt_t *datatype_stmt_allocate(
-    mu_engine_t *engine, size_t argc) {
+    MuonEngine *engine, size_t argc) {
   size_t size;
   if (rare((size = struct_size(mu_datatype_stmt_t, argv, argc)) == 0))
     return errno = ENOMEM, NULL;
@@ -468,8 +467,8 @@ struct mu_datatype_stmt_t *datatype_stmt_allocate(
 }
 
 mu_datatype_stmt_t *datatype_stmt_activate(
-    struct mu_datatype_stmt_t *stmt, mu_name_t *name) {
-  mu_engine_t *engine = unlock_engine(&stmt->as_node);
+    struct mu_datatype_stmt_t *stmt, MuonName *name) {
+  MuonEngine *engine = unlock_engine(&stmt->as_node);
 
   assert(name->engine == engine);
 
@@ -486,7 +485,7 @@ mu_datatype_stmt_t *datatype_stmt_activate(
 }
 
 mu_view_member_t *mu_view_member(
-    mu_engine_t *engine, mu_name_t *name, mu_view_t *view) {
+    MuonEngine *engine, MuonName *name, mu_view_t *view) {
   assert(name == NULL || name->engine == engine);
   assert(view->as_node.engine == engine);
 
@@ -501,7 +500,7 @@ mu_view_member_t *mu_view_member(
 }
 
 mu_record_view_t *mu_record_view(
-    mu_engine_t *engine, size_t argc, mu_view_member_t *argv[]) {
+    MuonEngine *engine, size_t argc, mu_view_member_t *argv[]) {
   assert(argc == 0 || argv != NULL);
 
   struct mu_record_view_t *result;
@@ -512,7 +511,7 @@ mu_record_view_t *mu_record_view(
   return record_view_activate(result);
 }
 
-mu_variable_view_t *mu_variable_view(mu_engine_t *engine, mu_name_t *name) {
+mu_variable_view_t *mu_variable_view(MuonEngine *engine, MuonName *name) {
   struct mu_variable_view_t *result;
   if ((result = node_allocate(engine, sizeof(mu_variable_view_t))) == NULL)
     return NULL;
@@ -522,7 +521,7 @@ mu_variable_view_t *mu_variable_view(mu_engine_t *engine, mu_name_t *name) {
   return assign_node(engine, &result->as_node), result;
 }
 
-struct mu_record_view_t *record_view_allocate(mu_engine_t *engine, size_t argc) {
+struct mu_record_view_t *record_view_allocate(MuonEngine *engine, size_t argc) {
   size_t size;
   if (rare((size = struct_size(mu_record_view_t, argv, argc)) == 0))
     return errno = ENOMEM, NULL;
@@ -535,7 +534,7 @@ struct mu_record_view_t *record_view_allocate(mu_engine_t *engine, size_t argc) 
 }
 
 mu_record_view_t *record_view_activate(struct mu_record_view_t *view) {
-  mu_engine_t *engine = unlock_engine(&view->as_node);
+  MuonEngine *engine = unlock_engine(&view->as_node);
 
   for (size_t i = 0; i < view->argc; i++) {
     assert(view->argv[i] != NULL);

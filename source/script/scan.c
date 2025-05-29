@@ -181,7 +181,7 @@ static void symbol_debug(
 
 
 mu_script_t *mu_read_script(
-    mu_engine_t *engine, mu_status_t *status, const mu_char8_t *string) {
+    MuonEngine *engine, mu_status_t *status, const mu_char8_t *string) {
   syntax_t syntax = { .engine = engine };
   scan_t scan = {0};
 

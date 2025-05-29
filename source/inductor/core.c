@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-const mu_core_t *mu_simple_core(induce_t *induce, mu_name_t *name) {
+const mu_core_t *mu_simple_core(induce_t *induce, MuonName *name) {
   mu_core_t *core;
   if ((core = malloc(sizeof(mu_core_t))) == NULL)
     return NULL;
@@ -16,7 +16,7 @@ const mu_core_t *mu_simple_core(induce_t *induce, mu_name_t *name) {
   return core;
 }
 
-const mu_core_t *single_record_core(induce_t *induce, mu_name_t *name) {
+const mu_core_t *single_record_core(induce_t *induce, MuonName *name) {
   for (size_t i = 0; i < induce->core_length; i++) {
     const mu_core_t *candidate = induce->core[i];
     if (candidate->kind != MU_RECORD_CORE)
@@ -173,7 +173,7 @@ void mu_core_debug(const mu_core_t *core) {
       for (size_t i = 0; i < core->argc; i++) {
         if (i > 0)
           debug(", ");
-        mu_name_t *name = core->argv[i].name;
+        MuonName *name = core->argv[i].name;
         const char *variance = VARIANCE_TEXT[core->argv[i].variance];
         debug(PRIsNAME ": %s", DEBUG_NAME(name), variance);
       }
