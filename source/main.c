@@ -143,15 +143,17 @@ int main(int argc, char *argv[argc]) {
     system("dot -Tpng -O out.dot");
   }
 
-  author_t *author, _author;
-  if ((author = author_initialize(&_author, detect_result(&detect), &induce)) == NULL)
-    assert(0);
-  author->native_expr_emit = standard_native_expr_emit;
+  if (getenv("LLVM") != NULL) {
+    author_t *author, _author;
+    if ((author = author_initialize(&_author, detect_result(&detect), &induce)) == NULL)
+      assert(0);
+    author->native_expr_emit = standard_native_expr_emit;
 
-  void *module = script_emit(author, &sequence_expr->as_node, argv[1]);
-  assert(module != NULL);
+    void *module = script_emit(author, &sequence_expr->as_node, argv[1]);
+    assert(module != NULL);
 
-  mu_run(module);
+    mu_run(module);
+  }
 
   return EXIT_SUCCESS;
 
