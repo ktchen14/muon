@@ -265,7 +265,7 @@ void mu_coercion_debug(MuonCoercion *coercion) {
   switch ON_ABSTRACT_OBJECT(coercion) {
     case MU_ID_COERCION: return;
 
-    case IS_CONCRETE_COERCION(const MuonEdgeCoercion *nominate(edge_coercion)) {
+    case IS_COERCION(const MuonEdgeCoercion *nominate(edge_coercion)) {
       debug(PRIsKIND, DEBUG_COERCION_KIND("⟨"));
       type_debug(edge_coercion->source, 0);
       debug(" ");
@@ -276,7 +276,7 @@ void mu_coercion_debug(MuonCoercion *coercion) {
       return;
     }
 
-    case IS_CONCRETE_COERCION(const MuonIndirectCoercion *nominate(indirect_coercion))
+    case IS_COERCION(const MuonIndirectCoercion *nominate(indirect_coercion))
       mu_coercion_debug(indirect_coercion->head);
       debug(" ");
       debug(PRIsKIND, DEBUG_COERCION_KIND("∘"));
@@ -284,11 +284,11 @@ void mu_coercion_debug(MuonCoercion *coercion) {
       mu_coercion_debug(indirect_coercion->tail);
       return;
 
-    case IS_CONCRETE_COERCION(const MuonInstanceCoercion *nominate(instance_coercion))
+    case IS_COERCION(const MuonInstanceCoercion *nominate(instance_coercion))
       mu_instance_debug(instance_coercion->instance);
       return;
 
-    case IS_CONCRETE_COERCION(const MuonVarianceCoercion *nominate(variance_coercion))
+    case IS_COERCION(const MuonVarianceCoercion *nominate(variance_coercion))
       debug("(");
       const mu_core_t *core = variance_coercion->core;
       mu_core_debug(core);
@@ -306,11 +306,11 @@ void mu_coercion_debug(MuonCoercion *coercion) {
     case MU_UNSCHEME_COERCION:
       return;
 
-    case IS_CONCRETE_COERCION(const MuonJoinCoercion *nominate(join_coercion))
+    case IS_COERCION(const MuonJoinCoercion *nominate(join_coercion))
       debug("(%zu)", join_coercion->i);
       return;
 
-    case IS_CONCRETE_COERCION(const MuonUnjoinCoercion *nominate(unjoin_coercion))
+    case IS_COERCION(const MuonUnjoinCoercion *nominate(unjoin_coercion))
       debug("(");
       for (size_t i = 0; i < unjoin_coercion->argc; i++) {
         if (i > 0)
@@ -320,7 +320,7 @@ void mu_coercion_debug(MuonCoercion *coercion) {
       debug(")");
       return;
 
-    case IS_CONCRETE_COERCION(const MuonMeetCoercion *nominate(meet_coercion))
+    case IS_COERCION(const MuonMeetCoercion *nominate(meet_coercion))
       debug("(");
       for (size_t i = 0; i < meet_coercion->argc; i++) {
         if (i > 0)
@@ -330,7 +330,7 @@ void mu_coercion_debug(MuonCoercion *coercion) {
       debug(")");
       return;
 
-    case IS_CONCRETE_COERCION(const MuonUnmeetCoercion *nominate(unmeet_coercion))
+    case IS_COERCION(const MuonUnmeetCoercion *nominate(unmeet_coercion))
       debug("(%zu)", unmeet_coercion->i);
       return;
   }

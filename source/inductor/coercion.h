@@ -20,10 +20,10 @@ enum {
 #undef MU_EMIT
 };
 
-#define INTERNAL_IS_CONCRETE_COERCION(type, name) \
+#define INTERNAL_IS_COERCION(type, name) \
   MU_COERCION_ENUMERATOR(type):; __typeof__(type) name = _object;
 
-#define IS_CONCRETE_COERCION(...) INTERNAL_IS_CONCRETE_COERCION(__VA_ARGS__)
+#define IS_COERCION(...) INTERNAL_IS_COERCION(__VA_ARGS__)
 
 #define nominate(name) , name
 

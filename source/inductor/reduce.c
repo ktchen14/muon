@@ -240,7 +240,7 @@ MuonCoercion *reduce_coercion(
     case MU_ID_COERCION:
       return coercion;
 
-    case IS_CONCRETE_COERCION(const MuonEdgeCoercion *nominate(edge_coercion)) {
+    case IS_COERCION(const MuonEdgeCoercion *nominate(edge_coercion)) {
       MuonCoercion *next_coercion;
       if ((next_coercion = mu_edge_coercion_reload(&induce->universe, edge_coercion)) != NULL)
         return reduce_coercion(induce, next_coercion);
@@ -328,7 +328,7 @@ MuonCoercion *reduce_coercion(
       __builtin_unreachable();
     }
 
-    case IS_CONCRETE_COERCION(const MuonIndirectCoercion *nominate(indirect_coercion)) {
+    case IS_COERCION(const MuonIndirectCoercion *nominate(indirect_coercion)) {
       MuonCoercion *head = indirect_coercion->head;
       head = reduce_coercion(induce, head);
 
@@ -341,10 +341,10 @@ MuonCoercion *reduce_coercion(
       return &result->as_coercion;
     }
 
-    case IS_CONCRETE_COERCION(const MuonInstanceCoercion *nominate(instance_coercion))
+    case IS_COERCION(const MuonInstanceCoercion *nominate(instance_coercion))
       return &instance_coercion->as_coercion;
 
-    case IS_CONCRETE_COERCION(const MuonVarianceCoercion *nominate(variance_coercion)) {
+    case IS_COERCION(const MuonVarianceCoercion *nominate(variance_coercion)) {
       const mu_core_t *core = variance_coercion->core;
 
       MuonVarianceCoercion *allocation;
@@ -371,7 +371,7 @@ MuonCoercion *reduce_coercion(
     case MU_JOIN_COERCION:
       return coercion;
 
-    case IS_CONCRETE_COERCION(const MuonUnjoinCoercion *nominate(unjoin_coercion)) {
+    case IS_COERCION(const MuonUnjoinCoercion *nominate(unjoin_coercion)) {
       size_t argc = unjoin_coercion->argc;
 
       MuonUnjoinCoercion *allocation;
@@ -387,7 +387,7 @@ MuonCoercion *reduce_coercion(
       return &result->as_coercion;
     }
 
-    case IS_CONCRETE_COERCION(const MuonMeetCoercion *nominate(meet_coercion)) {
+    case IS_COERCION(const MuonMeetCoercion *nominate(meet_coercion)) {
       size_t argc = meet_coercion->argc;
 
       MuonMeetCoercion *allocation;
