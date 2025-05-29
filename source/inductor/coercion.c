@@ -29,6 +29,16 @@ static inline MuonCoercion *assign_coercion(
   return coercion;
 }
 
+MuonIdCoercion *mu_id_coercion(mu_inductor_t *inductor, MuonType *target) {
+  struct MuonIdCoercion *result;
+  if ((result = malloc(sizeof(MuonIdCoercion))) == NULL)
+    return NULL;
+  *result = (MuonIdCoercion) {
+    .as_coercion = { .kind = MU_ID_COERCION, .target = target },
+  };
+  return assign_coercion(inductor, &result->as_coercion), result;
+}
+
 MuonEdgeCoercion *mu_edge_coercion(
     mu_inductor_t *inductor, MuonType *target, MuonType *source) {
   struct MuonEdgeCoercion *result;
