@@ -10,6 +10,14 @@
 #include <stddef.h>
 #include <stdlib.h>
 
+__attribute__((nonnull, pure, returns_nonnull))
+static inline MuonType *evince_type(
+    const induce_t *induce, MuonNode *node) {
+  MuonType *result = node_type(induce, node);
+  assert(result != NULL);
+  return result;
+}
+
 /// @internal Called to continue into the @a node
 static MuonNode *on_continue(induce_t *induce, MuonNode *node)
   __attribute__((nonnull));
@@ -80,13 +88,8 @@ __attribute__((nonnull)) static MuonType *boolean_expr_return(
 __attribute__((nonnull)) static MuonType *cast_expr_return(
     induce_t *induce, MuonCastExpr *expr) {
   MuonType *sign_type = node_type(induce, &expr->sign->as_node);
-  MuonType *matter_type = node_type(induce, &expr->matter->as_node);
-
-  MuonCoercion *coercion;
-  if ((coercion = ensure_coercion(induce, matter_type, sign_type)) == NULL)
+  if (coerce_node(induce, &expr->matter->as_node, sign_type) == NULL)
     return NULL;
-  assign_coercion_to_node(induce, &expr->matter->as_node, coercion);
-
   return sign_type;
 }
 
@@ -100,9 +103,7 @@ __attribute__((nonnull)) static MuonType *integer_expr_return(
 
 __attribute__((nonnull)) static MuonType *invoke_expr_return(
     induce_t *induce, MuonInvokeExpr *expr) {
-  MuonType *operator_type, *argument_type;
-  operator_type = node_type(induce, &expr->operator->as_node);
-  argument_type = node_type(induce, &expr->argument->as_node);
+  MuonType *argument_type = node_type(induce, &expr->argument->as_node);
 
   MuonVariableType *result;
   if ((result = mu_variable_type(induce)) == NULL)
@@ -114,10 +115,8 @@ __attribute__((nonnull)) static MuonType *invoke_expr_return(
     return NULL;
 
   MuonType *target = &lambda_type->as_type;
-  MuonCoercion *coercion;
-  if ((coercion = ensure_coercion(induce, operator_type, target)) == NULL)
+  if (coerce_node(induce, &expr->operator->as_node, target) == NULL)
     return NULL;
-  assign_coercion_to_node(induce, &expr->operator->as_node, coercion);
 
   return &result->as_type;
 }
@@ -214,12 +213,8 @@ __attribute__((nonnull)) static MuonType *switch_expr_return(
     return NULL;
 
   for (size_t i = 0; i < expr->argc; i++) {
-    MuonType *type = node_type(induce, &expr->argv[i]->as_node);
-
-    MuonCoercion *coercion;
-    if ((coercion = ensure_coercion(induce, type, &result->as_type)) == NULL)
+    if (coerce_node(induce, &expr->argv[i]->as_node, &result->as_type) == NULL)
       return NULL;
-    assign_coercion_to_node(induce, &expr->argv[i]->as_node, coercion);
   }
 
   return &result->as_type;
@@ -240,12 +235,9 @@ __attribute__((nonnull)) static MuonType *vector_expr_return(
     return NULL;
 
   for (size_t i = 0; i < expr->argc; i++) {
-    MuonType *type = node_type(induce, &expr->argv[i]->as_node);
-
-    MuonCoercion *coercion;
-    if ((coercion = ensure_coercion(induce, type, &matter_type->as_type)) == NULL)
+    MuonNode *argument = &expr->argv[i]->as_node;
+    if (coerce_node(induce, argument, &matter_type->as_type) == NULL)
       return NULL;
-    assign_coercion_to_node(induce, &expr->argv[i]->as_node, coercion);
   }
 
   MuonCoreType *result;
@@ -307,17 +299,14 @@ __attribute__((nonnull)) static MuonType *coercion_stmt_return(
     induce_t *induce, MuonCoercionStmt *stmt) {
   MuonType *source_type = node_type(induce, &stmt->source->as_node);
   MuonType *target_type = node_type(induce, &stmt->target->as_node);
-  MuonType *expr_type = node_type(induce, &stmt->expr->as_node);
 
   MuonCoreType *lambda_type;
   if ((lambda_type = mu_lambda_type(induce, source_type, target_type)) == NULL)
     return NULL;
 
   // TODO: ensure that this isn't tautological
-  MuonCoercion *coercion;
-  if ((coercion = ensure_coercion(induce, expr_type, &lambda_type->as_type)) == NULL)
+  if (coerce_node(induce, &stmt->expr->as_node, &lambda_type->as_type) == NULL)
     return NULL;
-  assign_coercion_to_node(induce, &stmt->expr->as_node, coercion);
 
   MuonCoreType *source_core_type = mu_type_cast(source_type, source_core_type);
   assert(source_core_type != NULL);

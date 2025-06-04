@@ -73,7 +73,9 @@ induce_t *induce_initialize(
 __attribute__((nonnull, pure, returns_nonnull))
 static inline MuonType *node_type(
     const induce_t *induce, MuonNode *node) {
+  assert(node->engine == induce->engine);
   assert(node->id < induce->node_length);
+
   induce_node_t result = induce->result[node->id];
   assert(result.source_type != NULL);
   return result.source_type;
@@ -82,7 +84,9 @@ static inline MuonType *node_type(
 __attribute__((nonnull, pure))
 static inline MuonCoercion *node_coercion(
     const induce_t *induce, MuonNode *node) {
+  assert(node->engine == induce->engine);
   assert(node->id < induce->node_length);
+
   induce_node_t result = induce->result[node->id];
   return result.coercion;
 }
@@ -96,28 +100,6 @@ static inline void override_coercion(
   result->coercion = coercion;
 }
 
-
-/**
- * @brief Assign the @a coercion to the @a node
- *
- * Logically, the assigned @a coercion occurs to the value returned when the
- * node is evaluated.
- *
- * The behavior is undefined if:
- * - @a node and @a induce don't have the same @a engine
- * - @a node was created after @a induce
- * - a coercion has already been assigned to the @a node
- */
-__attribute__((nonnull))
-static inline void assign_coercion_to_node(
-    induce_t *induce, MuonNode *node, MuonCoercion *coercion) {
-  assert(node->engine == induce->engine);
-  assert(node->id < induce->node_length);
-
-  induce_node_t *result = &induce->result[node->id];
-  assert(result->coercion == NULL);
-  result->coercion = coercion;
-}
 
 /**
  * @brief Return the type of the @a node
@@ -135,6 +117,9 @@ MuonType *reduce_node(induce_t *induce, MuonNode *root);
  */
 MuonCoercion *retrieve_coercion(
     induce_t *induce, MuonType *source, MuonType *target)
+  __attribute__((nonnull));
+
+MuonCoercion *coerce_node(induce_t *induce, MuonNode *node, MuonType *target)
   __attribute__((nonnull));
 
 /**

@@ -721,3 +721,26 @@ induce_t *induce_initialize(
 
   return induce;
 }
+
+/**
+ * @brief Coerce node to have type @a target. Assign the @a coercion to the @a node
+ *
+ * Logically, the assigned @a coercion occurs to the value returned when the
+ * node is evaluated.
+ *
+ * The behavior is undefined if:
+ * - @a node and @a induce don't have the same @a engine
+ * - @a node was created after @a induce
+ * - a coercion has already been assigned to the @a node
+ */
+MuonCoercion *coerce_node(induce_t *induce, MuonNode *node, MuonType *target) {
+  assert(node->engine == induce->engine);
+  assert(target->induce == induce);
+
+  MuonType *source = node_type(induce, node);
+
+  MuonCoercion *coercion;
+  if ((coercion = ensure_coercion(induce, source, target)) == NULL)
+    return NULL;
+  return induce->result[node->id].coercion = coercion;
+}
