@@ -60,6 +60,16 @@ void scan_debug(const YYCTYPE *string, const char *name) {
 
 static yytoken_kind_t scan_next(
     const YYCTYPE *restrict buffer, scan_t *scan, YYSTYPE *yylval) {
+  YYLTYPE real_yylloc;
+  YYLTYPE *yylloc = &real_yylloc;
+  *yylloc = (YYLTYPE) {
+    /* .name = name, */
+    .offset = scan->symbol.offset,
+    .length = scan->cursor.offset - scan->symbol.offset,
+    .line = scan->symbol.line,
+    .column = scan->symbol.column,
+  };
+
   cursor_t *cursor = &scan->cursor;
   cursor_t *symbol = &scan->symbol;
   cursor_t *marker = &scan->marker;
@@ -68,31 +78,30 @@ static yytoken_kind_t scan_next(
   for (;;) {
     *symbol = *cursor;
 
+    /*!stags:re2c format = 'cursor_t @@;'; */
+    /*!svars:re2c format = 'cursor_t @@;'; */
+
 #define YYPEEK()             buffer[cursor->offset]
 #define YYSKIP()             cursor_next(buffer, cursor)
 #define YYBACKUP()           (*marker = *cursor)
 #define YYRESTORE()          (*cursor = *marker)
 #define YYGETCONDITION()     (*condition)
 #define YYSETCONDITION(next) (*condition = next)
+#define YYSTAGP(name)        (name = *cursor)
 
 #define UTF8(...) ((mu_char8_t *) __VA_ARGS__)
 
     /*!re2c
-      re2c:api = custom;
+      re2c:api           = custom;
       re2c:indent:string = "  ";
+      re2c:indent:top    = 1;
+      re2c:tags          = 1;
       re2c:yyfill:enable = 0;
 
       !include "syntax.re";
     */
 
-#undef YYPEEK
-#undef YYSKIP
-#undef YYBACKUP
-#undef YYRESTORE
-#undef YYGETCONDITION
-#undef YYSETCONDITION
-
-    assert(0);
+    __builtin_unreachable();
   }
 
   return YYEOF;

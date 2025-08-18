@@ -4,13 +4,30 @@
   goto yyc_normal;
 }
 
-NL = [\n\r]+ [ \t\n\r]*;
-stop = [\x00];
+// Like an implicit @a ... @z around each rule. Then assign region and text.
+<*> !entry := YYSTAGP(a);
+<*> !pre_rule {
+  if (z.offset == 0)
+    YYSTAGP(z);
 
-<normal> [ \t]              { return ' '; }
-<normal> [\n\r]+ [ \t\n\r]* { return '\n'; }
+  *yylloc = (YYLTYPE) {
+    .offset = a.offset,
+    .length = z.offset - a.offset,
+    .line = a.line,
+    .column = a.column,
+  };
+  // lval.region = Region{Offset: s.file.Pos(a), Length: z - a}
+  // lval.text = s.text[a:z]
+}
+
+NL   = [\n\r]+ [ \t\n\r]*;
+_    = [ \t]+;
+sentinel = [\x00];
+
+<normal> @a NL @z { return '\n'; }
 <normal> "#" [ \t] [^\n\r\x00]* [\n\r]+ [ \t\n\r]* { continue; }
-<normal> stop               { break; }
+<normal> _        { return ' '; }
+<normal> sentinel { break; }
 
 // ================================ Keyword ====================================
 
@@ -26,7 +43,7 @@ stop = [\x00];
 
 // ================================ Operator ====================================
 
-<normal> "(" NL?         { return '('; }
+<normal> "(" @z NL?      { return '('; }
 <normal> ")"             { return ')'; }
 <normal> ","             { return ','; }
 <normal> "->" | "→"      { return TO; }
@@ -85,13 +102,13 @@ stop = [\x00];
   return yylval->text.c = UTF8("\r"), yylval->text.length = 1, STRING;
 }
 
-<string> ([^] \ ("\\" | "\"" | stop))+ {
+<string> ([^] \ ("\\" | "\"" | sentinel))+ {
   yylval->text.c = &buffer[symbol->offset];
   yylval->text.length = cursor->offset - symbol->offset;
   return STRING;
 }
 
-<string> stop {
+<string> sentinel {
   fprintf(stderr, "Unexpected end of script\n");
   return YYerror;
 }
