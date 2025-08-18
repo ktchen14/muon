@@ -30,10 +30,9 @@ set_property(TARGET muon PROPERTY VERSION "${Muon_VERSION}")
 # LLVM
 find_package(LLVM REQUIRED CONFIG)
 separate_arguments(LLVM_DEFINITIONS_LIST NATIVE_COMMAND "${LLVM_DEFINITIONS}")
-llvm_map_components_to_libnames(LLVM_LIBRARIES native orcjit)
 target_compile_definitions(muon PRIVATE ${LLVM_DEFINITIONS_LIST})
 target_include_directories(muon PRIVATE ${LLVM_INCLUDE_DIRS})
-target_link_libraries(muon PRIVATE ${LLVM_LIBRARIES})
+target_link_libraries(muon PRIVATE LLVM LLVM-C)
 
 add_executable(main source/main.c)
 target_compile_options(main PRIVATE
@@ -46,6 +45,10 @@ target_compile_options(main PRIVATE
   -Wno-unused-parameter
   -Wcast-align
 )
+target_compile_definitions(main PRIVATE ${LLVM_DEFINITIONS_LIST})
+target_compile_features(main PRIVATE c_std_23)
+target_include_directories(main PRIVATE ${LLVM_INCLUDE_DIRS})
+target_link_libraries(main PRIVATE LLVM LLVM-C)
 target_link_libraries(main PRIVATE muon)
 
 add_subdirectory(source)
