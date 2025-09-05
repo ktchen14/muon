@@ -39,7 +39,6 @@ static void symbol_debug(
 
 void scan_debug(const YYCTYPE *string, const char *name) {
   scan_t scan = {0};
-
   yytoken_kind_t kind;
   YYSTYPE yylval;
   YYLTYPE yylloc;
@@ -50,20 +49,17 @@ void scan_debug(const YYCTYPE *string, const char *name) {
 
 static yytoken_kind_t scan_next(
     const YYCTYPE *restrict buffer, scan_t *scan, YYSTYPE *yylval, YYLTYPE *yylloc) {
-  cursor_t *cursor = &scan->cursor;
-  enum YYCONDTYPE *condition = &scan->condition;
-
   for (;;) {
-    /*!stags:re2c format = 'cursor_t @@ = {0};'; */
+    /*!stags:re2c format = 'cursor_t @@;'; */
     /*!svars:re2c format = 'cursor_t @@ = {0};'; */
 
-#define YYPEEK()                  buffer[cursor->offset]
-#define YYSKIP()                  cursor_next(buffer, cursor)
-#define YYBACKUP()                (scan->marker = *cursor)
-#define YYRESTORE()               (*cursor = scan->marker)
-#define YYGETCONDITION()          (*condition)
-#define YYSETCONDITION(next)      (*condition = next)
-#define YYSTAGP(name)             (name = *cursor)
+#define YYPEEK()                  buffer[scan->cursor.offset]
+#define YYSKIP()                  cursor_next(buffer, &scan->cursor)
+#define YYBACKUP()                (scan->marker = scan->cursor)
+#define YYRESTORE()               (scan->cursor = scan->marker)
+#define YYGETCONDITION()          (scan->condition)
+#define YYSETCONDITION(next)      (scan->condition = next)
+#define YYSTAGP(name)             (name = scan->cursor)
 #define YYSHIFTSTAG(name, n)      name.offset += n
 
 #define UTF8(...) ((mu_char8_t *) __VA_ARGS__)
@@ -173,39 +169,22 @@ mu_script_t *mu_read_script(
 
   // Initialize the Bison parser
   yypstate *pstate;
-  if ((pstate = yypstate_new()) == NULL) {
-    errno = ENOMEM;
-    goto except_yypstate_new;
-  }
+  if ((pstate = yypstate_new()) == NULL)
+    return errno = ENOMEM, NULL;
 
   int e;
   do {
     YYSTYPE yylval;
     YYLTYPE yylloc;
     yytoken_kind_t kind = scan_next(string, &scan, &yylval, &yylloc);
-
     /* symbol_debug(stderr, kind, &yylval, &yylloc); */
-
     e = yypush_parse(pstate, kind, &yylval, &yylloc, &syntax);
   } while (e == YYPUSH_MORE);
 
-  switch (e) {
-    case 0:  break;
-    case 2:  errno = ENOMEM; goto except_yypush_parse;
-    default: errno = EINVAL; goto except_yypush_parse;
-  }
-
   yypstate_delete(pstate);
+
+  if ((errno = ((int[]) {0, EINVAL, ENOMEM})[e]) != 0)
+    fprintf(stderr, "Error %i\n", e);
+
   return syntax.script;
-
-except_yypush_parse:
-  fprintf(stderr, "Error %i\n", e);
-  // TODO
-  /* assert(syntax.script == NULL); */
-
-  yypstate_delete(pstate);
-
-except_yypstate_new:
-  return NULL;
 }
-

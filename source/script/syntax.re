@@ -13,7 +13,7 @@
 }
 
 <> => normal {
-  cursor->line = cursor->column = 1;
+  scan->cursor.line = scan->cursor.column = 1;
   goto yyc_normal;
 }
 
