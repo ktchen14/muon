@@ -49,7 +49,7 @@ sentinel = [\x00];
 <normal> "::" | "∷"      { return CAST; }
 <normal> "<:"            { return IS_SUBTYPE_OF; }
 <normal> "="             { return '='; }
-<normal> "[" NL?         { return '['; }
+<normal> "[" @z NL?      { return '['; }
 <normal> "]"             { return ']'; }
 <normal> "|"             { return '|'; }
 

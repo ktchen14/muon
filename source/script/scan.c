@@ -20,7 +20,6 @@ typedef struct {
 
 typedef struct {
   cursor_t cursor;  ///< location of the active character
-  cursor_t symbol;  ///< location of the active symbol
   cursor_t marker;
   enum YYCONDTYPE condition;
 } scan_t;
@@ -52,23 +51,20 @@ void scan_debug(const YYCTYPE *string, const char *name) {
 static yytoken_kind_t scan_next(
     const YYCTYPE *restrict buffer, scan_t *scan, YYSTYPE *yylval, YYLTYPE *yylloc) {
   cursor_t *cursor = &scan->cursor;
-  cursor_t *symbol = &scan->symbol;
-  cursor_t *marker = &scan->marker;
   enum YYCONDTYPE *condition = &scan->condition;
 
   for (;;) {
-    *symbol = *cursor;
-
     /*!stags:re2c format = 'cursor_t @@ = {0};'; */
     /*!svars:re2c format = 'cursor_t @@ = {0};'; */
 
-#define YYPEEK()             buffer[cursor->offset]
-#define YYSKIP()             cursor_next(buffer, cursor)
-#define YYBACKUP()           (*marker = *cursor)
-#define YYRESTORE()          (*cursor = *marker)
-#define YYGETCONDITION()     (*condition)
-#define YYSETCONDITION(next) (*condition = next)
-#define YYSTAGP(name)        (name = *cursor)
+#define YYPEEK()                  buffer[cursor->offset]
+#define YYSKIP()                  cursor_next(buffer, cursor)
+#define YYBACKUP()                (scan->marker = *cursor)
+#define YYRESTORE()               (*cursor = scan->marker)
+#define YYGETCONDITION()          (*condition)
+#define YYSETCONDITION(next)      (*condition = next)
+#define YYSTAGP(name)             (name = *cursor)
+#define YYSHIFTSTAG(name, n)      name.offset += n
 
 #define UTF8(...) ((mu_char8_t *) __VA_ARGS__)
 
