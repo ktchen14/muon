@@ -10,13 +10,10 @@
     .line = a.line,
     .column = a.column,
   };
-  // lval.region = Region{Offset: s.file.Pos(a), Length: z - a}
-  // lval.text = s.text[a:z]
 }
 
 <> => normal {
   cursor->line = cursor->column = 1;
-  symbol->line = symbol->column = 1;
   goto yyc_normal;
 }
 
@@ -24,14 +21,14 @@ NL   = [\n\r]+ [ \t\n\r]*;
 _    = [ \t]+;
 sentinel = [\x00];
 
-<normal> @a NL @z { return '\n'; }
-<normal> "#" [ \t] [^\n\r\x00]* [\n\r]+ [ \t\n\r]* { continue; }
+<normal> NL       { return '\n'; }
 <normal> _        { return ' '; }
 <normal> sentinel { break; }
+<normal> "#" [ \t] [^\n\r\x00]* [\n\r]+ [ \t\n\r]* { continue; }
 
 // ================================ Keyword ====================================
 
-<normal> "case"          { return CASE; }
+<normal> @a "case" @z    { return CASE; }
 <normal> "datatype"      { return DATATYPE; }
 <normal> "define"        { return DEFINE; }
 <normal> "instance"      { return INSTANCE; }
@@ -74,7 +71,7 @@ sentinel = [\x00];
 
 <normal> [1-9][0-9]* {
   char text[20];
-  memcpy(text, &buffer[symbol->offset], cursor->offset - symbol->offset);
+  memcpy(text, &buffer[a.offset], z.offset - a.offset);
   text[19] = '\0';
   long long i = strtoll(text, NULL, 10);
 
@@ -103,8 +100,8 @@ sentinel = [\x00];
 }
 
 <string> ([^] \ ("\\" | "\"" | sentinel))+ {
-  yylval->text.c = &buffer[symbol->offset];
-  yylval->text.length = cursor->offset - symbol->offset;
+  yylval->text.c = &buffer[a.offset];
+  yylval->text.length = z.offset - a.offset;
   return STRING;
 }
 
@@ -123,21 +120,21 @@ XID_Start = [A-Za-z];
 XID_Continue = [A-Za-z0-9_];
 
 <normal> XID_Start XID_Continue* {
-  yylval->text.c = &buffer[symbol->offset];
-  yylval->text.length = cursor->offset - symbol->offset;
+  yylval->text.c = &buffer[a.offset];
+  yylval->text.length = z.offset - a.offset;
   return NAME;
 }
 
 // ================================ Unknown ====================================
 
 <normal> [^] {
-  int length = cursor->offset - symbol->offset;
-  const char *text = &buffer[symbol->offset];
+  int length = z.offset - a.offset;
+  const char *text = &buffer[a.offset];
   fprintf(stderr, "Unexpected character %.*s\n", length, text);
   return YYerror;
 }
 
 <normal> * {
-  fprintf(stderr, "Unexpected character %c\n", buffer[symbol->offset]);
+  fprintf(stderr, "Unexpected character %c\n", buffer[a.offset]);
   return YYerror;
 }

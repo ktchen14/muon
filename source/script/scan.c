@@ -27,7 +27,7 @@ typedef struct {
 
 /// Scan and return the next symbol in the @a buffer
 static yytoken_kind_t scan_next(
-    const YYCTYPE *restrict buffer, scan_t *scan, YYSTYPE *yylval)
+    const YYCTYPE *restrict buffer, scan_t *scan, YYSTYPE *yylval, YYLTYPE *yylloc)
   __attribute__((nonnull));
 
 /// Advance the scan @a cursor
@@ -45,31 +45,12 @@ void scan_debug(const YYCTYPE *string, const char *name) {
   YYSTYPE yylval;
   YYLTYPE yylloc;
 
-  while ((kind = scan_next(string, &scan, &yylval)) != YYEOF) {
-    yylloc = (YYLTYPE) {
-      .name = name,
-      .offset = scan.symbol.offset,
-      .length = scan.cursor.offset - scan.symbol.offset,
-      .line = scan.symbol.line,
-      .column = scan.symbol.column,
-    };
-
+  while ((kind = scan_next(string, &scan, &yylval, &yylloc)) != YYEOF)
     symbol_debug(stderr, kind, &yylval, &yylloc);
-  }
 }
 
 static yytoken_kind_t scan_next(
-    const YYCTYPE *restrict buffer, scan_t *scan, YYSTYPE *yylval) {
-  YYLTYPE real_yylloc;
-  YYLTYPE *yylloc = &real_yylloc;
-  *yylloc = (YYLTYPE) {
-    /* .name = name, */
-    .offset = scan->symbol.offset,
-    .length = scan->cursor.offset - scan->symbol.offset,
-    .line = scan->symbol.line,
-    .column = scan->symbol.column,
-  };
-
+    const YYCTYPE *restrict buffer, scan_t *scan, YYSTYPE *yylval, YYLTYPE *yylloc) {
   cursor_t *cursor = &scan->cursor;
   cursor_t *symbol = &scan->symbol;
   cursor_t *marker = &scan->marker;
@@ -78,8 +59,8 @@ static yytoken_kind_t scan_next(
   for (;;) {
     *symbol = *cursor;
 
-    /*!stags:re2c format = 'cursor_t @@;'; */
-    /*!svars:re2c format = 'cursor_t @@;'; */
+    /*!stags:re2c format = 'cursor_t @@ = {0};'; */
+    /*!svars:re2c format = 'cursor_t @@ = {0};'; */
 
 #define YYPEEK()             buffer[cursor->offset]
 #define YYSKIP()             cursor_next(buffer, cursor)
@@ -204,15 +185,8 @@ mu_script_t *mu_read_script(
   int e;
   do {
     YYSTYPE yylval;
-    yytoken_kind_t kind = scan_next(string, &scan, &yylval);
-
-    YYLTYPE yylloc = (YYLTYPE) {
-      /* .name = name, */
-      .offset = scan.symbol.offset,
-      .length = scan.cursor.offset - scan.symbol.offset,
-      .line = scan.symbol.line,
-      .column = scan.symbol.column,
-    };
+    YYLTYPE yylloc;
+    yytoken_kind_t kind = scan_next(string, &scan, &yylval, &yylloc);
 
     /* symbol_debug(stderr, kind, &yylval, &yylloc); */
 
