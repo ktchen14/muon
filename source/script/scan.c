@@ -12,7 +12,7 @@
 
 /*!conditions:re2c*/
 
-#define YYCTYPE mu_char8_t
+typedef mu_char8_t YYCTYPE;
 
 typedef struct {
   size_t offset, line, column;
