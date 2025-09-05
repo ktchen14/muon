@@ -1,25 +1,16 @@
 // Like an implicit @a ... @z around each rule. Then assign region and text.
 <*> !entry := YYSTAGP(a);
 <*> !pre_rule {
-  if (z.offset == 0)
+  if (!z)
     YYSTAGP(z);
-
-  *yylloc = (YYLTYPE) {
-    .offset = a.offset,
-    .length = z.offset - a.offset,
-    .line = a.line,
-    .column = a.column,
-  };
-}
-
-<> => normal {
-  scan->cursor.line = scan->cursor.column = 1;
-  goto yyc_normal;
+  *yylloc = (YYLTYPE) { .offset = a, .length = z - a };
 }
 
 NL   = [\n\r]+ [ \t\n\r]*;
 _    = [ \t]+;
 sentinel = [\x00];
+
+<> :=> normal
 
 <normal> NL       { return '\n'; }
 <normal> _        { return ' '; }
@@ -71,7 +62,7 @@ sentinel = [\x00];
 
 <normal> [1-9][0-9]* {
   char text[20];
-  memcpy(text, &buffer[a.offset], z.offset - a.offset);
+  memcpy(text, &buffer[a], z - a);
   text[19] = '\0';
   long long i = strtoll(text, NULL, 10);
 
@@ -100,8 +91,8 @@ sentinel = [\x00];
 }
 
 <string> ([^] \ ("\\" | "\"" | sentinel))+ {
-  yylval->text.c = &buffer[a.offset];
-  yylval->text.length = z.offset - a.offset;
+  yylval->text.c = &buffer[a];
+  yylval->text.length = z - a;
   return STRING;
 }
 
@@ -120,21 +111,21 @@ XID_Start = [A-Za-z];
 XID_Continue = [A-Za-z0-9_];
 
 <normal> XID_Start XID_Continue* {
-  yylval->text.c = &buffer[a.offset];
-  yylval->text.length = z.offset - a.offset;
+  yylval->text.c = &buffer[a];
+  yylval->text.length = z - a;
   return NAME;
 }
 
 // ================================ Unknown ====================================
 
 <normal> [^] {
-  int length = z.offset - a.offset;
-  const char *text = &buffer[a.offset];
+  int length = z - a;
+  const char *text = &buffer[a];
   fprintf(stderr, "Unexpected character %.*s\n", length, text);
   return YYerror;
 }
 
 <normal> * {
-  fprintf(stderr, "Unexpected character %c\n", buffer[a.offset]);
+  fprintf(stderr, "Unexpected character %c\n", buffer[a]);
   return YYerror;
 }

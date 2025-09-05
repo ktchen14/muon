@@ -15,22 +15,16 @@
 typedef mu_char8_t YYCTYPE;
 
 typedef struct {
-  size_t offset, line, column;
-} cursor_t;
-
-typedef struct {
-  cursor_t cursor;  ///< location of the active character
-  cursor_t marker;
+  size_t cursor;  ///< location of the active character
+  size_t marker;
   enum YYCONDTYPE condition;
 } scan_t;
+
+#define UTF8(...) ((mu_char8_t *) __VA_ARGS__)
 
 /// Scan and return the next symbol in the @a buffer
 static yytoken_kind_t scan_next(
     const YYCTYPE *restrict buffer, scan_t *scan, YYSTYPE *yylval, YYLTYPE *yylloc)
-  __attribute__((nonnull));
-
-/// Advance the scan @a cursor
-static void cursor_next(const YYCTYPE *restrict buffer, cursor_t *cursor)
   __attribute__((nonnull));
 
 static void symbol_debug(
@@ -49,23 +43,23 @@ void scan_debug(const YYCTYPE *string, const char *name) {
 
 static yytoken_kind_t scan_next(
     const YYCTYPE *restrict buffer, scan_t *scan, YYSTYPE *yylval, YYLTYPE *yylloc) {
+#define YYPEEK()             buffer[scan->cursor]
+#define YYSKIP()             (scan->cursor++)
+#define YYBACKUP()           (scan->marker = scan->cursor)
+#define YYRESTORE()          (scan->cursor = scan->marker)
+#define YYGETCONDITION()     (scan->condition)
+#define YYSETCONDITION(next) (scan->condition = next)
+#define YYSTAGP(name)        (name = scan->cursor)
+#define YYSHIFTSTAG(name, n) (name += n)
+
   for (;;) {
-    /*!stags:re2c format = 'cursor_t @@;'; */
-    /*!svars:re2c format = 'cursor_t @@ = {0};'; */
-
-#define YYPEEK()                  buffer[scan->cursor.offset]
-#define YYSKIP()                  cursor_next(buffer, &scan->cursor)
-#define YYBACKUP()                (scan->marker = scan->cursor)
-#define YYRESTORE()               (scan->cursor = scan->marker)
-#define YYGETCONDITION()          (scan->condition)
-#define YYSETCONDITION(next)      (scan->condition = next)
-#define YYSTAGP(name)             (name = scan->cursor)
-#define YYSHIFTSTAG(name, n)      name.offset += n
-
-#define UTF8(...) ((mu_char8_t *) __VA_ARGS__)
+    /*!stags:re2c format = 'size_t @@;'; */
+    /*!svars:re2c format = 'size_t @@ = 0;'; */
 
     /*!re2c
       re2c:api           = custom;
+      re2c:case-ranges   = 1;
+      re2c:encoding:utf8 = 1;
       re2c:indent:string = "  ";
       re2c:indent:top    = 1;
       re2c:tags          = 1;
@@ -78,14 +72,6 @@ static yytoken_kind_t scan_next(
   }
 
   return YYEOF;
-}
-
-static void cursor_next(const YYCTYPE *restrict buffer, cursor_t *cursor) {
-  if (buffer[cursor->offset++] == '\n') {
-    cursor->line++;
-    cursor->column = 1;
-  } else
-    cursor->column++;
 }
 
 static void symbol_debug(
