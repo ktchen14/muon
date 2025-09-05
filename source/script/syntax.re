@@ -1,9 +1,3 @@
-<> => normal {
-  cursor->line = cursor->column = 1;
-  symbol->line = symbol->column = 1;
-  goto yyc_normal;
-}
-
 // Like an implicit @a ... @z around each rule. Then assign region and text.
 <*> !entry := YYSTAGP(a);
 <*> !pre_rule {
@@ -18,6 +12,12 @@
   };
   // lval.region = Region{Offset: s.file.Pos(a), Length: z - a}
   // lval.text = s.text[a:z]
+}
+
+<> => normal {
+  cursor->line = cursor->column = 1;
+  symbol->line = symbol->column = 1;
+  goto yyc_normal;
 }
 
 NL   = [\n\r]+ [ \t\n\r]*;
