@@ -35,6 +35,7 @@ target_include_directories(muon PRIVATE ${LLVM_INCLUDE_DIRS})
 target_link_libraries(muon PRIVATE LLVM LLVM-C)
 
 add_executable(main source/main.c)
+set_target_properties(main PROPERTIES OUTPUT_NAME muon)
 target_compile_options(main PRIVATE
   -Wall -Wextra -pedantic
   -Wconversion

@@ -135,6 +135,9 @@ extern _Thread_local _Bool debug_shortcore;
 
 extern _Thread_local _Bool debug_dot;
 
+/// Whether to emit symbol debugging information
+extern _Thread_local _Bool debug_scan;
+
 /// Literal printf specifier for a kind
 #define PRIsKIND "%s%s%s"
 

@@ -16,21 +16,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-unsigned char buffer[4096];
-
-MuonName *vector_access;
-
-int main(int argc, char *argv[argc]) {
-#define MU_EMIT(lower, upper, t)
-    MU_EACH_EXPR_KIND(MU_EMIT);
-#undef MU_EMIT
-
+int main(int argc, char *argv[/* argc */]) {
   const char *main_name = argc > 0 ? argv[0] : "muon";
   if (argc < 2) {
     fprintf(stderr, "Usage: %s source\n", main_name);
     return EXIT_FAILURE;
   }
 
+  unsigned char buffer[4096];
   FILE *stream;
   if ((stream = fopen(argv[1], "r")) == NULL) {
     fprintf(stderr, "%s: fopen(): %s\n", main_name, strerror(errno));
@@ -51,23 +44,8 @@ int main(int argc, char *argv[argc]) {
     goto except_read_script;
   }
 
-  vector_access = muon_name(&engine, strlen("handle_list"), (mu_char8_t[]) { "handle_list" });
-  assert(vector_access != NULL);
-
-  MuonNativeExpr *vector_access_expr = muon_native_expr(&engine, vector_access);
-  assert(vector_access_expr != NULL);
-
-  MuonDefineStmt *define_vector_access = muon_define_stmt(
-      &engine, vector_access, &vector_access_expr->as_expr);
-  assert(define_vector_access != NULL);
-
-  MuonStmt *prefix[] = {
-    &define_vector_access->as_stmt,
-  };
-
   MuonSequenceExpr *sequence_expr;
-  if ((sequence_expr = mu_script_to_sequence_expr_with_prefix(&engine, script, 1, prefix)) == NULL)
-  // if ((sequence_expr = mu_script_to_sequence_expr(&engine, script)) == NULL)
+  if ((sequence_expr = mu_script_to_sequence_expr(&engine, script)) == NULL)
     assert(0);
 
   detect_t detect;
