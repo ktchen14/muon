@@ -376,9 +376,8 @@ variable_view: name {
 _: ' '
 
 %%
-#include "scan.c"
+#include "re2c.c"
 
-#include "scan.h"
 #include "symbol.h"
 
 #include <errno.h>
