@@ -16,10 +16,11 @@ add_custom_command(
   DEPENDS "${BISON_SYNTAX_OUTPUT_HEADER}"
   DEPFILE "${CMAKE_CURRENT_BINARY_DIR}/scan.d"
 )
+set_property(SOURCE "${BISON_SYNTAX_OUTPUT_SOURCE}"
+  APPEND PROPERTY OBJECT_DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/scan.c")
 
 add_library(
   reader OBJECT
-  "${CMAKE_CURRENT_BINARY_DIR}/scan.c"
   "${BISON_SYNTAX_OUTPUT_SOURCE}"
   symbol.c
   parser.c)

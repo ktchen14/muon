@@ -147,7 +147,7 @@ yytoken_kind_t scan_next(
     const YYCTYPE *restrict buffer, scan_t *scan, YYSTYPE *yylval, YYLTYPE *yylloc) {
 #define YYPEEK()             buffer[scan->cursor]
 #define YYSKIP()             (scan->cursor++)
-#define YYBACKUP()           (scan->marker = scan->cursor)
+#define YYCURSORBACKUP()     (scan->marker = scan->cursor)
 #define YYRESTORE()          (scan->cursor = scan->marker)
 #define YYGETCONDITION()     (scan->condition)
 #define YYSETCONDITION(next) (scan->condition = next)
@@ -166,6 +166,9 @@ yytoken_kind_t scan_next(
       re2c:indent:top    = 1;
       re2c:tags          = 1;
       re2c:yyfill:enable = 0;
+
+      // Sidestep conflict with Bison's YYBACKUP
+      re2c:YYBACKUP      = "YYCURSORBACKUP";
 
       !use:syntax;
     */

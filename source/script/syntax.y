@@ -37,12 +37,10 @@ typedef struct {
 %parse-param { syntax_t *syntax }
 
 %union {
-  long long integer;
   _Bool boolean;
-
+  long long integer;
   struct {
-    const mu_char8_t *c;
-    size_t length;
+    const mu_char8_t *c; size_t length;
   } text;
 
   size_t i;
@@ -378,6 +376,8 @@ variable_view: name {
 _: ' '
 
 %%
+#include "scan.c"
+
 #include "scan.h"
 #include "symbol.h"
 
