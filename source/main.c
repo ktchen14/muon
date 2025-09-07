@@ -17,6 +17,8 @@
 #include <string.h>
 
 int main(int argc, char *argv[/* argc */]) {
+  debug_scan = 1;
+
   const char *main_name = argc > 0 ? argv[0] : "muon";
   if (argc < 2) {
     fprintf(stderr, "Usage: %s source\n", main_name);

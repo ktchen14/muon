@@ -6,13 +6,13 @@ BISON_TARGET(SYNTAX syntax.y syntax.c DEFINES_FILE syntax.h)
 add_custom_command(
   OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/scan.c"
   COMMAND "${RE2C_EXECUTABLE}" ARGS
-    "${CMAKE_CURRENT_SOURCE_DIR}/scan.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/syntax.re2c"
     --output "${CMAKE_CURRENT_BINARY_DIR}/scan.c"
     --depfile "${CMAKE_CURRENT_BINARY_DIR}/scan.d"
     --conditions
     --input-encoding utf8
     -W -Werror
-  MAIN_DEPENDENCY "${CMAKE_CURRENT_SOURCE_DIR}/scan.c"
+  MAIN_DEPENDENCY "${CMAKE_CURRENT_SOURCE_DIR}/syntax.re2c"
   DEPENDS "${BISON_SYNTAX_OUTPUT_HEADER}"
   DEPFILE "${CMAKE_CURRENT_BINARY_DIR}/scan.d"
 )
