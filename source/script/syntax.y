@@ -387,7 +387,7 @@ static void symbol_debug(
 static const char *symbol_name(yytoken_kind_t kind)
   __attribute__((returns_nonnull));
 
-mu_script_t *mu_read_script(
+mu_script_t *muon_scan(
     MuonEngine *engine, mu_status_t *status, const mu_char8_t *string) {
   Scan scan = { .engine = engine, .text = string };
 

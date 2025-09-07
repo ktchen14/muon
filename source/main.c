@@ -41,9 +41,9 @@ int main(int argc, char *argv[/* argc */]) {
 
   mu_script_t *script;
 
-  if ((script = mu_read_script(&engine, &status, buffer)) == NULL) {
-    fprintf(stderr, "%s: mu_read_script(): %s\n", main_name, strerror(errno));
-    goto except_read_script;
+  if ((script = muon_scan(&engine, &status, buffer)) == NULL) {
+    fprintf(stderr, "%s: muon_scan(): %s\n", main_name, strerror(errno));
+    goto except_scan;
   }
 
   MuonSequenceExpr *sequence_expr;
@@ -137,7 +137,7 @@ int main(int argc, char *argv[/* argc */]) {
 
   return EXIT_SUCCESS;
 
-except_read_script:
+except_scan:
   fclose(stream);
 
 except_fopen:

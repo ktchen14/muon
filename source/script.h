@@ -8,7 +8,7 @@
 
 typedef unsigned char mu_char8_t;
 
-mu_script_t *mu_read_script(
+mu_script_t *muon_scan(
     MuonEngine *engine, mu_status_t *status, const mu_char8_t *buffer)
   __attribute__((nonnull));
 
