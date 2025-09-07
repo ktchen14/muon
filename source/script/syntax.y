@@ -1,7 +1,3 @@
-%require "3.8.0"
-
-// ================================ Prologue ============================== {{{1
-
 %code requires {
 #include <muon/engine.h>
 #include "../script.h"
@@ -28,17 +24,17 @@ typedef struct {
   MuonDatatypeOption *datatype_option[200];
   size_t datatype_option_i;
 } syntax_t;
+
+#define YYLTYPE mu_source_t
 }
 
-%define api.location.type { mu_source_t }
+%require "3.8.0"
+
 %define api.pure full
 %define api.push-pull push
 %define parse.error detailed
 %locations
 %parse-param { syntax_t *syntax }
-%start script
-
-// ============================== Declaration ============================= {{{1
 
 %union {
   long long integer;
