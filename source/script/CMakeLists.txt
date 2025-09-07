@@ -19,7 +19,7 @@ add_custom_command(
   DEPFILE re2c.d
 )
 
-add_library(reader OBJECT "${BISON_SYNTAX_OUTPUT_SOURCE}" symbol.c)
+add_library(reader OBJECT "${BISON_SYNTAX_OUTPUT_SOURCE}")
 target_include_directories(reader PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../../header")
 target_include_directories(reader PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 target_include_directories(reader PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")

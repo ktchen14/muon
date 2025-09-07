@@ -378,8 +378,6 @@ _: ' '
 %%
 #include "re2c.c"
 
-#include "symbol.h"
-
 #include <errno.h>
 #include <stdio.h>
 
@@ -401,7 +399,7 @@ mu_script_t *mu_read_script(
     kind = scan_next(string, &scan, &yylval, &yylloc);
 
     if (debug_scan)
-      symbol_debug(stderr, kind, &yylval, &yylloc);
+      symbol_debug(kind, &yylval, &yylloc);
 
     e = yypush_parse(pstate, kind, &yylval, &yylloc, &syntax);
   } while (e == YYPUSH_MORE);
@@ -413,7 +411,7 @@ mu_script_t *mu_read_script(
     YYSTYPE yylval;
     YYLTYPE yylloc;
     while ((kind = scan_next(string, &scan, &yylval, &yylloc)) != YYEOF)
-      symbol_debug(stderr, kind, &yylval, &yylloc);
+      symbol_debug(kind, &yylval, &yylloc);
   }
 
   if ((errno = ((int[]) {0, EINVAL, ENOMEM})[e]) != 0)
