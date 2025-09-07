@@ -384,6 +384,11 @@ _: ' '
 
 %%
 
+// https://stackoverflow.com/a/32448812
+const char *symbol_name(yytoken_kind_t kind) {
+  return yysymbol_name(YYTRANSLATE(kind));
+}
+
 static void yyerror(YYLTYPE *yylloc, syntax_t *syntax, char const *s) {
   fprintf(stderr, "%s\n", s);
 }

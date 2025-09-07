@@ -37,7 +37,7 @@ mu_script_t *mu_read_script(
     YYSTYPE yylval;
     YYLTYPE yylloc;
     yytoken_kind_t kind = scan_next(string, &scan, &yylval, &yylloc);
-    /* symbol_debug(stderr, kind, &yylval, &yylloc); */
+    symbol_debug(stderr, kind, &yylval, &yylloc);
     e = yypush_parse(pstate, kind, &yylval, &yylloc, &syntax);
   } while (e == YYPUSH_MORE);
 

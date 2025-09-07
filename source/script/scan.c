@@ -29,6 +29,7 @@ static void symbol_debug(
     FILE *stream, yytoken_kind_t kind, YYSTYPE *yylval, YYLTYPE *yylloc)
   __attribute__((nonnull));
 
+const char *symbol_name(yytoken_kind_t kind);
 
 yytoken_kind_t scan_next(
     const YYCTYPE *restrict buffer, scan_t *scan, YYSTYPE *yylval, YYLTYPE *yylloc) {
@@ -71,69 +72,6 @@ static void symbol_debug(
       yylloc->column,
       yylloc->offset,
       yylloc->length);
-
-  if (kind > YYEOF && kind < YYerror) {
-    int c = kind;
-    switch (c) {
-      case '\n':
-        debug("\\n");
-        break;
-      case ' ':
-        debug("_");
-        break;
-      default:
-        debug("%c", c);
-        break;
-    }
-  } else switch (kind) {
-    case YYEOF:
-      debug("EOF\n");
-      break;
-    case YYerror:
-      debug("Error\n");
-      break;
-    case DATATYPE:
-      debug("\"datatype\"");
-      break;
-    case DEFINE:
-      debug("\"define\"");
-      break;
-    case INSTANCE:
-      debug("\"instance\"");
-      break;
-    case NAME:
-      fputs("NAME ", stdout);
-      fwrite(yylval->text.c, yylval->text.length, 1, stdout);
-      break;
-    case BOOLEAN_LITERAL:
-      debug("BOOLEAN LITERAL %s", yylval->boolean ? "true" : "false");
-      break;
-    case INTEGER_LITERAL:
-      debug("INTEGER LITERAL %lli", yylval->integer);
-      break;
-    case STRING:
-      debug("STRING \"");
-      for (size_t i = 0; i < yylval->text.length; i++) {
-        char c = yylval->text.c[i];
-        switch (c) {
-          case '"': debug("\\\""); break;
-          case '\t': debug("\\t"); break;
-          case '\n': debug("\\n"); break;
-          case '\r': debug("\\r"); break;
-          default: debug("%c", c); break;
-        }
-      }
-      debug("\"");
-      break;
-    default:
-      debug("Unknown %d", kind);
-      break;
-  }
-
+  debug("%s", symbol_name(kind));
   debug("\n");
 }
-
-
-
-
-
