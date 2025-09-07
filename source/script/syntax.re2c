@@ -136,15 +136,8 @@
 
 /*!conditions:re2c*/
 
-typedef struct {
-  const YYCTYPE *text;
-  enum YYCONDTYPE mode;
-  size_t cursor;
-  size_t marker;
-} scan_t;
-
 /// Return the next symbol in the @a scan
-static yytoken_kind_t symbol(scan_t *scan, YYSTYPE *yylval, YYLTYPE *yylloc)
+static yytoken_kind_t symbol(Scan *scan, YYSTYPE *yylval, YYLTYPE *yylloc)
   __attribute__((nonnull));
 
 #define YYPEEK()             scan->text[scan->cursor]
@@ -158,7 +151,7 @@ static yytoken_kind_t symbol(scan_t *scan, YYSTYPE *yylval, YYLTYPE *yylloc)
 
 #define UTF8(...) ((mu_char8_t *) __VA_ARGS__)
 
-static yytoken_kind_t symbol(scan_t *scan, YYSTYPE *yylval, YYLTYPE *yylloc) {
+static yytoken_kind_t symbol(Scan *scan, YYSTYPE *yylval, YYLTYPE *yylloc) {
   for (;;) {
     /*!stags:re2c format = 'size_t @@;'; */
     /*!svars:re2c format = 'size_t @@ = 0;'; */

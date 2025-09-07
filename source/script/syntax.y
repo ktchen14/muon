@@ -2,8 +2,16 @@
 #include <muon/engine.h>
 #include "../script.h"
 
+typedef unsigned char YYCTYPE;
+
 typedef struct {
   MuonEngine *engine;
+
+  const YYCTYPE *text;
+  int mode;
+  size_t cursor;
+  size_t marker;
+
   mu_script_t *script;
 
   MuonStmt *stmt[256];
@@ -23,9 +31,8 @@ typedef struct {
 
   MuonDatatypeOption *datatype_option[200];
   size_t datatype_option_i;
-} syntax_t;
+} Scan;
 
-typedef unsigned char YYCTYPE;
 #define YYLTYPE mu_source_t
 %}
 
@@ -35,7 +42,7 @@ typedef unsigned char YYCTYPE;
 %define api.push-pull push
 %define parse.error detailed
 %locations
-%parse-param { syntax_t *syntax }
+%parse-param { Scan *scan }
 
 %union {
   _Bool boolean;
@@ -133,24 +140,24 @@ typedef unsigned char YYCTYPE;
   } \
 } while (0)
 
-static void yyerror(YYLTYPE *yylloc, syntax_t *syntax, char const *s);
+static void yyerror(YYLTYPE *yylloc, Scan *scan, char const *s);
 %}
 
 %%
 
 script: script_argv { // {{{1
-  syntax->script = mu_script(syntax->stmt_i, syntax->stmt);
+  scan->script = mu_script(scan->stmt_i, scan->stmt);
 }
 
 script_argv: {
-  syntax->stmt_i = 0;
+  scan->stmt_i = 0;
 
 } | script_argv stmt {
-  syntax->stmt[syntax->stmt_i++] = $stmt;
+  scan->stmt[scan->stmt_i++] = $stmt;
 }
 
 name: NAME { // {{{1
-  $$ = muon_name(syntax->engine, $1.length, $1.c);
+  $$ = muon_name(scan->engine, $1.length, $1.c);
 }
 
 expr: '(' expr[matter] ')' { $$ = $matter; } // {{{1
@@ -166,78 +173,78 @@ expr: '(' expr[matter] ')' { $$ = $matter; } // {{{1
   | vector_expr  { $$ = &$vector_expr->as_expr; }
 
 access_expr: '.' name %prec '.' {
-  $$ = muon_access_expr(syntax->engine, $name);
+  $$ = muon_access_expr(scan->engine, $name);
 }
 
 boolean_expr: BOOLEAN_LITERAL {
-  $$ = muon_boolean_expr(syntax->engine, $1);
+  $$ = muon_boolean_expr(scan->engine, $1);
 }
 
 cast_expr: expr[matter] _ CAST _ sign %prec CAST {
-  $$ = muon_cast_expr(syntax->engine, $sign, $matter);
+  $$ = muon_cast_expr(scan->engine, $sign, $matter);
 }
 
 integer_expr: INTEGER_LITERAL {
-  $$ = muon_integer_expr(syntax->engine, $1);
+  $$ = muon_integer_expr(scan->engine, $1);
 }
 
 invoke_expr: expr[operator] _ expr[argument] %prec ' ' {
-  $$ = muon_invoke_expr(syntax->engine, $operator, $argument);
+  $$ = muon_invoke_expr(scan->engine, $operator, $argument);
 
 } | expr[argument] access_expr[operator] %prec '.' {
-  $$ = muon_invoke_expr(syntax->engine, &$operator->as_expr, $argument);
+  $$ = muon_invoke_expr(scan->engine, &$operator->as_expr, $argument);
 }
 
 lambda_expr: "lambda" _ view[argument] _ '=' _ expr[matter] %prec LAMBDA {
-  $$ = muon_lambda_expr(syntax->engine, $argument, $matter);
+  $$ = muon_lambda_expr(scan->engine, $argument, $matter);
 }
 
 name_expr: name {
-  $$ = muon_name_expr(syntax->engine, $1);
+  $$ = muon_name_expr(scan->engine, $1);
 }
 
 // --------------------------------- Record ------------------------------- {{{2
 
 expr_member: name ':' _ expr {
-  $$ = muon_expr_member(syntax->engine, $name, $expr);
+  $$ = muon_expr_member(scan->engine, $name, $expr);
 }
 
 record_expr: '(' record_argv ')' {
   size_t i = $record_argv;
-  syntax->expr_member_i -= i;
-  $$ = muon_record_expr(syntax->engine, i, &syntax->expr_member[syntax->expr_member_i]);
+  scan->expr_member_i -= i;
+  $$ = muon_record_expr(scan->engine, i, &scan->expr_member[scan->expr_member_i]);
 
 } | '(' ')' {
-  $$ = muon_record_expr(syntax->engine, 0, NULL);
+  $$ = muon_record_expr(scan->engine, 0, NULL);
 }
 
 record_argv: expr_member {
-  syntax->expr_member[syntax->expr_member_i++] = $expr_member;
+  scan->expr_member[scan->expr_member_i++] = $expr_member;
   $$ = 1;
 
 } | record_argv ',' _ expr_member {
-  syntax->expr_member[syntax->expr_member_i++] = $expr_member;
+  scan->expr_member[scan->expr_member_i++] = $expr_member;
   $$ = $1 + 1;
 }
 
 // --------------------------------- Switch ------------------------------- {{{2
 
 switch_case: "case" _ name _ '=' _ expr {
-  $$ = muon_switch_case(syntax->engine, $name, $expr);
+  $$ = muon_switch_case(scan->engine, $name, $expr);
 }
 
 switch_expr: "switch" _ '(' switch_argv ')' {
   size_t i = $switch_argv;
-  syntax->switch_case_i -= i;
-  $$ = muon_switch_expr(syntax->engine, i, &syntax->switch_case[syntax->switch_case_i]);
+  scan->switch_case_i -= i;
+  $$ = muon_switch_expr(scan->engine, i, &scan->switch_case[scan->switch_case_i]);
 }
 
 switch_argv: switch_case {
-  syntax->switch_case[syntax->switch_case_i++] = $switch_case;
+  scan->switch_case[scan->switch_case_i++] = $switch_case;
   $$ = 1;
 
 } | switch_argv ',' _ switch_case {
-  syntax->switch_case[syntax->switch_case_i++] = $switch_case;
+  scan->switch_case[scan->switch_case_i++] = $switch_case;
   $$ = $1 + 1;
 }
 
@@ -245,19 +252,19 @@ switch_argv: switch_case {
 
 vector_expr: '[' vector_argv ']' {
   size_t i = $vector_argv;
-  syntax->expr_i -= i;
-  $$ = muon_vector_expr(syntax->engine, i, &syntax->expr[syntax->expr_i]);
+  scan->expr_i -= i;
+  $$ = muon_vector_expr(scan->engine, i, &scan->expr[scan->expr_i]);
 
 } | '[' ']' {
-  $$ = muon_vector_expr(syntax->engine, 0, NULL);
+  $$ = muon_vector_expr(scan->engine, 0, NULL);
 }
 
 vector_argv: expr {
-  syntax->expr[syntax->expr_i++] = $expr;
+  scan->expr[scan->expr_i++] = $expr;
   $$ = 1;
 
 } | vector_argv ',' _ expr {
-  syntax->expr[syntax->expr_i++] = $expr;
+  scan->expr[scan->expr_i++] = $expr;
   $$ = $1 + 1;
 }
 
@@ -270,23 +277,23 @@ sign: '(' sign[matter] ')' { $$ = $matter; } // {{{1
   | vector_sign  { $$ = &$vector_sign->as_sign; }
 
 boolean_sign: "Boolean" {
-  $$ = muon_boolean_sign(syntax->engine);
+  $$ = muon_boolean_sign(scan->engine);
 }
 
 integer_sign: "Integer" {
-  $$ = muon_integer_sign(syntax->engine);
+  $$ = muon_integer_sign(scan->engine);
 }
 
 lambda_sign: sign[argument] _ TO _ sign[output] %prec TO {
-  $$ = muon_lambda_sign(syntax->engine, $argument, $output);
+  $$ = muon_lambda_sign(scan->engine, $argument, $output);
 }
 
 name_sign: name {
-  $$ = muon_name_sign(syntax->engine, $name);
+  $$ = muon_name_sign(scan->engine, $name);
 }
 
 vector_sign: '[' sign ']' {
-  $$ = muon_vector_sign(syntax->engine, $sign);
+  $$ = muon_vector_sign(scan->engine, $sign);
 }
 
 
@@ -297,29 +304,29 @@ stmt: // {{{1
 
 datatype_stmt: "datatype" _ name _ '=' _ datatype_argv '\n' {
   size_t i = $datatype_argv;
-  syntax->datatype_option_i -= i;
-  $$ = muon_datatype_stmt(syntax->engine, $name, i, &syntax->datatype_option[syntax->datatype_option_i]);
+  scan->datatype_option_i -= i;
+  $$ = muon_datatype_stmt(scan->engine, $name, i, &scan->datatype_option[scan->datatype_option_i]);
 }
 
 datatype_argv: datatype_option {
-  syntax->datatype_option[syntax->datatype_option_i++] = $datatype_option;
+  scan->datatype_option[scan->datatype_option_i++] = $datatype_option;
   $$ = 1;
 
 } | datatype_argv _ '|' _ datatype_option {
-  syntax->datatype_option[syntax->datatype_option_i++] = $datatype_option;
+  scan->datatype_option[scan->datatype_option_i++] = $datatype_option;
   $$ = $1 + 1;
 }
 
 datatype_option: name {
-  $$ = muon_datatype_option(syntax->engine, $name);
+  $$ = muon_datatype_option(scan->engine, $name);
 }
 
 coercion_stmt: "instance" _ sign[source] _ "<:" _ sign[target] _ '=' _ expr '\n' {
-  $$ = muon_coercion_stmt(syntax->engine, $source, $target, $expr);
+  $$ = muon_coercion_stmt(scan->engine, $source, $target, $expr);
 }
 
 define_stmt: "define" _ name _ '=' _ expr '\n' {
-  $$ = muon_define_stmt(syntax->engine, $name, $expr);
+  $$ = muon_define_stmt(scan->engine, $name, $expr);
 }
 
 
@@ -328,33 +335,33 @@ view: '(' view[matter] ')' { $$ = $matter; } // {{{1
   | variable_view { $$ = &$variable_view->as_view; }
 
 view_member: name ':' _ view {
-  $$ = muon_view_member(syntax->engine, $name, $view);
+  $$ = muon_view_member(scan->engine, $name, $view);
 
 } | name ':' {
-  MuonVariableView *view = muon_variable_view(syntax->engine, $name);
-  $$ = muon_view_member(syntax->engine, $name, &view->as_view);
+  MuonVariableView *view = muon_variable_view(scan->engine, $name);
+  $$ = muon_view_member(scan->engine, $name, &view->as_view);
 }
 
 record_view: '(' record_view_argv ')' {
   size_t i = $record_view_argv;
-  syntax->view_member_i -= i;
-  $$ = muon_record_view(syntax->engine, i, &syntax->view_member[syntax->view_member_i]);
+  scan->view_member_i -= i;
+  $$ = muon_record_view(scan->engine, i, &scan->view_member[scan->view_member_i]);
 
 } | '(' ')' {
-  $$ = muon_record_view(syntax->engine, 0, NULL);
+  $$ = muon_record_view(scan->engine, 0, NULL);
 }
 
 record_view_argv: view_member {
-  syntax->view_member[syntax->view_member_i++] = $view_member;
+  scan->view_member[scan->view_member_i++] = $view_member;
   $$ = 1;
 
 } | record_view_argv ',' _ view_member {
-  syntax->view_member[syntax->view_member_i++] = $view_member;
+  scan->view_member[scan->view_member_i++] = $view_member;
   $$ = $1 + 1;
 }
 
 variable_view: name {
-  $$ = muon_variable_view(syntax->engine, $name);
+  $$ = muon_variable_view(scan->engine, $name);
 }
 
 // ============================= Miscellaneous ============================ {{{1
@@ -382,8 +389,7 @@ static const char *symbol_name(yytoken_kind_t kind)
 
 mu_script_t *mu_read_script(
     MuonEngine *engine, mu_status_t *status, const mu_char8_t *string) {
-  syntax_t syntax = { .engine = engine };
-  scan_t scan = { .text = string };
+  Scan scan = { .engine = engine, .text = string };
 
   // Initialize the Bison parser
   yypstate *pstate;
@@ -400,7 +406,7 @@ mu_script_t *mu_read_script(
     if (debug_scan)
       symbol_debug(kind, &yylval, &yylloc);
 
-    e = yypush_parse(pstate, kind, &yylval, &yylloc, &syntax);
+    e = yypush_parse(pstate, kind, &yylval, &yylloc, &scan);
   } while (e == YYPUSH_MORE);
 
   yypstate_delete(pstate);
@@ -415,7 +421,7 @@ mu_script_t *mu_read_script(
   if ((errno = ((int[]) {0, EINVAL, ENOMEM})[e]) != 0)
     fprintf(stderr, "Error %i\n", e);
 
-  return syntax.script;
+  return scan.script;
 }
 
 static void symbol_debug(
@@ -438,7 +444,7 @@ static const char *symbol_name(yytoken_kind_t kind) {
   return yysymbol_name(YYTRANSLATE(kind));
 }
 
-static void yyerror(YYLTYPE *yylloc, syntax_t *syntax, char const *s) {
+static void yyerror(YYLTYPE *yylloc, Scan *scan, char const *s) {
   fprintf(stderr, "%s\n", s);
 }
 
