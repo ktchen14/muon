@@ -1,6 +1,5 @@
 #include "syntax.h"
 
-#include "../common.h"
 #include "../engine.h"
 #include "../script.h"
 
@@ -24,12 +23,6 @@ typedef struct {
 yytoken_kind_t scan_next(
     const YYCTYPE *restrict buffer, scan_t *scan, YYSTYPE *yylval, YYLTYPE *yylloc)
   __attribute__((nonnull));
-
-static void symbol_debug(
-    FILE *stream, yytoken_kind_t kind, YYSTYPE *yylval, YYLTYPE *yylloc)
-  __attribute__((nonnull));
-
-const char *symbol_name(yytoken_kind_t kind);
 
 yytoken_kind_t scan_next(
     const YYCTYPE *restrict buffer, scan_t *scan, YYSTYPE *yylval, YYLTYPE *yylloc) {
@@ -62,16 +55,4 @@ yytoken_kind_t scan_next(
   }
 
   return YYEOF;
-}
-
-static void symbol_debug(
-    FILE *stream, yytoken_kind_t kind, YYSTYPE *yylval, YYLTYPE *yylloc) {
-  debug("%s:%zu:%zu [%zu + %zu]: ",
-      yylloc->name != NULL ? yylloc->name : "(none)",
-      yylloc->line,
-      yylloc->column,
-      yylloc->offset,
-      yylloc->length);
-  debug("%s", symbol_name(kind));
-  debug("\n");
 }
