@@ -142,7 +142,6 @@ typedef struct {
 
 static void yyerror(YYLTYPE *yylloc, Scan *scan, char const *s);
 %}
-
 %%
 
 script: script_argv { // {{{1
@@ -156,9 +155,11 @@ script_argv: {
   scan->stmt[scan->stmt_i++] = $stmt;
 }
 
-name: NAME { // {{{1
+name: NAME {
   $$ = muon_name(scan->engine, $1.length, $1.c);
 }
+
+_: ' '
 
 expr: '(' expr[matter] ')' { $$ = $matter; } // {{{1
   | access_expr  { $$ = &$access_expr->as_expr; }
@@ -363,10 +364,6 @@ record_view_argv: view_member {
 variable_view: name {
   $$ = muon_variable_view(scan->engine, $name);
 }
-
-// ============================= Miscellaneous ============================ {{{1
-
-_: ' '
 
 // }}}1
 
