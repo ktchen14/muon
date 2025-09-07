@@ -118,25 +118,16 @@ typedef unsigned char YYCTYPE;
 %left ' '
 %nonassoc '.'
 
-// ========================= YYLLOC_DEFAULT/yyerror ======================= {{{1
-
 %{
-#include <assert.h>
-
 #define YYLLOC_DEFAULT(result, argv, n) do { \
   if (n) { \
-    assert(YYRHSLOC((argv), 1).name == YYRHSLOC((argv), n).name); \
-    (result).name   = YYRHSLOC((argv), n).name; \
-    \
     (result).offset = YYRHSLOC((argv), 1).offset; \
-    (result).line   = YYRHSLOC((argv), 1).line; \
-    (result).column = YYRHSLOC((argv), 1).column; \
-    \
-    (result).length = YYRHSLOC((argv), n).offset \
-                    + YYRHSLOC((argv), n).length \
+    (result).length = YYRHSLOC((argv), n).offset + YYRHSLOC((argv), n).length \
                     - YYRHSLOC((argv), 1).offset; \
-  } else \
-    (result) = YYRHSLOC((argv), 0); \
+  } else { \
+    (result).offset = YYRHSLOC((argv), 0).offset + YYRHSLOC((argv), 0).length; \
+    (result).length = 0; \
+  } \
 } while (0)
 
 static void yyerror(YYLTYPE *yylloc, syntax_t *syntax, char const *s);
