@@ -55,7 +55,7 @@ target_link_libraries(main PRIVATE muon)
 add_subdirectory(source)
 
 if(PROJECT_IS_TOP_LEVEL)
-  set(BUILD_TESTING ON CACHE BOOL "Build the testing tree.")
+  include(CTest)
   if(BUILD_TESTING)
     add_subdirectory(test)
   endif()
