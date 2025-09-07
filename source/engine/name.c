@@ -11,7 +11,7 @@
 MuonName *muon_name(
     MuonEngine *engine,
     size_t length,
-    const mu_char8_t text[restrict static length]) {
+    const char text[restrict static length]) {
   for (size_t i = 0; i < engine->name_number; i++) {
     MuonName *name = engine->name[i];
 

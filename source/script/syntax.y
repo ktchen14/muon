@@ -2,12 +2,10 @@
 #include <muon/engine.h>
 #include "../script.h"
 
-typedef unsigned char YYCTYPE;
-
 typedef struct {
   MuonEngine *engine;
 
-  const YYCTYPE *text;
+  const char *text;
   int mode;
   size_t cursor;
   size_t marker;
@@ -48,7 +46,7 @@ typedef struct {
   _Bool boolean;
   long long integer;
   struct {
-    const mu_char8_t *c; size_t length;
+    const char *c; size_t length;
   } text;
 
   size_t i;
@@ -385,7 +383,7 @@ static const char *symbol_name(yytoken_kind_t kind)
   __attribute__((returns_nonnull));
 
 mu_script_t *muon_scan(
-    MuonEngine *engine, mu_status_t *status, const mu_char8_t *string) {
+    MuonEngine *engine, mu_status_t *status, const char *string) {
   Scan scan = { .engine = engine, .text = string };
 
   // Initialize the Bison parser

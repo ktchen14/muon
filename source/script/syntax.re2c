@@ -79,19 +79,19 @@
   <string> "\"" => normal { return '"'; }
 
   <string> "\\\"" {
-    return yylval->text.c = UTF8("\""), yylval->text.length = 1, STRING;
+    return yylval->text.c = "\"", yylval->text.length = 1, STRING;
   }
 
   <string> "\\t" {
-    return yylval->text.c = UTF8("\t"), yylval->text.length = 1, STRING;
+    return yylval->text.c = "\t", yylval->text.length = 1, STRING;
   }
 
   <string> "\\n" {
-    return yylval->text.c = UTF8("\n"), yylval->text.length = 1, STRING;
+    return yylval->text.c = "\n", yylval->text.length = 1, STRING;
   }
 
   <string> "\\r" {
-    return yylval->text.c = UTF8("\r"), yylval->text.length = 1, STRING;
+    return yylval->text.c = "\r", yylval->text.length = 1, STRING;
   }
 
   <string> ([^] \ ("\\" | "\"" | sentinel))+ {
@@ -133,6 +133,8 @@
   }
 */
 
+typedef unsigned char YYCTYPE;
+
 /*!conditions:re2c*/
 
 /// Return the next symbol in the @a scan
@@ -147,8 +149,6 @@ static yytoken_kind_t symbol(Scan *scan, YYSTYPE *yylval, YYLTYPE *yylloc)
 #define YYSETCONDITION(next) (scan->mode = next)
 #define YYSTAGP(name)        (name = scan->cursor)
 #define YYSHIFTSTAG(name, n) (name += n)
-
-#define UTF8(...) ((mu_char8_t *) __VA_ARGS__)
 
 static yytoken_kind_t symbol(Scan *scan, YYSTYPE *yylval, YYLTYPE *yylloc) {
   for (;;) {

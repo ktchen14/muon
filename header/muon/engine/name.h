@@ -5,9 +5,6 @@
 
 #include <stddef.h>
 
-/// Define @c mu_char8_t to have the same definition as @c char8_t in C23
-typedef unsigned char mu_char8_t;
-
 /**
  * @brief A symbol in Muon.
  *
@@ -20,7 +17,7 @@ typedef const struct MuonName {
   /// The length of the name (not counting the null terminator)
   size_t length;
 
-  mu_char8_t text[/* length + sizeof('\0') */];
+  char text[/* length + sizeof('\0') */];
 } MuonName;
 
 /**
@@ -32,7 +29,7 @@ typedef const struct MuonName {
 MuonName *muon_name(
     MuonEngine *engine,
     size_t length,
-    const mu_char8_t text[restrict static length])
+    const char text[restrict static length])
   __attribute__((nonnull));
 
 void muon_name_debug(MuonName *name) __attribute__((nonnull));
