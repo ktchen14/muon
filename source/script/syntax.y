@@ -47,6 +47,7 @@ typedef unsigned char YYCTYPE;
   size_t i;
 
   MuonName *name;
+
   MuonExpr *expr;
   MuonSign *sign;
   MuonStmt *stmt;
@@ -122,10 +123,12 @@ typedef unsigned char YYCTYPE;
 #define YYLLOC_DEFAULT(result, argv, n) do { \
   if (n) { \
     (result).offset = YYRHSLOC((argv), 1).offset; \
-    (result).length = YYRHSLOC((argv), n).offset + YYRHSLOC((argv), n).length \
+    (result).length = YYRHSLOC((argv), n).offset \
+                    + YYRHSLOC((argv), n).length \
                     - YYRHSLOC((argv), 1).offset; \
   } else { \
-    (result).offset = YYRHSLOC((argv), 0).offset + YYRHSLOC((argv), 0).length; \
+    (result).offset = YYRHSLOC((argv), 0).offset \
+                    + YYRHSLOC((argv), 0).length; \
     (result).length = 0; \
   } \
 } while (0)
@@ -133,11 +136,9 @@ typedef unsigned char YYCTYPE;
 static void yyerror(YYLTYPE *yylloc, syntax_t *syntax, char const *s);
 %}
 
-// ================================= Script =============================== {{{1
-
 %%
 
-script: script_argv {
+script: script_argv { // {{{1
   syntax->script = mu_script(syntax->stmt_i, syntax->stmt);
 }
 
@@ -148,25 +149,21 @@ script_argv: {
   syntax->stmt[syntax->stmt_i++] = $stmt;
 }
 
-// ================================== Name ================================ {{{1
-
-name: NAME {
+name: NAME { // {{{1
   $$ = muon_name(syntax->engine, $1.length, $1.c);
 }
 
-// ================================== Expr ================================ {{{1
-
-expr: '(' expr[matter] ')' { $$ = $matter; } |
-  access_expr  { $$ = &$access_expr->as_expr; } |
-  boolean_expr { $$ = &$boolean_expr->as_expr; } |
-  cast_expr    { $$ = &$cast_expr->as_expr; } |
-  integer_expr { $$ = &$integer_expr->as_expr; } |
-  invoke_expr  { $$ = &$invoke_expr->as_expr; } |
-  lambda_expr  { $$ = &$lambda_expr->as_expr; } |
-  name_expr    { $$ = &$name_expr->as_expr; } |
-  record_expr  { $$ = &$record_expr->as_expr; } |
-  switch_expr  { $$ = &$switch_expr->as_expr; } |
-  vector_expr  { $$ = &$vector_expr->as_expr; }
+expr: '(' expr[matter] ')' { $$ = $matter; } // {{{1
+  | access_expr  { $$ = &$access_expr->as_expr; }
+  | boolean_expr { $$ = &$boolean_expr->as_expr; }
+  | cast_expr    { $$ = &$cast_expr->as_expr; }
+  | integer_expr { $$ = &$integer_expr->as_expr; }
+  | invoke_expr  { $$ = &$invoke_expr->as_expr; }
+  | lambda_expr  { $$ = &$lambda_expr->as_expr; }
+  | name_expr    { $$ = &$name_expr->as_expr; }
+  | record_expr  { $$ = &$record_expr->as_expr; }
+  | switch_expr  { $$ = &$switch_expr->as_expr; }
+  | vector_expr  { $$ = &$vector_expr->as_expr; }
 
 access_expr: '.' name %prec '.' {
   $$ = muon_access_expr(syntax->engine, $name);
@@ -264,14 +261,13 @@ vector_argv: expr {
   $$ = $1 + 1;
 }
 
-// ================================== Sign ================================ {{{1
 
-sign: '(' sign[matter] ')' { $$ = $matter; } |
-  boolean_sign { $$ = &$boolean_sign->as_sign; } |
-  integer_sign { $$ = &$integer_sign->as_sign; } |
-  lambda_sign  { $$ = &$lambda_sign->as_sign; } |
-  name_sign    { $$ = &$name_sign->as_sign; } |
-  vector_sign  { $$ = &$vector_sign->as_sign; }
+sign: '(' sign[matter] ')' { $$ = $matter; } // {{{1
+  | boolean_sign { $$ = &$boolean_sign->as_sign; }
+  | integer_sign { $$ = &$integer_sign->as_sign; }
+  | lambda_sign  { $$ = &$lambda_sign->as_sign; }
+  | name_sign    { $$ = &$name_sign->as_sign; }
+  | vector_sign  { $$ = &$vector_sign->as_sign; }
 
 boolean_sign: "Boolean" {
   $$ = muon_boolean_sign(syntax->engine);
@@ -293,9 +289,8 @@ vector_sign: '[' sign ']' {
   $$ = muon_vector_sign(syntax->engine, $sign);
 }
 
-// ================================== Stmt ================================ {{{1
 
-stmt:
+stmt: // {{{1
   coercion_stmt { $$ = &$coercion_stmt->as_stmt; } |
   datatype_stmt { $$ = &$datatype_stmt->as_stmt; } |
   define_stmt   { $$ = &$define_stmt->as_stmt; }
@@ -327,11 +322,10 @@ define_stmt: "define" _ name _ '=' _ expr '\n' {
   $$ = muon_define_stmt(syntax->engine, $name, $expr);
 }
 
-// ================================== View ================================ {{{1
 
-view: '(' view[matter] ')' { $$ = $matter; } |
-  record_view   { $$ = &$record_view->as_view; } |
-  variable_view { $$ = &$variable_view->as_view; }
+view: '(' view[matter] ')' { $$ = $matter; } // {{{1
+  | record_view   { $$ = &$record_view->as_view; }
+  | variable_view { $$ = &$variable_view->as_view; }
 
 view_member: name ':' _ view {
   $$ = muon_view_member(syntax->engine, $name, $view);
@@ -366,6 +360,8 @@ variable_view: name {
 // ============================= Miscellaneous ============================ {{{1
 
 _: ' '
+
+// }}}1
 
 %%
 #include "re2c.c"
