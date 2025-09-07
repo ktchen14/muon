@@ -25,5 +25,5 @@ target_sources(muon PRIVATE
   standard.c
   status.c
 
-  $<TARGET_OBJECTS:reader>
+  $<TARGET_OBJECTS:syntax>
 )
