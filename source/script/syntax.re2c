@@ -12,43 +12,41 @@
     *yylloc = (YYLTYPE) { .offset = a, .length = z - a };
   }
 
-  NL   = [\n\r]+ [ \t\n\r]*;
-  _    = [ \t]+;
+  NL       = [\n\r]+ [ \t\n\r]*;
+  _        = [ \t]+;
   sentinel = [\x00];
 
   <> :=> normal
 
-  <normal> NL       { return '\n'; }
-  <normal> _        { return ' '; }
-  <normal> sentinel { break; }
   <normal> "#" [ \t] [^\n\r\x00]* [\n\r]+ [ \t\n\r]* { continue; }
 
-  // ================================ Keyword ====================================
+  <normal> NL                     { return '\n'; }
+  <normal> _                      { return ' '; }
+  <normal> sentinel               { break; }
 
-  <normal> @a "case" @z    { return CASE; }
-  <normal> "datatype"      { return DATATYPE; }
-  <normal> "define"        { return DEFINE; }
-  <normal> "instance"      { return INSTANCE; }
-  <normal> "lambda" | "λ"  { return LAMBDA; }
-  <normal> "switch"        { return SWITCH; }
+  <normal> "case"                 { return CASE; }
+  <normal> "datatype"             { return DATATYPE; }
+  <normal> "define"               { return DEFINE; }
+  <normal> "instance"             { return INSTANCE; }
+  <normal> "lambda" | "λ"         { return LAMBDA; }
+  <normal> "switch"               { return SWITCH; }
 
-  <normal> "Boolean"       { return BOOLEAN; }
-  <normal> "Integer"       { return INTEGER; }
+  <normal> "Boolean"              { return BOOLEAN; }
+  <normal> "Integer"              { return INTEGER; }
 
-  // ================================ Operator ====================================
+  <normal> "(" @z NL?             { return '('; }
+  <normal> ")"                    { return ')'; }
+  <normal> "," @z _               { return ','; }
+  <normal> "."                    { return '.'; }
+  <normal> ":" @z _               { return ':'; }
+  <normal> "[" @z NL?             { return '['; }
+  <normal> "]"                    { return ']'; }
 
-  <normal> "(" @z NL?      { return '('; }
-  <normal> ")"             { return ')'; }
-  <normal> ","             { return ','; }
-  <normal> "->" | "→"      { return TO; }
-  <normal> "."             { return '.'; }
-  <normal> ":"             { return ':'; }
-  <normal> "::" | "∷"      { return CAST; }
-  <normal> "<:"            { return IS_SUBTYPE_OF; }
-  <normal> "="             { return '='; }
-  <normal> "[" @z NL?      { return '['; }
-  <normal> "]"             { return ']'; }
-  <normal> "|"             { return '|'; }
+  <normal> _ @a ("<:") @z _       { return IS_SUBTYPE_OF; }
+  <normal> _ @a ("=") @z _        { return '='; }
+  <normal> _ @a ("|") @z _        { return '|'; }
+  <normal> _ @a ("→" | "->") @z _ { return TO; }
+  <normal> _ @a ("∷" | "::") @z _ { return CAST; }
 
   // ================================ Boolean ====================================
 

@@ -120,9 +120,9 @@ typedef struct {
 
 %type <i> datatype_argv record_argv switch_argv vector_argv record_view_argv
 
-%left CAST
-%right TO
-%nonassoc LAMBDA
+%left "∷"
+%right "→"
+%nonassoc "lambda"
 %left ' '
 %nonassoc '.'
 
@@ -172,7 +172,7 @@ expr: '(' expr[matter] ')' { $$ = $matter; } // {{{1
   | switch_expr  { $$ = &$switch_expr->as_expr; }
   | vector_expr  { $$ = &$vector_expr->as_expr; }
 
-access_expr: '.' name %prec '.' {
+access_expr: '.' name {
   $$ = muon_access_expr(scan->engine, $name);
 }
 
@@ -180,7 +180,7 @@ boolean_expr: BOOLEAN_LITERAL {
   $$ = muon_boolean_expr(scan->engine, $1);
 }
 
-cast_expr: expr[matter] _ CAST _ sign %prec CAST {
+cast_expr: expr[matter] "∷" sign {
   $$ = muon_cast_expr(scan->engine, $sign, $matter);
 }
 
@@ -191,11 +191,11 @@ integer_expr: INTEGER_LITERAL {
 invoke_expr: expr[operator] _ expr[argument] %prec ' ' {
   $$ = muon_invoke_expr(scan->engine, $operator, $argument);
 
-} | expr[argument] access_expr[operator] %prec '.' {
+} | expr[argument] access_expr[operator] {
   $$ = muon_invoke_expr(scan->engine, &$operator->as_expr, $argument);
 }
 
-lambda_expr: "lambda" _ view[argument] _ '=' _ expr[matter] %prec LAMBDA {
+lambda_expr: "lambda" _ view[argument] '=' expr[matter] %prec LAMBDA {
   $$ = muon_lambda_expr(scan->engine, $argument, $matter);
 }
 
@@ -205,7 +205,7 @@ name_expr: name {
 
 // --------------------------------- Record ------------------------------- {{{2
 
-expr_member: name ':' _ expr {
+expr_member: name ':' expr {
   $$ = muon_expr_member(scan->engine, $name, $expr);
 }
 
@@ -222,14 +222,14 @@ record_argv: expr_member {
   scan->expr_member[scan->expr_member_i++] = $expr_member;
   $$ = 1;
 
-} | record_argv ',' _ expr_member {
+} | record_argv ',' expr_member {
   scan->expr_member[scan->expr_member_i++] = $expr_member;
   $$ = $1 + 1;
 }
 
 // --------------------------------- Switch ------------------------------- {{{2
 
-switch_case: "case" _ name _ '=' _ expr {
+switch_case: "case" _ name '=' expr {
   $$ = muon_switch_case(scan->engine, $name, $expr);
 }
 
@@ -243,7 +243,7 @@ switch_argv: switch_case {
   scan->switch_case[scan->switch_case_i++] = $switch_case;
   $$ = 1;
 
-} | switch_argv ',' _ switch_case {
+} | switch_argv ',' switch_case {
   scan->switch_case[scan->switch_case_i++] = $switch_case;
   $$ = $1 + 1;
 }
@@ -263,7 +263,7 @@ vector_argv: expr {
   scan->expr[scan->expr_i++] = $expr;
   $$ = 1;
 
-} | vector_argv ',' _ expr {
+} | vector_argv ',' expr {
   scan->expr[scan->expr_i++] = $expr;
   $$ = $1 + 1;
 }
@@ -284,7 +284,7 @@ integer_sign: "Integer" {
   $$ = muon_integer_sign(scan->engine);
 }
 
-lambda_sign: sign[argument] _ TO _ sign[output] %prec TO {
+lambda_sign: sign[argument] "→" sign[output] {
   $$ = muon_lambda_sign(scan->engine, $argument, $output);
 }
 
@@ -302,7 +302,7 @@ stmt: // {{{1
   datatype_stmt { $$ = &$datatype_stmt->as_stmt; } |
   define_stmt   { $$ = &$define_stmt->as_stmt; }
 
-datatype_stmt: "datatype" _ name _ '=' _ datatype_argv '\n' {
+datatype_stmt: "datatype" _ name '=' datatype_argv '\n' {
   size_t i = $datatype_argv;
   scan->datatype_option_i -= i;
   $$ = muon_datatype_stmt(scan->engine, $name, i, &scan->datatype_option[scan->datatype_option_i]);
@@ -312,7 +312,7 @@ datatype_argv: datatype_option {
   scan->datatype_option[scan->datatype_option_i++] = $datatype_option;
   $$ = 1;
 
-} | datatype_argv _ '|' _ datatype_option {
+} | datatype_argv '|' datatype_option {
   scan->datatype_option[scan->datatype_option_i++] = $datatype_option;
   $$ = $1 + 1;
 }
@@ -321,11 +321,11 @@ datatype_option: name {
   $$ = muon_datatype_option(scan->engine, $name);
 }
 
-coercion_stmt: "instance" _ sign[source] _ "<:" _ sign[target] _ '=' _ expr '\n' {
+coercion_stmt: "instance" _ sign[source] "<:" sign[target] '=' expr '\n' {
   $$ = muon_coercion_stmt(scan->engine, $source, $target, $expr);
 }
 
-define_stmt: "define" _ name _ '=' _ expr '\n' {
+define_stmt: "define" _ name '=' expr '\n' {
   $$ = muon_define_stmt(scan->engine, $name, $expr);
 }
 
@@ -334,7 +334,7 @@ view: '(' view[matter] ')' { $$ = $matter; } // {{{1
   | record_view   { $$ = &$record_view->as_view; }
   | variable_view { $$ = &$variable_view->as_view; }
 
-view_member: name ':' _ view {
+view_member: name ':' view {
   $$ = muon_view_member(scan->engine, $name, $view);
 
 } | name ':' {
@@ -355,7 +355,7 @@ record_view_argv: view_member {
   scan->view_member[scan->view_member_i++] = $view_member;
   $$ = 1;
 
-} | record_view_argv ',' _ view_member {
+} | record_view_argv ',' view_member {
   scan->view_member[scan->view_member_i++] = $view_member;
   $$ = $1 + 1;
 }
