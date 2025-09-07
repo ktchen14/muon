@@ -1,0 +1,72 @@
+Test: Define Statement
+  define x = 42
+
+  Expected Stdout:
+    Parse successful
+    Statements: 1
+
+  Expected Stderr:
+
+Test: Define Boolean
+  define flag = true
+
+  Expected Stdout:
+    Parse successful
+    Statements: 1
+
+  Expected Stderr:
+
+Test: Define Vector
+  define vec = [1, 2, 3]
+
+  Expected Stdout:
+    Parse successful
+    Statements: 1
+
+  Expected Stderr:
+
+Test: Define Empty Vector
+  define empty = []
+
+  Expected Stdout:
+    Parse successful
+    Statements: 1
+
+  Expected Stderr:
+
+Test: Define Record
+  define point = (x: 42, y: true)
+
+  Expected Stdout:
+    Parse successful
+    Statements: 1
+
+  Expected Stderr:
+
+Test: Define Empty Record
+  define unit = ()
+
+  Expected Stdout:
+    Parse successful
+    Statements: 1
+
+  Expected Stderr:
+
+Test: Define Lambda
+  define identity = lambda x = x
+
+  Expected Stdout:
+    Parse successful
+    Statements: 1
+
+  Expected Stderr:
+
+Test: Multiple Definitions
+  define x = 42
+  define y = true
+
+  Expected Stdout:
+    Parse successful
+    Statements: 2
+
+  Expected Stderr:

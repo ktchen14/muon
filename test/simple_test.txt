@@ -1,0 +1,9 @@
+## Define Statement
+Input:
+define x = 42
+
+Expected Stdout:
+Parse successful
+Statements: 1
+
+Expected Stderr:
