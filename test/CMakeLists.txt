@@ -1,34 +1,24 @@
-# Test configuration for Muon language tests
-
-# Enable testing
-
-# Build test runner executable
 add_executable(test_runner test_runner.c)
-
-# Link against the muon library and dependencies
-target_link_libraries(test_runner
-    muon
-)
-
-# Include directories
+target_compile_options(test_runner PRIVATE
+  -Wall -Wextra -Werror -pedantic
+  -Wno-gnu-zero-variadic-macro-arguments)
+target_link_libraries(test_runner muon)
 target_include_directories(test_runner PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/../header
-    ${CMAKE_CURRENT_SOURCE_DIR}/../source
+  "${CMAKE_CURRENT_SOURCE_DIR}/../header"
+  "${CMAKE_CURRENT_SOURCE_DIR}/../source"
 )
 
-# Copy test files to build directory
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/basic_tests.txt
-     DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/run_tests.sh
-     DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
-     FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
-                      GROUP_READ GROUP_EXECUTE
-                      WORLD_READ WORLD_EXECUTE)
-
-# Add basic tests
+# Add test to build test_runner as a fixture
 add_test(
-    NAME basic_tests
-    COMMAND ${CMAKE_CURRENT_BINARY_DIR}/run_tests.sh $<TARGET_FILE:test_runner> ${CMAKE_CURRENT_BINARY_DIR}/basic_tests.txt
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+  NAME build_test_runner
+  COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target test_runner
 )
+set_tests_properties(build_test_runner PROPERTIES FIXTURES_SETUP test_runner_fixture)
+
+# Add basic tests with dependency on test runner fixture
+add_test(
+  NAME basic_tests
+  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/run_tests.sh $<TARGET_FILE:test_runner> ${CMAKE_CURRENT_SOURCE_DIR}/basic_tests.txt
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+)
+set_tests_properties(basic_tests PROPERTIES FIXTURES_REQUIRED test_runner_fixture)

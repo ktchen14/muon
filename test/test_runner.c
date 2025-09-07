@@ -1,7 +1,7 @@
 #include <muon.h>
 
-#include "../source/common.h"
 #include "../source/script.h"
+#include "../source/status.h"
 
 #include <errno.h>
 #include <stdio.h>
@@ -30,8 +30,9 @@ int main(int argc, char *argv[]) {
 
   // Parse the Muon script
   MuonEngine engine = {0};
+  mu_status_t status = {0};
 
-  mu_script_t *script = muon_scan(&engine, NULL, (const char*)buffer);
+  mu_script_t *script = muon_scan(&engine, &status, (const char *) buffer);
   if (script == NULL) {
     fprintf(stderr, "Parse error\n");
     return EXIT_FAILURE;
