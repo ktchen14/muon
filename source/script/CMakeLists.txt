@@ -31,4 +31,3 @@ target_include_directories(reader PRIVATE
   "$<INSTALL_INTERFACE:include>")
 
 target_include_directories(reader PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
-target_include_directories(reader PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
