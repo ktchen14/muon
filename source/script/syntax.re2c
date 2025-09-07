@@ -1,3 +1,7 @@
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+
 /*!rules:re2c:syntax
   // Like an implicit @a ... @z around each rule. Then assign region and text.
   <*> !entry { YYSTAGP(a); }
@@ -20,7 +24,7 @@
 
   // ================================ Keyword ====================================
 
-  <normal> "case"          { return CASE; }
+  <normal> @a "case" @z    { return CASE; }
   <normal> "datatype"      { return DATATYPE; }
   <normal> "define"        { return DEFINE; }
   <normal> "instance"      { return INSTANCE; }
@@ -63,7 +67,7 @@
 
   <normal> [1-9][0-9]* {
     char text[20];
-    memcpy(text, &buffer[a], z - a);
+    memcpy(text, &scan->buffer[a], z - a);
     text[19] = '\0';
     long long i = strtoll(text, NULL, 10);
 
@@ -92,7 +96,7 @@
   }
 
   <string> ([^] \ ("\\" | "\"" | sentinel))+ {
-    yylval->text.c = &buffer[a];
+    yylval->text.c = &scan->buffer[a];
     yylval->text.length = z - a;
     return STRING;
   }
@@ -106,13 +110,11 @@
 
   // ================================== Name =====================================
 
-  // !include "unicode.re";
-
   XID_Start = [A-Za-z];
   XID_Continue = [A-Za-z0-9_];
 
   <normal> XID_Start XID_Continue* {
-    yylval->text.c = &buffer[a];
+    yylval->text.c = &scan->buffer[a];
     yylval->text.length = z - a;
     return NAME;
   }
@@ -121,54 +123,43 @@
 
   <normal> [^] {
     int length = z - a;
-    const char *text = (const char *) &buffer[a];
+    const char *text = (const char *) &scan->buffer[a];
     fprintf(stderr, "Unexpected character %.*s\n", length, text);
     return YYerror;
   }
 
   <normal> * {
-    fprintf(stderr, "Unexpected character %c\n", buffer[a]);
+    fprintf(stderr, "Unexpected character %c\n", scan->buffer[a]);
     return YYerror;
   }
 */
 
-#include "syntax.h"
-
-#include "../common.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-typedef unsigned char YYCTYPE;
-
-typedef struct {
-  size_t cursor;  ///< location of the active character
-  size_t marker;
-  int condition;  ///< Re2c condition type
-} scan_t;
-
-/// Scan and return the next symbol in the @a buffer
-yytoken_kind_t scan_next(
-    const YYCTYPE *restrict buffer, scan_t *scan, YYSTYPE *yylval, YYLTYPE *yylloc)
-  __attribute__((nonnull));
-
 /*!conditions:re2c*/
 
-#define UTF8(...) ((mu_char8_t *) __VA_ARGS__)
+typedef struct {
+  const YYCTYPE *buffer;
+  size_t cursor;
+  size_t marker;
+  enum YYCONDTYPE mode;
+} scan_t;
 
-yytoken_kind_t scan_next(
-    const YYCTYPE *restrict buffer, scan_t *scan, YYSTYPE *yylval, YYLTYPE *yylloc) {
-#define YYPEEK()             buffer[scan->cursor]
+/// Return the next symbol in the @a scan
+static yytoken_kind_t symbol(scan_t *scan, YYSTYPE *yylval, YYLTYPE *yylloc)
+  __attribute__((nonnull));
+
+#define YYPEEK()             scan->buffer[scan->cursor]
 #define YYSKIP()             (scan->cursor++)
 #define YYCURSORBACKUP()     (scan->marker = scan->cursor)
 #define YYRESTORE()          (scan->cursor = scan->marker)
-#define YYGETCONDITION()     (scan->condition)
-#define YYSETCONDITION(next) (scan->condition = next)
+#define YYGETCONDITION()     (scan->mode)
+#define YYSETCONDITION(next) (scan->mode = next)
 #define YYSTAGP(name)        (name = scan->cursor)
 #define YYSHIFTSTAG(name, n) (name += n)
 
-  for (size_t a = 0, z = 0;;) {
+#define UTF8(...) ((mu_char8_t *) __VA_ARGS__)
+
+static yytoken_kind_t symbol(scan_t *scan, YYSTYPE *yylval, YYLTYPE *yylloc) {
+  for (;;) {
     /*!stags:re2c format = 'size_t @@;'; */
     /*!svars:re2c format = 'size_t @@ = 0;'; */
 
@@ -191,19 +182,6 @@ yytoken_kind_t scan_next(
   }
 
   return YYEOF;
-}
-
-const char *symbol_name(yytoken_kind_t kind);
-
-void symbol_debug(
-    yytoken_kind_t kind, YYSTYPE *yylval, YYLTYPE *yylloc) {
-  debug("%s:%zu:%zu [%zu + %zu]: %s\n",
-      yylloc->name != NULL ? yylloc->name : "(none)",
-      yylloc->line,
-      yylloc->column,
-      yylloc->offset,
-      yylloc->length,
-      symbol_name(kind));
 }
 
 // vim: set ft=c:

@@ -1,4 +1,4 @@
-%code requires {
+%{
 #include <muon/engine.h>
 #include "../script.h"
 
@@ -25,8 +25,9 @@ typedef struct {
   size_t datatype_option_i;
 } syntax_t;
 
+typedef unsigned char YYCTYPE;
 #define YYLTYPE mu_source_t
-}
+%}
 
 %require "3.8.0"
 
@@ -378,13 +379,24 @@ _: ' '
 %%
 #include "re2c.c"
 
+#include "../common.h"
+
 #include <errno.h>
 #include <stdio.h>
+
+/// Emit debugging information on the symbol to the debug stream
+static void symbol_debug(
+    yytoken_kind_t kind, const YYSTYPE *yylval, const YYLTYPE *yylloc)
+  __attribute__((nonnull));
+
+/// Return the name of a @a kind of symbol
+static const char *symbol_name(yytoken_kind_t kind)
+  __attribute__((returns_nonnull));
 
 mu_script_t *mu_read_script(
     MuonEngine *engine, mu_status_t *status, const mu_char8_t *string) {
   syntax_t syntax = { .engine = engine };
-  scan_t scan = {0};
+  scan_t scan = { .buffer = string };
 
   // Initialize the Bison parser
   yypstate *pstate;
@@ -396,7 +408,7 @@ mu_script_t *mu_read_script(
   do {
     YYSTYPE yylval;
     YYLTYPE yylloc;
-    kind = scan_next(string, &scan, &yylval, &yylloc);
+    kind = symbol(&scan, &yylval, &yylloc);
 
     if (debug_scan)
       symbol_debug(kind, &yylval, &yylloc);
@@ -410,7 +422,7 @@ mu_script_t *mu_read_script(
     yytoken_kind_t kind;
     YYSTYPE yylval;
     YYLTYPE yylloc;
-    while ((kind = scan_next(string, &scan, &yylval, &yylloc)) != YYEOF)
+    while ((kind = symbol(&scan, &yylval, &yylloc)) != YYEOF)
       symbol_debug(kind, &yylval, &yylloc);
   }
 
@@ -420,8 +432,18 @@ mu_script_t *mu_read_script(
   return syntax.script;
 }
 
-// https://stackoverflow.com/a/32448812
-const char *symbol_name(yytoken_kind_t kind) {
+static void symbol_debug(
+    yytoken_kind_t kind, const YYSTYPE *yylval, const YYLTYPE *yylloc) {
+  debug("%s:%zu:%zu [%zu + %zu]: %s\n",
+      yylloc->name != NULL ? yylloc->name : "(none)",
+      yylloc->line,
+      yylloc->column,
+      yylloc->offset,
+      yylloc->length,
+      symbol_name(kind));
+}
+
+static const char *symbol_name(yytoken_kind_t kind) {
   return yysymbol_name(YYTRANSLATE(kind));
 }
 
