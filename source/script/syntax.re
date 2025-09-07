@@ -120,7 +120,7 @@ XID_Continue = [A-Za-z0-9_];
 
 <normal> [^] {
   int length = z - a;
-  const char *text = &buffer[a];
+  const char *text = (const char *) &buffer[a];
   fprintf(stderr, "Unexpected character %.*s\n", length, text);
   return YYerror;
 }
