@@ -1,11 +1,9 @@
 #include "syntax.h"
 
-#include "../script.h"
+#include "../common.h"
 #include "../engine.h"
-#include "../status.h"
+#include "../script.h"
 
-#include <assert.h>
-#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -67,7 +65,7 @@ yytoken_kind_t scan_next(
 
 static void symbol_debug(
     FILE *stream, yytoken_kind_t kind, YYSTYPE *yylval, YYLTYPE *yylloc) {
-  printf("%s:%zu:%zu [%zu + %zu]: ",
+  debug("%s:%zu:%zu [%zu + %zu]: ",
       yylloc->name != NULL ? yylloc->name : "(none)",
       yylloc->line,
       yylloc->column,
@@ -78,61 +76,61 @@ static void symbol_debug(
     int c = kind;
     switch (c) {
       case '\n':
-        printf("\\n");
+        debug("\\n");
         break;
       case ' ':
-        printf("_");
+        debug("_");
         break;
       default:
-        printf("%c", c);
+        debug("%c", c);
         break;
     }
   } else switch (kind) {
     case YYEOF:
-      printf("EOF\n");
+      debug("EOF\n");
       break;
     case YYerror:
-      printf("Error\n");
+      debug("Error\n");
       break;
     case DATATYPE:
-      printf("\"datatype\"");
+      debug("\"datatype\"");
       break;
     case DEFINE:
-      printf("\"define\"");
+      debug("\"define\"");
       break;
     case INSTANCE:
-      printf("\"instance\"");
+      debug("\"instance\"");
       break;
     case NAME:
       fputs("NAME ", stdout);
       fwrite(yylval->text.c, yylval->text.length, 1, stdout);
       break;
     case BOOLEAN_LITERAL:
-      printf("BOOLEAN LITERAL %s", yylval->boolean ? "true" : "false");
+      debug("BOOLEAN LITERAL %s", yylval->boolean ? "true" : "false");
       break;
     case INTEGER_LITERAL:
-      printf("INTEGER LITERAL %lli", yylval->integer);
+      debug("INTEGER LITERAL %lli", yylval->integer);
       break;
     case STRING:
-      printf("STRING \"");
+      debug("STRING \"");
       for (size_t i = 0; i < yylval->text.length; i++) {
         char c = yylval->text.c[i];
         switch (c) {
-          case '"': printf("\\\""); break;
-          case '\t': printf("\\t"); break;
-          case '\n': printf("\\n"); break;
-          case '\r': printf("\\r"); break;
-          default: printf("%c", c); break;
+          case '"': debug("\\\""); break;
+          case '\t': debug("\\t"); break;
+          case '\n': debug("\\n"); break;
+          case '\r': debug("\\r"); break;
+          default: debug("%c", c); break;
         }
       }
-      printf("\"");
+      debug("\"");
       break;
     default:
-      printf("Unknown %d", kind);
+      debug("Unknown %d", kind);
       break;
   }
 
-  printf("\n");
+  debug("\n");
 }
 
 
