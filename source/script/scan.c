@@ -1,7 +1,5 @@
 #include "syntax.h"
-
-#include "../engine.h"
-#include "../script.h"
+#include "scan.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,20 +7,7 @@
 
 /*!conditions:re2c*/
 
-typedef mu_char8_t YYCTYPE;
-
-typedef struct {
-  size_t cursor;  ///< location of the active character
-  size_t marker;
-  enum YYCONDTYPE condition;
-} scan_t;
-
 #define UTF8(...) ((mu_char8_t *) __VA_ARGS__)
-
-/// Scan and return the next symbol in the @a buffer
-yytoken_kind_t scan_next(
-    const YYCTYPE *restrict buffer, scan_t *scan, YYSTYPE *yylval, YYLTYPE *yylloc)
-  __attribute__((nonnull));
 
 yytoken_kind_t scan_next(
     const YYCTYPE *restrict buffer, scan_t *scan, YYSTYPE *yylval, YYLTYPE *yylloc) {
