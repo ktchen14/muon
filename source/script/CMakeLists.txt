@@ -20,7 +20,15 @@ add_custom_command(
 )
 
 add_library(reader OBJECT "${BISON_SYNTAX_OUTPUT_SOURCE}")
-target_include_directories(reader PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../../header")
+target_compile_features(reader PUBLIC c_std_23)
+target_compile_options(reader PRIVATE
+  -Wall -Wextra -pedantic
+  -Wno-gnu-zero-variadic-macro-arguments
+  -Wno-gnu-case-range
+  -Wno-unused-parameter)
+target_include_directories(reader PRIVATE
+  "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/header>"
+  "$<INSTALL_INTERFACE:include>")
+
 target_include_directories(reader PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 target_include_directories(reader PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
-target_compile_features(reader PUBLIC c_std_11)

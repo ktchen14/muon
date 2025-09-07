@@ -67,7 +67,7 @@
 
   <normal> [1-9][0-9]* {
     char text[20];
-    memcpy(text, &scan->buffer[a], z - a);
+    memcpy(text, &scan->text[a], z - a);
     text[19] = '\0';
     long long i = strtoll(text, NULL, 10);
 
@@ -96,7 +96,7 @@
   }
 
   <string> ([^] \ ("\\" | "\"" | sentinel))+ {
-    yylval->text.c = &scan->buffer[a];
+    yylval->text.c = &scan->text[a];
     yylval->text.length = z - a;
     return STRING;
   }
@@ -114,7 +114,7 @@
   XID_Continue = [A-Za-z0-9_];
 
   <normal> XID_Start XID_Continue* {
-    yylval->text.c = &scan->buffer[a];
+    yylval->text.c = &scan->text[a];
     yylval->text.length = z - a;
     return NAME;
   }
@@ -123,13 +123,13 @@
 
   <normal> [^] {
     int length = z - a;
-    const char *text = (const char *) &scan->buffer[a];
+    const char *text = (const char *) &scan->text[a];
     fprintf(stderr, "Unexpected character %.*s\n", length, text);
     return YYerror;
   }
 
   <normal> * {
-    fprintf(stderr, "Unexpected character %c\n", scan->buffer[a]);
+    fprintf(stderr, "Unexpected character %c\n", scan->text[a]);
     return YYerror;
   }
 */
@@ -137,17 +137,17 @@
 /*!conditions:re2c*/
 
 typedef struct {
-  const YYCTYPE *buffer;
+  const YYCTYPE *text;
+  enum YYCONDTYPE mode;
   size_t cursor;
   size_t marker;
-  enum YYCONDTYPE mode;
 } scan_t;
 
 /// Return the next symbol in the @a scan
 static yytoken_kind_t symbol(scan_t *scan, YYSTYPE *yylval, YYLTYPE *yylloc)
   __attribute__((nonnull));
 
-#define YYPEEK()             scan->buffer[scan->cursor]
+#define YYPEEK()             scan->text[scan->cursor]
 #define YYSKIP()             (scan->cursor++)
 #define YYCURSORBACKUP()     (scan->marker = scan->cursor)
 #define YYRESTORE()          (scan->cursor = scan->marker)

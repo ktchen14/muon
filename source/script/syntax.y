@@ -396,7 +396,7 @@ static const char *symbol_name(yytoken_kind_t kind)
 mu_script_t *mu_read_script(
     MuonEngine *engine, mu_status_t *status, const mu_char8_t *string) {
   syntax_t syntax = { .engine = engine };
-  scan_t scan = { .buffer = string };
+  scan_t scan = { .text = string };
 
   // Initialize the Bison parser
   yypstate *pstate;
@@ -419,7 +419,6 @@ mu_script_t *mu_read_script(
   yypstate_delete(pstate);
 
   if (kind != YYEOF && debug_scan) {
-    yytoken_kind_t kind;
     YYSTYPE yylval;
     YYLTYPE yylloc;
     while ((kind = symbol(&scan, &yylval, &yylloc)) != YYEOF)
@@ -434,13 +433,18 @@ mu_script_t *mu_read_script(
 
 static void symbol_debug(
     yytoken_kind_t kind, const YYSTYPE *yylval, const YYLTYPE *yylloc) {
-  debug("%s:%zu:%zu [%zu + %zu]: %s\n",
-      yylloc->name != NULL ? yylloc->name : "(none)",
-      yylloc->line,
-      yylloc->column,
-      yylloc->offset,
-      yylloc->length,
-      symbol_name(kind));
+  const char *name = symbol_name(kind);
+  debug("[%zu + %zu]: %s", yylloc->offset, yylloc->length, name);
+  switch (kind) {
+    case BOOLEAN_LITERAL:
+      debug("(boolean = %s)", yylval->boolean ? "true" : "false");
+      break;
+    case INTEGER_LITERAL:
+      debug("(integer = %llu)", yylval->integer);
+      break;
+    default:
+  }
+  debug("\n");
 }
 
 static const char *symbol_name(yytoken_kind_t kind) {
