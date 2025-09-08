@@ -5,14 +5,11 @@ BISON_TARGET(SYNTAX syntax.y syntax.c DEFINES_FILE syntax.h)
 
 add_custom_command(
   OUTPUT re2c.c COMMAND "${RE2C_EXECUTABLE}" ARGS
-    "${CMAKE_CURRENT_SOURCE_DIR}/syntax.re2c"
-    --output re2c.c
-    --depfile re2c.d
-    --conditions
-    --input-encoding utf8
-    -W -Werror
-  MAIN_DEPENDENCY syntax.re2c DEPENDS syntax.h
-  DEPFILE re2c.d
+    "${CMAKE_CURRENT_SOURCE_DIR}/re2c.c" -W -Werror
+    --output re2c.c --depfile re2c.d
+    --conditions --input-encoding utf8
+  COMMENT "Building re2c object source/script/re2c.c"
+  DEPFILE re2c.d VERBATIM
 )
 
 set_property(SOURCE "${BISON_SYNTAX_OUTPUT_SOURCE}" APPEND PROPERTY

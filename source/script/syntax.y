@@ -202,13 +202,7 @@ name_expr: name {
   $$ = muon_name_expr(scan->engine, $1);
 }
 
-// --------------------------------- Record ------------------------------- {{{2
-
-expr_member: name ':' expr {
-  $$ = muon_expr_member(scan->engine, $name, $expr);
-}
-
-record_expr: '(' record_argv ')' {
+record_expr: '(' record_argv ')' { // {{{2
   size_t i = $record_argv;
   scan->expr_member_i -= i;
   $$ = muon_record_expr(scan->engine, i, &scan->expr_member[scan->expr_member_i]);
@@ -226,13 +220,12 @@ record_argv: expr_member {
   $$ = $1 + 1;
 }
 
-// --------------------------------- Switch ------------------------------- {{{2
-
-switch_case: "case" _ name '=' expr {
-  $$ = muon_switch_case(scan->engine, $name, $expr);
+expr_member: name ':' expr {
+  $$ = muon_expr_member(scan->engine, $name, $expr);
 }
 
-switch_expr: "switch" _ '(' switch_argv ')' {
+
+switch_expr: "switch" _ '(' switch_argv ')' { // {{{2
   size_t i = $switch_argv;
   scan->switch_case_i -= i;
   $$ = muon_switch_expr(scan->engine, i, &scan->switch_case[scan->switch_case_i]);
@@ -247,9 +240,12 @@ switch_argv: switch_case {
   $$ = $1 + 1;
 }
 
-// --------------------------------- Vector ------------------------------- {{{2
+switch_case: "case" _ name '=' expr {
+  $$ = muon_switch_case(scan->engine, $name, $expr);
+}
 
-vector_expr: '[' vector_argv ']' {
+
+vector_expr: '[' vector_argv ']' { // {{{2
   size_t i = $vector_argv;
   scan->expr_i -= i;
   $$ = muon_vector_expr(scan->engine, i, &scan->expr[scan->expr_i]);
@@ -266,7 +262,6 @@ vector_argv: expr {
   scan->expr[scan->expr_i++] = $expr;
   $$ = $1 + 1;
 }
-
 
 sign: '(' sign[matter] ')' { $$ = $matter; } // {{{1
   | boolean_sign { $$ = &$boolean_sign->as_sign; }

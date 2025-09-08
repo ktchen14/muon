@@ -1,178 +1,128 @@
-#include <stddef.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-/*!rules:re2c:syntax
-  // Like an implicit @a ... @z around each rule. Then assign region and text.
-  <*> !entry { YYSTAGP(a); }
-  <*> !pre_rule {
-    if (!z)
-      YYSTAGP(z);
-    *yylloc = (YYLTYPE) { .offset = a, .length = z - a };
-  }
-
-  NL       = [\n\r]+ [ \t\n\r]*;
-  _        = [ \t]+;
-  sentinel = [\x00];
-
-  <> :=> normal
-
-  <normal> "#" [ \t] [^\n\r\x00]* [\n\r]+ [ \t\n\r]* { continue; }
-
-  <normal> NL                     { return '\n'; }
-  <normal> _                      { return ' '; }
-  <normal> sentinel               { break; }
-
-  <normal> "case"                 { return CASE; }
-  <normal> "datatype"             { return DATATYPE; }
-  <normal> "define"               { return DEFINE; }
-  <normal> "instance"             { return INSTANCE; }
-  <normal> "lambda" | "λ"         { return LAMBDA; }
-  <normal> "switch"               { return SWITCH; }
-
-  <normal> "Boolean"              { return BOOLEAN; }
-  <normal> "Integer"              { return INTEGER; }
-
-  <normal> "(" @z NL?             { return '('; }
-  <normal> ")"                    { return ')'; }
-  <normal> "," @z _               { return ','; }
-  <normal> "."                    { return '.'; }
-  <normal> ":" @z _               { return ':'; }
-  <normal> "[" @z NL?             { return '['; }
-  <normal> "]"                    { return ']'; }
-
-  <normal> _ @a ("<:") @z _       { return IS_SUBTYPE_OF; }
-  <normal> _ @a ("=") @z _        { return '='; }
-  <normal> _ @a ("|") @z _        { return '|'; }
-  <normal> _ @a ("→" | "->") @z _ { return TO; }
-  <normal> _ @a ("∷" | "::") @z _ { return CAST; }
-
-  // ================================ Boolean ====================================
-
-  <normal> "true" {
-    return yylval->boolean = 1, BOOLEAN_LITERAL;
-  }
-
-  <normal> "false" {
-    return yylval->boolean = 0, BOOLEAN_LITERAL;
-  }
-
-  // ================================ Integer ====================================
-
-  <normal> "0" {
-    return yylval->integer = 0, INTEGER_LITERAL;
-  }
-
-  <normal> [1-9][0-9]* {
-    char text[20];
-    memcpy(text, &scan->text[a], z - a);
-    text[19] = '\0';
-    long long i = strtoll(text, NULL, 10);
-
-    return yylval->integer = i, INTEGER_LITERAL;
-  }
-
-  // ================================= String ====================================
-
-  <normal> "\"" => string { return '"'; }
-  <string> "\"" => normal { return '"'; }
-
-  <string> "\\\"" {
-    return yylval->text.c = "\"", yylval->text.length = 1, STRING;
-  }
-
-  <string> "\\t" {
-    return yylval->text.c = "\t", yylval->text.length = 1, STRING;
-  }
-
-  <string> "\\n" {
-    return yylval->text.c = "\n", yylval->text.length = 1, STRING;
-  }
-
-  <string> "\\r" {
-    return yylval->text.c = "\r", yylval->text.length = 1, STRING;
-  }
-
-  <string> ([^] \ ("\\" | "\"" | sentinel))+ {
-    yylval->text.c = &scan->text[a];
-    yylval->text.length = z - a;
-    return STRING;
-  }
-
-  <string> sentinel {
-    fprintf(stderr, "Unexpected end of script\n");
-    return YYerror;
-  }
-
-  <string> * { return YYerror; }
-
-  // ================================== Name =====================================
-
-  !include "id.re2c";
-
-  <normal> XID_Start XID_Continue* {
-    yylval->text.c = &scan->text[a];
-    yylval->text.length = z - a;
-    return NAME;
-  }
-
-  // ================================ Unknown ====================================
-
-  <normal> [^] {
-    int length = z - a;
-    const char *text = (const char *) &scan->text[a];
-    fprintf(stderr, "Unexpected character %.*s\n", length, text);
-    return YYerror;
-  }
-
-  <normal> * {
-    fprintf(stderr, "Unexpected character %c\n", scan->text[a]);
-    return YYerror;
-  }
-*/
-
-typedef unsigned char YYCTYPE;
-
-/*!conditions:re2c*/
-
-/// Return the next symbol in the @a scan
-static yytoken_kind_t symbol(Scan *scan, YYSTYPE *yylval, YYLTYPE *yylloc)
-  __attribute__((nonnull));
-
-#define YYPEEK()             scan->text[scan->cursor]
-#define YYSKIP()             (scan->cursor++)
-#define YYCURSORBACKUP()     (scan->marker = scan->cursor)
-#define YYRESTORE()          (scan->cursor = scan->marker)
-#define YYGETCONDITION()     (scan->mode)
-#define YYSETCONDITION(next) (scan->mode = next)
-#define YYSTAGP(name)        (name = scan->cursor)
-#define YYSHIFTSTAG(name, n) (name += n)
-
-static yytoken_kind_t symbol(Scan *scan, YYSTYPE *yylval, YYLTYPE *yylloc) {
-  for (;;) {
-    /*!stags:re2c format = 'size_t @@;'; */
-    /*!svars:re2c format = 'size_t @@ = 0;'; */
-
-    /*!re2c
-      re2c:api           = custom;
-      re2c:case-ranges   = 1;
-      re2c:encoding:utf8 = 1;
-      re2c:indent:string = "  ";
-      re2c:indent:top    = 2;
-      re2c:tags          = 1;
-      re2c:yyfill:enable = 0;
-
-      // Sidestep conflict with Bison's YYBACKUP
-      re2c:YYBACKUP      = "YYCURSORBACKUP";
-
-      !use:syntax;
-    */
-
-    __builtin_unreachable();
-  }
-
-  return YYEOF;
+// Like an implicit @a ... @z around each rule. Then assign region and text.
+<*> !entry { a = scan->cursor; }
+<*> !pre_rule {
+  if (!z)
+    z = scan->cursor;
+  *yylloc = (YYLTYPE) { .offset = a, .length = z - a };
 }
 
-// vim: set ft=c:
+NL       = [\n\r]+ [ \t\n\r]*;
+_        = [ \t]+;
+sentinel = [\x00];
+
+<> :=> normal
+
+<normal> "#" [ \t] [^\n\r\x00]* [\n\r]+ [ \t\n\r]* { continue; }
+
+<normal> NL                     { return '\n'; }
+<normal> _                      { return ' '; }
+<normal> sentinel               { break; }
+
+<normal> "case"                 { return CASE; }
+<normal> "datatype"             { return DATATYPE; }
+<normal> "define"               { return DEFINE; }
+<normal> "instance"             { return INSTANCE; }
+<normal> "lambda" | "λ"         { return LAMBDA; }
+<normal> "switch"               { return SWITCH; }
+
+<normal> "Boolean"              { return BOOLEAN; }
+<normal> "Integer"              { return INTEGER; }
+
+<normal> "(" @z NL?             { return '('; }
+<normal> ")"                    { return ')'; }
+<normal> "," @z _               { return ','; }
+<normal> "."                    { return '.'; }
+<normal> ":" @z _               { return ':'; }
+<normal> "[" @z NL?             { return '['; }
+<normal> "]"                    { return ']'; }
+
+<normal> _ @a ("<:") @z _       { return IS_SUBTYPE_OF; }
+<normal> _ @a ("=") @z _        { return '='; }
+<normal> _ @a ("|") @z _        { return '|'; }
+<normal> _ @a ("→" | "->") @z _ { return TO; }
+<normal> _ @a ("∷" | "::") @z _ { return CAST; }
+
+// ================================ Boolean ====================================
+
+<normal> "true" {
+  return yylval->boolean = 1, BOOLEAN_LITERAL;
+}
+
+<normal> "false" {
+  return yylval->boolean = 0, BOOLEAN_LITERAL;
+}
+
+// ================================ Integer ====================================
+
+<normal> "0" {
+  return yylval->integer = 0, INTEGER_LITERAL;
+}
+
+<normal> [1-9][0-9]* {
+  char text[20];
+  memcpy(text, &scan->text[a], z - a);
+  text[19] = '\0';
+  long long i = strtoll(text, NULL, 10);
+
+  return yylval->integer = i, INTEGER_LITERAL;
+}
+
+// ================================= String ====================================
+
+<normal> "\"" => string { return '"'; }
+<string> "\"" => normal { return '"'; }
+
+<string> "\\\"" {
+  return yylval->text.c = "\"", yylval->text.length = 1, STRING;
+}
+
+<string> "\\t" {
+  return yylval->text.c = "\t", yylval->text.length = 1, STRING;
+}
+
+<string> "\\n" {
+  return yylval->text.c = "\n", yylval->text.length = 1, STRING;
+}
+
+<string> "\\r" {
+  return yylval->text.c = "\r", yylval->text.length = 1, STRING;
+}
+
+<string> ([^] \ ("\\" | "\"" | sentinel))+ {
+  yylval->text.c = &scan->text[a];
+  yylval->text.length = z - a;
+  return STRING;
+}
+
+<string> sentinel {
+  fprintf(stderr, "Unexpected end of script\n");
+  return YYerror;
+}
+
+<string> * { return YYerror; }
+
+// ================================== Name =====================================
+
+!include "id.re2c";
+
+<normal> XID_Start XID_Continue* {
+  yylval->text.c = &scan->text[a];
+  yylval->text.length = z - a;
+  return NAME;
+}
+
+// ================================ Unknown ====================================
+
+<normal> [^] {
+  int length = z - a;
+  const char *text = (const char *) &scan->text[a];
+  fprintf(stderr, "Unexpected character %.*s\n", length, text);
+  return YYerror;
+}
+
+<normal> * {
+  fprintf(stderr, "Unexpected character %c\n", scan->text[a]);
+  return YYerror;
+}
+
+// vim: set ft=lex:
