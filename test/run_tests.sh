@@ -26,8 +26,8 @@ run_test() {
     sed -i '' -e '/./,$!d' -e :a -e '/^\s*$/N;/\n\s*$/ba' -e 's/\n\s*$//' "$i" 2>/dev/null || true
   done
 
-  diff -q expected_stdout stdout
-  diff -q expected_stderr stderr
+  diff -u expected_stdout stdout
+  diff -u expected_stderr stderr
 
   popd > /dev/null
 }

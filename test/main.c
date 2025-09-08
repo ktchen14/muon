@@ -1,5 +1,6 @@
 #include <muon.h>
 
+#include "../source/common.h"
 #include "../source/script.h"
 #include "../source/status.h"
 
@@ -9,18 +10,18 @@
 #include <string.h>
 
 int main(int argc, char *argv[]) {
-  const char *program_name = argc > 0 ? argv[0] : "test_runner";
+  const char *muon = argc > 0 ? argv[0] : "muon";
   
   if (argc != 2) {
-    fprintf(stderr, "Usage: %s <input_file>\n", program_name);
+    fprintf(stderr, "Usage: %s <input_file>\n", muon);
     return EXIT_FAILURE;
   }
 
   // Read input file
-  unsigned char buffer[4096];
+  char buffer[4096];
   FILE *stream;
   if ((stream = fopen(argv[1], "r")) == NULL) {
-    fprintf(stderr, "%s: fopen(): %s\n", program_name, strerror(errno));
+    fprintf(stderr, "%s: fopen(): %s\n", muon, strerror(errno));
     return EXIT_FAILURE;
   }
 
@@ -32,20 +33,14 @@ int main(int argc, char *argv[]) {
   MuonEngine engine = {0};
   mu_status_t status = {0};
 
-  mu_script_t *script = muon_scan(&engine, &status, (const char *) buffer);
-  if (script == NULL) {
+  debug_scan = 1;
+
+  mu_script_t *script;
+  if ((script = muon_scan(&engine, &status, buffer)) == NULL) {
     fprintf(stderr, "Parse error\n");
     return EXIT_FAILURE;
   }
-
-  // For now, just print success and basic info about the parsed script
-  printf("Parse successful\n");
-  printf("Statements: %zu\n", script->argc);
-
-  // Debug output if requested
-  if (getenv("DEBUG")) {
-    mu_script_debug(script);
-  }
+  mu_script_debug(script);
 
   return EXIT_SUCCESS;
 }
