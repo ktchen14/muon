@@ -52,7 +52,7 @@ while IFS= read -r line; do
     declare "$section"="${!section}"$'\n'
 
   elif [[ -n "$section" ]]; then
-    content="${line#"${line%%[![:space:]]*}"}"  # Strip leading whitespace
+    content="${line#  }"  # Strip only the 2-space test indentation
     declare "$section"="${!section}${!section:+$'\n'}$content"
   fi
 done < "$TEST_FILE"
