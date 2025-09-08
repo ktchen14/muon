@@ -11,7 +11,6 @@ add_test(NAME main-test
 set_tests_properties(main-test PROPERTIES FIXTURES_SETUP main-test)
 
 add_test(NAME basic_tests.txt
-  COMMAND run_tests.sh $<TARGET_FILE:main-test> basic_tests.txt
-  WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+  COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/run_tests.sh" $<TARGET_FILE:main-test> "${CMAKE_CURRENT_SOURCE_DIR}/basic_tests.txt"
 )
 set_tests_properties(basic_tests.txt PROPERTIES FIXTURES_REQUIRED main-test)

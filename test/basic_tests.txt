@@ -3,14 +3,14 @@ Test: Define Statement
 
   Expected Stdout:
   Expected Stderr:
-[0 + 6]: define
-[6 + 1]: ' '
-[7 + 1]: NAME
-[9 + 1]: '='
-[11 + 2]: INTEGER_LITERAL(integer = 42)
-[13 + 1]: '\n'
-[14 + 1]: end of file
-Script:
+  [0 + 6]: define
+  [6 + 1]: ' '
+  [7 + 1]: NAME
+  [9 + 1]: '='
+  [11 + 2]: INTEGER_LITERAL(integer = 42)
+  [13 + 1]: '\n'
+  [14 + 1]: end of file
+  Script:
     DefineStmt(name = x) #1
       IntegerExpr(data = 42) #0
 
@@ -163,4 +163,3 @@ Test: Multiple Definitions
       IntegerExpr(data = 42) #0
     DefineStmt(name = y) #3
       BooleanExpr(data = true) #2
-
