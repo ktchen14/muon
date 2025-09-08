@@ -383,8 +383,8 @@ static const char *symbol_name(yytoken_kind_t kind)
   __attribute__((returns_nonnull));
 
 mu_script_t *muon_scan(
-    MuonEngine *engine, mu_status_t *status, const char *string) {
-  Scan scan = { .engine = engine, .text = string };
+    MuonEngine *engine, mu_status_t *status, const char *text) {
+  Scan scan = { .engine = engine, .text = text };
 
   // Initialize the Bison parser
   yypstate *pstate;

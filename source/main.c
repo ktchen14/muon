@@ -25,7 +25,7 @@ int main(int argc, char *argv[/* argc */]) {
     return EXIT_FAILURE;
   }
 
-  unsigned char buffer[4096];
+  char buffer[4096];
   FILE *stream;
   if ((stream = fopen(argv[1], "r")) == NULL) {
     fprintf(stderr, "%s: fopen(): %s\n", main_name, strerror(errno));

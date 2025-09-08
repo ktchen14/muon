@@ -24,7 +24,7 @@ MuonSequenceExpr *mu_script_to_sequence_expr_with_prefix(
     MuonStmt *prefix[]);
 
 mu_script_t *muon_scan(
-    MuonEngine *engine, mu_status_t *status, const char *buffer)
+    MuonEngine *engine, mu_status_t *status, const char *text)
   __attribute__((nonnull));
 
 void mu_script_debug(const mu_script_t *script) __attribute__((nonnull));
