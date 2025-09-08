@@ -109,8 +109,7 @@
 
   // ================================== Name =====================================
 
-  XID_Start = [A-Za-z];
-  XID_Continue = [A-Za-z0-9_];
+  !include "id.re2c";
 
   <normal> XID_Start XID_Continue* {
     yylval->text.c = &scan->text[a];
