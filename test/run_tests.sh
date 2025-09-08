@@ -1,35 +1,34 @@
-#!/bin/bash
+#!/bin/bash -e
 
-set -e
+[ $# -eq 2 ] || { echo "Usage: $0 MUON TEST" 1>&2; exit 1; }
 
-TEST_RUNNER="$1"
-TEST_FILE="$2"
+MUON="$1"
+exec < "$2"
 
-tmpdir=$(mktemp -d)
-trap "rm -rf $tmpdir" EXIT
+mkdir -p test
 
 run_test() {
   [[ -z "$test_name" ]] && return
   echo "Test: $test_name"
 
-  pushd "$tmpdir" > /dev/null
-  printf %s "$source" > test.muon
-  printf %s "$stdout" > expected_stdout
-  printf %s "$stderr" > expected_stderr
+  mkdir -p "test/$test_name"
+  output="test/$test_name"
+
+  printf %s "$source" > "$output/test.muon"
+  printf %s "$stdout" > "$output/expected_stdout"
+  printf %s "$stderr" > "$output/expected_stderr"
 
   set +e
-  ${args:+eval "$TEST_RUNNER $args"} ${args:-"$TEST_RUNNER"} test.muon > stdout 2> stderr
+  ${args:+eval "$MUON $args"} ${args:-"$MUON"} "$output/test.muon" > "$output/stdout" 2> "$output/stderr"
   set -e
 
   # Strip whitespace from all files
   for i in stdout stderr expected_stdout expected_stderr; do
-    sed -i '' -e '/./,$!d' -e :a -e '/^\s*$/N;/\n\s*$/ba' -e 's/\n\s*$//' "$i" 2>/dev/null || true
+    sed -i '' -e '/./,$!d' -e :a -e '/^\s*$/N;/\n\s*$/ba' -e 's/\n\s*$//' "$output/$i" 2>/dev/null || true
   done
 
-  diff -u expected_stdout stdout
-  diff -u expected_stderr stderr
-
-  popd > /dev/null
+  diff -u "$output"/{expected_,}stdout
+  diff -u "$output"/{expected_,}stderr
 }
 
 # Parse test file
@@ -55,6 +54,6 @@ while IFS= read -r line; do
     content="${line#  }"  # Strip only the 2-space test indentation
     declare "$section"="${!section}${!section:+$'\n'}$content"
   fi
-done < "$TEST_FILE"
+done
 
 run_test
