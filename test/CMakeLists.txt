@@ -4,7 +4,6 @@ target_compile_options(test_runner PRIVATE
   -Wno-gnu-zero-variadic-macro-arguments)
 target_link_libraries(test_runner muon)
 target_include_directories(test_runner PRIVATE
-  "${CMAKE_CURRENT_SOURCE_DIR}/../header"
   "${CMAKE_CURRENT_SOURCE_DIR}/../source"
 )
 
