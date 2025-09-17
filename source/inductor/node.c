@@ -431,10 +431,10 @@ __attribute__((nonnull)) static MuonType *view_member_return(
 
 static MuonNode *on_continue(induce_t *induce, MuonNode *node) {
   switch ON_ABSTRACT_OBJECT(node) {
-    case IS_CONCRETE_NODE(MuonDatatypeStmt *nominate(datatype_stmt))
+    case IS_CONCRETE_NODE(MuonDatatypeStmt *datatype_stmt)
       return datatype_stmt_continue(induce, datatype_stmt);
 
-    case IS_CONCRETE_NODE(MuonDefineStmt *nominate(define_stmt))
+    case IS_CONCRETE_NODE(MuonDefineStmt *define_stmt)
       return define_stmt_continue(induce, define_stmt);
 
     default: return node;

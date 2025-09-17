@@ -22,6 +22,8 @@
   emit(switch, SWITCH, Switch, ##__VA_ARGS__) \
   emit(vector, VECTOR, Vector, ##__VA_ARGS__)
 
+#define MUON_EACH_EXPR_STEM MU_EACH_EXPR_KIND
+
 /// Expands to emit(lower, upper, title, ...) for each kind of sign
 #define MU_EACH_SIGN_KIND(emit, ...) \
   emit(boolean, BOOLEAN, Boolean, ##__VA_ARGS__) \
@@ -72,17 +74,17 @@ typedef enum {
 /// An enumeration over each kind of expr, e.g. @c MUON_ACCESS_EXPR
 typedef enum {
 #define MUON_EMIT(l, upper, t) MUON_##upper##_EXPR = MUON_##upper##_EXPR_NODE,
-  MU_EACH_EXPR_KIND(MUON_EMIT)
+  MUON_EACH_EXPR_STEM(MUON_EMIT)
 #undef MUON_EMIT
 
 #define MUON_EMIT(l, upper, t) MUON_##upper##_EXPR,
   /// Equivalent to the minimum enumerator in MuonExprKind
-  MUON_EXPR_MINORANT = MUON_INDIRECT(MUON_TAKE, MU_EACH_EXPR_KIND(MUON_EMIT)),
+  MUON_EXPR_MINORANT = MUON_INDIRECT(MUON_TAKE, MUON_EACH_EXPR_STEM(MUON_EMIT)),
 #undef MUON_EMIT
 
 #define MUON_EMIT(...) + 1
   /// Equivalent to the maximum enumerator in MuonExprKind
-  MUON_EXPR_MAJORANT = MUON_EXPR_MINORANT + MU_EACH_EXPR_KIND(MUON_EMIT) - 1,
+  MUON_EXPR_MAJORANT = MUON_EXPR_MINORANT + MUON_EACH_EXPR_STEM(MUON_EMIT) - 1,
 #undef MUON_EMIT
 } MuonExprKind;
 
@@ -458,12 +460,24 @@ void muon_node_debug(MuonNode *node) __attribute__((nonnull));
 #define MU_NODE_ENUMERATOR(node) \
   _Generic((node) {0} MU_EACH_NODE_KIND(MUON_NODE_ENUMERATOR_EMIT, _NODE,))
 
-/// Return the minimum enumerator indicative of the concrete @a node
+/**
+ * @brief Return the minimum enumerator indicative of the concrete @a node
+ *
+ * This is equivalent to MU_NODE_ENUMERATOR() if @a node is the type of a
+ * concrete node. However, if @a node is <tt>MuonExpr *</tt>, then this returns
+ * MU_EXPR_MINORANT.
+ */
 #define MUON_NODE_ENUMERATOR_MINIMUM(node) \
   _Generic((node) {0} MU_EACH_NODE_KIND(MUON_NODE_ENUMERATOR_EMIT, _NODE,), \
       MuonExpr *: MUON_EXPR_MINORANT)
 
-/// Return the minimum enumerator indicative of the concrete @a node
+/**
+ * @brief Return the maximum enumerator indicative of the concrete @a node
+ *
+ * This is equivalent to MU_NODE_ENUMERATOR() if @a node is the type of a
+ * concrete node. However, if @a node is <tt>MuonExpr *</tt>, then this returns
+ * MU_EXPR_MAJORANT.
+ */
 #define MUON_NODE_ENUMERATOR_MAXIMUM(node) \
   _Generic((node) {0} MU_EACH_NODE_KIND(MUON_NODE_ENUMERATOR_EMIT, _NODE,), \
       MuonExpr *: MUON_EXPR_MAJORANT)

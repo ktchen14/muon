@@ -83,7 +83,7 @@ static void view_announce(roster_t *roster, MuonView *root) {
       node = node_continue(node, next);
 
     switch ON_ABSTRACT_OBJECT(node) {
-      case IS_CONCRETE_NODE(MuonVariableView *nominate(variable_view))
+      case IS_CONCRETE_NODE(MuonVariableView *variable_view)
         announce(roster, variable_view->name, &variable_view->as_node);
         break;
 
@@ -108,7 +108,7 @@ roster_t *handle_sequence_expr(
     MuonStmt *stmt = sequence_expr->argv[i];
 
     switch ON_ABSTRACT_OBJECT(stmt) {
-      case IS_CONCRETE_NODE(MuonDatatypeStmt *nominate(datatype_stmt))
+      case IS_CONCRETE_NODE(MuonDatatypeStmt *datatype_stmt)
         announce(roster, datatype_stmt->name, &datatype_stmt->as_node);
         for (size_t j = 0; j < datatype_stmt->argc; j++) {
           MuonDatatypeOption *option = datatype_stmt->argv[j];
@@ -116,7 +116,7 @@ roster_t *handle_sequence_expr(
         }
         break;
 
-      case IS_CONCRETE_NODE(MuonDefineStmt *nominate(define_stmt))
+      case IS_CONCRETE_NODE(MuonDefineStmt *define_stmt)
         announce(roster, define_stmt->name, &define_stmt->as_node);
         break;
 
@@ -139,7 +139,7 @@ detect_t *detect_node(detect_t *detect, MuonNode *root) {
   do {
     while ((next = node_at(node, node_cursor(node)->i++)) != NULL) {
       switch ON_ABSTRACT_OBJECT(node) {
-        case IS_CONCRETE_NODE(MuonLambdaExpr *nominate(lambda_expr)) {
+        case IS_CONCRETE_NODE(MuonLambdaExpr *lambda_expr) {
           size_t length = node_announce_length(&lambda_expr->argument->as_node);
 
           roster_t *next_roster;
@@ -150,7 +150,7 @@ detect_t *detect_node(detect_t *detect, MuonNode *root) {
           break;
         }
 
-        case IS_CONCRETE_NODE(MuonSequenceExpr *nominate(sequence_expr)) {
+        case IS_CONCRETE_NODE(MuonSequenceExpr *sequence_expr) {
           roster_t *next_roster;
           if ((next_roster = handle_sequence_expr(roster, sequence_expr)) == NULL)
             return NULL;
@@ -171,21 +171,21 @@ detect_t *detect_node(detect_t *detect, MuonNode *root) {
     }
 
     switch ON_ABSTRACT_OBJECT(node) {
-      case IS_CONCRETE_NODE(MuonNameExpr *nominate(name_expr)) {
+      case IS_CONCRETE_NODE(MuonNameExpr *name_expr) {
         MuonNode *target = roster_search(roster, name_expr->name);
         assert(target != NULL);
         detect->result->data[name_expr->as_node.id] = target;
         break;
       }
 
-      case IS_CONCRETE_NODE(MuonSwitchCase *nominate(switch_case)) {
+      case IS_CONCRETE_NODE(MuonSwitchCase *switch_case) {
         MuonNode *target = roster_search(roster, switch_case->name);
         assert(target != NULL);
         detect->result->data[switch_case->as_node.id] = target;
         break;
       }
 
-      case IS_CONCRETE_NODE(MuonNameSign *nominate(name_sign)) {
+      case IS_CONCRETE_NODE(MuonNameSign *name_sign) {
         MuonNode *target = roster_search(roster, name_sign->name);
         assert(target != NULL);
         detect->result->data[name_sign->as_node.id] = target;

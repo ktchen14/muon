@@ -11,14 +11,6 @@
 #include <assert.h>
 #include <stddef.h>
 
-#define IS_CONCRETE_NODE(...) \
-  MUON_NODE_ENUMERATOR_MINIMUM( \
-      typeof(__extension__ ({ __VA_ARGS__, _; &_; })) \
-  ) ... \
-  MUON_NODE_ENUMERATOR_MAXIMUM( \
-      typeof(__extension__ ({ __VA_ARGS__, _; &_; })) \
-  ): __VA_ARGS__ = _object;
-
 typedef struct {
   MuonNode *anterior;
   size_t i;
@@ -61,6 +53,41 @@ static inline MuonNode *node_return(MuonNode *node) {
   *cursor = (NodeCursor) {0};
   return anterior;
 }
+
+/**
+ * @brief Used to emit a case label within a switch ON_ABSTRACT_OBJECT()
+ *
+ * @c ... must be a declaration of a variable with a concrete node type.
+ *
+ * TODO
+ *
+ * @par Example
+ * @code{.c}
+ *   MuonNode *node = ...
+ *
+ *   switch ON_ABSTRACT_OBJECT(node) {
+ *     case IS_CONCRETE_NODE(MuonAccessExpr *access_expr)
+ *       return access_expr->name;
+ *
+ *     case IS_CONCRETE_NODE(MuonNameExpr *name_expr)
+ *       return name_expr->name;
+ *
+ *     ...
+ *   }
+ * @endcode
+ *
+ * The behavior is undefined if:
+ * - This is used except after the case keyword within a switch statement
+ *   controlled by ON_ABSTRACT_OBJECT()
+ * - @c ... isn't a declaration of a variable with the type of a concrete node
+ */
+#define IS_CONCRETE_NODE(...) \
+  MUON_NODE_ENUMERATOR_MINIMUM( \
+    typeof(__extension__ ({ __attribute__((unused)) __VA_ARGS__, _; &_; })) \
+  ) ... \
+  MUON_NODE_ENUMERATOR_MAXIMUM( \
+    typeof(__extension__ ({ __attribute__((unused)) __VA_ARGS__, _; &_; })) \
+  ): __VA_ARGS__ = _object;
 
 /// Return the <em>i</em>th node in the abstract @a node
 static inline MuonNode *node_at(MuonNode *node, size_t i) {

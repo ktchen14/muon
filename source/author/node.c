@@ -286,7 +286,7 @@ LLVMValueRef node_emit(author_t *author, MuonNode *node) {
     MU_EACH_EXPR_KIND(MUON_EMIT);
 #undef MUON_EMIT
 
-    case IS_CONCRETE_NODE(MuonDefineStmt *nominate(define_stmt))
+    case IS_CONCRETE_NODE(MuonDefineStmt *define_stmt)
       return define_stmt_emit(author, define_stmt);
 
     default: return SKIP;

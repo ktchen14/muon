@@ -611,47 +611,47 @@ void muon_node_debug(MuonNode *node) {  // NOLINT(misc-no-recursion)
   debug(PRIsKIND, DEBUG_NODE_KIND(kind));
 
   switch ON_ABSTRACT_OBJECT(node) {
-    case IS_CONCRETE_NODE(MuonAccessExpr *nominate(access_expr))
+    case IS_CONCRETE_NODE(MuonAccessExpr *access_expr)
       debug("(name = " PRIsNAME ")", DEBUG_NAME(access_expr->name)); break;
 
-    case IS_CONCRETE_NODE(MuonBooleanExpr *nominate(boolean_expr))
+    case IS_CONCRETE_NODE(MuonBooleanExpr *boolean_expr)
       debug("(data = %s)", boolean_expr->data ? "true" : "false"); break;
 
-    case IS_CONCRETE_NODE(MuonIntegerExpr *nominate(integer_expr))
+    case IS_CONCRETE_NODE(MuonIntegerExpr *integer_expr)
       debug("(data = %" PRIu64 ")", integer_expr->data); break;
 
-    case IS_CONCRETE_NODE(MuonNameExpr *nominate(name_expr))
+    case IS_CONCRETE_NODE(MuonNameExpr *name_expr)
       debug("(name = " PRIsNAME ")", DEBUG_NAME(name_expr->name)); break;
 
-    case IS_CONCRETE_NODE(MuonNativeExpr *nominate(native_expr))
+    case IS_CONCRETE_NODE(MuonNativeExpr *native_expr)
       debug("(name = " PRIsNAME ")", DEBUG_NAME(native_expr->name)); break;
 
-    case IS_CONCRETE_NODE(MuonExprMember *nominate(expr_member))
+    case IS_CONCRETE_NODE(MuonExprMember *expr_member)
       if (expr_member->name != NULL)
         debug("(name = " PRIsNAME ")", DEBUG_NAME(expr_member->name));
       break;
 
-    case IS_CONCRETE_NODE(MuonSwitchCase *nominate(switch_case))
+    case IS_CONCRETE_NODE(MuonSwitchCase *switch_case)
       debug("(name = " PRIsNAME ")", DEBUG_NAME(switch_case->name)); break;
 
-    case IS_CONCRETE_NODE(MuonNameSign *nominate(name_sign))
+    case IS_CONCRETE_NODE(MuonNameSign *name_sign)
       debug("(name = " PRIsNAME ")", DEBUG_NAME(name_sign->name)); break;
 
-    case IS_CONCRETE_NODE(MuonDatatypeOption *nominate(datatype_option))
+    case IS_CONCRETE_NODE(MuonDatatypeOption *datatype_option)
       debug("(name = " PRIsNAME ")", DEBUG_NAME(datatype_option->name)); break;
 
-    case IS_CONCRETE_NODE(MuonDatatypeStmt *nominate(datatype_stmt))
+    case IS_CONCRETE_NODE(MuonDatatypeStmt *datatype_stmt)
       debug("(name = " PRIsNAME ")", DEBUG_NAME(datatype_stmt->name)); break;
 
-    case IS_CONCRETE_NODE(MuonDefineStmt *nominate(define_stmt))
+    case IS_CONCRETE_NODE(MuonDefineStmt *define_stmt)
       debug("(name = " PRIsNAME ")", DEBUG_NAME(define_stmt->name)); break;
 
-    case IS_CONCRETE_NODE(MuonViewMember *nominate(view_member))
+    case IS_CONCRETE_NODE(MuonViewMember *view_member)
       if (view_member->name != NULL)
         debug("(name = " PRIsNAME ")", DEBUG_NAME(view_member->name));
       break;
 
-    case IS_CONCRETE_NODE(MuonVariableView *nominate(variable_view))
+    case IS_CONCRETE_NODE(MuonVariableView *variable_view)
       debug("(name = " PRIsNAME ")", DEBUG_NAME(variable_view->name)); break;
 
     default: break;
