@@ -83,10 +83,10 @@ static inline MuonNode *node_return(MuonNode *node) {
  */
 #define IS_CONCRETE_NODE(...) \
   MUON_NODE_ENUMERATOR_MINIMUM( \
-    typeof(__extension__ ({ __attribute__((unused)) __VA_ARGS__, _; &_; })) \
+    __extension__ ({ __attribute__((unused)) __VA_ARGS__, _; &_; }) \
   ) ... \
   MUON_NODE_ENUMERATOR_MAXIMUM( \
-    typeof(__extension__ ({ __attribute__((unused)) __VA_ARGS__, _; &_; })) \
+    __extension__ ({ __attribute__((unused)) __VA_ARGS__, _; &_; }) \
   ): __VA_ARGS__ = _object;
 
 /// Return the <em>i</em>th node in the abstract @a node

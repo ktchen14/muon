@@ -128,7 +128,7 @@ roster_t *handle_sequence_expr(
 }
 
 detect_t *detect_node(detect_t *detect, MuonNode *root) {
-  MuonSequenceExpr *sequence_expr = mu_node_cast(root, sequence_expr);
+  MuonSequenceExpr *sequence_expr = muon_node_cast(root, sequence_expr);
   assert(sequence_expr != NULL);
 
   roster_t *roster = NULL;

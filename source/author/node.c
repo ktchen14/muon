@@ -308,7 +308,7 @@ LLVMModuleRef script_emit(author_t *author, MuonNode *root, const char *source_n
     while ((next = node_at(node, node_cursor(node)->i++)) != NULL) {
       MuonLambdaExpr *lambda_expr;
 
-      if ((lambda_expr = mu_node_cast(next, lambda_expr)) != NULL) {
+      if ((lambda_expr = muon_node_cast(next, lambda_expr)) != NULL) {
         MuonType *lambda_type = node_type(author->inductor, &lambda_expr->as_node);
         LLVMTypeRef lambda_ty;
         if ((lambda_ty = get_type(author, lambda_type)) == NULL)

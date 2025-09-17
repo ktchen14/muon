@@ -33,6 +33,8 @@
   emit(record, RECORD, Record, ##__VA_ARGS__) \
   emit(vector, VECTOR, Vector, ##__VA_ARGS__)
 
+#define MUON_EACH_SIGN_STEM MU_EACH_SIGN_KIND
+
 /// Expands to emit(lower, upper, title, ...) for each kind of stmt
 #define MU_EACH_STMT_KIND(emit, ...) \
   emit(coercion, COERCION, Coercion, ##__VA_ARGS__) \
@@ -92,6 +94,16 @@ typedef enum {
 typedef enum {
 #define MUON_EMIT(l, upper, t) MUON_##upper##_SIGN = MUON_##upper##_SIGN_NODE,
   MU_EACH_SIGN_KIND(MUON_EMIT)
+#undef MUON_EMIT
+
+#define MUON_EMIT(l, upper, t) MUON_##upper##_SIGN,
+  /// Equivalent to the minimum enumerator in MuonExprKind
+  MUON_SIGN_MINORANT = MUON_INDIRECT(MUON_TAKE, MUON_EACH_SIGN_STEM(MUON_EMIT)),
+#undef MUON_EMIT
+
+#define MUON_EMIT(...) + 1
+  /// Equivalent to the maximum enumerator in MuonExprKind
+  MUON_SIGN_MAJORANT = MUON_SIGN_MINORANT + MUON_EACH_SIGN_STEM(MUON_EMIT) - 1,
 #undef MUON_EMIT
 } MuonSignKind;
 
@@ -452,43 +464,51 @@ MuonVariableView *muon_variable_view(MuonEngine *engine, MuonName *name)
 /// Emit debugging information on the abstract @a node to the debug stream
 void muon_node_debug(MuonNode *node) __attribute__((nonnull));
 
-/// @internal Used to emit each branch in MU_NODE_ENUMERATOR()
-#define MUON_NODE_ENUMERATOR_EMIT(l, upper, title, usuffix, tsuffix) \
+/// @internal Used to emit each branch in MU_NODE_ENUMERATOR() et al
+#define MUON_ENUMERATOR_EMIT(l, upper, title, usuffix, tsuffix) \
   , Muon##title##tsuffix *: MUON_##upper##usuffix
-
-/// Return the enumerator indicative of the concrete @a node
-#define MU_NODE_ENUMERATOR(node) \
-  _Generic((node) {0} MU_EACH_NODE_KIND(MUON_NODE_ENUMERATOR_EMIT, _NODE,))
 
 /**
  * @brief Return the minimum enumerator indicative of the concrete @a node
+ *
+ * @a node must be a pointer to a concrete node.
  *
  * This is equivalent to MU_NODE_ENUMERATOR() if @a node is the type of a
  * concrete node. However, if @a node is <tt>MuonExpr *</tt>, then this returns
  * MU_EXPR_MINORANT.
  */
 #define MUON_NODE_ENUMERATOR_MINIMUM(node) \
-  _Generic((node) {0} MU_EACH_NODE_KIND(MUON_NODE_ENUMERATOR_EMIT, _NODE,), \
-      MuonExpr *: MUON_EXPR_MINORANT)
+  _Generic((node) MU_EACH_NODE_KIND(MUON_ENUMERATOR_EMIT, _NODE,), \
+    MuonExpr *: MUON_EXPR_MINORANT, \
+    MuonSign *: MUON_SIGN_MINORANT)
 
 /**
  * @brief Return the maximum enumerator indicative of the concrete @a node
+ *
+ * @a node must be a pointer to a concrete node.
  *
  * This is equivalent to MU_NODE_ENUMERATOR() if @a node is the type of a
  * concrete node. However, if @a node is <tt>MuonExpr *</tt>, then this returns
  * MU_EXPR_MAJORANT.
  */
 #define MUON_NODE_ENUMERATOR_MAXIMUM(node) \
-  _Generic((node) {0} MU_EACH_NODE_KIND(MUON_NODE_ENUMERATOR_EMIT, _NODE,), \
-      MuonExpr *: MUON_EXPR_MAJORANT)
+  _Generic((node) MU_EACH_NODE_KIND(MUON_ENUMERATOR_EMIT, _NODE,), \
+    MuonExpr *: MUON_EXPR_MAJORANT, \
+    MuonSign *: MUON_SIGN_MINORANT)
 
-/// @internal Used to emit each branch in mu_expr_cast()
-#define MU_EXPR_CAST_EMIT(l, upper, title, ...) \
-  , Muon##title##Expr *: _kind == MUON_##upper##_EXPR##__VA_ARGS__
+/// Return the enumerator indicative of the concrete @a node
+#define MU_NODE_ENUMERATOR(node) \
+  _Generic((node) MU_EACH_NODE_KIND(MUON_ENUMERATOR_EMIT, _NODE,))
 
-/// @internal Used to emit each branch in mu_sign_cast()
-#define MU_SIGN_CAST_EMIT(l, upper, title, ...) \
-  , Muon##title##Sign *: _kind == MUON_##upper##_SIGN##__VA_ARGS__
+/// Return the enumerator indicative of the type of the concrete @a expr
+#define MUON_EXPR_ENUMERATOR(expr) _Generic((expr) \
+  MUON_EACH_EXPR_STEM(MUON_ENUMERATOR_EMIT, _EXPR, Expr) \
+)
+
+/// Return the enumerator indicative of the type of the concrete @a sign
+#define MUON_SIGN_ENUMERATOR(sign) _Generic((sign) \
+  MUON_EACH_SIGN_STEM(MUON_ENUMERATOR_EMIT, _SIGN, Sign) \
+)
 
 /// @internal Used to emit each branch in mu_stmt_cast()
 #define MU_STMT_CAST_EMIT(l, upper, title, ...) \
@@ -497,6 +517,26 @@ void muon_node_debug(MuonNode *node) __attribute__((nonnull));
 /// @internal Used to emit each branch in mu_view_cast()
 #define MU_VIEW_CAST_EMIT(l, upper, title, ...) \
   , Muon##title##View *: _kind == MUON_##upper##_VIEW##__VA_ARGS__
+
+/// @internal Used to decide the cast result in muon_node_cast()
+__attribute__((nonnull))
+static inline MuonNode *muon_node_cast(
+    MuonNode *node, MuonNodeKind minimum, MuonNodeKind maximum) {
+  MuonNodeKind kind = node->kind;
+  return kind >= minimum && kind <= maximum ? node : NULL;
+}
+
+/// @internal Used to decide the cast result in muon_expr_cast()
+__attribute__((nonnull))
+static inline MuonExpr *muon_expr_cast(MuonExpr *expr, MuonExprKind kind) {
+  return expr->kind == kind ? expr : NULL;
+}
+
+/// @internal Used to decide the cast result in muon_sign_cast()
+__attribute__((nonnull))
+static inline MuonSign *muon_sign_cast(MuonSign *sign, MuonSignKind kind) {
+  return sign->kind == kind ? sign : NULL;
+}
 
 /**
  * @brief Downcast the @a abstract node to the <tt>typeof(concrete)</tt>
@@ -524,15 +564,14 @@ void muon_node_debug(MuonNode *node) __attribute__((nonnull));
  * - @a concrete isn't, or doesn't have, the type of a const qualified pointer
  *   to a concrete node
  */
-#define mu_node_cast(abstract, concrete) __extension__ ({ \
-  MuonNode *_abstract = (abstract); \
-  __typeof__(concrete) _concrete; \
-  _abstract->kind == MU_NODE_ENUMERATOR(__typeof__(_concrete)) ? \
-    (__typeof__(_concrete)) _abstract : NULL; \
-})
+#define muon_node_cast(node, concrete) ( \
+  (__typeof__((concrete))) (muon_node_cast)((node), \
+    MUON_NODE_ENUMERATOR_MINIMUM((concrete)), \
+    MUON_NODE_ENUMERATOR_MAXIMUM((concrete))) \
+)
 
 /**
- * @brief Downcast the @a abstract expr to the <tt>typeof(concrete)</tt>
+ * @brief Downcast the abstract @a expr to the <tt>typeof(concrete)</tt>
  *
  * @a abstract should have type <tt>MuonExpr *</tt>. @a concrete should be, or
  * have, the type of a pointer to a const qualified concrete expr. Then if
@@ -554,16 +593,13 @@ void muon_node_debug(MuonNode *node) __attribute__((nonnull));
  * - @a concrete isn't, or doesn't have, the type of a const qualified pointer
  *   to a concrete expr
  */
-#define mu_expr_cast(abstract, concrete) __extension__ ({ \
-    MuonExpr *_abstract = (abstract); \
-    typeof(concrete) _concrete; \
-    MuonExprKind _kind = _abstract->kind; \
-    int _castable = _Generic(_concrete MU_EACH_EXPR_KIND(MU_EXPR_CAST_EMIT)); \
-    _castable ? (typeof(_concrete)) _abstract : NULL; \
-  })
+#define muon_expr_cast(expr, concrete) ( \
+  (__typeof__((concrete))) (muon_expr_cast)((expr), \
+    MUON_EXPR_ENUMERATOR((concrete))) \
+)
 
 /**
- * @brief Downcast the @a abstract sign to the <tt>typeof(concrete)</tt>
+ * @brief Downcast the abstract @a sign to the <tt>typeof(concrete)</tt>
  *
  * @a abstract should have type <tt>MuonSign *</tt>. @a concrete should be, or
  * have, the type of a pointer to a const qualified concrete sign. Then if
@@ -585,13 +621,10 @@ void muon_node_debug(MuonNode *node) __attribute__((nonnull));
  * - @a concrete isn't, or doesn't have, the type of a const qualified pointer
  *   to a concrete sign
  */
-#define mu_sign_cast(abstract, concrete) __extension__ ({ \
-    MuonSign *_abstract = (abstract); \
-    typeof(concrete) _concrete; \
-    MuonSignKind _kind = _abstract->kind; \
-    int _castable = _Generic(_concrete MU_EACH_SIGN_KIND(MU_SIGN_CAST_EMIT)); \
-    _castable ? (typeof(_concrete)) _abstract : NULL; \
-  })
+#define mu_sign_cast(sign, concrete) ( \
+  (__typeof__((concrete))) (muon_sign_cast)((sign), \
+    MUON_SIGN_ENUMERATOR((concrete))) \
+)
 
 /**
  * @brief Downcast the @a abstract stmt to the <tt>typeof(concrete)</tt>
