@@ -6,6 +6,7 @@ Diagnostics:
   MissingIncludes: Strict
   UnusedIncludes: Strict
   Suppress:
+  - c2y-extensions
   - logical-op-parentheses
   - unused-function
   - unused-label

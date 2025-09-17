@@ -12,7 +12,8 @@
 #include <stddef.h>
 
 #define INTERNAL_IS_CONCRETE_NODE(type, name) \
-  MU_NODE_ENUMERATOR(type):; __typeof__(type) name = _object;
+  MUON_NODE_ENUMERATOR_MINIMUM(type) ... MUON_NODE_ENUMERATOR_MAXIMUM(type):; \
+    __typeof__(type) name = _object;
 
 #define IS_CONCRETE_NODE(...) INTERNAL_IS_CONCRETE_NODE(__VA_ARGS__)
 

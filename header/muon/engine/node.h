@@ -74,6 +74,16 @@ typedef enum {
 #define MUON_EMIT(l, upper, t) MUON_##upper##_EXPR = MUON_##upper##_EXPR_NODE,
   MU_EACH_EXPR_KIND(MUON_EMIT)
 #undef MUON_EMIT
+
+#define MUON_EMIT(l, upper, t) MUON_##upper##_EXPR,
+  /// Equivalent to the minimum enumerator in MuonExprKind
+  MUON_EXPR_MINORANT = MUON_INDIRECT(MUON_TAKE, MU_EACH_EXPR_KIND(MUON_EMIT)),
+#undef MUON_EMIT
+
+#define MUON_EMIT(...) + 1
+  /// Equivalent to the maximum enumerator in MuonExprKind
+  MUON_EXPR_MAJORANT = MUON_EXPR_MINORANT + MU_EACH_EXPR_KIND(MUON_EMIT) - 1,
+#undef MUON_EMIT
 } MuonExprKind;
 
 /// An enumeration over each kind of sign, e.g. @c MUON_BOOLEAN_SIGN
@@ -441,13 +451,22 @@ MuonVariableView *muon_variable_view(MuonEngine *engine, MuonName *name)
 void muon_node_debug(MuonNode *node) __attribute__((nonnull));
 
 /// @internal Used to emit each branch in MU_NODE_ENUMERATOR()
-#define MU_NODE_ENUMERATOR_EMIT(l, upper, title) \
-  , Muon##title *: MUON_##upper##_NODE \
-  , struct Muon##title *: MUON_##upper##_NODE
+#define MUON_NODE_ENUMERATOR_EMIT(l, upper, title, usuffix, tsuffix) \
+  , Muon##title##tsuffix *: MUON_##upper##usuffix
 
-/// Return the enumerator indicative of the @a concrete node
-#define MU_NODE_ENUMERATOR(concrete) \
-  _Generic((concrete) {0} MU_EACH_NODE_KIND(MU_NODE_ENUMERATOR_EMIT))
+/// Return the enumerator indicative of the concrete @a node
+#define MU_NODE_ENUMERATOR(node) \
+  _Generic((node) {0} MU_EACH_NODE_KIND(MUON_NODE_ENUMERATOR_EMIT, _NODE,))
+
+/// Return the minimum enumerator indicative of the concrete @a node
+#define MUON_NODE_ENUMERATOR_MINIMUM(node) \
+  _Generic((node) {0} MU_EACH_NODE_KIND(MUON_NODE_ENUMERATOR_EMIT, _NODE,), \
+      MuonExpr *: MUON_EXPR_MINORANT)
+
+/// Return the minimum enumerator indicative of the concrete @a node
+#define MUON_NODE_ENUMERATOR_MAXIMUM(node) \
+  _Generic((node) {0} MU_EACH_NODE_KIND(MUON_NODE_ENUMERATOR_EMIT, _NODE,), \
+      MuonExpr *: MUON_EXPR_MAJORANT)
 
 /// @internal Used to emit each branch in mu_expr_cast()
 #define MU_EXPR_CAST_EMIT(l, upper, title, ...) \

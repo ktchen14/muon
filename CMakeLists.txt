@@ -16,6 +16,7 @@ target_compile_options(muon PRIVATE
   -Wall -Wextra -pedantic
   -Wcast-align
   -Wconversion
+  -Wno-gnu-case-range
   -Wno-gnu-zero-variadic-macro-arguments  # Ignore , ##__VA_ARGS__
   -Wno-logical-op-parentheses
   -Wno-parentheses
@@ -39,6 +40,7 @@ set_target_properties(main PROPERTIES OUTPUT_NAME muon)
 target_compile_options(main PRIVATE
   -Wall -Wextra -pedantic
   -Wconversion
+  -Wno-gnu-case-range
   -Wno-gnu-zero-variadic-macro-arguments  # Ignore , ##__VA_ARGS__
   -Wno-logical-op-parentheses
   -Wno-parentheses

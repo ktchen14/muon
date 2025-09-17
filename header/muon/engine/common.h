@@ -1,6 +1,8 @@
 #ifndef MUON_ENGINE_COMMON_H
 #define MUON_ENGINE_COMMON_H
 
+#include "../common.h" // IWYU pragma: export
+
 #include <stddef.h>
 
 typedef const struct MuonName MuonName;
