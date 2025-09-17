@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 /// Expands to emit(lower, upper, title, ...) for each kind of expr
-#define MU_EACH_EXPR_KIND(emit, ...) \
+#define MUON_EACH_EXPR_STEM(emit, ...) \
   emit(access, ACCESS, Access, ##__VA_ARGS__) \
   emit(boolean, BOOLEAN, Boolean, ##__VA_ARGS__) \
   emit(cast, CAST, Cast, ##__VA_ARGS__) \
@@ -22,10 +22,8 @@
   emit(switch, SWITCH, Switch, ##__VA_ARGS__) \
   emit(vector, VECTOR, Vector, ##__VA_ARGS__)
 
-#define MUON_EACH_EXPR_STEM MU_EACH_EXPR_KIND
-
 /// Expands to emit(lower, upper, title, ...) for each kind of sign
-#define MU_EACH_SIGN_KIND(emit, ...) \
+#define MUON_EACH_SIGN_STEM(emit, ...) \
   emit(boolean, BOOLEAN, Boolean, ##__VA_ARGS__) \
   emit(integer, INTEGER, Integer, ##__VA_ARGS__) \
   emit(lambda, LAMBDA, Lambda, ##__VA_ARGS__) \
@@ -33,29 +31,31 @@
   emit(record, RECORD, Record, ##__VA_ARGS__) \
   emit(vector, VECTOR, Vector, ##__VA_ARGS__)
 
-#define MUON_EACH_SIGN_STEM MU_EACH_SIGN_KIND
-
 /// Expands to emit(lower, upper, title, ...) for each kind of stmt
-#define MU_EACH_STMT_KIND(emit, ...) \
+#define MUON_EACH_STMT_STEM(emit, ...) \
   emit(coercion, COERCION, Coercion, ##__VA_ARGS__) \
   emit(datatype, DATATYPE, Datatype, ##__VA_ARGS__) \
   emit(define, DEFINE, Define, ##__VA_ARGS__) \
 
 /// Expands to emit(lower, upper, title, ...) for each kind of view
-#define MU_EACH_VIEW_KIND(emit, ...) \
+#define MUON_EACH_VIEW_STEM(emit, ...) \
   emit(record, RECORD, Record, ##__VA_ARGS__) \
   emit(variable, VARIABLE, Variable, ##__VA_ARGS__)
 
 /// @internal Used as @c emit in MU_EACH_NODE_KIND
-#define MU_EACH_NODE_EMIT(l, u, t, lsuffix, usuffix, tsuffix, emit, ...) \
+#define MU_EACH_NODE_EMIT(l, u, t, emit, lsuffix, usuffix, tsuffix, ...) \
   emit(l##lsuffix, u##usuffix, t##tsuffix, ##__VA_ARGS__)
 
 /// Expands to emit(lower, upper, title, ...) for each kind of node
 #define MU_EACH_NODE_KIND(emit, ...) \
-  MU_EACH_EXPR_KIND(MU_EACH_NODE_EMIT, _expr, _EXPR, Expr, emit, ##__VA_ARGS__) \
-  MU_EACH_SIGN_KIND(MU_EACH_NODE_EMIT, _sign, _SIGN, Sign, emit, ##__VA_ARGS__) \
-  MU_EACH_STMT_KIND(MU_EACH_NODE_EMIT, _stmt, _STMT, Stmt, emit, ##__VA_ARGS__) \
-  MU_EACH_VIEW_KIND(MU_EACH_NODE_EMIT, _view, _VIEW, View, emit, ##__VA_ARGS__) \
+  MUON_EACH_EXPR_STEM(MU_EACH_NODE_EMIT, emit, \
+    _expr, _EXPR, Expr, ##__VA_ARGS__) \
+  MUON_EACH_SIGN_STEM(MU_EACH_NODE_EMIT, emit, \
+    _sign, _SIGN, Sign, ##__VA_ARGS__) \
+  MUON_EACH_STMT_STEM(MU_EACH_NODE_EMIT, emit, \
+    _stmt, _STMT, Stmt, ##__VA_ARGS__) \
+  MUON_EACH_VIEW_STEM(MU_EACH_NODE_EMIT, emit, \
+    _view, _VIEW, View, ##__VA_ARGS__) \
   emit(expr_member, EXPR_MEMBER, ExprMember, ##__VA_ARGS__) \
   emit(switch_case, SWITCH_CASE, SwitchCase, ##__VA_ARGS__) \
   emit(datatype_option, DATATYPE_OPTION, DatatypeOption, ##__VA_ARGS__) \
@@ -71,6 +71,16 @@ typedef enum {
   MUON_SWITCH_CASE = MUON_SWITCH_CASE_NODE,
   MUON_DATATYPE_OPTION = MUON_DATATYPE_OPTION_NODE,
   MUON_VIEW_MEMBER = MUON_VIEW_MEMBER_NODE,
+
+#define MUON_EMIT(l, upper, t) MUON_##upper##_NODE,
+  /// Equivalent to the minimum enumerator in MuonNodeKind
+  MUON_NODE_MINORANT = MUON_INDIRECT(MUON_TAKE, MU_EACH_NODE_KIND(MUON_EMIT)),
+#undef MUON_EMIT
+
+#define MUON_EMIT(...) + 1
+  /// Equivalent to the maximum enumerator in MuonNodeKind
+  MUON_NODE_MAJORANT = MUON_NODE_MINORANT MU_EACH_NODE_KIND(MUON_EMIT) - 1,
+#undef MUON_EMIT
 } MuonNodeKind;
 
 /// An enumeration over each kind of expr, e.g. @c MUON_ACCESS_EXPR
@@ -86,38 +96,38 @@ typedef enum {
 
 #define MUON_EMIT(...) + 1
   /// Equivalent to the maximum enumerator in MuonExprKind
-  MUON_EXPR_MAJORANT = MUON_EXPR_MINORANT + MUON_EACH_EXPR_STEM(MUON_EMIT) - 1,
+  MUON_EXPR_MAJORANT = MUON_EXPR_MINORANT MUON_EACH_EXPR_STEM(MUON_EMIT) - 1,
 #undef MUON_EMIT
 } MuonExprKind;
 
 /// An enumeration over each kind of sign, e.g. @c MUON_BOOLEAN_SIGN
 typedef enum {
 #define MUON_EMIT(l, upper, t) MUON_##upper##_SIGN = MUON_##upper##_SIGN_NODE,
-  MU_EACH_SIGN_KIND(MUON_EMIT)
+  MUON_EACH_SIGN_STEM(MUON_EMIT)
 #undef MUON_EMIT
 
 #define MUON_EMIT(l, upper, t) MUON_##upper##_SIGN,
-  /// Equivalent to the minimum enumerator in MuonExprKind
+  /// Equivalent to the minimum enumerator in MuonSignKind
   MUON_SIGN_MINORANT = MUON_INDIRECT(MUON_TAKE, MUON_EACH_SIGN_STEM(MUON_EMIT)),
 #undef MUON_EMIT
 
 #define MUON_EMIT(...) + 1
-  /// Equivalent to the maximum enumerator in MuonExprKind
-  MUON_SIGN_MAJORANT = MUON_SIGN_MINORANT + MUON_EACH_SIGN_STEM(MUON_EMIT) - 1,
+  /// Equivalent to the maximum enumerator in MuonSignKind
+  MUON_SIGN_MAJORANT = MUON_SIGN_MINORANT MUON_EACH_SIGN_STEM(MUON_EMIT) - 1,
 #undef MUON_EMIT
 } MuonSignKind;
 
 /// An enumeration over each kind of stmt, e.g. @c MUON_DEFINE_STMT
 typedef enum {
 #define MUON_EMIT(l, upper, t) MUON_##upper##_STMT = MUON_##upper##_STMT_NODE,
-  MU_EACH_STMT_KIND(MUON_EMIT)
+  MUON_EACH_STMT_STEM(MUON_EMIT)
 #undef MUON_EMIT
 } MuonStmtKind;
 
 /// An enumeration over each kind of view, e.g. @c MUON_VARIABLE_VIEW
 typedef enum {
 #define MUON_EMIT(l, upper, t) MUON_##upper##_VIEW = MUON_##upper##_VIEW_NODE,
-  MU_EACH_VIEW_KIND(MUON_EMIT)
+  MUON_EACH_VIEW_STEM(MUON_EMIT)
 #undef MUON_EMIT
 } MuonViewKind;
 
@@ -653,7 +663,7 @@ static inline MuonSign *muon_sign_cast(MuonSign *sign, MuonSignKind kind) {
     MuonStmt *_abstract = (abstract); \
     typeof(concrete) _concrete; \
     MuonStmtKind _kind = _abstract->kind; \
-    int _castable = _Generic(_concrete MU_EACH_STMT_KIND(MU_STMT_CAST_EMIT)); \
+    int _castable = _Generic(_concrete MUON_EACH_STMT_STEM(MU_STMT_CAST_EMIT)); \
     _castable ? (typeof(_concrete)) _abstract : NULL; \
   })
 
@@ -684,7 +694,7 @@ static inline MuonSign *muon_sign_cast(MuonSign *sign, MuonSignKind kind) {
     MuonView *_abstract = (abstract); \
     typeof(concrete) _concrete; \
     MuonViewKind _kind = _abstract->kind; \
-    int _castable = _Generic(_concrete MU_EACH_VIEW_KIND(MU_VIEW_CAST_EMIT)); \
+    int _castable = _Generic(_concrete MUON_EACH_VIEW_STEM(MU_VIEW_CAST_EMIT)); \
     _castable ? (typeof(_concrete)) _abstract : NULL; \
   })
 
