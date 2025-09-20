@@ -165,6 +165,6 @@ extern _Thread_local _Bool debug_scan;
   for (_Bool _n = (debug_negate = !debug_negate); debug_negate == _n; debug_negate = !debug_negate)
 
 /// Equivalent to <tt>printf(debug_stream, ...)</tt>
-#define debug(...) fprintf(mu_debug_stream, ##__VA_ARGS__)
+#define debug(...) fprintf(muon_debug_stream, ##__VA_ARGS__)
 
 #endif /* MU_COMMON_I */

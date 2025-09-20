@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 /// Stream to emit debugging output to (defaults to @c stderr)
-extern FILE *mu_debug_stream;
+extern FILE *muon_debug_stream;
 
 /// Whether to colorize the debug output
 extern _Thread_local _Bool mu_debug_colorize;

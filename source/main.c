@@ -75,7 +75,7 @@ int main(int argc, char *argv[/* argc */]) {
 
   if (getenv("DOT") != NULL) {
     FILE *output = fopen("out.dot", "w");
-    mu_debug_stream = output;
+    muon_debug_stream = output;
     mu_debug_colorize = 0;
     debug_shortcore = 1;
     debug_dot = 1;
@@ -118,7 +118,7 @@ int main(int argc, char *argv[/* argc */]) {
     debug("}\n");
 
     fclose(output);
-    mu_debug_stream = stderr;
+    muon_debug_stream = stderr;
 
     system("dot -Tpng -O out.dot");
   }
