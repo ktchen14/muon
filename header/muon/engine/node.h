@@ -243,13 +243,13 @@ typedef const struct MuonExprMember {
 typedef const struct MuonRecordExpr {
   MUON_EXPR_HEADER;
   size_t argc;
-  MuonExprMember *argv[/* argc */];
+  MuonExprMember *argv[] __attribute__((counted_by(argc)));
 } MuonRecordExpr;
 
 typedef const struct MuonSequenceExpr {
   MUON_EXPR_HEADER;
   size_t argc;
-  MuonStmt *argv[/* argc */];
+  MuonStmt *argv[] __attribute__((counted_by(argc)));
 } MuonSequenceExpr;
 
 typedef const struct MuonSwitchCase {
@@ -261,13 +261,13 @@ typedef const struct MuonSwitchCase {
 typedef const struct MuonSwitchExpr {
   MUON_EXPR_HEADER;
   size_t argc;
-  MuonSwitchCase *argv[/* argc */];
+  MuonSwitchCase *argv[] __attribute__((counted_by(argc)));
 } MuonSwitchExpr;
 
 typedef const struct MuonVectorExpr {
   MUON_EXPR_HEADER;
   size_t argc;
-  MuonExpr *argv[/* argc */];
+  MuonExpr *argv[] __attribute__((counted_by(argc)));
 } MuonVectorExpr;
 
 MuonAccessExpr *muon_access_expr(MuonEngine *engine, MuonName *name)
@@ -353,7 +353,7 @@ typedef struct {
 typedef const struct MuonRecordSign {
   MUON_SIGN_HEADER;
   size_t argc;
-  MuonSignMember argv[/* argc */];
+  MuonSignMember argv[] __attribute__((counted_by(argc)));
 } MuonRecordSign;
 
 typedef const struct MuonVectorSign {
@@ -397,7 +397,7 @@ typedef const struct MuonTypeNode {
   MUON_NODE_HEADER;
   MuonName *name;
   size_t argc;
-  MuonName *argv[/* argc */];
+  MuonName *argv[] __attribute__((counted_by(argc)));
 } MuonTypeNode;
 
 typedef const struct MuonDatatypeOption {
@@ -409,7 +409,7 @@ typedef const struct MuonDatatypeStmt {
   MUON_STMT_HEADER;
   MuonName *name;
   size_t argc;
-  MuonDatatypeOption *argv[/* argc */];
+  MuonDatatypeOption *argv[] __attribute__((counted_by(argc)));
 } MuonDatatypeStmt;
 
 typedef const struct MuonDefineStmt {
@@ -452,7 +452,7 @@ typedef const struct MuonRecordView {
   MUON_VIEW_HEADER;
   size_t announce_length;
   size_t argc;
-  MuonViewMember *argv[/* argc */];
+  MuonViewMember *argv[] __attribute__((counted_by(argc)));
 } MuonRecordView;
 
 typedef const struct MuonVariableView {
