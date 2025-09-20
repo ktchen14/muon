@@ -1,3 +1,5 @@
+#define MUON_ENGINE_MODULE
+
 #include "name.h"
 
 #include "common.h"

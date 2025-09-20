@@ -12,4 +12,12 @@ Diagnostics:
   - unused-label
   - unused-variable
 
+---
+
+If:
+  PathMatch: source/engine/common.h
+
+CompileFlags:
+  Add: [-DMUON_ENGINE_MODULE]
+
 # vim: set ft=yaml:

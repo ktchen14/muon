@@ -6,10 +6,14 @@
 #include <stddef.h>
 #include <stdlib.h>
 
+#ifdef MUON_ENGINE_MODULE
+
 /// @internal Allocate an object of the @a size in the @a engine
 __attribute__((malloc, nonnull))
 static inline void *engine_allocate(MuonEngine *engine, size_t size) {
   return malloc(size);
 }
+
+#endif
 
 #endif /* MUON_ENGINE_COMMON_I */
