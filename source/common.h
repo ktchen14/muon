@@ -3,7 +3,9 @@
 
 #include <muon/common.h>
 
+#include <stdarg.h>
 #include <stddef.h>
+#include <stdio.h>
 
 /// Indicate that @c ... will, in the common case, evaluate to 1
 #define common(...) __builtin_expect((__VA_ARGS__), 1)
@@ -164,7 +166,15 @@ extern _Thread_local _Bool debug_scan;
 #define WITH_DEBUG_NEGATE() \
   for (_Bool _n = (debug_negate = !debug_negate); debug_negate == _n; debug_negate = !debug_negate)
 
-/// Equivalent to <tt>printf(debug_stream, ...)</tt>
-#define debug(...) fprintf(muon_debug_stream, ##__VA_ARGS__)
+/// Emit debugging information to the debug stream
+__attribute__((format(printf, 1, 2), nonnull(1)))
+static inline void debug(const char *restrict format, ...) {
+  FILE *stream = muon_debug_stream != NULL ? muon_debug_stream : stderr;
+
+  va_list variadic;
+  va_start(variadic, format);
+  vfprintf(stream, format, variadic);
+  va_end(variadic);
+}
 
 #endif /* MU_COMMON_I */
