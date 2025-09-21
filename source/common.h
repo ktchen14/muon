@@ -95,11 +95,6 @@ static inline size_t extant_size(
 
 __attribute__((unused)) static _Thread_local const void *_object;
 
-#define INTERNAL_JOIN(a, b) a##b
-
-/// Join @a a and @a b with a level of indirection
-#define INDIRECT_JOIN(a, b) INTERNAL_JOIN(a, b)
-
 /**
  * @brief Used to switch on the kind of the abstract @a object
  *
@@ -109,23 +104,6 @@ __attribute__((unused)) static _Thread_local const void *_object;
 #define ON_ABSTRACT_OBJECT(object) ( \
   (_object = (object)), ((typeof((object))) _object)->kind \
 )
-
-/**
- * @brief Used to define a case of a specific kind
- *
- * This shouldn't be used, except inside a switch statement where
- * ON_ABSTRACT_OBJECT is used to define the switch expression.
- *
- * This will render as code suitable for use after the @c case keyword to match
- * the case of _##name##_kind.
- *
- * It will also declare a variable of type @c mu_##name##_t, with name @c name,
- * that will be set to the abstract object (specified in ON_ABSTRACT_OBJECT()).
- */
-#define IS_KIND_OF(name) _##name##_kind:; \
-  const mu_##name##_t *name = (const mu_##name##_t *) { _object }; \
-  goto INDIRECT_JOIN(case_on_, __LINE__); \
-  INDIRECT_JOIN(case_on_, __LINE__)
 
 /// The amount of indentation to insert before each line of debug output
 extern _Thread_local int debug_indent;
