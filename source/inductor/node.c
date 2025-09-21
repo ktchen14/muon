@@ -1,6 +1,5 @@
 #include "../common.h"
 #include "../engine.h"
-#include "coercion.h"
 #include "core.h"
 #include "detect.h"
 #include "induce.h"
@@ -9,14 +8,6 @@
 #include <assert.h>
 #include <stddef.h>
 #include <stdlib.h>
-
-__attribute__((nonnull, pure, returns_nonnull))
-static inline MuonType *evince_type(
-    const induce_t *induce, MuonNode *node) {
-  MuonType *result = node_type(induce, node);
-  assert(result != NULL);
-  return result;
-}
 
 /// @internal Called to continue into the @a node
 static MuonNode *on_continue(induce_t *induce, MuonNode *node)
