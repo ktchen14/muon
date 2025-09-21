@@ -473,7 +473,7 @@ MuonRecordView *muon_record_view(
 MuonVariableView *muon_variable_view(MuonEngine *engine, MuonName *name)
   __attribute__((malloc, nonnull));
 
-typedef struct MuonScript {
+typedef const struct MuonScript {
   MUON_NODE_HEADER;
   size_t argc;
   MuonStmt *argv[] __attribute__((counted_by(argc)));

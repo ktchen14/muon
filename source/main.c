@@ -39,39 +39,35 @@ int main(int argc, char *argv[/* argc */]) {
   MuonEngine engine = {0};
   mu_status_t status = {0};
 
-  mu_script_t *script;
+  MuonScript *script;
 
   if ((script = muon_scan(&engine, &status, buffer)) == NULL) {
     fprintf(stderr, "%s: muon_scan(): %s\n", main_name, strerror(errno));
     goto except_scan;
   }
 
-  MuonSequenceExpr *sequence_expr;
-  if ((sequence_expr = mu_script_to_sequence_expr(&engine, script)) == NULL)
-    assert(0);
-
   detect_t detect;
   if (detect_initialize(&detect, &engine, &status) == NULL)
     assert(0);
 
-  if (detect_node(&detect, &sequence_expr->as_node) == NULL)
+  if (detect_node(&detect, &script->as_node) == NULL)
     assert(0);
 
   induce_t induce;
   if (induce_initialize(&induce, &engine, &detect) == NULL)
     assert(0);
 
-  if (induce_node(&induce, &sequence_expr->as_node) == NULL)
+  if (induce_node(&induce, &script->as_node) == NULL)
     assert(0);
 
-  if (reduce_node(&induce, &sequence_expr->as_node) == NULL)
+  if (reduce_node(&induce, &script->as_node) == NULL)
     assert(0);
 
   extern _Thread_local _Bool mu_debug_colorize;
   mu_debug_colorize = 1;
   debug_induce = &induce;
 
-  muon_node_debug(&sequence_expr->as_node);
+  muon_node_debug(&script->as_node);
 
   if (getenv("DOT") != NULL) {
     FILE *output = fopen("out.dot", "w");
@@ -129,7 +125,7 @@ int main(int argc, char *argv[/* argc */]) {
       assert(0);
     author->native_expr_emit = standard_native_expr_emit;
 
-    void *module = script_emit(author, &sequence_expr->as_node, argv[1]);
+    void *module = script_emit(author, &script->as_node, argv[1]);
     assert(module != NULL);
 
     mu_run(module);

@@ -102,7 +102,6 @@ static inline MuonNode *node_at(MuonNode *node, size_t i) {
     case MUON_NAME_SIGN:
     case MUON_DATATYPE_OPTION:
     case MUON_VARIABLE_VIEW:
-    case MUON_SCRIPT_NODE:
       return NULL;
 
     case IS_CONCRETE_NODE(MuonCastExpr *cast_expr)
@@ -167,6 +166,9 @@ static inline MuonNode *node_at(MuonNode *node, size_t i) {
 
     case IS_CONCRETE_NODE(MuonRecordView *record_view)
       return i < record_view->argc ? &record_view->argv[i]->as_node : NULL;
+
+    case IS_CONCRETE_NODE(MuonScript *script)
+      return i < script->argc ? &script->argv[i]->as_node : NULL;
   }
   __builtin_unreachable();
 }

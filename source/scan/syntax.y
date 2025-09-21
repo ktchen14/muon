@@ -10,7 +10,7 @@ typedef struct {
   size_t cursor;
   size_t marker;
 
-  mu_script_t *script;
+  MuonScript *script;
 
   MuonStmt *stmt[256];
   size_t stmt_i;
@@ -143,7 +143,7 @@ static void yyerror(YYLTYPE *yylloc, Scan *scan, char const *s);
 %%
 
 script: script_argv { // {{{1
-  scan->script = mu_script(scan->stmt_i, scan->stmt);
+  scan->script = muon_script(scan->engine, scan->stmt_i, scan->stmt);
 }
 
 script_argv: {
@@ -377,7 +377,7 @@ static void symbol_debug(
 static const char *symbol_name(yytoken_kind_t kind)
   __attribute__((returns_nonnull));
 
-mu_script_t *muon_scan(
+MuonScript *muon_scan(
     MuonEngine *engine, mu_status_t *status, const char *text) {
   Scan scan = { .engine = engine, .text = text };
 

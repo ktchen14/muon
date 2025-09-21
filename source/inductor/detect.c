@@ -93,6 +93,40 @@ static void view_announce(roster_t *roster, MuonView *root) {
 }
 
 __attribute__((nonnull(2)))
+roster_t *handle_script(roster_t *roster, MuonScript *script) {
+  size_t announce_length = 0;
+  for (size_t i = 0; i < script->argc; i++) {
+    MuonStmt *stmt = script->argv[i];
+    announce_length += node_announce_length(&stmt->as_node);
+  }
+
+  if ((roster = roster_create(roster, announce_length, &script->as_node)) == NULL)
+    return NULL;
+
+  for (size_t i = 0; i < script->argc; i++) {
+    MuonStmt *stmt = script->argv[i];
+
+    switch ON_ABSTRACT_OBJECT(stmt) {
+      case IS_CONCRETE_NODE(MuonDatatypeStmt *datatype_stmt)
+        announce(roster, datatype_stmt->name, &datatype_stmt->as_node);
+        for (size_t j = 0; j < datatype_stmt->argc; j++) {
+          MuonDatatypeOption *option = datatype_stmt->argv[j];
+          announce(roster, option->name, &option->as_node);
+        }
+        break;
+
+      case IS_CONCRETE_NODE(MuonDefineStmt *define_stmt)
+        announce(roster, define_stmt->name, &define_stmt->as_node);
+        break;
+
+      default: break;
+    }
+  }
+
+  return roster;
+}
+
+__attribute__((nonnull(2)))
 roster_t *handle_sequence_expr(
     roster_t *roster, MuonSequenceExpr *sequence_expr) {
   size_t announce_length = 0;
@@ -128,11 +162,11 @@ roster_t *handle_sequence_expr(
 }
 
 detect_t *detect_node(detect_t *detect, MuonNode *root) {
-  MuonSequenceExpr *sequence_expr = muon_node_cast(root, sequence_expr);
-  assert(sequence_expr != NULL);
+  MuonScript *script = muon_node_cast(root, script);
+  assert(script != NULL);
 
   roster_t *roster = NULL;
-  if ((roster = handle_sequence_expr(roster, sequence_expr)) == NULL)
+  if ((roster = handle_script(roster, script)) == NULL)
     return NULL;
 
   MuonNode *node = root, *next;

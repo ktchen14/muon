@@ -591,7 +591,7 @@ MuonScript *script_activate(MuonEngine *engine, struct MuonScript *script) {
   MuonScript source = {
     .as_node.kind = MUON_SCRIPT, .argc = script->argc,
   };
-  memcpy(script, &source, offsetof(MuonRecordView, argv));
+  memcpy(script, &source, offsetof(MuonScript, argv));
   return assign_node(engine, &script->as_node), script;
 }
 
