@@ -420,6 +420,15 @@ __attribute__((nonnull)) static MuonType *view_member_return(
   return node_type(induce, &member->view->as_node);
 }
 
+__attribute__((nonnull)) static MuonType *script_return(
+    induce_t *induce, MuonScript *script) {
+  // TODO: this is nonsense
+  MuonCoreType *result;
+  if ((result = mu_integer_type(induce)) == NULL)
+    return NULL;
+  return &result->as_type;
+}
+
 static MuonNode *on_continue(induce_t *induce, MuonNode *node) {
   switch ON_ABSTRACT_OBJECT(node) {
     case IS_CONCRETE_NODE(MuonDatatypeStmt *datatype_stmt)

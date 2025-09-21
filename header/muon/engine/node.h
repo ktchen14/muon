@@ -59,7 +59,8 @@
   emit(expr_member, EXPR_MEMBER, ExprMember, ##__VA_ARGS__) \
   emit(switch_case, SWITCH_CASE, SwitchCase, ##__VA_ARGS__) \
   emit(datatype_option, DATATYPE_OPTION, DatatypeOption, ##__VA_ARGS__) \
-  emit(view_member, VIEW_MEMBER, ViewMember, ##__VA_ARGS__)
+  emit(view_member, VIEW_MEMBER, ViewMember, ##__VA_ARGS__) \
+  emit(script, SCRIPT, Script, ##__VA_ARGS__)
 
 /// An enumeration over each kind of node, e.g. @c MUON_ACCESS_EXPR_NODE
 typedef enum {
@@ -71,6 +72,7 @@ typedef enum {
   MUON_SWITCH_CASE = MUON_SWITCH_CASE_NODE,
   MUON_DATATYPE_OPTION = MUON_DATATYPE_OPTION_NODE,
   MUON_VIEW_MEMBER = MUON_VIEW_MEMBER_NODE,
+  MUON_SCRIPT = MUON_SCRIPT_NODE,
 
 #define MUON_EMIT(l, upper, t) MUON_##upper##_NODE,
   /// Equivalent to the minimum enumerator in MuonNodeKind
@@ -469,6 +471,16 @@ MuonRecordView *muon_record_view(
   __attribute__((malloc, nonnull(1)));
 
 MuonVariableView *muon_variable_view(MuonEngine *engine, MuonName *name)
+  __attribute__((malloc, nonnull));
+
+typedef struct MuonScript {
+  MUON_NODE_HEADER;
+  size_t argc;
+  MuonStmt *argv[] __attribute__((counted_by(argc)));
+} MuonScript;
+
+MuonScript *muon_script(
+    MuonEngine *engine, size_t argc, MuonStmt *argv[/* argc */])
   __attribute__((malloc, nonnull));
 
 /// Emit debugging information on the abstract @a node to the debug stream

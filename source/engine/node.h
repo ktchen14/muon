@@ -102,6 +102,7 @@ static inline MuonNode *node_at(MuonNode *node, size_t i) {
     case MUON_NAME_SIGN:
     case MUON_DATATYPE_OPTION:
     case MUON_VARIABLE_VIEW:
+    case MUON_SCRIPT_NODE:
       return NULL;
 
     case IS_CONCRETE_NODE(MuonCastExpr *cast_expr)
@@ -224,6 +225,12 @@ struct MuonRecordView *record_view_allocate(MuonEngine *engine, size_t argc)
   __attribute__((malloc, nonnull));
 
 MuonRecordView *record_view_activate(struct MuonRecordView *view)
+  __attribute__((nonnull));
+
+struct MuonScript *script_allocate(MuonEngine *engine, size_t argc)
+  __attribute__((malloc, nonnull));
+
+MuonScript *script_activate(MuonEngine *engine, struct MuonScript *script)
   __attribute__((nonnull));
 
 #endif /* MUON_ENGINE_NODE_I */

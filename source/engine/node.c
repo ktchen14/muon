@@ -557,6 +557,44 @@ MuonRecordView *record_view_activate(struct MuonRecordView *view) {
   return assign_node(engine, &view->as_node), view;
 }
 
+MuonScript *muon_script(
+    MuonEngine *engine, size_t argc, MuonStmt *argv[/* argc */]) {
+  assert(argc == 0 || argv != NULL);
+
+  struct MuonScript *result;
+  if ((result = script_allocate(engine, argc)) == NULL)
+    return NULL;
+  for (size_t i = 0; i < argc; i++)
+    result->argv[i] = argv[i];
+  return script_activate(engine, result);
+}
+
+struct MuonScript *script_allocate(MuonEngine *engine, size_t argc) {
+  size_t size;
+  if (rare((size = struct_size(MuonScript, argv, argc)) == 0))
+    return errno = ENOMEM, NULL;
+
+  struct MuonScript *result;
+  if ((result = node_allocate(engine, size)) == NULL)
+    return NULL;
+  *result = (MuonScript) { .as_node.engine = engine, .argc = argc };
+  return result;
+}
+
+MuonScript *script_activate(MuonEngine *engine, struct MuonScript *script) {
+  assert(engine == script->as_node.engine);
+  for (size_t i = 0; i < script->argc; i++) {
+    assert(script->argv[i] != NULL);
+    assert(script->argv[i]->as_node.engine == engine);
+  }
+
+  MuonScript source = {
+    .as_node.kind = MUON_SCRIPT, .argc = script->argc,
+  };
+  memcpy(script, &source, offsetof(MuonRecordView, argv));
+  return assign_node(engine, &script->as_node), script;
+}
+
 #include "../inductor.h"
 
 __attribute__((nonnull))
