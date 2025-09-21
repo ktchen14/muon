@@ -1,4 +1,4 @@
-#include "script.h"
+#include "scan.h"
 
 #include "common.h"
 #include "engine.h"

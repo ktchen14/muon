@@ -1,5 +1,5 @@
-#ifndef MU_SCRIPT_H
-#define MU_SCRIPT_H
+#ifndef MUON_SCAN_H
+#define MUON_SCAN_H
 
 #include "engine.h"
 #include "status.h"
@@ -23,4 +23,4 @@ mu_script_t *muon_scan(
 
 void mu_script_debug(const mu_script_t *script) __attribute__((nonnull));
 
-#endif /* MU_SCRIPT_H */
+#endif /* MUON_SCAN_H */

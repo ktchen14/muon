@@ -1,6 +1,6 @@
 %{
 #include <muon/engine.h>
-#include "../script.h"
+#include "../scan.h"
 
 typedef struct {
   MuonEngine *engine;
