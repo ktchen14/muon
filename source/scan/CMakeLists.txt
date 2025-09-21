@@ -8,7 +8,7 @@ add_custom_command(
     "${CMAKE_CURRENT_SOURCE_DIR}/re2c.c" -W -Werror
     --output re2c.c --depfile re2c.d
     --conditions --input-encoding utf8
-  COMMENT "Building re2c object source/script/re2c.c"
+  COMMENT "Building re2c object source/scan/re2c.c"
   DEPFILE re2c.d VERBATIM
 )
 

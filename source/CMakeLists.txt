@@ -1,4 +1,4 @@
-add_subdirectory(script)
+add_subdirectory(scan)
 
 target_sources(muon PRIVATE
   common.c
