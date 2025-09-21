@@ -29,26 +29,6 @@ MuonSequenceExpr *mu_script_to_sequence_expr(
   return muon_sequence_expr(engine, script->argc, script->argv);
 }
 
-MuonSequenceExpr *mu_script_to_sequence_expr_with_prefix(
-    MuonEngine *engine,
-    const mu_script_t *script,
-    size_t length,
-    MuonStmt *prefix[]) {
-  size_t argc = script->argc + length;
-
-  struct MuonSequenceExpr *allocation;
-  if ((allocation = sequence_expr_allocate(engine, argc)) == NULL)
-    return NULL;
-
-  size_t i;
-  for (i = 0; i < length; i++)
-    allocation->argv[i] = prefix[i];
-  for (size_t j = 0; j < script->argc; j++)
-    allocation->argv[i++] = script->argv[j];
-
-  return sequence_expr_activate(allocation);
-}
-
 void mu_script_debug(const mu_script_t *script) {
   debug("Script:\n");
 

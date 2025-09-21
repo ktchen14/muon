@@ -17,12 +17,6 @@ mu_script_t *mu_script(size_t argc, MuonStmt *argv[argc])
 MuonSequenceExpr *mu_script_to_sequence_expr(
     MuonEngine *engine, const mu_script_t *script);
 
-MuonSequenceExpr *mu_script_to_sequence_expr_with_prefix(
-    MuonEngine *engine,
-    const mu_script_t *script,
-    size_t length,
-    MuonStmt *prefix[]);
-
 mu_script_t *muon_scan(
     MuonEngine *engine, mu_status_t *status, const char *text)
   __attribute__((nonnull));
