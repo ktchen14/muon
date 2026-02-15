@@ -444,10 +444,10 @@ static MuonNode *on_continue(induce_t *induce, MuonNode *node) {
 
 static MuonType *on_return(induce_t *induce, MuonNode *node) {
   switch ON_ABSTRACT_OBJECT(node) {
-#define MUON_EMIT(lower, upper, title) \
-    case MUON_##upper##_NODE: \
-      return lower##_return(induce, (Muon##title *) node);
-    MU_EACH_NODE_KIND(MUON_EMIT)
+#define MUON_EMIT(Title, lower, UPPER) \
+    case MUON_##UPPER##_NODE: \
+      return lower##_return(induce, (Muon##Title *) node);
+    MUON_EACH_NODE_STEM(MUON_EMIT)
 #undef MUON_EMIT
   }
   __builtin_unreachable();

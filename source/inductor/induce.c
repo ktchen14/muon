@@ -649,7 +649,7 @@ induce_t *induce_initialize(
     induce_t *induce, MuonEngine *engine, const detect_t *detect) {
   assert(detect_result(detect)->engine == engine);
 
-  size_t node_length = engine->node_number;
+  size_t node_length = as_engine(engine)->node_number;
 
   induce_node_t *result;
   if ((result = malloc(sizeof(induce_node_t[node_length]))) == NULL)

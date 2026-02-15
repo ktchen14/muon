@@ -60,9 +60,9 @@ typedef struct {
   MuonStmt *stmt;
   MuonView *view;
 
-#define MU_EMIT(lower, u, title) Muon##title *lower;
-  MU_EACH_NODE_KIND(MU_EMIT)
-#undef MU_EMIT
+#define MUON_EMIT(Title, lower, U) Muon##Title *lower;
+  MUON_EACH_NODE_STEM(MUON_EMIT)
+#undef MUON_EMIT
 }
 
 %token CASE "case"

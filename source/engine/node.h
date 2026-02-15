@@ -19,8 +19,8 @@ typedef struct {
 typedef struct {
   NodeCursor cursor;
   _Alignas(union {
-#define MUON_EMIT(lower, u, title) Muon##title lower;
-    MU_EACH_NODE_KIND(MUON_EMIT)
+#define MUON_EMIT(Title, lower, U) Muon##Title lower;
+    MUON_EACH_NODE_STEM(MUON_EMIT)
 #undef MUON_EMIT
   }) char data[];
 } NodeHeader;
@@ -82,12 +82,16 @@ static inline MuonNode *node_return(MuonNode *node) {
  * - @c ... isn't a declaration of a variable with the type of a concrete node
  */
 #define IS_CONCRETE_NODE(...) \
+  _Pragma("GCC diagnostic push") \
+  _Pragma("GCC diagnostic ignored \"-Wunknown-warning-option\"") \
+  _Pragma("GCC diagnostic ignored \"-Wdefault-const-init-var-unsafe\"") \
   MUON_NODE_ENUMERATOR_MINIMUM( \
     __extension__ ({ __attribute__((unused)) __VA_ARGS__, _; &_; }) \
   ) ... \
   MUON_NODE_ENUMERATOR_MAXIMUM( \
     __extension__ ({ __attribute__((unused)) __VA_ARGS__, _; &_; }) \
-  ): __VA_ARGS__ = _object;
+  ) \
+  _Pragma("GCC diagnostic pop"): __VA_ARGS__ = _object;
 
 /// Return the <em>i</em>th node in the abstract @a node
 static inline MuonNode *node_at(MuonNode *node, size_t i) {

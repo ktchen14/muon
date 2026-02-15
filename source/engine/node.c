@@ -39,8 +39,10 @@ static inline void *node_allocate(MuonEngine *engine, size_t size) {
 /// @internal Assign the abstract @a node to the @a engine
 __attribute__((nonnull, returns_nonnull))
 static inline MuonNode *assign_node(MuonEngine *engine, struct MuonNode *node) {
+  Engine *internal = as_engine(engine);
+
   node->engine = engine;
-  node->id = engine->node_number++;
+  node->id = internal->node_number++;
   return node;
 }
 
@@ -638,8 +640,8 @@ static inline int debug_node_coercion(MuonNode *node) {
 void muon_node_debug(MuonNode *node) {  // NOLINT(misc-no-recursion)
   // Kind -> Text, e.g. [MUON_ACCESS_EXPR_NODE] = "AccessExpr"
   static const char *const KIND_TEXT[] = {
-#define MUON_EMIT(l, upper, title) [MUON_##upper##_NODE] = #title,
-    MU_EACH_NODE_KIND(MUON_EMIT)
+#define MUON_EMIT(Title, lower, UPPER) [MUON_##UPPER##_NODE] = #Title,
+    MUON_EACH_NODE_STEM(MUON_EMIT)
 #undef MUON_EMIT
   };
   const char *kind = KIND_TEXT[node->kind];

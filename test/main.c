@@ -1,7 +1,6 @@
 #include <muon.h>
 
 #include "../source/common.h"
-#include "../source/script.h"
 #include "../source/status.h"
 
 #include <errno.h>
@@ -35,12 +34,12 @@ int main(int argc, char *argv[]) {
 
   debug_scan = 1;
 
-  mu_script_t *script;
+  MuonScript *script;
   if ((script = muon_scan(&engine, &status, buffer)) == NULL) {
     fprintf(stderr, "Parse error\n");
     return EXIT_FAILURE;
   }
-  mu_script_debug(script);
+  muon_node_debug(&script->as_node);
 
   return EXIT_SUCCESS;
 }

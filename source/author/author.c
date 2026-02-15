@@ -91,7 +91,7 @@ author_t *author_initialize(
     .detect = detect,
     .inductor = inductor,
     .type_length = inductor->type_number,
-    .node_length = inductor->engine->node_number,
+    .node_length = as_engine(inductor->engine)->node_number,
     .layout = layout,
     .module = module,
     .bool_type = bool_type,

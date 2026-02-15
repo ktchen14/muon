@@ -25,7 +25,7 @@ struct roster_t {
 
 detect_t *detect_initialize(
     detect_t *detect, const MuonEngine *engine, mu_status_t *status) {
-  size_t length = engine->node_number;
+  size_t length = as_engine(engine)->node_number;
 
   size_t size;
   if (rare((size = struct_size(detect_result_t, data, length)) == 0))

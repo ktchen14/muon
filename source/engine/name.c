@@ -14,8 +14,10 @@ MuonName *muon_name(
     MuonEngine *engine,
     size_t length,
     const char text[restrict static length]) {
-  for (size_t i = 0; i < engine->name_number; i++) {
-    MuonName *name = engine->name[i];
+  Engine *internal = as_engine(engine);
+
+  for (size_t i = 0; i < internal->name_number; i++) {
+    MuonName *name = internal->name[i];
 
     if (length != name->length)
       continue;
@@ -36,7 +38,7 @@ MuonName *muon_name(
   memcpy(name->text, text, length);
   name->text[length] = '\0';
 
-  return engine->name[engine->name_number++] = name;
+  return internal->name[internal->name_number++] = name;
 }
 
 void muon_name_debug(MuonName *name) {
