@@ -51,10 +51,7 @@ typedef struct {
 
 typedef struct mu_status_t mu_status_t;
 
-const mu_memo_t *mu_memo(
-    mu_status_t *status,
-    const char *restrict format,
-    ...)
+const mu_memo_t *mu_memo(mu_status_t *status, const char *restrict format, ...)
   /**/ MUON_FORMAT(printf, 2, 3) MUON_NONNULL;
 
 MUON_CONST MUON_NONNULL MUON_RETURNS_NONNULL

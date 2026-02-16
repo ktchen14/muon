@@ -107,44 +107,44 @@ MuonSlotCoercion *mu_slot_coercion(mu_inductor_t *inductor, MuonType *target)
   /**/ MUON_MALLOC MUON_NONNULL;
 
 MuonIndirectCoercion *mu_indirect_coercion(
-    mu_inductor_t *inductor, MuonCoercion *head, MuonCoercion *tail)
+  mu_inductor_t *inductor, MuonCoercion *head, MuonCoercion *tail)
   /**/ MUON_MALLOC MUON_NONNULL;
 
 MuonInstanceCoercion *mu_instance_coercion(
-    mu_inductor_t *inductor, MuonType *target, const mu_instance_t *instance)
+  mu_inductor_t *inductor, MuonType *target, const mu_instance_t *instance)
   /**/ MUON_MALLOC MUON_NONNULL;
 
 MuonVarianceCoercion *mu_variance_coercion(
-    mu_inductor_t *inductor,
-    MuonType *target,
-    const mu_core_t *core,
-    MuonCoercion *argv[/* target->core->argc */])
+  mu_inductor_t *inductor,
+  MuonType *target,
+  const mu_core_t *core,
+  MuonCoercion *argv[/* target->core->argc */])
   /**/ MUON_MALLOC MUON_NONNULL_ARGS(1);
 
 MuonJoinCoercion *mu_join_coercion(
-    mu_inductor_t *inductor, MuonType *target, size_t i)
+  mu_inductor_t *inductor, MuonType *target, size_t i)
   /**/ MUON_MALLOC;
 
 MuonUnjoinCoercion *mu_unjoin_coercion(
-    mu_inductor_t *inductor,
-    MuonType *target,
-    size_t argc,
-    MuonCoercion *argv[/* argc */])
+  mu_inductor_t *inductor,
+  MuonType *target,
+  size_t argc,
+  MuonCoercion *argv[/* argc */])
   /**/ MUON_MALLOC;
 
 MuonMeetCoercion *mu_meet_coercion(
-    mu_inductor_t *inductor,
-    MuonType *target,
-    size_t argc,
-    MuonCoercion *argv[/* argc */])
+  mu_inductor_t *inductor,
+  MuonType *target,
+  size_t argc,
+  MuonCoercion *argv[/* argc */])
   /**/ MUON_MALLOC;
 
 MuonUnmeetCoercion *mu_unmeet_coercion(
-    mu_inductor_t *inductor, MuonType *target, size_t i)
+  mu_inductor_t *inductor, MuonType *target, size_t i)
   /**/ MUON_MALLOC;
 
 MuonUnschemeCoercion *mu_unscheme_coercion(
-    mu_inductor_t *inductor, MuonType *target)
+  mu_inductor_t *inductor, MuonType *target)
   /**/ MUON_MALLOC;
 
 void mu_coercion_debug(MuonCoercion *coercion)
@@ -166,9 +166,9 @@ void mu_coercion_debug(MuonCoercion *coercion)
  * @brief Downcast the @a abstract coercion to the <tt>typeof(concrete)</tt>
  *
  * @a abstract should have type <tt>MuonCoercion *</tt>. @a concrete should
- * be, or have, the type of a pointer to a const qualified concrete coercion. Then
- * if @a abstract is an instance of that type, it will be cast to that type and
- * returned. Otherwise, this will return @c NULL.
+ * be, or have, the type of a pointer to a const qualified concrete coercion.
+ * Then if @a abstract is an instance of that type, it will be cast to that type
+ * and returned. Otherwise, this will return @c NULL.
  *
  * @par Example:
  * @code{.c}

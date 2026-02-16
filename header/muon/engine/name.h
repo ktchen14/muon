@@ -27,9 +27,7 @@ typedef const struct MuonName {
  * encoding.
  */
 MuonName *muon_name(
-    MuonEngine *engine,
-    size_t length,
-    const char text[restrict static length])
+  MuonEngine *engine, size_t length, const char text[restrict static length])
   /**/ MUON_NONNULL;
 
 void muon_name_debug(MuonName *name) MUON_NONNULL;

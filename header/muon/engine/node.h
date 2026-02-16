@@ -29,7 +29,10 @@ typedef const struct MuonNode {
  * struct MuonExpr.
  */
 typedef const struct MuonExpr {
-  union { MUON_NODE_HEADER; MuonExprTag kind; };
+  union {
+    MUON_NODE_HEADER;
+    MuonExprTag kind;
+  };
 } MuonExpr;
 
 /**
@@ -39,7 +42,10 @@ typedef const struct MuonExpr {
  * struct MuonSign.
  */
 typedef const struct MuonSign {
-  union { MUON_NODE_HEADER; MuonSignTag kind; };
+  union {
+    MUON_NODE_HEADER;
+    MuonSignTag kind;
+  };
 } MuonSign;
 
 /**
@@ -49,7 +55,10 @@ typedef const struct MuonSign {
  * struct MuonStmt.
  */
 typedef const struct MuonStmt {
-  union { MUON_NODE_HEADER; MuonStmtTag kind; };
+  union {
+    MUON_NODE_HEADER;
+    MuonStmtTag kind;
+  };
 } MuonStmt;
 
 /**
@@ -59,7 +68,10 @@ typedef const struct MuonStmt {
  * struct MuonView.
  */
 typedef const struct MuonView {
-  union { MUON_NODE_HEADER; MuonViewTag kind; };
+  union {
+    MUON_NODE_HEADER;
+    MuonViewTag kind;
+  };
 } MuonView;
 
 /// The header that each concrete expr must have
@@ -112,7 +124,7 @@ typedef const struct MuonNativeExpr {
 
 typedef const struct MuonExprMember {
   MUON_NODE_HEADER;
-  MuonName *name; // optional
+  MuonName *name;  // optional
   MuonExpr *expr;
 } MuonExprMember;
 
@@ -153,18 +165,18 @@ MuonBooleanExpr *muon_boolean_expr(MuonEngine *engine, _Bool data)
   /**/ MUON_MALLOC MUON_NONNULL;
 
 MuonCastExpr *muon_cast_expr(
-    MuonEngine *engine, MuonSign *sign, MuonExpr *matter)
+  MuonEngine *engine, MuonSign *sign, MuonExpr *matter)
   /**/ MUON_MALLOC MUON_NONNULL;
 
 MuonIntegerExpr *muon_integer_expr(MuonEngine *engine, uint64_t data)
   /**/ MUON_MALLOC MUON_NONNULL;
 
 MuonInvokeExpr *muon_invoke_expr(
-    MuonEngine *engine, MuonExpr *operator, MuonExpr *argument)
+  MuonEngine *engine, MuonExpr *operator, MuonExpr *argument)
   /**/ MUON_MALLOC MUON_NONNULL;
 
 MuonLambdaExpr *muon_lambda_expr(
-    MuonEngine *engine, MuonView *argument, MuonExpr *matter)
+  MuonEngine *engine, MuonView *argument, MuonExpr *matter)
   /**/ MUON_MALLOC MUON_NONNULL;
 
 MuonNameExpr *muon_name_expr(MuonEngine *engine, MuonName *name)
@@ -174,27 +186,27 @@ MuonNativeExpr *muon_native_expr(MuonEngine *engine, MuonName *name)
   /**/ MUON_MALLOC MUON_NONNULL;
 
 MuonExprMember *muon_expr_member(
-    MuonEngine *engine, MuonName *name, MuonExpr *expr)
+  MuonEngine *engine, MuonName *name, MuonExpr *expr)
   /**/ MUON_MALLOC MUON_NONNULL;
 
 MuonRecordExpr *muon_record_expr(
-    MuonEngine *engine, size_t argc, MuonExprMember *argv[/* argc */])
+  MuonEngine *engine, size_t argc, MuonExprMember *argv[/* argc */])
   /**/ MUON_MALLOC MUON_NONNULL_ARGS(1);
 
 MuonSwitchCase *muon_switch_case(
-    MuonEngine *engine, MuonName *name, MuonExpr *expr)
+  MuonEngine *engine, MuonName *name, MuonExpr *expr)
   /**/ MUON_MALLOC MUON_NONNULL;
 
 MuonSwitchExpr *muon_switch_expr(
-    MuonEngine *engine, size_t argc, MuonSwitchCase *const argv[argc])
+  MuonEngine *engine, size_t argc, MuonSwitchCase *const argv[argc])
   /**/ MUON_MALLOC MUON_NONNULL;
 
 MuonSequenceExpr *muon_sequence_expr(
-    MuonEngine *engine, size_t argc, MuonStmt *const argv[argc])
+  MuonEngine *engine, size_t argc, MuonStmt *const argv[argc])
   /**/ MUON_MALLOC MUON_NONNULL;
 
 MuonVectorExpr *muon_vector_expr(
-    MuonEngine *engine, size_t argc, MuonExpr *const argv[/* argc */])
+  MuonEngine *engine, size_t argc, MuonExpr *const argv[/* argc */])
   /**/ MUON_MALLOC MUON_NONNULL_ARGS(1);
 
 /// The header that each concrete sign must have
@@ -222,7 +234,7 @@ typedef const struct MuonNameSign {
 } MuonNameSign;
 
 typedef struct {
-  MuonName *name; // optional
+  MuonName *name;  // optional
   MuonSign *sign;
 } MuonSignMember;
 
@@ -244,14 +256,14 @@ MuonIntegerSign *muon_integer_sign(MuonEngine *engine)
   /**/ MUON_MALLOC MUON_NONNULL;
 
 MuonLambdaSign *muon_lambda_sign(
-    MuonEngine *engine, MuonSign *argument, MuonSign *output)
+  MuonEngine *engine, MuonSign *argument, MuonSign *output)
   /**/ MUON_MALLOC MUON_NONNULL;
 
 MuonNameSign *muon_name_sign(MuonEngine *engine, MuonName *name)
   /**/ MUON_MALLOC MUON_NONNULL;
 
 MuonRecordSign *muon_record_sign(
-    MuonEngine *engine, size_t argc, const MuonSignMember argv[/* argc */])
+  MuonEngine *engine, size_t argc, const MuonSignMember argv[/* argc */])
   /**/ MUON_MALLOC MUON_NONNULL_ARGS(1);
 
 MuonVectorSign *muon_vector_sign(MuonEngine *engine, MuonSign *matter)
@@ -295,21 +307,21 @@ typedef const struct MuonDefineStmt {
 } MuonDefineStmt;
 
 MuonCoercionStmt *muon_coercion_stmt(
-    MuonEngine *engine, MuonSign *source, MuonSign *target, MuonExpr *expr)
+  MuonEngine *engine, MuonSign *source, MuonSign *target, MuonExpr *expr)
   /**/ MUON_MALLOC MUON_NONNULL;
 
 MuonDatatypeOption *muon_datatype_option(MuonEngine *engine, MuonName *name)
   /**/ MUON_MALLOC MUON_NONNULL;
 
 MuonDatatypeStmt *muon_datatype_stmt(
-    MuonEngine *engine,
-    MuonName *name,
-    size_t argc,
-    MuonDatatypeOption *argv[/* argc */])
+  MuonEngine *engine,
+  MuonName *name,
+  size_t argc,
+  MuonDatatypeOption *argv[/* argc */])
   /**/ MUON_MALLOC MUON_NONNULL_ARGS(1, 2);
 
 MuonDefineStmt *muon_define_stmt(
-    MuonEngine *engine, MuonName *name, MuonExpr *expr)
+  MuonEngine *engine, MuonName *name, MuonExpr *expr)
   /**/ MUON_MALLOC MUON_NONNULL;
 
 /// The header that each concrete view must have
@@ -320,7 +332,7 @@ MuonDefineStmt *muon_define_stmt(
 typedef const struct MuonViewMember {
   MUON_NODE_HEADER;
   size_t announce_length;
-  MuonName *name; // optional
+  MuonName *name;  // optional
   MuonView *view;
 } MuonViewMember;
 
@@ -337,11 +349,11 @@ typedef const struct MuonVariableView {
 } MuonVariableView;
 
 MuonViewMember *muon_view_member(
-    MuonEngine *engine, MuonName *name, MuonView *view)
+  MuonEngine *engine, MuonName *name, MuonView *view)
   /**/ MUON_MALLOC MUON_NONNULL;
 
 MuonRecordView *muon_record_view(
-    MuonEngine *engine, size_t argc, MuonViewMember *argv[/* argc */])
+  MuonEngine *engine, size_t argc, MuonViewMember *argv[/* argc */])
   /**/ MUON_MALLOC MUON_NONNULL_ARGS(1);
 
 MuonVariableView *muon_variable_view(MuonEngine *engine, MuonName *name)
@@ -354,7 +366,7 @@ typedef const struct MuonScript {
 } MuonScript;
 
 MuonScript *muon_script(
-    MuonEngine *engine, size_t argc, MuonStmt *argv[/* argc */])
+  MuonEngine *engine, size_t argc, MuonStmt *argv[/* argc */])
   /**/ MUON_MALLOC MUON_NONNULL;
 
 /// Emit debugging information on the abstract @a node to the debug stream
@@ -413,7 +425,7 @@ void muon_node_debug(MuonNode *node) MUON_NONNULL;
 /// @internal Used to decide the cast result in muon_node_cast()
 MUON_NONNULL
 static inline MuonNode *muon_node_cast(
-    MuonNode *node, MuonNodeTag minimum, MuonNodeTag maximum) {
+  MuonNode *node, MuonNodeTag minimum, MuonNodeTag maximum) {
   MuonNodeTag kind = node->kind;
   return kind >= minimum && kind <= maximum ? node : NULL;
 }
