@@ -6,6 +6,6 @@
 
 MuonScript *muon_scan(
     MuonEngine *engine, mu_status_t *status, const char *text)
-  __attribute__((nonnull));
+  MUON_NONNULL;
 
 #endif /* MUON_SCAN_H */

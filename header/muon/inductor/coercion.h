@@ -101,54 +101,54 @@ typedef const struct MuonUnschemeCoercion {
 extern const void *const MU_NO_SUCH_COERCION;
 
 MuonIdCoercion *mu_id_coercion(mu_inductor_t *inductor, MuonType *target)
-  __attribute__((malloc, nonnull));
+  MUON_MALLOC MUON_NONNULL;
 
 MuonSlotCoercion *mu_slot_coercion(mu_inductor_t *inductor, MuonType *target)
-  __attribute__((malloc, nonnull));
+  MUON_MALLOC MUON_NONNULL;
 
 MuonIndirectCoercion *mu_indirect_coercion(
     mu_inductor_t *inductor, MuonCoercion *head, MuonCoercion *tail)
-  __attribute__((malloc, nonnull));
+  MUON_MALLOC MUON_NONNULL;
 
 MuonInstanceCoercion *mu_instance_coercion(
     mu_inductor_t *inductor, MuonType *target, const mu_instance_t *instance)
-  __attribute__((malloc, nonnull));
+  MUON_MALLOC MUON_NONNULL;
 
 MuonVarianceCoercion *mu_variance_coercion(
     mu_inductor_t *inductor,
     MuonType *target,
     const mu_core_t *core,
     MuonCoercion *argv[/* target->core->argc */])
-  __attribute__((malloc, nonnull(1)));
+  MUON_MALLOC MUON_NONNULL_ARGS(1);
 
 MuonJoinCoercion *mu_join_coercion(
     mu_inductor_t *inductor, MuonType *target, size_t i)
-  __attribute__((malloc));
+  MUON_MALLOC;
 
 MuonUnjoinCoercion *mu_unjoin_coercion(
     mu_inductor_t *inductor,
     MuonType *target,
     size_t argc,
     MuonCoercion *argv[/* argc */])
-  __attribute__((malloc));
+  MUON_MALLOC;
 
 MuonMeetCoercion *mu_meet_coercion(
     mu_inductor_t *inductor,
     MuonType *target,
     size_t argc,
     MuonCoercion *argv[/* argc */])
-  __attribute__((malloc));
+  MUON_MALLOC;
 
 MuonUnmeetCoercion *mu_unmeet_coercion(
     mu_inductor_t *inductor, MuonType *target, size_t i)
-  __attribute__((malloc));
+  MUON_MALLOC;
 
 MuonUnschemeCoercion *mu_unscheme_coercion(
     mu_inductor_t *inductor, MuonType *target)
-  __attribute__((malloc));
+  MUON_MALLOC;
 
 void mu_coercion_debug(MuonCoercion *coercion)
-  __attribute__((nonnull));
+  MUON_NONNULL;
 
 /// @internal Used to emit each branch in MU_COERCION_ENUMERATOR()
 #define MU_COERCION_ENUMERATOR_EMIT(l, upper, title) \

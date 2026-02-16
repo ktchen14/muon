@@ -1,6 +1,8 @@
 #ifndef MU_STATUS_H
 #define MU_STATUS_H
 
+#include "common.h"
+
 #include <stddef.h>
 
 /**
@@ -53,19 +55,19 @@ const mu_memo_t *mu_memo(
     mu_status_t *status,
     const char *restrict format,
     ...)
-  __attribute__((format(printf, 2, 3), nonnull));
+  MUON_FORMAT(printf, 2, 3) MUON_NONNULL;
 
-__attribute__((const, nonnull, returns_nonnull))
+MUON_CONST MUON_NONNULL MUON_RETURNS_NONNULL
 static inline const char *mu_memo_name(const mu_memo_t *memo) {
   return memo->data;
 }
 
-__attribute__((nonnull, pure, returns_nonnull))
+MUON_NONNULL MUON_PURE MUON_RETURNS_NONNULL
 static inline const char *mu_memo_text(const mu_memo_t *memo) {
   return &memo->data[memo->name_length + 1];
 }
 
 size_t mu_status_length(const mu_status_t *status)
-  __attribute__((nonnull, pure));
+  MUON_NONNULL MUON_PURE;
 
 #endif /* MU_STATUS_H */
