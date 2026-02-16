@@ -68,6 +68,6 @@ static inline const char *mu_memo_text(const mu_memo_t *memo) {
 }
 
 size_t mu_status_length(const mu_status_t *status)
-  MUON_NONNULL MUON_PURE;
+  /**/ MUON_NONNULL MUON_PURE;
 
 #endif /* MU_STATUS_H */

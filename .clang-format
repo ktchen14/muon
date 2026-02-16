@@ -3,9 +3,16 @@ Language: C
 
 AlignAfterOpenBracket: AlwaysBreak
 AllowShortBlocksOnASingleLine: Always
+BreakAfterAttributes: Always
+ContinuationIndentWidth: 2
 IndentPPDirectives: BeforeHash
 PenaltyReturnTypeOnItsOwnLine: 10000
 SkipMacroDefinitionBody: true
 SortIncludes: Never
 SpaceAfterCStyleCast: true
 SpacesBeforeTrailingComments: 2
+Macros:
+- MUON_CONST=[[gnu::const]]
+- MUON_FORMAT(...)=[[gnu::format(__VA_ARGS__)]]
+- MUON_NONNULL=[[gnu::nonnull]]
+- MUON_RETURNS_NONNULL=[[gnu::returns_nonnull]]
