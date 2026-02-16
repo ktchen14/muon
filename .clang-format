@@ -1,17 +1,11 @@
 BasedOnStyle: LLVM
 Language: C
 
-# AlignAfterOpenBracket: AlwaysBreak
-# AlignConsecutiveMacros:
-#   Enabled: true
-# AlignEscapedNewlines: DontAlign
-# AllowShortCaseLabelsOnASingleLine: true
-# BinPackArguments: false
-# BinPackParameters: false
-# BracedInitializerIndentWidth: 2
-# IndentCaseLabels: true
-# SpaceAfterCStyleCast: true
-# SpaceBeforeCpp11BracedList: true
-# SpacesBeforeTrailingComments: 2
-#
-# PenaltyReturnTypeOnItsOwnLine: 200
+AlignAfterOpenBracket: AlwaysBreak
+AllowShortBlocksOnASingleLine: Always
+IndentPPDirectives: BeforeHash
+PenaltyReturnTypeOnItsOwnLine: 10000
+SkipMacroDefinitionBody: true
+SortIncludes: Never
+SpaceAfterCStyleCast: true
+SpacesBeforeTrailingComments: 2

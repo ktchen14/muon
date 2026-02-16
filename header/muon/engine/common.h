@@ -1,7 +1,7 @@
 #ifndef MUON_ENGINE_COMMON_H
 #define MUON_ENGINE_COMMON_H
 
-#include "../common.h" // IWYU pragma: export
+#include "../common.h"  // IWYU pragma: export
 
 #include <limits.h>
 #include <stddef.h>
