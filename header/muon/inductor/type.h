@@ -78,34 +78,34 @@ typedef const struct MuonVariableType {
 } MuonVariableType;
 
 MuonCoreType *mu_core_type(
-  mu_inductor_t *inductor,
-  const mu_core_t *core,
-  MuonType *const argv[/* core->argc */])
-  /**/ MUON_MALLOC MUON_NONNULL_ARGS(1, 2);
+    mu_inductor_t *inductor,
+    const mu_core_t *core,
+    MuonType *const argv[/* core->argc */])
+    /**/ MUON_MALLOC MUON_NONNULL_ARGS(1, 2);
 
 /// Create a boolean type in the @a inductor
 MuonCoreType *mu_boolean_type(induce_t *induce)
-  /**/ MUON_MALLOC MUON_NONNULL;
+    /**/ MUON_MALLOC MUON_NONNULL;
 
 /// Create an integer type in the @a inductor
 MuonCoreType *mu_integer_type(induce_t *induce)
-  /**/ MUON_MALLOC MUON_NONNULL;
+    /**/ MUON_MALLOC MUON_NONNULL;
 
 /// Create a lambda type in the @a inductor
 MuonCoreType *mu_lambda_type(
-  induce_t *induce, MuonType *argument, MuonType *output)
-  /**/ MUON_MALLOC MUON_NONNULL;
+    induce_t *induce, MuonType *argument, MuonType *output)
+    /**/ MUON_MALLOC MUON_NONNULL;
 
 /// Create a vector type in the @a inductor
 MuonCoreType *mu_vector_type(induce_t *induce, MuonType *matter)
-  /**/ MUON_MALLOC MUON_NONNULL;
+    /**/ MUON_MALLOC MUON_NONNULL;
 
 MuonSchemeType *mu_scheme_type(
-  induce_t *induce, MuonType *matter, size_t argc, MuonType *const argv[argc])
-  /**/ MUON_MALLOC MUON_NONNULL_ARGS(1, 2);
+    induce_t *induce, MuonType *matter, size_t argc, MuonType *const argv[argc])
+    /**/ MUON_MALLOC MUON_NONNULL_ARGS(1, 2);
 
 MuonVariableType *mu_variable_type(induce_t *induce)
-  /**/ MUON_MALLOC MUON_NONNULL;
+    /**/ MUON_MALLOC MUON_NONNULL;
 
 /// @internal Used to emit each branch in MU_TYPE_ENUMERATOR()
 #define MU_TYPE_ENUMERATOR_EMIT(l, upper, title) \

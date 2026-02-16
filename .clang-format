@@ -5,11 +5,9 @@ AlignAfterOpenBracket: AlwaysBreak
 AllowShortBlocksOnASingleLine: Always
 BinPackParameters: OnePerLine
 BreakAfterAttributes: Always
-ContinuationIndentWidth: 2
 IndentPPDirectives: BeforeHash
-PenaltyReturnTypeOnItsOwnLine: 10000
+PenaltyReturnTypeOnItsOwnLine: 1000
 SkipMacroDefinitionBody: true
-SortIncludes: Never
 SpaceAfterCStyleCast: true
 SpacesBeforeTrailingComments: 2
 Macros:

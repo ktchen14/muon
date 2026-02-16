@@ -1,8 +1,8 @@
 #ifndef MU_COMMON_H
 #define MU_COMMON_H
 
-#include <stdio.h>
 #include <stdint.h>
+#include <stdio.h>
 
 /// Stream to emit debugging output to (defaults to @c stderr)
 extern _Thread_local FILE *muon_debug_stream;
