@@ -14,5 +14,8 @@ SpacesBeforeTrailingComments: 2
 Macros:
 - MUON_CONST=[[gnu::const]]
 - MUON_FORMAT(...)=[[gnu::format(__VA_ARGS__)]]
+- MUON_MALLOC=[[gnu::malloc]]
 - MUON_NONNULL=[[gnu::nonnull]]
+- MUON_NONNULL_ARGS(...)=[[gnu::nonnull(__VA_ARGS__)]]
+- MUON_PURE=[[gnu::pure]]
 - MUON_RETURNS_NONNULL=[[gnu::returns_nonnull]]

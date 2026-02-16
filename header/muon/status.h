@@ -55,7 +55,7 @@ const mu_memo_t *mu_memo(
     mu_status_t *status,
     const char *restrict format,
     ...)
-  MUON_FORMAT(printf, 2, 3) MUON_NONNULL;
+  /**/ MUON_FORMAT(printf, 2, 3) MUON_NONNULL;
 
 MUON_CONST MUON_NONNULL MUON_RETURNS_NONNULL
 static inline const char *mu_memo_name(const mu_memo_t *memo) {
