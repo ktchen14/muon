@@ -83,32 +83,32 @@ typedef enum {
 #define MUON_TAKE(argument, ...) argument
 
 #define MUON_EMIT(T, l, UPPER, Ts, ls, US) MUON_##UPPER##_##US,
-  /// Equivalent to the minimum enumerator in MuonStatorTag
+  /// Equivalent to the minimum enumerator in MuonStatorEnumerator
   MUON_MINORANT_STATOR = MUON_INDIRECT(
     MUON_TAKE, MUON_EACH_STATOR_STEM(MUON_EMIT,,, STATOR)
   ),
 
-  /// Equivalent to the maximum enumerator in MuonNodeTag
+  /// Equivalent to the maximum enumerator in MuonNodeEnumerator
   MUON_MINORANT_NODE_STATOR = MUON_INDIRECT(
     MUON_TAKE, MUON_EACH_NODE_STEM(MUON_EMIT,,, STATOR)
   ),
 
-  /// Equivalent to the minimum enumerator in MuonExprTag
+  /// Equivalent to the minimum enumerator in MuonExprEnumerator
   MUON_MINORANT_EXPR_STATOR = MUON_INDIRECT(
     MUON_TAKE, MUON_EACH_EXPR_STEM(MUON_EMIT,,, EXPR_STATOR)
   ),
 
-  /// Equivalent to the minimum enumerator in MuonSignTag
+  /// Equivalent to the minimum enumerator in MuonSignEnumerator
   MUON_MINORANT_SIGN_STATOR = MUON_INDIRECT(
     MUON_TAKE, MUON_EACH_SIGN_STEM(MUON_EMIT,,, SIGN_STATOR)
   ),
 
-  /// Equivalent to the minimum enumerator in MuonStmtTag
+  /// Equivalent to the minimum enumerator in MuonStmtEnumerator
   MUON_MINORANT_STMT_STATOR = MUON_INDIRECT(
     MUON_TAKE, MUON_EACH_STMT_STEM(MUON_EMIT,,, STMT_STATOR)
   ),
 
-  /// Equivalent to the minimum enumerator in MuonStmtTag
+  /// Equivalent to the minimum enumerator in MuonStmtEnumerator
   MUON_MINORANT_VIEW_STATOR = MUON_INDIRECT(
     MUON_TAKE, MUON_EACH_VIEW_STEM(MUON_EMIT,,, VIEW_STATOR)
   ),
@@ -117,31 +117,31 @@ typedef enum {
 #undef MUON_INDIRECT
 
 #define MUON_EMIT(...) 1 +
-  /// Equivalent to the maximum enumerator in MuonStatorTag
+  /// Equivalent to the maximum enumerator in MuonStatorEnumerator
   MUON_MAJORANT_STATOR =
     MUON_MINORANT_STATOR + MUON_EACH_STATOR_STEM(MUON_EMIT) - 1,
 
-  /// Equivalent to the maximum enumerator in MuonNodeTag
+  /// Equivalent to the maximum enumerator in MuonNodeEnumerator
   MUON_MAJORANT_NODE_STATOR =
     MUON_MINORANT_NODE_STATOR + MUON_EACH_NODE_STEM(MUON_EMIT) - 1,
 
-  /// Equivalent to the maximum enumerator in MuonExprTag
+  /// Equivalent to the maximum enumerator in MuonExprEnumerator
   MUON_MAJORANT_EXPR_STATOR =
     MUON_MINORANT_EXPR_STATOR + MUON_EACH_EXPR_STEM(MUON_EMIT) - 1,
 
-  /// Equivalent to the maximum enumerator in MuonSignTag
+  /// Equivalent to the maximum enumerator in MuonSignEnumerator
   MUON_MAJORANT_SIGN_STATOR =
     MUON_MINORANT_SIGN_STATOR + MUON_EACH_SIGN_STEM(MUON_EMIT) - 1,
 
-  /// Equivalent to the maximum enumerator in MuonStmtTag
+  /// Equivalent to the maximum enumerator in MuonStmtEnumerator
   MUON_MAJORANT_STMT_STATOR =
     MUON_MINORANT_STMT_STATOR + MUON_EACH_STMT_STEM(MUON_EMIT) - 1,
 
-  /// Equivalent to the maximum enumerator in MuonStmtTag
+  /// Equivalent to the maximum enumerator in MuonStmtEnumerator
   MUON_MAJORANT_VIEW_STATOR =
     MUON_MINORANT_VIEW_STATOR + MUON_EACH_VIEW_STEM(MUON_EMIT) - 1,
 #undef MUON_EMIT
-} MuonStatorTag;
+} MuonStatorEnumerator;
 
 /// An enumeration over each kind of node, e.g. @c MUON_ACCESS_EXPR_NODE
 typedef enum {
@@ -155,36 +155,36 @@ typedef enum {
   MUON_VIEW_MEMBER = MUON_VIEW_MEMBER_NODE,
   MUON_SCRIPT = MUON_SCRIPT_NODE,
 
-  /// Equivalent to the minimum enumerator in MuonNodeTag
+  /// Equivalent to the minimum enumerator in MuonNodeEnumerator
   MUON_MINORANT_NODE = MUON_MINORANT_NODE_STATOR,
 
-  /// Equivalent to the minimum enumerator in MuonExprTag
+  /// Equivalent to the minimum enumerator in MuonExprEnumerator
   MUON_MINORANT_EXPR_NODE = MUON_MINORANT_EXPR_STATOR,
 
-  /// Equivalent to the minimum enumerator in MuonSignTag
+  /// Equivalent to the minimum enumerator in MuonSignEnumerator
   MUON_MINORANT_SIGN_NODE = MUON_MINORANT_SIGN_STATOR,
 
-  /// Equivalent to the minimum enumerator in MuonStmtTag
+  /// Equivalent to the minimum enumerator in MuonStmtEnumerator
   MUON_MINORANT_STMT_NODE = MUON_MINORANT_STMT_STATOR,
 
-  /// Equivalent to the minimum enumerator in MuonViewTag
+  /// Equivalent to the minimum enumerator in MuonViewEnumerator
   MUON_MINORANT_VIEW_NODE = MUON_MINORANT_VIEW_STATOR,
 
-  /// Equivalent to the maximum enumerator in MuonNodeTag
+  /// Equivalent to the maximum enumerator in MuonNodeEnumerator
   MUON_MAJORANT_NODE = MUON_MAJORANT_NODE_STATOR,
 
-  /// Equivalent to the maximum enumerator in MuonExprTag
+  /// Equivalent to the maximum enumerator in MuonExprEnumerator
   MUON_MAJORANT_EXPR_NODE = MUON_MAJORANT_EXPR_STATOR,
 
-  /// Equivalent to the maximum enumerator in MuonSignTag
+  /// Equivalent to the maximum enumerator in MuonSignEnumerator
   MUON_MAJORANT_SIGN_NODE = MUON_MAJORANT_SIGN_STATOR,
 
-  /// Equivalent to the maximum enumerator in MuonStmtTag
+  /// Equivalent to the maximum enumerator in MuonStmtEnumerator
   MUON_MAJORANT_STMT_NODE = MUON_MAJORANT_STMT_STATOR,
 
-  /// Equivalent to the maximum enumerator in MuonViewTag
+  /// Equivalent to the maximum enumerator in MuonViewEnumerator
   MUON_MAJORANT_VIEW_NODE = MUON_MAJORANT_VIEW_STATOR,
-} MuonNodeTag;
+} MuonNodeEnumerator;
 
 /// An enumeration over each kind of expr, e.g. @c MUON_ACCESS_EXPR
 typedef enum {
@@ -192,12 +192,12 @@ typedef enum {
   MUON_EACH_EXPR_STEM(MUON_EMIT)
 #undef MUON_EMIT
 
-  /// Equivalent to the minimum enumerator in MuonExprTag
+  /// Equivalent to the minimum enumerator in MuonExprEnumerator
   MUON_MINORANT_EXPR = MUON_MINORANT_EXPR_NODE,
 
-  /// Equivalent to the maximum enumerator in MuonExprTag
+  /// Equivalent to the maximum enumerator in MuonExprEnumerator
   MUON_MAJORANT_EXPR = MUON_MAJORANT_EXPR_NODE,
-} MuonExprTag;
+} MuonExprEnumerator;
 
 /// An enumeration over each kind of sign, e.g. @c MUON_BOOLEAN_SIGN
 typedef enum {
@@ -205,12 +205,12 @@ typedef enum {
   MUON_EACH_SIGN_STEM(MUON_EMIT)
 #undef MUON_EMIT
 
-  /// Equivalent to the minimum enumerator in MuonSignTag
+  /// Equivalent to the minimum enumerator in MuonSignEnumerator
   MUON_MINORANT_SIGN = MUON_MINORANT_SIGN_NODE,
 
-  /// Equivalent to the maximum enumerator in MuonSignTag
+  /// Equivalent to the maximum enumerator in MuonSignEnumerator
   MUON_MAJORANT_SIGN = MUON_MAJORANT_SIGN_NODE,
-} MuonSignTag;
+} MuonSignEnumerator;
 
 /// An enumeration over each kind of stmt, e.g. @c MUON_COERCION_STMT
 typedef enum {
@@ -218,12 +218,12 @@ typedef enum {
   MUON_EACH_STMT_STEM(MUON_EMIT)
 #undef MUON_EMIT
 
-  /// Equivalent to the minimum enumerator in MuonStmtTag
+  /// Equivalent to the minimum enumerator in MuonStmtEnumerator
   MUON_MINORANT_STMT = MUON_MINORANT_STMT_NODE,
 
-  /// Equivalent to the maximum enumerator in MuonStmtTag
+  /// Equivalent to the maximum enumerator in MuonStmtEnumerator
   MUON_MAJORANT_STMT = MUON_MAJORANT_STMT_NODE,
-} MuonStmtTag;
+} MuonStmtEnumerator;
 
 /// An enumeration over each kind of view, e.g. @c MUON_RECORD_VIEW
 typedef enum {
@@ -231,12 +231,12 @@ typedef enum {
   MUON_EACH_VIEW_STEM(MUON_EMIT)
 #undef MUON_EMIT
 
-  /// Equivalent to the minimum enumerator in MuonViewTag
+  /// Equivalent to the minimum enumerator in MuonViewEnumerator
   MUON_MINORANT_VIEW = MUON_MINORANT_VIEW_NODE,
 
-  /// Equivalent to the maximum enumerator in MuonViewTag
+  /// Equivalent to the maximum enumerator in MuonViewEnumerator
   MUON_MAJORANT_VIEW = MUON_MAJORANT_VIEW_NODE,
-} MuonViewTag;
+} MuonViewEnumerator;
 
 enum {
   /// Number of distinct kinds of stators
@@ -258,6 +258,10 @@ enum {
   MUON_VIEW_NUMBER = MUON_MAJORANT_VIEW - MUON_MINORANT_VIEW + 1,
 };
 
+/// @internal Used to emit each branch in MUON_STATOR_ENUMERATOR(), etc.
+#define MUON_ENUMERATOR_EMIT(T, l, U, Ts, ls, US) \
+  , Muon##T##Ts *: MUON_##U##_##US, struct Muon##T##Ts *: MUON_##U##_##US
+
 /**
  * @brief An abstract stator
  *
@@ -265,8 +269,8 @@ enum {
  * struct MuonStator.
  */
 typedef const struct MuonStator {
-  /// Tag used to discriminate the kind of the stator
-  MuonStatorTag tag : 8;
+  /// Enumerator used to discriminate the kind of the stator
+  MuonStatorEnumerator enumerator : 8;
 
   /// Hash of the stator (if the stator is hashable)
   MuonHash hash : sizeof(MuonHash) * CHAR_BIT - 8;
@@ -278,8 +282,10 @@ typedef const struct MuonStator {
 /// The header that each concrete stator must have
 #define MUON_STATOR_HEADER struct MuonStator as_stator
 
-/// @internal Used to emit each branch in MUON_STATOR_ENUMERATOR(), etc.
-#define MUON_ENUMERATOR_EMIT(Title, l, UPPER, Ts, ls, US) \
-  , Muon##Title##Ts *: MUON_##UPPER##_##US
+typedef MuonNodeEnumerator MuonNodeTag;
+typedef MuonExprEnumerator MuonExprTag;
+typedef MuonSignEnumerator MuonSignTag;
+typedef MuonStmtEnumerator MuonStmtTag;
+typedef MuonViewEnumerator MuonViewTag;
 
 #endif /* MUON_ENGINE_COMMON_H */
