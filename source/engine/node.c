@@ -23,7 +23,7 @@ static inline MuonEngine *unlock_engine(MuonNode *node) {
 }
 
 /// @internal Allocate a node of size @a size in the @a engine
-__attribute__((malloc, nonnull))
+[[gnu::malloc, gnu::nonnull]]
 static inline void *node_allocate(MuonEngine *engine, size_t size) {
   if (rare((size = struct_size(NodeHeader, data, size)) == 0))
     return errno = ENOMEM, NULL;
@@ -37,7 +37,7 @@ static inline void *node_allocate(MuonEngine *engine, size_t size) {
 }
 
 /// @internal Assign the abstract @a node to the @a engine
-__attribute__((nonnull, returns_nonnull))
+[[gnu::nonnull, gnu::returns_nonnull]]
 static inline MuonNode *assign_node(MuonEngine *engine, struct MuonNode *node) {
   Engine *internal = as_engine(engine);
 
@@ -599,7 +599,7 @@ MuonScript *script_activate(MuonEngine *engine, struct MuonScript *script) {
 
 #include "../inductor.h"
 
-__attribute__((nonnull))
+[[gnu::nonnull]]
 static inline void debug_node_type(MuonNode *node) {
   if (debug_induce == NULL)
     return;
@@ -613,7 +613,7 @@ static inline void debug_node_type(MuonNode *node) {
   debug(" #%zu", type->id);
 }
 
-__attribute__((nonnull))
+[[gnu::nonnull]]
 static inline int debug_node_coercion(MuonNode *node) {
   if (debug_induce == NULL)
     return debug_indent;
@@ -654,19 +654,24 @@ void muon_node_debug(MuonNode *node) {  // NOLINT(misc-no-recursion)
 
   switch ON_ABSTRACT_OBJECT(node) {
     case IS_CONCRETE_NODE(MuonAccessExpr *access_expr)
-      debug("(name = " PRIsNAME ")", DEBUG_NAME(access_expr->name)); break;
+      debug("(name = " PRIsNAME ")", DEBUG_NAME(access_expr->name));
+      break;
 
     case IS_CONCRETE_NODE(MuonBooleanExpr *boolean_expr)
-      debug("(data = %s)", boolean_expr->data ? "true" : "false"); break;
+      debug("(data = %s)", boolean_expr->data ? "true" : "false");
+      break;
 
     case IS_CONCRETE_NODE(MuonIntegerExpr *integer_expr)
-      debug("(data = %" PRIu64 ")", integer_expr->data); break;
+      debug("(data = %" PRIu64 ")", integer_expr->data);
+      break;
 
     case IS_CONCRETE_NODE(MuonNameExpr *name_expr)
-      debug("(name = " PRIsNAME ")", DEBUG_NAME(name_expr->name)); break;
+      debug("(name = " PRIsNAME ")", DEBUG_NAME(name_expr->name));
+      break;
 
     case IS_CONCRETE_NODE(MuonNativeExpr *native_expr)
-      debug("(name = " PRIsNAME ")", DEBUG_NAME(native_expr->name)); break;
+      debug("(name = " PRIsNAME ")", DEBUG_NAME(native_expr->name));
+      break;
 
     case IS_CONCRETE_NODE(MuonExprMember *expr_member)
       if (expr_member->name != NULL)
@@ -674,19 +679,24 @@ void muon_node_debug(MuonNode *node) {  // NOLINT(misc-no-recursion)
       break;
 
     case IS_CONCRETE_NODE(MuonSwitchCase *switch_case)
-      debug("(name = " PRIsNAME ")", DEBUG_NAME(switch_case->name)); break;
+      debug("(name = " PRIsNAME ")", DEBUG_NAME(switch_case->name));
+      break;
 
     case IS_CONCRETE_NODE(MuonNameSign *name_sign)
-      debug("(name = " PRIsNAME ")", DEBUG_NAME(name_sign->name)); break;
+      debug("(name = " PRIsNAME ")", DEBUG_NAME(name_sign->name));
+      break;
 
     case IS_CONCRETE_NODE(MuonDatatypeOption *datatype_option)
-      debug("(name = " PRIsNAME ")", DEBUG_NAME(datatype_option->name)); break;
+      debug("(name = " PRIsNAME ")", DEBUG_NAME(datatype_option->name));
+      break;
 
     case IS_CONCRETE_NODE(MuonDatatypeStmt *datatype_stmt)
-      debug("(name = " PRIsNAME ")", DEBUG_NAME(datatype_stmt->name)); break;
+      debug("(name = " PRIsNAME ")", DEBUG_NAME(datatype_stmt->name));
+      break;
 
     case IS_CONCRETE_NODE(MuonDefineStmt *define_stmt)
-      debug("(name = " PRIsNAME ")", DEBUG_NAME(define_stmt->name)); break;
+      debug("(name = " PRIsNAME ")", DEBUG_NAME(define_stmt->name));
+      break;
 
     case IS_CONCRETE_NODE(MuonViewMember *view_member)
       if (view_member->name != NULL)
@@ -694,7 +704,8 @@ void muon_node_debug(MuonNode *node) {  // NOLINT(misc-no-recursion)
       break;
 
     case IS_CONCRETE_NODE(MuonVariableView *variable_view)
-      debug("(name = " PRIsNAME ")", DEBUG_NAME(variable_view->name)); break;
+      debug("(name = " PRIsNAME ")", DEBUG_NAME(variable_view->name));
+      break;
 
     default: break;
   }
