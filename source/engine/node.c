@@ -63,7 +63,7 @@ MuonAccessExpr *muon_access_expr(MuonEngine *engine, MuonName *name) {
   if ((result = node_allocate(engine, sizeof(MuonAccessExpr))) == NULL)
     return NULL;
   *result = (MuonAccessExpr) {
-    .as_expr.kind = MUON_ACCESS_EXPR, .name = name,
+    .as_expr.kind = MUON_ACCESS_EXPR, .name = name
   };
   return assign_node(engine, &result->as_node), result;
 }
@@ -73,7 +73,7 @@ MuonBooleanExpr *muon_boolean_expr(MuonEngine *engine, _Bool data) {
   if ((result = node_allocate(engine, sizeof(MuonBooleanExpr))) == NULL)
     return NULL;
   *result = (MuonBooleanExpr) {
-    .as_expr.kind = MUON_BOOLEAN_EXPR, .data = data,
+    .as_expr.kind = MUON_BOOLEAN_EXPR, .data = data
   };
   return assign_node(engine, &result->as_node), result;
 }
@@ -84,7 +84,7 @@ MuonCastExpr *muon_cast_expr(
   if ((result = node_allocate(engine, sizeof(MuonCastExpr))) == NULL)
     return NULL;
   *result = (MuonCastExpr) {
-    .as_expr.kind = MUON_CAST_EXPR, .sign = sign, .matter = matter,
+    .as_expr.kind = MUON_CAST_EXPR, .sign = sign, .matter = matter
   };
   return assign_node(engine, &result->as_node), result;
 }
@@ -94,7 +94,7 @@ MuonIntegerExpr *muon_integer_expr(MuonEngine *engine, uint64_t data) {
   if ((result = node_allocate(engine, sizeof(MuonIntegerExpr))) == NULL)
     return NULL;
   *result = (MuonIntegerExpr) {
-    .as_expr.kind = MUON_INTEGER_EXPR, .data = data,
+    .as_expr.kind = MUON_INTEGER_EXPR, .data = data
   };
   return assign_node(engine, &result->as_node), result;
 }
@@ -108,7 +108,7 @@ MuonInvokeExpr *muon_invoke_expr(
   if ((result = node_allocate(engine, sizeof(MuonInvokeExpr))) == NULL)
     return NULL;
   *result = (MuonInvokeExpr) {
-    .as_expr.kind = MUON_INVOKE_EXPR, .operator = operator, .argument = argument,
+    .as_expr.kind = MUON_INVOKE_EXPR, .operator = operator, .argument = argument
   };
   return assign_node(engine, &result->as_node), result;
 }
@@ -122,7 +122,7 @@ MuonLambdaExpr *muon_lambda_expr(
   if ((result = node_allocate(engine, sizeof(MuonLambdaExpr))) == NULL)
     return NULL;
   *result = (MuonLambdaExpr) {
-    .as_expr.kind = MUON_LAMBDA_EXPR, .argument = argument, .matter = matter,
+    .as_expr.kind = MUON_LAMBDA_EXPR, .argument = argument, .matter = matter
   };
   return assign_node(engine, &result->as_node), result;
 }
@@ -144,7 +144,7 @@ MuonNativeExpr *muon_native_expr(MuonEngine *engine, MuonName *name) {
   if ((result = node_allocate(engine, sizeof(MuonNativeExpr))) == NULL)
     return NULL;
   *result = (MuonNativeExpr) {
-    .as_expr.kind = MUON_NATIVE_EXPR, .name = name,
+    .as_expr.kind = MUON_NATIVE_EXPR, .name = name
   };
   return assign_node(engine, &result->as_node), result;
 }
@@ -158,7 +158,7 @@ MuonExprMember *muon_expr_member(
   if ((result = node_allocate(engine, sizeof(MuonExprMember))) == NULL)
     return NULL;
   *result = (MuonExprMember) {
-    .as_node.kind = MUON_EXPR_MEMBER_NODE, .name = name, .expr = expr,
+    .as_node.kind = MUON_EXPR_MEMBER_NODE, .name = name, .expr = expr
   };
   return assign_node(engine, &result->as_node), result;
 }
@@ -184,7 +184,7 @@ MuonSwitchCase *muon_switch_case(
   if ((result = node_allocate(engine, sizeof(MuonSwitchCase))) == NULL)
     return NULL;
   *result = (MuonSwitchCase) {
-    .as_node.kind = MUON_SWITCH_CASE_NODE, .name = name, .expr = expr,
+    .as_node.kind = MUON_SWITCH_CASE_NODE, .name = name, .expr = expr
   };
   return assign_node(engine, &result->as_node), result;
 }
@@ -226,7 +226,7 @@ MuonVectorExpr *muon_vector_expr(
   if ((result = node_allocate(engine, size)) == NULL)
     return NULL;
   *result = (MuonVectorExpr) {
-    .as_expr.kind = MUON_VECTOR_EXPR, .argc = argc,
+    .as_expr.kind = MUON_VECTOR_EXPR, .argc = argc
   };
 
   for (size_t i = 0; i < argc; i++)
@@ -342,7 +342,7 @@ MuonLambdaSign *muon_lambda_sign(
   if ((result = node_allocate(engine, sizeof(MuonLambdaSign))) == NULL)
     return NULL;
   *result = (MuonLambdaSign) {
-    .as_sign.kind = MUON_LAMBDA_SIGN, .argument = argument, .output = output,
+    .as_sign.kind = MUON_LAMBDA_SIGN, .argument = argument, .output = output
   };
   return assign_node(engine, &result->as_node), result;
 }
@@ -377,7 +377,7 @@ MuonRecordSign *muon_record_sign(
   if ((result = node_allocate(engine, size)) == NULL)
     return NULL;
   *result = (MuonRecordSign) {
-    .as_sign.kind = MUON_RECORD_SIGN, .argc = argc,
+    .as_sign.kind = MUON_RECORD_SIGN, .argc = argc
   };
 
   for (size_t i = 0; i < argc; i++)
@@ -393,7 +393,7 @@ MuonVectorSign *muon_vector_sign(MuonEngine *engine, MuonSign *matter) {
   if ((result = node_allocate(engine, sizeof(MuonVectorSign))) == NULL)
     return NULL;
   *result = (MuonVectorSign) {
-    .as_sign.kind = MUON_VECTOR_SIGN, .matter = matter,
+    .as_sign.kind = MUON_VECTOR_SIGN, .matter = matter
   };
   return assign_node(engine, &result->as_node), result;
 }
@@ -423,7 +423,7 @@ MuonDatatypeOption *muon_datatype_option(MuonEngine *engine, MuonName *name) {
   if ((result = node_allocate(engine, sizeof(MuonDatatypeOption))) == NULL)
     return NULL;
   *result = (MuonDatatypeOption) {
-    .as_node.kind = MUON_DATATYPE_OPTION_NODE, .name = name,
+    .as_node.kind = MUON_DATATYPE_OPTION_NODE, .name = name
   };
   return assign_node(engine, &result->as_node), result;
 }
@@ -450,7 +450,7 @@ MuonDefineStmt *muon_define_stmt(
   if ((result = node_allocate(engine, sizeof(MuonDefineStmt))) == NULL)
     return NULL;
   *result = (MuonDefineStmt) {
-    .as_stmt.kind = MUON_DEFINE_STMT, .name = name, .expr = expr,
+    .as_stmt.kind = MUON_DEFINE_STMT, .name = name, .expr = expr
   };
   return assign_node(engine, &result->as_node), result;
 }
@@ -480,7 +480,7 @@ MuonDatatypeStmt *datatype_stmt_activate(
   }
 
   MuonDatatypeStmt source = {
-    .as_stmt.kind = MUON_DATATYPE_STMT, .name = name, .argc = stmt->argc,
+    .as_stmt.kind = MUON_DATATYPE_STMT, .name = name, .argc = stmt->argc
   };
   memcpy(stmt, &source, offsetof(MuonDatatypeStmt, argv));
   return assign_node(engine, &stmt->as_node), stmt;
@@ -518,7 +518,7 @@ MuonVariableView *muon_variable_view(MuonEngine *engine, MuonName *name) {
   if ((result = node_allocate(engine, sizeof(MuonVariableView))) == NULL)
     return NULL;
   *result = (MuonVariableView) {
-    .as_view.kind = MUON_VARIABLE_VIEW, .name = name,
+    .as_view.kind = MUON_VARIABLE_VIEW, .name = name
   };
   return assign_node(engine, &result->as_node), result;
 }
@@ -590,7 +590,7 @@ MuonScript *script_activate(MuonEngine *engine, struct MuonScript *script) {
   }
 
   MuonScript source = {
-    .as_node.kind = MUON_SCRIPT, .argc = script->argc,
+    .as_node.kind = MUON_SCRIPT, .argc = script->argc
   };
   memcpy(script, &source, offsetof(MuonScript, argv));
   return assign_node(engine, &script->as_node), script;
