@@ -31,8 +31,8 @@ static inline NodeCursor *node_cursor(MuonNode *node) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-align"
 #pragma GCC diagnostic ignored "-Wcast-qual"
-  NodeHeader *header = (NodeHeader *) (
-      (char *) node - offsetof(NodeHeader, data));
+  NodeHeader *header = (NodeHeader *) ((char *) node -
+      offsetof(NodeHeader, data));
 #pragma GCC diagnostic pop
   return &header->cursor;
 }
@@ -105,26 +105,25 @@ static inline MuonNode *node_at(MuonNode *node, size_t i) {
     case MUON_INTEGER_SIGN:
     case MUON_NAME_SIGN:
     case MUON_DATATYPE_OPTION:
-    case MUON_VARIABLE_VIEW:
-      return NULL;
+    case MUON_VARIABLE_VIEW: return NULL;
 
     case IS_CONCRETE_NODE(MuonCastExpr *cast_expr)
       return (MuonNode *[]) {
-        &cast_expr->sign->as_node, &cast_expr->matter->as_node, NULL,
+        &cast_expr->sign->as_node, &cast_expr->matter->as_node, NULL
       }[i];
 
     case IS_CONCRETE_NODE(MuonInvokeExpr *invoke_expr)
       return (MuonNode *[]) {
-        &invoke_expr->operator->as_node, &invoke_expr->argument->as_node, NULL,
+        &invoke_expr->operator->as_node, &invoke_expr->argument->as_node, NULL
       }[i];
 
     case IS_CONCRETE_NODE(MuonLambdaExpr *lambda_expr)
       return (MuonNode *[]) {
-        &lambda_expr->argument->as_node, &lambda_expr->matter->as_node, NULL,
+        &lambda_expr->argument->as_node, &lambda_expr->matter->as_node, NULL
       }[i];
 
     case IS_CONCRETE_NODE(MuonExprMember *expr_member)
-      return (MuonNode *[]) { &expr_member->expr->as_node, NULL }[i];
+      return (MuonNode *[]) {&expr_member->expr->as_node, NULL}[i];
 
     case IS_CONCRETE_NODE(MuonRecordExpr *record_expr)
       return i < record_expr->argc ? &record_expr->argv[i]->as_node : NULL;
@@ -133,14 +132,14 @@ static inline MuonNode *node_at(MuonNode *node, size_t i) {
       return i < sequence_expr->argc ? &sequence_expr->argv[i]->as_node : NULL;
 
     case IS_CONCRETE_NODE(MuonSwitchCase *switch_case)
-      return (MuonNode *[]) { &switch_case->expr->as_node, NULL }[i];
+      return (MuonNode *[]) {&switch_case->expr->as_node, NULL}[i];
 
     case IS_CONCRETE_NODE(MuonSwitchExpr *switch_expr)
       return i < switch_expr->argc ? &switch_expr->argv[i]->as_node : NULL;
 
     case IS_CONCRETE_NODE(MuonLambdaSign *lambda_sign)
       return (MuonNode *[]) {
-        &lambda_sign->argument->as_node, &lambda_sign->output->as_node, NULL,
+        &lambda_sign->argument->as_node, &lambda_sign->output->as_node, NULL
       }[i];
 
     case IS_CONCRETE_NODE(MuonVectorExpr *vector_expr)
@@ -150,23 +149,24 @@ static inline MuonNode *node_at(MuonNode *node, size_t i) {
       return i < record_sign->argc ? &record_sign->argv[i].sign->as_node : NULL;
 
     case IS_CONCRETE_NODE(MuonVectorSign *vector_sign)
-      return (MuonNode *[]) { &vector_sign->matter->as_node, NULL }[i];
+      return (MuonNode *[]) {&vector_sign->matter->as_node, NULL}[i];
 
     case IS_CONCRETE_NODE(MuonCoercionStmt *coercion_stmt)
       return (MuonNode *[]) {
         &coercion_stmt->source->as_node,
         &coercion_stmt->target->as_node,
-        &coercion_stmt->expr->as_node, NULL,
+        &coercion_stmt->expr->as_node,
+        NULL,
       }[i];
 
     case IS_CONCRETE_NODE(MuonDatatypeStmt *datatype_stmt)
       return i < datatype_stmt->argc ? &datatype_stmt->argv[i]->as_node : NULL;
 
     case IS_CONCRETE_NODE(MuonDefineStmt *define_stmt)
-      return (MuonNode *[]) { &define_stmt->expr->as_node, NULL }[i];
+      return (MuonNode *[]) {&define_stmt->expr->as_node, NULL}[i];
 
     case IS_CONCRETE_NODE(MuonViewMember *view_member)
-      return (MuonNode *[]) { &view_member->view->as_node, NULL }[i];
+      return (MuonNode *[]) {&view_member->view->as_node, NULL}[i];
 
     case IS_CONCRETE_NODE(MuonRecordView *record_view)
       return i < record_view->argc ? &record_view->argv[i]->as_node : NULL;
@@ -183,8 +183,7 @@ static inline size_t node_announce_length(MuonNode *node) {
     case IS_CONCRETE_NODE(MuonDatatypeStmt *datatype_stmt)
       return datatype_stmt->argc + 1;
 
-    case MUON_DEFINE_STMT:
-      return 1;
+    case MUON_DEFINE_STMT: return 1;
 
     case IS_CONCRETE_NODE(MuonViewMember *view_member)
       return view_member->announce_length;
@@ -192,8 +191,7 @@ static inline size_t node_announce_length(MuonNode *node) {
     case IS_CONCRETE_NODE(MuonRecordView *record_view)
       return record_view->announce_length;
 
-    case MUON_VARIABLE_VIEW:
-      return 1;
+    case MUON_VARIABLE_VIEW: return 1;
 
     default: return 0;
   }
@@ -212,15 +210,13 @@ struct MuonSwitchExpr *switch_expr_allocate(MuonEngine *engine, size_t argc)
 MuonSwitchExpr *switch_expr_activate(struct MuonSwitchExpr *expr)
   __attribute__((nonnull));
 
-struct MuonSequenceExpr *sequence_expr_allocate(
-    MuonEngine *engine, size_t argc)
+struct MuonSequenceExpr *sequence_expr_allocate(MuonEngine *engine, size_t argc)
   __attribute__((malloc, nonnull));
 
 MuonSequenceExpr *sequence_expr_activate(struct MuonSequenceExpr *expr)
   __attribute__((nonnull));
 
-struct MuonDatatypeStmt *datatype_stmt_allocate(
-    MuonEngine *engine, size_t argc)
+struct MuonDatatypeStmt *datatype_stmt_allocate(MuonEngine *engine, size_t argc)
   __attribute__((malloc, nonnull));
 
 MuonDatatypeStmt *datatype_stmt_activate(

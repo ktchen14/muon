@@ -5,15 +5,15 @@
 #include <stdint.h>
 
 #ifdef __has_feature
-#if __has_feature(address_sanitizer)
-#ifndef __SANITIZE_ADDRESS__
-#define __SANITIZE_ADDRESS__
-#endif
-#endif
+  #if __has_feature(address_sanitizer)
+    #ifndef __SANITIZE_ADDRESS__
+      #define __SANITIZE_ADDRESS__
+    #endif
+  #endif
 #endif
 
 #ifdef __SANITIZE_ADDRESS__
-#include <sanitizer/asan_interface.h>
+  #include <sanitizer/asan_interface.h>
 #endif
 
 #include <assert.h>
