@@ -29,10 +29,7 @@ typedef const struct MuonNode {
  * struct MuonExpr.
  */
 typedef const struct MuonExpr {
-  union {
-    MUON_NODE_HEADER;
-    MuonExprTag kind;
-  };
+  union { MUON_NODE_HEADER; MuonExprTag kind; }; //-
 } MuonExpr;
 
 /**
@@ -42,10 +39,7 @@ typedef const struct MuonExpr {
  * struct MuonSign.
  */
 typedef const struct MuonSign {
-  union {
-    MUON_NODE_HEADER;
-    MuonSignTag kind;
-  };
+  union { MUON_NODE_HEADER; MuonSignTag kind; }; //-
 } MuonSign;
 
 /**
@@ -55,10 +49,7 @@ typedef const struct MuonSign {
  * struct MuonStmt.
  */
 typedef const struct MuonStmt {
-  union {
-    MUON_NODE_HEADER;
-    MuonStmtTag kind;
-  };
+  union { MUON_NODE_HEADER; MuonStmtTag kind; }; //-
 } MuonStmt;
 
 /**
@@ -68,10 +59,7 @@ typedef const struct MuonStmt {
  * struct MuonView.
  */
 typedef const struct MuonView {
-  union {
-    MUON_NODE_HEADER;
-    MuonViewTag kind;
-  };
+  union { MUON_NODE_HEADER; MuonViewTag kind; }; //-
 } MuonView;
 
 /// The header that each concrete expr must have

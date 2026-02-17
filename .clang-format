@@ -16,7 +16,7 @@ BreakBeforeCloseBracketBracedList: true
 Cpp11BracedListStyle: true
 IndentCaseLabels: true
 IndentPPDirectives: BeforeHash
-OneLineFormatOffRegex: '^MUON_HINT_SUFFIX$'
+OneLineFormatOffRegex: '^MUON_HINT_SUFFIX$|^//-'
 PenaltyBreakAssignment: 80
 PenaltyReturnTypeOnItsOwnLine: 1000
 SkipMacroDefinitionBody: true
