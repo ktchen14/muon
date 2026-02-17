@@ -46,14 +46,14 @@ const mu_core_t *mu_simple_core(induce_t *induce, MuonName *name);
 
 const mu_instance_t *mu_instance(
     const mu_core_t *source, const mu_core_t *target, MuonExpr *expr)
-    /**/ MUON_MALLOC MUON_NONNULL;
+  MUON_MALLOC MUON_NONNULL;
 
 /// Emit debugging information on the abstract @a core to the debug stream
 void mu_core_debug(const mu_core_t *core)
-    /**/ MUON_NONNULL;
+  MUON_NONNULL;
 
 /// Emit debugging information on the abstract @a instance to the debug stream
 void mu_instance_debug(const mu_instance_t *instance)
-    /**/ MUON_NONNULL;
+  MUON_NONNULL;
 
 #endif /* MU_INDUCTOR_CORE_H */

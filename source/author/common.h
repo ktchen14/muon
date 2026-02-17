@@ -89,7 +89,7 @@ LLVMValueRef coercion_emit(author_t *author, MuonCoercion *coercion, info_t info
 static inline LLVMValueRef author_continue(
     author_t *author, LLVMValueRef lambda, LLVMBuilderRef tail) {
   author->stream[author->stream_length++] = (stream_t) {
-    .lambda = author->lambda, .tail = author->tail,
+    .lambda = author->lambda, .tail = author->tail
   };
   author->lambda = lambda;
   author->tail = tail;

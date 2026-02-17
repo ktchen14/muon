@@ -159,55 +159,55 @@ typedef const struct MuonVectorExpr {
 } MuonVectorExpr;
 
 MuonAccessExpr *muon_access_expr(MuonEngine *engine, MuonName *name)
-    /**/ MUON_MALLOC MUON_NONNULL;
+  MUON_MALLOC MUON_NONNULL;
 
 MuonBooleanExpr *muon_boolean_expr(MuonEngine *engine, _Bool data)
-    /**/ MUON_MALLOC MUON_NONNULL;
+  MUON_MALLOC MUON_NONNULL;
 
 MuonCastExpr *muon_cast_expr(
     MuonEngine *engine, MuonSign *sign, MuonExpr *matter)
-    /**/ MUON_MALLOC MUON_NONNULL;
+  MUON_MALLOC MUON_NONNULL;
 
 MuonIntegerExpr *muon_integer_expr(MuonEngine *engine, uint64_t data)
-    /**/ MUON_MALLOC MUON_NONNULL;
+  MUON_MALLOC MUON_NONNULL;
 
 MuonInvokeExpr *muon_invoke_expr(
     MuonEngine *engine, MuonExpr *operator, MuonExpr *argument)
-    /**/ MUON_MALLOC MUON_NONNULL;
+  MUON_MALLOC MUON_NONNULL;
 
 MuonLambdaExpr *muon_lambda_expr(
     MuonEngine *engine, MuonView *argument, MuonExpr *matter)
-    /**/ MUON_MALLOC MUON_NONNULL;
+  MUON_MALLOC MUON_NONNULL;
 
 MuonNameExpr *muon_name_expr(MuonEngine *engine, MuonName *name)
-    /**/ MUON_MALLOC MUON_NONNULL;
+  MUON_MALLOC MUON_NONNULL;
 
 MuonNativeExpr *muon_native_expr(MuonEngine *engine, MuonName *name)
-    /**/ MUON_MALLOC MUON_NONNULL;
+  MUON_MALLOC MUON_NONNULL;
 
 MuonExprMember *muon_expr_member(
     MuonEngine *engine, MuonName *name, MuonExpr *expr)
-    /**/ MUON_MALLOC MUON_NONNULL;
+  MUON_MALLOC MUON_NONNULL;
 
 MuonRecordExpr *muon_record_expr(
     MuonEngine *engine, size_t argc, MuonExprMember *argv[/* argc */])
-    /**/ MUON_MALLOC MUON_NONNULL_ARGS(1);
+  MUON_MALLOC MUON_NONNULL_ARGS(1);
 
 MuonSwitchCase *muon_switch_case(
     MuonEngine *engine, MuonName *name, MuonExpr *expr)
-    /**/ MUON_MALLOC MUON_NONNULL;
+  MUON_MALLOC MUON_NONNULL;
 
 MuonSwitchExpr *muon_switch_expr(
     MuonEngine *engine, size_t argc, MuonSwitchCase *const argv[argc])
-    /**/ MUON_MALLOC MUON_NONNULL;
+  MUON_MALLOC MUON_NONNULL;
 
 MuonSequenceExpr *muon_sequence_expr(
     MuonEngine *engine, size_t argc, MuonStmt *const argv[argc])
-    /**/ MUON_MALLOC MUON_NONNULL;
+  MUON_MALLOC MUON_NONNULL;
 
 MuonVectorExpr *muon_vector_expr(
     MuonEngine *engine, size_t argc, MuonExpr *const argv[/* argc */])
-    /**/ MUON_MALLOC MUON_NONNULL_ARGS(1);
+  MUON_MALLOC MUON_NONNULL_ARGS(1);
 
 /// The header that each concrete sign must have
 #define MUON_SIGN_HEADER union { \
@@ -250,24 +250,24 @@ typedef const struct MuonVectorSign {
 } MuonVectorSign;
 
 MuonBooleanSign *muon_boolean_sign(MuonEngine *engine)
-    /**/ MUON_MALLOC MUON_NONNULL;
+  MUON_MALLOC MUON_NONNULL;
 
 MuonIntegerSign *muon_integer_sign(MuonEngine *engine)
-    /**/ MUON_MALLOC MUON_NONNULL;
+  MUON_MALLOC MUON_NONNULL;
 
 MuonLambdaSign *muon_lambda_sign(
     MuonEngine *engine, MuonSign *argument, MuonSign *output)
-    /**/ MUON_MALLOC MUON_NONNULL;
+  MUON_MALLOC MUON_NONNULL;
 
 MuonNameSign *muon_name_sign(MuonEngine *engine, MuonName *name)
-    /**/ MUON_MALLOC MUON_NONNULL;
+  MUON_MALLOC MUON_NONNULL;
 
 MuonRecordSign *muon_record_sign(
     MuonEngine *engine, size_t argc, const MuonSignMember argv[/* argc */])
-    /**/ MUON_MALLOC MUON_NONNULL_ARGS(1);
+  MUON_MALLOC MUON_NONNULL_ARGS(1);
 
 MuonVectorSign *muon_vector_sign(MuonEngine *engine, MuonSign *matter)
-    /**/ MUON_MALLOC MUON_NONNULL;
+  MUON_MALLOC MUON_NONNULL;
 
 /// The header that each concrete stmt must have
 #define MUON_STMT_HEADER union { \
@@ -308,21 +308,21 @@ typedef const struct MuonDefineStmt {
 
 MuonCoercionStmt *muon_coercion_stmt(
     MuonEngine *engine, MuonSign *source, MuonSign *target, MuonExpr *expr)
-    /**/ MUON_MALLOC MUON_NONNULL;
+  MUON_MALLOC MUON_NONNULL;
 
 MuonDatatypeOption *muon_datatype_option(MuonEngine *engine, MuonName *name)
-    /**/ MUON_MALLOC MUON_NONNULL;
+  MUON_MALLOC MUON_NONNULL;
 
 MuonDatatypeStmt *muon_datatype_stmt(
     MuonEngine *engine,
     MuonName *name,
     size_t argc,
     MuonDatatypeOption *argv[/* argc */])
-    /**/ MUON_MALLOC MUON_NONNULL_ARGS(1, 2);
+  MUON_MALLOC MUON_NONNULL_ARGS(1, 2);
 
 MuonDefineStmt *muon_define_stmt(
     MuonEngine *engine, MuonName *name, MuonExpr *expr)
-    /**/ MUON_MALLOC MUON_NONNULL;
+  MUON_MALLOC MUON_NONNULL;
 
 /// The header that each concrete view must have
 #define MUON_VIEW_HEADER union { \
@@ -350,14 +350,14 @@ typedef const struct MuonVariableView {
 
 MuonViewMember *muon_view_member(
     MuonEngine *engine, MuonName *name, MuonView *view)
-    /**/ MUON_MALLOC MUON_NONNULL;
+  MUON_MALLOC MUON_NONNULL;
 
 MuonRecordView *muon_record_view(
     MuonEngine *engine, size_t argc, MuonViewMember *argv[/* argc */])
-    /**/ MUON_MALLOC MUON_NONNULL_ARGS(1);
+  MUON_MALLOC MUON_NONNULL_ARGS(1);
 
 MuonVariableView *muon_variable_view(MuonEngine *engine, MuonName *name)
-    /**/ MUON_MALLOC MUON_NONNULL;
+  MUON_MALLOC MUON_NONNULL;
 
 typedef const struct MuonScript {
   MUON_NODE_HEADER;
@@ -367,7 +367,7 @@ typedef const struct MuonScript {
 
 MuonScript *muon_script(
     MuonEngine *engine, size_t argc, MuonStmt *argv[/* argc */])
-    /**/ MUON_MALLOC MUON_NONNULL;
+  MUON_MALLOC MUON_NONNULL;
 
 /// Emit debugging information on the abstract @a node to the debug stream
 void muon_node_debug(MuonNode *node) MUON_NONNULL;
