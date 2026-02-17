@@ -5,7 +5,7 @@ AllowShortCaseLabelsOnASingleLine: true
 BinPackParameters: OnePerLine
 BracedInitializerIndentWidth: 2
 Cpp11BracedListStyle: true
-# BreakAfterAttributes: Always
+BreakAfterAttributes: Always
 IndentCaseLabels: true
 IndentPPDirectives: BeforeHash
 PenaltyReturnTypeOnItsOwnLine: 1000

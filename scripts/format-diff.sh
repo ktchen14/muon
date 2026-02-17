@@ -1,11 +1,12 @@
 #!/bin/bash
 
-CLANG_FORMAT="docker run --rm -v $(cd "$(dirname "$0")/.." && pwd):/work muon-clang-format"
+MUON_FORMAT="$(dirname "$0")/muon-format"
 
 for f in \
   header/muon.h \
   header/**/*.h \
   source/engine/*.c \
+  source/engine/*.h \
   ; do
-  diff --color -u "$f" <($CLANG_FORMAT --style=file "$f")
+  diff --color -u "$f" <("$MUON_FORMAT" "$f")
 done

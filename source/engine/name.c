@@ -34,7 +34,7 @@ MuonName *muon_name(
   struct MuonName *name;
   if ((name = engine_allocate(engine, size)) == NULL)
     return NULL;
-  *name = (MuonName) { .engine = engine, .length = length };
+  *name = (MuonName) {.engine = engine, .length = length};
   memcpy(name->text, text, length);
   name->text[length] = '\0';
 

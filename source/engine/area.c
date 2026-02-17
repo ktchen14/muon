@@ -41,11 +41,8 @@ void *area_create_single(area_t **area, size_t size) {
   if ((next = malloc(area_size)) == NULL)
     return NULL;
 
-
   size_t volume = area_size - offsetof(area_t, data);
-  *next = (area_t) {
-    .volume = volume - size, .sentinel = &next->data[volume]
-  };
+  *next = (area_t) {.volume = volume - size, .sentinel = &next->data[volume]};
 
   (*area)->next = next;
   *area = next;

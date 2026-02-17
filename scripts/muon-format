@@ -1,0 +1,42 @@
+#!/bin/bash
+set -euo pipefail
+
+INPLACE=false
+if [[ "${1:-}" == "-i" ]]; then
+  INPLACE=true
+  shift
+fi
+
+if [[ $# -ne 1 ]]; then
+  echo "Usage: muon-format [-i] <file>" >&2
+  exit 1
+fi
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+FILE="$1"
+TEMP=$(mktemp)
+trap 'rm -f "$TEMP" "$TEMP.out"' EXIT
+
+# Step 1: Replace __attribute__((...)) with [[muon::sentinel(...)]]
+sed -E 's/__attribute__\(\(([^)]*)\)\)/[[muon::sentinel(\1)]]/g' "$FILE" > "$TEMP"
+
+# Step 2: Run clang-format
+CLANG_FORMAT="docker run --rm -i -v $ROOT:/work muon-clang-format"
+# Use .c extension for --assume-filename so clang-format detects C, not ObjC
+$CLANG_FORMAT --style=file --assume-filename="${FILE%.h}.c" < "$TEMP" > "$TEMP.out"
+mv "$TEMP.out" "$TEMP"
+
+# Step 3: Replace indented [[muon::sentinel(...)]] with __attribute__((...))
+# dedented by one level (2 spaces)
+sed -E 's/^(  +)  \[\[muon::sentinel\(([^)]*)\)\]\]/\1__attribute__((\2))/' "$TEMP" > "$TEMP.out"
+mv "$TEMP.out" "$TEMP"
+
+# Step 4: Replace remaining [[muon::sentinel(...)]] with __attribute__((...))
+sed -E 's/\[\[muon::sentinel\(([^)]*)\)\]\]/__attribute__((\1))/g' "$TEMP" > "$TEMP.out"
+mv "$TEMP.out" "$TEMP"
+
+if [[ "$INPLACE" == true ]]; then
+  cp "$TEMP" "$FILE"
+else
+  cat "$TEMP"
+fi
