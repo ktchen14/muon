@@ -91,7 +91,7 @@ static inline MuonType *type_next(MuonType *type, _Bool *next_charge) {
   *next_charge = charge;
 
   switch ON_ABSTRACT_OBJECT(type) {
-    case IS_CONCRETE_TYPE(MuonCoreType *nominate(core_type)) {
+    case IS_CONCRETE_TYPE(MuonCoreType * nominate(core_type)) {
       const mu_core_t *core = core_type->core;
 
       if (cursor->i >= core->argc)
@@ -104,12 +104,12 @@ static inline MuonType *type_next(MuonType *type, _Bool *next_charge) {
       return core_type->argv[cursor->i++];
     }
 
-    case IS_CONCRETE_TYPE(MuonSchemeType *nominate(scheme_type))
+    case IS_CONCRETE_TYPE(MuonSchemeType * nominate(scheme_type))
       if (cursor->i > 0)
         return NULL;
       return cursor->i++, scheme_type->matter;
 
-    case IS_CONCRETE_TYPE(MuonJoinType *nominate(join_type))
+    case IS_CONCRETE_TYPE(MuonJoinType * nominate(join_type))
       assert(charge == 0);
       return cursor->i < join_type->argc ? join_type->argv[cursor->i++] : NULL;
 
@@ -121,7 +121,7 @@ static inline MuonType *type_next(MuonType *type, _Bool *next_charge) {
         if (edge->vertex[!charge] == type)
           return edge->vertex[charge];
       }
-      return NULL; 
+      return NULL;
     }
   }
   __builtin_unreachable();

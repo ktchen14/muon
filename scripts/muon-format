@@ -17,28 +17,34 @@ FILE="$1"
 TEMP=$(mktemp)
 trap 'rm -f "$TEMP" "$TEMP.out"' EXIT
 
-# Step 1: Replace __attribute__((...)) at start of line with /**/ [[muon::sentinel(...)]]
-sed -E 's/^([[:space:]]*)__attribute__\(\(([^)]*)\)\)/\1\/**\/ [[muon::sentinel(\2)]]/g' "$FILE" > "$TEMP"
+# Step 1: Replace all __attribute__((...)) with [[muon::sentinel(...)]]
+sed -E 's/__attribute__\(\(([^)]*)\)\)/[[muon::sentinel(\1)]]/g' "$FILE" > "$TEMP"
 
-# Step 2: Prepend /**/ to attribute macros at start of line
-MUON_ATTR='MUON_CONST|MUON_COUNTED_BY|MUON_FORMAT|MUON_MALLOC|MUON_NONNULL_ARGS|MUON_NONNULL|MUON_PURE|MUON_RETURNS_NONNULL'
-sed -E "s/^([[:space:]]*)(${MUON_ATTR})/\1\/**\/ \2/g" "$TEMP" > "$TEMP.out"
+# Step 1b: Prepend /**/ to [[muon::sentinel(...)]] when previous line ends with )
+sed -E '/\)$/ { N; s/\n([[:space:]]*)\[\[muon::sentinel/\n\1\/**\/ [[muon::sentinel/; P; D; }' "$TEMP" > "$TEMP.out"
 mv "$TEMP.out" "$TEMP"
 
-# Step 3: Run clang-format
+# Step 1c: Prepend /**/ to attribute macros at start of line when previous line ends with )
+MUON_ATTR='MUON_CONST|MUON_COUNTED_BY|MUON_FORMAT|MUON_MALLOC|MUON_NONNULL_ARGS|MUON_NONNULL|MUON_PURE|MUON_RETURNS_NONNULL'
+sed -E "/\)$/ { N; s/\n([[:space:]]*)(${MUON_ATTR})/\n\1\/**\/ \2/; P; D; }" "$TEMP" > "$TEMP.out"
+mv "$TEMP.out" "$TEMP"
+
+# Step 2: Run clang-format
 CLANG_FORMAT="docker run --rm -i -v $ROOT:/work muon-clang-format"
 # Use .c extension for --assume-filename so clang-format detects C, not ObjC
 $CLANG_FORMAT --style=file --assume-filename="${FILE%.h}.c" < "$TEMP" > "$TEMP.out"
 mv "$TEMP.out" "$TEMP"
 
-# Step 4: Dedent "  /**/" to "/**/"
+# Step 3: Dedent "  /**/" to "/**/"
 sed -E 's/^([[:space:]]*)  \/\*\*\//\1\/**\//' "$TEMP" > "$TEMP.out"
 mv "$TEMP.out" "$TEMP"
 
-# Step 5: Remove /**/ prefix from attribute macros and [[muon::sentinel(...)]]
+# Step 4: Remove /**/ prefix and replace [[muon::sentinel(...)]] with __attribute__((...))
 sed -E "s/\/\*\*\/ (${MUON_ATTR})/\1/g" "$TEMP" > "$TEMP.out"
 mv "$TEMP.out" "$TEMP"
 sed -E 's/\/\*\*\/ \[\[muon::sentinel\(([^)]*)\)\]\]/__attribute__((\1))/g' "$TEMP" > "$TEMP.out"
+mv "$TEMP.out" "$TEMP"
+sed -E 's/\[\[muon::sentinel\(([^)]*)\)\]\]/__attribute__((\1))/g' "$TEMP" > "$TEMP.out"
 mv "$TEMP.out" "$TEMP"
 
 if [[ "$INPLACE" == true ]]; then

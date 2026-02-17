@@ -12,7 +12,7 @@ universe_t *universe_initialize(universe_t *universe) {
   size_t volume = 1000;
   if ((data = malloc(sizeof(type_edge_t[volume]))) == NULL)
     return NULL;
-  *universe = (universe_t) { .volume = volume, .data = data };
+  *universe = (universe_t) {.volume = volume, .data = data};
   return universe;
 }
 
@@ -26,7 +26,8 @@ type_edge_t *universe_search(
   return NULL;
 }
 
-type_edge_t *append_edge(universe_t *universe, MuonType *source, MuonType *target) {
+type_edge_t *append_edge(
+    universe_t *universe, MuonType *source, MuonType *target) {
   if (universe->length >= universe->volume) {
     size_t volume = universe->volume;
     if (rare(__builtin_mul_overflow(volume, 2, &volume)))
@@ -45,7 +46,7 @@ type_edge_t *append_edge(universe_t *universe, MuonType *source, MuonType *targe
   }
 
   type_edge_t *result = &universe->data[universe->length++];
-  *result = (type_edge_t) { .source = source, .target = target };
+  *result = (type_edge_t) {.source = source, .target = target};
   return result;
 }
 

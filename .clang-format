@@ -6,6 +6,7 @@ AlignOperands: DontAlign
 # AllowShortCaseLabelsOnASingleLine: true
 AllowShortFunctionsOnASingleLine: Empty
 BinPackArguments: false
+BinPackLongBracedList: true
 BinPackParameters: OnePerLine
 BracedInitializerIndentWidth: 2
 BreakAfterAttributes: Leave
@@ -16,7 +17,7 @@ BreakBeforeCloseBracketBracedList: true
 Cpp11BracedListStyle: true
 IndentCaseLabels: true
 IndentPPDirectives: BeforeHash
-PenaltyBreakAssignment: 1000
+PenaltyBreakAssignment: 80
 PenaltyReturnTypeOnItsOwnLine: 1000
 SkipMacroDefinitionBody: true
 SpaceAfterCStyleCast: true
@@ -33,5 +34,6 @@ Macros:
 - ON_ABSTRACT_OBJECT(x)=(x)
 - "IS_CONCRETE_NODE(x)=({ x = NULL; }):"
 - "IS_CONCRETE_TYPE(x)=({ x = NULL; }):"
+- "IS_COERCION(x)=({ x = NULL; }):"
 
 # AllowShortBlocksOnASingleLine: Always

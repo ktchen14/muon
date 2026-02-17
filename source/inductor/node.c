@@ -19,7 +19,7 @@ static MuonType *on_return(induce_t *induce, MuonNode *node)
 
 MuonType *induce_node(induce_t *induce, MuonNode *root) {
   assert(induce->scheme == NULL);
-  induce->scheme = &(mu_scheme_t) { .induce = induce, .id = induce->type_number };
+  induce->scheme = &(mu_scheme_t) {.induce = induce, .id = induce->type_number};
 
   assert(root->id < induce->node_length);
 
@@ -56,12 +56,12 @@ __attribute__((nonnull)) static MuonType *access_expr_return(
     return NULL;
   assert(core->kind == MU_RECORD_CORE);
 
-  MuonType *record_argv[] = { &variable_type->as_type };
+  MuonType *record_argv[] = {&variable_type->as_type};
   MuonCoreType *record_type;
   if ((record_type = mu_core_type(induce, core, record_argv)) == NULL)
     return NULL;
 
-  MuonType *argv[] = { &record_type->as_type, &variable_type->as_type };
+  MuonType *argv[] = {&record_type->as_type, &variable_type->as_type};
   MuonCoreType *result;
   if ((result = mu_lambda_type(induce, argv[0], argv[1])) == NULL)
     return NULL;
@@ -100,7 +100,7 @@ __attribute__((nonnull)) static MuonType *invoke_expr_return(
   if ((result = mu_variable_type(induce)) == NULL)
     return NULL;
 
-  MuonType *argv[] = { argument_type, &result->as_type };
+  MuonType *argv[] = {argument_type, &result->as_type};
   MuonCoreType *lambda_type;
   if ((lambda_type = mu_lambda_type(induce, argv[0], argv[1])) == NULL)
     return NULL;
@@ -157,10 +157,11 @@ __attribute__((nonnull)) static MuonType *record_expr_return(
   for (size_t i = 0; i < expr->argc; i++) {
     MuonName *name = expr->argv[i]->name;
 
-    mu_core_member_t member = { .name = name };
+    mu_core_member_t member = {.name = name};
     core_allocation->argv[i] = member;
   }
-  /* qsort(&core_allocation->argv[j], expr->argc - j, sizeof(mu_expr_member_t), */
+  /* qsort(&core_allocation->argv[j], expr->argc - j, sizeof(mu_expr_member_t),
+   */
   /*     type_member_cmp); */
   // TODO: check for duplicates
 
@@ -305,7 +306,8 @@ __attribute__((nonnull)) static MuonType *coercion_stmt_return(
   assert(target_core_type != NULL);
 
   const mu_instance_t *instance;
-  if ((instance = mu_instance(source_core_type->core, target_core_type->core, stmt->expr)) == NULL)
+  if ((instance = mu_instance(
+           source_core_type->core, target_core_type->core, stmt->expr)) == NULL)
     return NULL;
   induce->instance[induce->instance_length++] = instance;
 
@@ -378,10 +380,11 @@ __attribute__((nonnull)) static MuonType *record_view_return(
   for (size_t i = 0; i < view->argc; i++) {
     MuonName *name = view->argv[i]->name;
 
-    mu_core_member_t member = { .name = name };
+    mu_core_member_t member = {.name = name};
     core_allocation->argv[i] = member;
   }
-  /* qsort(&core_allocation->argv[j], view->argc - j, sizeof(mu_view_member_t), */
+  /* qsort(&core_allocation->argv[j], view->argc - j, sizeof(mu_view_member_t),
+   */
   /*     type_member_cmp); */
   // TODO: check for duplicates
 
@@ -437,7 +440,8 @@ static MuonNode *on_continue(induce_t *induce, MuonNode *node) {
     case IS_CONCRETE_NODE(MuonDefineStmt *define_stmt)
       return define_stmt_continue(induce, define_stmt);
 
-    default: return node;
+    default:
+      return node;
   }
   __builtin_unreachable();
 }

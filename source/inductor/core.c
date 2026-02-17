@@ -12,7 +12,7 @@ const mu_core_t *mu_simple_core(induce_t *induce, MuonName *name) {
   mu_core_t *core;
   if ((core = malloc(sizeof(mu_core_t))) == NULL)
     return NULL;
-  *core = (mu_core_t) { .kind = MU_CUSTOM_CORE, .induce = induce, .name = name };
+  *core = (mu_core_t) {.kind = MU_CUSTOM_CORE, .induce = induce, .name = name};
   return core;
 }
 
@@ -33,10 +33,8 @@ const mu_core_t *single_record_core(induce_t *induce, MuonName *name) {
   if ((result = malloc(struct_size(mu_core_t, argv, 1))) == NULL)
     return NULL;
 
-  *result = (mu_core_t) {
-    .kind = MU_RECORD_CORE, .induce = induce, .argc = 1,
-  };
-  result->argv[0] = (mu_core_member_t) { .name = name };
+  *result = (mu_core_t) {.kind = MU_RECORD_CORE, .induce = induce, .argc = 1};
+  result->argv[0] = (mu_core_member_t) {.name = name};
 
   induce->core[induce->core_length++] = result;
   return result;
@@ -47,7 +45,9 @@ const mu_instance_t *mu_instance(
   mu_instance_t *instance;
   if ((instance = malloc(sizeof(mu_instance_t))) == NULL)
     return NULL;
-  *instance = (mu_instance_t) { .source = source, .target = target, .expr = expr };
+  *instance = (mu_instance_t) {
+    .source = source, .target = target, .expr = expr
+  };
   return instance;
 }
 
@@ -60,7 +60,7 @@ mu_core_t *record_core_allocate(induce_t *induce, size_t argc) {
   if ((allocation = malloc(size)) == NULL)
     return NULL;
   *allocation = (mu_core_t) {
-    .kind = MU_RECORD_CORE, .induce = induce, .argc = argc,
+    .kind = MU_RECORD_CORE, .induce = induce, .argc = argc
   };
   return allocation;
 }
@@ -136,21 +136,26 @@ const record_instance_t *get_record_instance(
 
 void mu_core_debug(const mu_core_t *core) {
   static const char *const VARIANCE_TEXT[] = {
-    [MU_COVARIANCE] = "+", [MU_CONTRAVARIANCE] = "+", [MU_INVARIANCE] = "±",
+    [MU_COVARIANCE] = "+", [MU_CONTRAVARIANCE] = "+", [MU_INVARIANCE] = "±"
   };
 
   if (debug_shortcore) {
     switch (core->kind) {
       case MU_BOOLEAN_CORE:
-        debug(PRIsKIND, DEBUG_CORE_KIND("𝔹")); return;
+        debug(PRIsKIND, DEBUG_CORE_KIND("𝔹"));
+        return;
       case MU_INTEGER_CORE:
-        debug(PRIsKIND, DEBUG_CORE_KIND("𝕀")); return;
+        debug(PRIsKIND, DEBUG_CORE_KIND("𝕀"));
+        return;
       case MU_LAMBDA_CORE:
-        debug(PRIsKIND, DEBUG_CORE_KIND("λ")); return;
+        debug(PRIsKIND, DEBUG_CORE_KIND("λ"));
+        return;
       case MU_VECTOR_CORE:
-        debug(PRIsKIND, DEBUG_CORE_KIND("𝕍")); return;
+        debug(PRIsKIND, DEBUG_CORE_KIND("𝕍"));
+        return;
       case MU_RECORD_CORE:
-        debug(PRIsKIND, DEBUG_CORE_KIND("ℝ")); return;
+        debug(PRIsKIND, DEBUG_CORE_KIND("ℝ"));
+        return;
       case MU_CUSTOM_CORE:
         debug(PRIsKIND, DEBUG_CORE_KIND(DEBUG_NAME(core->name)));
         return;
@@ -160,13 +165,17 @@ void mu_core_debug(const mu_core_t *core) {
 
   switch (core->kind) {
     case MU_BOOLEAN_CORE:
-      debug(PRIsKIND, DEBUG_CORE_KIND("Boolean")); return;
+      debug(PRIsKIND, DEBUG_CORE_KIND("Boolean"));
+      return;
     case MU_INTEGER_CORE:
-      debug(PRIsKIND, DEBUG_CORE_KIND("Integer")); return;
+      debug(PRIsKIND, DEBUG_CORE_KIND("Integer"));
+      return;
     case MU_LAMBDA_CORE:
-      debug(PRIsKIND, DEBUG_CORE_KIND("λ")); return;
+      debug(PRIsKIND, DEBUG_CORE_KIND("λ"));
+      return;
     case MU_VECTOR_CORE:
-      debug(PRIsKIND, DEBUG_CORE_KIND("Vector")); return;
+      debug(PRIsKIND, DEBUG_CORE_KIND("Vector"));
+      return;
     case MU_RECORD_CORE:
       debug(PRIsKIND, DEBUG_CORE_KIND("("));
 

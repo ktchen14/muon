@@ -13,7 +13,8 @@ struct MuonEdgeCoercion {
   MuonType *source;
 };
 
-/// @internal An enumeration over each kind of coercion, e.g. @c _id_coercion_kind
+/// @internal An enumeration over each kind of coercion, e.g.
+/// @c _id_coercion_kind
 enum {
 #define MU_EMIT(lower, u, t) _##lower##_coercion_kind,
   MU_EACH_COERCION_KIND(MU_EMIT)

@@ -34,10 +34,11 @@ detect_t *detect_initialize(
   detect_result_t *result;
   if ((result = malloc(size)) == NULL)
     return NULL;
-  *result = (detect_result_t) { .engine = engine, .length = length };
-  for (size_t i = 0; i < length; result->data[i++] = NULL);
+  *result = (detect_result_t) {.engine = engine, .length = length};
+  for (size_t i = 0; i < length; result->data[i++] = NULL)
+    ;
 
-  *detect = (detect_t) { .status = status, .result = result };
+  *detect = (detect_t) {.status = status, .result = result};
   return detect;
 }
 
@@ -51,7 +52,7 @@ static roster_t *roster_create(
   roster_t *result;
   if ((result = malloc(size)) == NULL)
     return NULL;
-  *result = (roster_t) { .parent = roster, .volume = volume, .origin = origin };
+  *result = (roster_t) {.parent = roster, .volume = volume, .origin = origin};
   return result;
 }
 
@@ -68,10 +69,9 @@ static MuonNode *roster_search(roster_t *roster, MuonName *name) {
 }
 
 __attribute__((nonnull))
-static inline void announce(
-    roster_t *roster, MuonName *name, MuonNode *node) {
+static inline void announce(roster_t *roster, MuonName *name, MuonNode *node) {
   assert(roster->length < roster->volume);
-  item_t item = { .name = name, .node = node };
+  item_t item = {.name = name, .node = node};
   roster->data[roster->length++] = item;
 }
 
@@ -87,7 +87,8 @@ static void view_announce(roster_t *roster, MuonView *root) {
         announce(roster, variable_view->name, &variable_view->as_node);
         break;
 
-      default: break;
+      default:
+        break;
     }
   } while ((node = node_return(node)) != NULL);
 }
@@ -100,7 +101,8 @@ roster_t *handle_script(roster_t *roster, MuonScript *script) {
     announce_length += node_announce_length(&stmt->as_node);
   }
 
-  if ((roster = roster_create(roster, announce_length, &script->as_node)) == NULL)
+  if ((roster = roster_create(roster, announce_length, &script->as_node)) ==
+      NULL)
     return NULL;
 
   for (size_t i = 0; i < script->argc; i++) {
@@ -119,7 +121,8 @@ roster_t *handle_script(roster_t *roster, MuonScript *script) {
         announce(roster, define_stmt->name, &define_stmt->as_node);
         break;
 
-      default: break;
+      default:
+        break;
     }
   }
 
@@ -135,7 +138,8 @@ roster_t *handle_sequence_expr(
     announce_length += node_announce_length(&stmt->as_node);
   }
 
-  if ((roster = roster_create(roster, announce_length, &sequence_expr->as_node)) == NULL)
+  if ((roster = roster_create(
+           roster, announce_length, &sequence_expr->as_node)) == NULL)
     return NULL;
 
   for (size_t i = 0; i < sequence_expr->argc; i++) {
@@ -154,7 +158,8 @@ roster_t *handle_sequence_expr(
         announce(roster, define_stmt->name, &define_stmt->as_node);
         break;
 
-      default: break;
+      default:
+        break;
     }
   }
 
@@ -177,7 +182,8 @@ detect_t *detect_node(detect_t *detect, MuonNode *root) {
           size_t length = node_announce_length(&lambda_expr->argument->as_node);
 
           roster_t *next_roster;
-          if ((next_roster = roster_create(roster, length, &lambda_expr->as_node)) == NULL)
+          if ((next_roster = roster_create(
+                   roster, length, &lambda_expr->as_node)) == NULL)
             return NULL;
           roster = next_roster;
           view_announce(roster, lambda_expr->argument);
@@ -186,13 +192,15 @@ detect_t *detect_node(detect_t *detect, MuonNode *root) {
 
         case IS_CONCRETE_NODE(MuonSequenceExpr *sequence_expr) {
           roster_t *next_roster;
-          if ((next_roster = handle_sequence_expr(roster, sequence_expr)) == NULL)
+          if ((next_roster = handle_sequence_expr(roster, sequence_expr)) ==
+              NULL)
             return NULL;
           roster = next_roster;
           break;
         }
 
-        default: break;
+        default:
+          break;
       }
 
       node = node_continue(node, next);
@@ -226,7 +234,8 @@ detect_t *detect_node(detect_t *detect, MuonNode *root) {
         break;
       }
 
-      default: break;
+      default:
+        break;
     }
   } while ((node = node_return(node)) != NULL);
 

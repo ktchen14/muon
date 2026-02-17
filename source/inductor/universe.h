@@ -44,14 +44,16 @@ type_edge_t *universe_search(
     const universe_t *universe, MuonType *source, MuonType *target)
   __attribute__((nonnull));
 
-type_edge_t *append_edge(universe_t *universe, MuonType *source, MuonType *target);
-type_edge_t *edge_define(universe_t *universe, MuonType *source, MuonType *target);
+type_edge_t *append_edge(
+    universe_t *universe, MuonType *source, MuonType *target);
+type_edge_t *edge_define(
+    universe_t *universe, MuonType *source, MuonType *target);
 
 __attribute__((nonnull))
 static inline universe_iterator_t universe_iterator(
     const universe_t *universe, MuonType *target, _Bool invert) {
   return (universe_iterator_t) {
-    .universe = universe, .target = target, .invert = invert,
+    .universe = universe, .target = target, .invert = invert
   };
 }
 
