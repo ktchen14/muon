@@ -5,7 +5,7 @@ AlignAfterOpenBracket: AlwaysBreak
 AllowShortCaseLabelsOnASingleLine: true
 BinPackParameters: OnePerLine
 BracedInitializerIndentWidth: 2
-Cpp11BracedListStyle: false
+Cpp11BracedListStyle: true
 # BreakAfterAttributes: Always
 IndentCaseLabels: true
 IndentPPDirectives: BeforeHash
@@ -13,6 +13,9 @@ PenaltyReturnTypeOnItsOwnLine: 1000
 SkipMacroDefinitionBody: true
 SpaceAfterCStyleCast: true
 SpacesBeforeTrailingComments: 2
+
+BreakAfterOpenBracketBracedList: true
+BreakBeforeCloseBracketBracedList: true
 
 Macros:
 - MUON_CONST=[[gnu::const]]
