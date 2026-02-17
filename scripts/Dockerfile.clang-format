@@ -1,0 +1,11 @@
+FROM debian:experimental
+
+RUN apt-get update \
+ && apt-get install -y -t experimental clang-format-22 \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
+
+RUN ln -s /usr/bin/clang-format-22 /usr/local/bin/clang-format
+
+WORKDIR /work
+ENTRYPOINT ["clang-format"]

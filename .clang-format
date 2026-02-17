@@ -1,7 +1,6 @@
 BasedOnStyle: LLVM
 Language: C
 
-AlignAfterOpenBracket: AlwaysBreak
 AllowShortCaseLabelsOnASingleLine: true
 BinPackParameters: OnePerLine
 BracedInitializerIndentWidth: 2
@@ -14,8 +13,13 @@ SkipMacroDefinitionBody: true
 SpaceAfterCStyleCast: true
 SpacesBeforeTrailingComments: 2
 
+AlignAfterOpenBracket: true
+AlignOperands: DontAlign
 BreakAfterOpenBracketBracedList: true
+BreakAfterOpenBracketFunction: true
+BreakAfterOpenBracketIf: true
 BreakBeforeCloseBracketBracedList: true
+PenaltyBreakAssignment: 1000
 
 Macros:
 - MUON_CONST=[[gnu::const]]
