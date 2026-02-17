@@ -7,13 +7,13 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-__attribute__((noinline))
+[[gnu::noinline]]
 area_t *area_create(area_t *area) {
   area_t *next;
   if ((next = malloc(AREA_SIZE)) == NULL)
     return NULL;
   *next = (area_t) {
-    .volume = AREA_VOLUME, .sentinel = &next->data[AREA_VOLUME],
+    .volume = AREA_VOLUME, .sentinel = &next->data[AREA_VOLUME]
   };
 
   if (area != NULL)
@@ -21,7 +21,7 @@ area_t *area_create(area_t *area) {
   return next;
 }
 
-__attribute__((noinline))
+[[gnu::noinline]]
 void *area_create_allocate(area_t **area, size_t size) {
   area_t *next;
   if ((next = area_create(*area)) == NULL)
@@ -31,7 +31,7 @@ void *area_create_allocate(area_t **area, size_t size) {
   return next->data;
 }
 
-__attribute__((noinline))
+[[gnu::noinline]]
 void *area_create_single(area_t **area, size_t size) {
   size_t area_size;
   if (rare((area_size = struct_size(area_t, data, size)) == 0))
@@ -44,7 +44,7 @@ void *area_create_single(area_t **area, size_t size) {
 
   size_t volume = area_size - offsetof(area_t, data);
   *next = (area_t) {
-    .volume = volume - size, .sentinel = &next->data[volume],
+    .volume = volume - size, .sentinel = &next->data[volume]
   };
 
   (*area)->next = next;

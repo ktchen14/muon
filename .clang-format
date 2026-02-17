@@ -21,6 +21,8 @@ BreakAfterOpenBracketIf: true
 BreakBeforeCloseBracketBracedList: true
 PenaltyBreakAssignment: 1000
 
+AllowShortFunctionsOnASingleLine: Empty
+
 Macros:
 - MUON_CONST=[[gnu::const]]
 - MUON_FORMAT(...)=[[gnu::format(__VA_ARGS__)]]
