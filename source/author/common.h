@@ -1,5 +1,5 @@
-#include "../inductor.h"
 #include "../engine.h"
+#include "../inductor.h"
 
 #include <limits.h>
 #include <llvm-c/Target.h>
@@ -27,8 +27,7 @@ struct author_t {
   LLVMValueRef node_to_value[1000];
   size_t node_length;
 
-  LLVMValueRef (*native_expr_emit)(
-      author_t *author, MuonNativeExpr *expr)
+  LLVMValueRef (*native_expr_emit)(author_t *author, MuonNativeExpr *expr)
     __attribute__((nonnull));
 
   /// LLVM data layout
@@ -84,7 +83,8 @@ LLVMTypeRef get_type(author_t *author, MuonType *root);
 LLVMModuleRef script_emit(
     author_t *author, MuonNode *root, const char *source_name);
 
-LLVMValueRef coercion_emit(author_t *author, MuonCoercion *coercion, info_t info);
+LLVMValueRef coercion_emit(
+    author_t *author, MuonCoercion *coercion, info_t info);
 
 static inline LLVMValueRef author_continue(
     author_t *author, LLVMValueRef lambda, LLVMBuilderRef tail) {

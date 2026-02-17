@@ -105,7 +105,8 @@ static inline MuonNode *node_at(MuonNode *node, size_t i) {
     case MUON_INTEGER_SIGN:
     case MUON_NAME_SIGN:
     case MUON_DATATYPE_OPTION:
-    case MUON_VARIABLE_VIEW: return NULL;
+    case MUON_VARIABLE_VIEW:
+      return NULL;
 
     case IS_CONCRETE_NODE(MuonCastExpr *cast_expr)
       return (MuonNode *[]) {
@@ -183,7 +184,8 @@ static inline size_t node_announce_length(MuonNode *node) {
     case IS_CONCRETE_NODE(MuonDatatypeStmt *datatype_stmt)
       return datatype_stmt->argc + 1;
 
-    case MUON_DEFINE_STMT: return 1;
+    case MUON_DEFINE_STMT:
+      return 1;
 
     case IS_CONCRETE_NODE(MuonViewMember *view_member)
       return view_member->announce_length;
@@ -191,9 +193,11 @@ static inline size_t node_announce_length(MuonNode *node) {
     case IS_CONCRETE_NODE(MuonRecordView *record_view)
       return record_view->announce_length;
 
-    case MUON_VARIABLE_VIEW: return 1;
+    case MUON_VARIABLE_VIEW:
+      return 1;
 
-    default: return 0;
+    default:
+      return 0;
   }
   __builtin_unreachable();
 }

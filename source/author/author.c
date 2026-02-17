@@ -12,7 +12,7 @@
 
 author_t *author_initialize(
     author_t *author, const detect_result_t *detect, mu_inductor_t *inductor) {
-  LLVMInitializeNativeTarget(); 
+  LLVMInitializeNativeTarget();
 
   char *triple;
   if ((triple = LLVMGetDefaultTargetTriple()) == NULL)
@@ -64,12 +64,12 @@ author_t *author_initialize(
   if ((star_type = LLVMPointerType(byte_type, 0)) == NULL)
     goto except_star_type;
 
-  LLVMTypeRef vector_argv[] = { size_type, star_type };
+  LLVMTypeRef vector_argv[] = {size_type, star_type};
   LLVMTypeRef vector_type;
   if ((vector_type = LLVMStructType(vector_argv, 2, 0)) == NULL)
     return NULL;
 
-  LLVMTypeRef malloc_argv[] = { size_type };
+  LLVMTypeRef malloc_argv[] = {size_type};
   LLVMTypeRef malloc_type;
   if ((malloc_type = LLVMFunctionType(star_type, malloc_argv, 1, 0)) == NULL)
     goto except_malloc_type;

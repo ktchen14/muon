@@ -130,7 +130,7 @@ __attribute__((nonnull)) static LLVMTypeRef join_type_emit(
   if ((data_type = LLVMArrayType2(member_type, length)) == NULL)
     return NULL;
 
-  LLVMTypeRef argv[] = { LLVMInt64Type(), data_type };
+  LLVMTypeRef argv[] = {LLVMInt64Type(), data_type};
   return LLVMStructType(argv, 2, 0);
 }
 
@@ -138,7 +138,7 @@ __attribute__((nonnull)) static LLVMTypeRef join_type_emit(
 __attribute__((nonnull)) static LLVMTypeRef type_emit(
     author_t *author, MuonType *type) {
   switch ON_ABSTRACT_OBJECT(type) {
-    case IS_CONCRETE_TYPE(MuonCoreType *nominate(core_type))
+    case IS_CONCRETE_TYPE(MuonCoreType * nominate(core_type))
       switch (core_type->core->kind) {
         case MU_BOOLEAN_CORE:
           return boolean_type_emit(author, core_type);
@@ -163,11 +163,11 @@ __attribute__((nonnull)) static LLVMTypeRef type_emit(
     case MU_SCHEME_TYPE:
       abort();
 
-    case IS_CONCRETE_TYPE(MuonVariableType *nominate(variable_type))
+    case IS_CONCRETE_TYPE(MuonVariableType * nominate(variable_type))
       assert(variable_type->solution != NULL);
       return type_emit(author, variable_type->solution);
 
-    case IS_CONCRETE_TYPE(MuonJoinType *nominate(join_type))
+    case IS_CONCRETE_TYPE(MuonJoinType * nominate(join_type))
       return join_type_emit(author, join_type);
   }
   __builtin_unreachable();

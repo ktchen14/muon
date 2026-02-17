@@ -6,7 +6,6 @@
 
 #include <llvm-c/Analysis.h>
 #include <llvm-c/BitWriter.h>
-#include <llvm-c/BitWriter.h>
 #include <llvm-c/Core.h>
 #include <llvm-c/Error.h>
 #include <llvm-c/ExecutionEngine.h>
@@ -168,7 +167,8 @@ static LLVMValueRef record_expr_emit(author_t *author, MuonRecordExpr *expr) {
 }
 
 __attribute__((nonnull))
-static LLVMValueRef sequence_expr_emit(author_t *author, MuonSequenceExpr *expr) {
+static LLVMValueRef sequence_expr_emit(
+    author_t *author, MuonSequenceExpr *expr) {
   return SKIP;
 }
 
@@ -204,13 +204,22 @@ static LLVMValueRef vector_expr_emit(author_t *author, MuonVectorExpr *expr) {
 
   // <name> = "vector.[id].allocation"
   char allocation_name[sizeof("vector." ID ".allocation")];
-  int e = snprintf(allocation_name, sizeof(allocation_name), "vector.%zu.allocation", expr->as_node.id);
+  int e = snprintf(
+      allocation_name,
+      sizeof(allocation_name),
+      "vector.%zu.allocation",
+      expr->as_node.id);
   assert((size_t) e < sizeof(allocation_name));
 
   // %allocation = call ptr @malloc(size_t %size)
-  LLVMValueRef malloc_argv[] = { size };
+  LLVMValueRef malloc_argv[] = {size};
   LLVMValueRef allocation = LLVMBuildCall2(
-      author->tail, author->malloc_type, author->malloc, malloc_argv, 1, allocation_name);
+      author->tail,
+      author->malloc_type,
+      author->malloc,
+      malloc_argv,
+      1,
+      allocation_name);
 
   // %length = size_t <expr->argc>
   LLVMValueRef length = LLVMConstInt(author->size_type, expr->argc, 0);
@@ -221,7 +230,7 @@ static LLVMValueRef vector_expr_emit(author_t *author, MuonVectorExpr *expr) {
     return NULL;
 
   // %result = { size_t, ptr } { size_t %length, ptr %none }
-  LLVMValueRef struct_argv[] = { length, none };
+  LLVMValueRef struct_argv[] = {length, none};
   LLVMValueRef result = LLVMConstStruct(struct_argv, 2, 0);
 
   // <name> = "vector.[id]"
@@ -249,7 +258,7 @@ static LLVMValueRef vector_expr_emit(author_t *author, MuonVectorExpr *expr) {
         author->tail,
         allocation_type,
         allocation,
-        (LLVMValueRef[]) { author->zero_size, index },
+        (LLVMValueRef[]) {author->zero_size, index},
         2,
         name,
         LLVMGEPFlagInBounds | LLVMGEPFlagNUW);
@@ -289,13 +298,16 @@ LLVMValueRef node_emit(author_t *author, MuonNode *node) {
     case IS_CONCRETE_NODE(MuonDefineStmt *define_stmt)
       return define_stmt_emit(author, define_stmt);
 
-    default: return SKIP;
+    default:
+      return SKIP;
   }
 }
 
-LLVMModuleRef script_emit(author_t *author, MuonNode *root, const char *source_name) {
+LLVMModuleRef script_emit(
+    author_t *author, MuonNode *root, const char *source_name) {
   LLVMTypeRef initialize_type = LLVMFunctionType(LLVMVoidType(), NULL, 0, 0);
-  LLVMValueRef lambda = LLVMAddFunction(author->module, "initialize", initialize_type);
+  LLVMValueRef lambda = LLVMAddFunction(
+      author->module, "initialize", initialize_type);
   LLVMBasicBlockRef b = LLVMAppendBasicBlock(lambda, "");
   LLVMBuilderRef tail = LLVMCreateBuilder();
   LLVMPositionBuilderAtEnd(tail, b);
@@ -309,13 +321,15 @@ LLVMModuleRef script_emit(author_t *author, MuonNode *root, const char *source_n
       MuonLambdaExpr *lambda_expr;
 
       if ((lambda_expr = muon_node_cast(next, lambda_expr)) != NULL) {
-        MuonType *lambda_type = node_type(author->inductor, &lambda_expr->as_node);
+        MuonType *lambda_type = node_type(
+            author->inductor, &lambda_expr->as_node);
         LLVMTypeRef lambda_ty;
         if ((lambda_ty = get_type(author, lambda_type)) == NULL)
           return NULL;
 
         char name[sizeof("lambda." ID)];
-        int e = snprintf(name, sizeof(name), "lambda.%zu", lambda_expr->as_node.id);
+        int e = snprintf(
+            name, sizeof(name), "lambda.%zu", lambda_expr->as_node.id);
         assert((size_t) e < sizeof(name));
         LLVMValueRef lambda = LLVMAddFunction(author->module, name, lambda_ty);
 
@@ -350,7 +364,7 @@ LLVMModuleRef script_emit(author_t *author, MuonNode *root, const char *source_n
 
       LLVMValueRef source = result;
 
-      info_t info = { .source_type = source_muon_type, .source = source };
+      info_t info = {.source_type = source_muon_type, .source = source};
       if ((result = coercion_emit(author, coercion, info)) == NULL)
         return NULL;
       author->node_to_value[node->id] = result;

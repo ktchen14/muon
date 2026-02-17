@@ -8,5 +8,5 @@ for f in \
   source/engine/*.[ch] \
   source/author/*.[ch] \
   ; do
-  diff --color -u "$f" <("$MUON_FORMAT" "$f")
+  diff --color -u "$f" <("$MUON_FORMAT" -i "$f")
 done

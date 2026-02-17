@@ -695,7 +695,8 @@ void muon_node_debug(MuonNode *node) {  // NOLINT(misc-no-recursion)
       debug("(name = " PRIsNAME ")", DEBUG_NAME(variable_view->name));
       break;
 
-    default: break;
+    default:
+      break;
   }
 
   debug(" #%zu", node->id);

@@ -3,12 +3,12 @@
 #include "../common.h"
 #include "../inductor.h"
 
-#include <llvm-c/Types.h>
+#include <llvm-c/Analysis.h>
+#include <llvm-c/BitWriter.h>
 #include <llvm-c/Core.h>
 #include <llvm-c/ExecutionEngine.h>
 #include <llvm-c/Target.h>
-#include <llvm-c/Analysis.h>
-#include <llvm-c/BitWriter.h>
+#include <llvm-c/Types.h>
 
 #include <assert.h>
 #include <stdio.h>
@@ -40,7 +40,7 @@ __attribute__((nonnull)) static LLVMValueRef indirect_coercion_emit(
   if ((middle = coercion_emit(author, coercion->head, info)) == NULL)
     return NULL;
 
-  info = (info_t) { .source_type = middle_type, .source = middle };
+  info = (info_t) {.source_type = middle_type, .source = middle};
   return coercion_emit(author, coercion->tail, info);
 }
 
@@ -93,7 +93,8 @@ __attribute__((nonnull)) static LLVMValueRef join_coercion_emit(
     return NULL;
 
   // %result = insertvalue <info.target_type> %result, %discriminant, 0
-  if ((result = LLVMBuildInsertValue(tail, result, discriminant, 0, "")) == NULL)
+  if ((result = LLVMBuildInsertValue(tail, result, discriminant, 0, "")) ==
+      NULL)
     return NULL;
 
   LLVMTypeRef data_type = LLVMStructGetTypeAtIndex(target_type, 1);
@@ -133,13 +134,15 @@ __attribute__((nonnull)) static LLVMValueRef unjoin_coercion_emit(
   LLVMTypeRef data_type = LLVMStructGetTypeAtIndex(llvm_source_type, 1);
 
   // %discriminant = i64 <info.source>
-  LLVMValueRef discriminant = LLVMBuildExtractValue(author->tail, info.source, 0, "");
+  LLVMValueRef discriminant = LLVMBuildExtractValue(
+      author->tail, info.source, 0, "");
 
   // %allocation = alloca <data_type>
   LLVMValueRef allocation = LLVMBuildAlloca(author->tail, data_type, "");
 
   // %source_data = extractvalue { i64, <data_type> } <info.source>, 1
-  LLVMValueRef source_data = LLVMBuildExtractValue(author->tail, info.source, 1, "");
+  LLVMValueRef source_data = LLVMBuildExtractValue(
+      author->tail, info.source, 1, "");
 
   // store <data_type> %source_data, %allocation
   LLVMBuildStore(author->tail, source_data, allocation);
@@ -189,11 +192,13 @@ __attribute__((nonnull)) static LLVMValueRef unjoin_coercion_emit(
       return NULL;
 
     // %data = load <branch_type>, %allocation
-    LLVMValueRef data = LLVMBuildLoad2(author->tail, branch_type, allocation, "");
+    LLVMValueRef data = LLVMBuildLoad2(
+        author->tail, branch_type, allocation, "");
 
-    info_t info = { .source_type = source_type->argv[i], .source = data };
+    info_t info = {.source_type = source_type->argv[i], .source = data};
     LLVMValueRef branch_result;
-    if ((branch_result = coercion_emit(author, coercion->argv[i], info)) == NULL)
+    if ((branch_result = coercion_emit(author, coercion->argv[i], info)) ==
+        NULL)
       return NULL;
 
     // br %next
@@ -216,7 +221,8 @@ __attribute__((nonnull)) static LLVMValueRef unmeet_coercion_emit(
   abort();
 }
 
-LLVMValueRef coercion_emit(author_t *author, MuonCoercion *coercion, info_t info) {
+LLVMValueRef coercion_emit(
+    author_t *author, MuonCoercion *coercion, info_t info) {
   switch (coercion->kind) {
 #define MU_EMIT(lower, upper, title) case MU_##upper##_COERCION: \
       return lower##_coercion_emit( \
@@ -224,6 +230,7 @@ LLVMValueRef coercion_emit(author_t *author, MuonCoercion *coercion, info_t info
     MU_EACH_COERCION_KIND(MU_EMIT);
 #undef MU_EMIT
 
-    default: return SKIP;
+    default:
+      return SKIP;
   }
 }
