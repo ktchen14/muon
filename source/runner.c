@@ -36,8 +36,8 @@ void mu_run(LLVMModuleRef module) {
 
   // Create the generator to find symbols in the current process
   LLVMOrcDefinitionGeneratorRef generator;
-  e = LLVMOrcCreateDynamicLibrarySearchGeneratorForProcess(&generator,
-      LLVMOrcLLJITGetGlobalPrefix(jit), 0, NULL);
+  e = LLVMOrcCreateDynamicLibrarySearchGeneratorForProcess(
+      &generator, LLVMOrcLLJITGetGlobalPrefix(jit), 0, NULL);
   llvm_cant_fail(e);
   LLVMOrcJITDylibAddGenerator(dylib, generator);
 
@@ -68,7 +68,8 @@ void mu_run(LLVMModuleRef module) {
   // LLVMLinkInMCJIT();
   // LLVMExecutionEngineRef exec_engine;
   // error = NULL;
-  // if (LLVMCreateExecutionEngineForModule(&exec_engine, module, &error) != 0) {
+  // if (LLVMCreateExecutionEngineForModule(&exec_engine, module, &error) != 0)
+  // {
   //   fprintf(stderr, "failed to create execution engine\n");
   //   abort();
   // }
@@ -82,5 +83,4 @@ void mu_run(LLVMModuleRef module) {
   // LLVMValueRef module_initialize;
   // LLVMFindFunction(exec_engine, "initialize", &module_initialize);
   // LLVMRunFunction(exec_engine, module_initialize, 0, NULL);
-
 }

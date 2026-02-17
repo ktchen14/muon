@@ -35,5 +35,3 @@ Macros:
 - "IS_CONCRETE_NODE(x)=({ x = NULL; }):"
 - "IS_CONCRETE_TYPE(x)=({ x = NULL; }):"
 - "IS_COERCION(x)=({ x = NULL; }):"
-
-# AllowShortBlocksOnASingleLine: Always
