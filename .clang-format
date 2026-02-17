@@ -2,14 +2,18 @@ BasedOnStyle: LLVM
 Language: C
 
 AlignAfterOpenBracket: AlwaysBreak
-AllowShortBlocksOnASingleLine: Always
+AllowShortCaseLabelsOnASingleLine: true
 BinPackParameters: OnePerLine
-BreakAfterAttributes: Always
+BracedInitializerIndentWidth: 2
+Cpp11BracedListStyle: false
+# BreakAfterAttributes: Always
+IndentCaseLabels: true
 IndentPPDirectives: BeforeHash
 PenaltyReturnTypeOnItsOwnLine: 1000
 SkipMacroDefinitionBody: true
 SpaceAfterCStyleCast: true
 SpacesBeforeTrailingComments: 2
+
 Macros:
 - MUON_CONST=[[gnu::const]]
 - MUON_FORMAT(...)=[[gnu::format(__VA_ARGS__)]]
@@ -18,3 +22,7 @@ Macros:
 - MUON_NONNULL_ARGS(...)=[[gnu::nonnull(__VA_ARGS__)]]
 - MUON_PURE=[[gnu::pure]]
 - MUON_RETURNS_NONNULL=[[gnu::returns_nonnull]]
+- ON_ABSTRACT_OBJECT(x)=(x)
+- "IS_CONCRETE_NODE(x)=({ x = NULL; }):"
+
+# AllowShortBlocksOnASingleLine: Always

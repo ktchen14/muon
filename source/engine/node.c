@@ -31,7 +31,7 @@ static inline void *node_allocate(MuonEngine *engine, size_t size) {
   NodeHeader *header;
   if ((header = engine_allocate(engine, size)) == NULL)
     return NULL;
-  *header = (NodeHeader) {0};
+  *header = (NodeHeader) {};
 
   return header->data;
 }
@@ -137,8 +137,7 @@ MuonNameExpr *muon_name_expr(MuonEngine *engine, MuonName *name) {
   return assign_node(engine, &result->as_node), result;
 }
 
-MuonNativeExpr *muon_native_expr(
-    MuonEngine *engine, MuonName *name) {
+MuonNativeExpr *muon_native_expr(MuonEngine *engine, MuonName *name) {
   assert(name->engine == engine);
 
   struct MuonNativeExpr *result;
