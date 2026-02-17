@@ -34,8 +34,7 @@
  * @param length intended length of the struct's flexible array member
  * @return the size of the struct, or zero if it will overflow a @c size_t
  */
-__attribute__((const))
-static inline size_t struct_size(
+MUON_HINT(const) static inline size_t struct_size(
     size_t nought, size_t offset, size_t size, size_t length) {
   size_t result;
   if (rare(__builtin_mul_overflow(length, size, &result)))
@@ -79,8 +78,7 @@ static inline size_t struct_size(
  * @param length length of the struct's flexible array member
  * @return the size of the struct
  */
-__attribute__((const))
-static inline size_t extant_size(
+MUON_HINT(const) static inline size_t extant_size(
     size_t nought, size_t offset, size_t size, size_t length) {
   return maximum(offset + size * length, nought);
 }
@@ -93,7 +91,7 @@ static inline size_t extant_size(
 
 // TODO: better documentation
 
-__attribute__((unused)) static _Thread_local const void *_object;
+MUON_HINT(unused) static _Thread_local const void *_object;
 
 /**
  * @brief Used to switch on the kind of the abstract @a object
@@ -145,7 +143,7 @@ extern _Thread_local _Bool debug_scan;
   for (_Bool _n = (debug_negate = !debug_negate); debug_negate == _n; debug_negate = !debug_negate)
 
 /// Emit debugging information to the debug stream
-__attribute__((format(printf, 1, 2), nonnull(1)))
+MUON_HINT(format(printf, 1, 2), nonnull(1))
 static inline void debug(const char *restrict format, ...) {
   FILE *stream = muon_debug_stream != NULL ? muon_debug_stream : stderr;
 

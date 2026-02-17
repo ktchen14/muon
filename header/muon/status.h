@@ -52,19 +52,19 @@ typedef struct {
 typedef struct mu_status_t mu_status_t;
 
 const mu_memo_t *mu_memo(mu_status_t *status, const char *restrict format, ...)
-  MUON_FORMAT(printf, 2, 3) MUON_NONNULL;
+  MUON_HINT_SUFFIX(format(printf, 2, 3), nonnull);
 
-MUON_CONST MUON_NONNULL MUON_RETURNS_NONNULL
+MUON_HINT(const, nonnull, returns_nonnull)
 static inline const char *mu_memo_name(const mu_memo_t *memo) {
   return memo->data;
 }
 
-MUON_NONNULL MUON_PURE MUON_RETURNS_NONNULL
+MUON_HINT(nonnull, pure, returns_nonnull)
 static inline const char *mu_memo_text(const mu_memo_t *memo) {
   return &memo->data[memo->name_length + 1];
 }
 
 size_t mu_status_length(const mu_status_t *status)
-  MUON_NONNULL MUON_PURE;
+  MUON_HINT_SUFFIX(nonnull, pure);
 
 #endif /* MU_STATUS_H */

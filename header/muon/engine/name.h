@@ -28,8 +28,9 @@ typedef const struct MuonName {
  */
 MuonName *muon_name(
     MuonEngine *engine, size_t length, const char text[restrict static length])
-  MUON_NONNULL;
+  MUON_HINT_SUFFIX(nonnull);
 
-void muon_name_debug(MuonName *name) MUON_NONNULL;
+void muon_name_debug(MuonName *name)
+  MUON_HINT_SUFFIX(nonnull);
 
 #endif /* MUON_ENGINE_NAME_H */

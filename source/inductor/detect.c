@@ -42,7 +42,7 @@ detect_t *detect_initialize(
   return detect;
 }
 
-__attribute__((malloc))
+MUON_HINT(malloc)
 static roster_t *roster_create(
     roster_t *roster, size_t volume, MuonNode *origin) {
   size_t size;
@@ -56,7 +56,7 @@ static roster_t *roster_create(
   return result;
 }
 
-__attribute__((nonnull))
+MUON_HINT(nonnull)
 static MuonNode *roster_search(roster_t *roster, MuonName *name) {
   do {
     for (size_t i = 0; i < roster->length; i++) {
@@ -68,14 +68,14 @@ static MuonNode *roster_search(roster_t *roster, MuonName *name) {
   return NULL;
 }
 
-__attribute__((nonnull))
+MUON_HINT(nonnull)
 static inline void announce(roster_t *roster, MuonName *name, MuonNode *node) {
   assert(roster->length < roster->volume);
   item_t item = {.name = name, .node = node};
   roster->data[roster->length++] = item;
 }
 
-__attribute__((nonnull))
+MUON_HINT(nonnull)
 static void view_announce(roster_t *roster, MuonView *root) {
   MuonNode *node = &root->as_node, *next;
   do {
@@ -93,7 +93,7 @@ static void view_announce(roster_t *roster, MuonView *root) {
   } while ((node = node_return(node)) != NULL);
 }
 
-__attribute__((nonnull(2)))
+MUON_HINT(nonnull(2))
 roster_t *handle_script(roster_t *roster, MuonScript *script) {
   size_t announce_length = 0;
   for (size_t i = 0; i < script->argc; i++) {
@@ -129,7 +129,7 @@ roster_t *handle_script(roster_t *roster, MuonScript *script) {
   return roster;
 }
 
-__attribute__((nonnull(2)))
+MUON_HINT(nonnull(2))
 roster_t *handle_sequence_expr(
     roster_t *roster, MuonSequenceExpr *sequence_expr) {
   size_t announce_length = 0;

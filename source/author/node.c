@@ -32,7 +32,7 @@ static LLVMValueRef evince_result(const author_t *author, MuonNode *node) {
   return result;
 }
 
-__attribute__((nonnull)) static LLVMValueRef access_expr_emit(
+MUON_HINT(nonnull) static LLVMValueRef access_expr_emit(
     author_t *author, MuonAccessExpr *expr) {
   MuonType *lambda_type = node_type(author->inductor, &expr->as_node);
   LLVMTypeRef lambda_ty;
@@ -59,22 +59,22 @@ __attribute__((nonnull)) static LLVMValueRef access_expr_emit(
   return lambda;
 }
 
-__attribute__((nonnull)) static LLVMValueRef boolean_expr_emit(
+MUON_HINT(nonnull) static LLVMValueRef boolean_expr_emit(
     author_t *author, MuonBooleanExpr *expr) {
   return LLVMConstInt(author->bool_type, expr->data, 0);
 }
 
-__attribute__((nonnull)) static LLVMValueRef cast_expr_emit(
+MUON_HINT(nonnull) static LLVMValueRef cast_expr_emit(
     author_t *author, MuonCastExpr *expr) {
   return evince_result(author, &expr->matter->as_node);
 }
 
-__attribute__((nonnull)) static LLVMValueRef integer_expr_emit(
+MUON_HINT(nonnull) static LLVMValueRef integer_expr_emit(
     author_t *author, MuonIntegerExpr *expr) {
   return LLVMConstInt(LLVMInt64Type(), expr->data, 0);
 }
 
-__attribute__((nonnull)) static LLVMValueRef invoke_expr_emit(
+MUON_HINT(nonnull) static LLVMValueRef invoke_expr_emit(
     author_t *author, MuonInvokeExpr *expr) {
   MuonNode *operator_node = &expr->operator->as_node;
 
@@ -112,7 +112,7 @@ __attribute__((nonnull)) static LLVMValueRef invoke_expr_emit(
       author->tail, operator_type, operator, argv, argc, name);
 }
 
-__attribute__((nonnull))
+MUON_HINT(nonnull)
 static LLVMValueRef lambda_expr_emit(author_t *author, MuonLambdaExpr *expr) {
   LLVMValueRef matter = evince_result(author, &expr->matter->as_node);
   LLVMBuildRet(author->tail, matter);
@@ -120,7 +120,7 @@ static LLVMValueRef lambda_expr_emit(author_t *author, MuonLambdaExpr *expr) {
   return author_return(author);
 }
 
-__attribute__((nonnull))
+MUON_HINT(nonnull)
 static LLVMValueRef name_expr_emit(author_t *author, MuonNameExpr *expr) {
   MuonNode *target = detect_evince(author->detect, &expr->as_node);
   assert(target != NULL);
@@ -138,13 +138,13 @@ static LLVMValueRef name_expr_emit(author_t *author, MuonNameExpr *expr) {
   return LLVMBuildLoad2(author->tail, data_type, variable, name);
 }
 
-__attribute__((nonnull))
+MUON_HINT(nonnull)
 static LLVMValueRef native_expr_emit(author_t *author, MuonNativeExpr *expr) {
   assert(author->native_expr_emit != NULL);
   return author->native_expr_emit(author, expr);
 }
 
-__attribute__((nonnull))
+MUON_HINT(nonnull)
 static LLVMValueRef record_expr_emit(author_t *author, MuonRecordExpr *expr) {
   MuonType *type = node_type(author->inductor, &expr->as_node);
   LLVMTypeRef ty;
@@ -166,18 +166,18 @@ static LLVMValueRef record_expr_emit(author_t *author, MuonRecordExpr *expr) {
   return result;
 }
 
-__attribute__((nonnull))
+MUON_HINT(nonnull)
 static LLVMValueRef sequence_expr_emit(
     author_t *author, MuonSequenceExpr *expr) {
   return SKIP;
 }
 
-__attribute__((nonnull))
+MUON_HINT(nonnull)
 static LLVMValueRef switch_expr_emit(author_t *author, MuonSwitchExpr *expr) {
   return SKIP;
 }
 
-__attribute__((nonnull))
+MUON_HINT(nonnull)
 static LLVMValueRef vector_expr_emit(author_t *author, MuonVectorExpr *expr) {
   MuonType *type = node_type(author->inductor, &expr->as_node);
   MuonCoreType *vector_type = mu_type_cast(type, vector_type);
@@ -270,7 +270,7 @@ static LLVMValueRef vector_expr_emit(author_t *author, MuonVectorExpr *expr) {
   return result;
 }
 
-__attribute__((nonnull))
+MUON_HINT(nonnull)
 static LLVMValueRef define_stmt_emit(author_t *author, MuonDefineStmt *stmt) {
   LLVMValueRef expr_result = evince_result(author, &stmt->expr->as_node);
   LLVMTypeRef expr_type = LLVMTypeOf(expr_result);

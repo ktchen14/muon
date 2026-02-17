@@ -21,7 +21,7 @@ static inline mu_inductor_t *unlock_inductor(MuonCoercion *coercion) {
 }
 
 /// @internal Assign the abstract @a coercion to the @a inductor
-__attribute__((nonnull, returns_nonnull))
+MUON_HINT(nonnull, returns_nonnull)
 static inline MuonCoercion *assign_coercion(
     mu_inductor_t *inductor, struct MuonCoercion *coercion) {
   coercion->inductor = inductor;

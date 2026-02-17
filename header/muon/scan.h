@@ -5,6 +5,6 @@
 #include "status.h"
 
 MuonScript *muon_scan(MuonEngine *engine, mu_status_t *status, const char *text)
-  MUON_NONNULL;
+  MUON_HINT_SUFFIX(nonnull);
 
 #endif /* MUON_SCAN_H */

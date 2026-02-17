@@ -10,7 +10,7 @@
 
 typedef struct {
   union {
-    __attribute__((packed)) struct {
+    MUON_HINT(packed) struct {
       MuonType *source;
       MuonType *target;
     };
@@ -38,18 +38,18 @@ typedef struct {
 
 /// Initialize the @a universe
 universe_t *universe_initialize(universe_t *universe)
-  __attribute__((nonnull));
+  MUON_HINT_SUFFIX(nonnull);
 
 type_edge_t *universe_search(
     const universe_t *universe, MuonType *source, MuonType *target)
-  __attribute__((nonnull));
+  MUON_HINT_SUFFIX(nonnull);
 
 type_edge_t *append_edge(
     universe_t *universe, MuonType *source, MuonType *target);
 type_edge_t *edge_define(
     universe_t *universe, MuonType *source, MuonType *target);
 
-__attribute__((nonnull))
+MUON_HINT(nonnull)
 static inline universe_iterator_t universe_iterator(
     const universe_t *universe, MuonType *target, _Bool invert) {
   return (universe_iterator_t) {
@@ -57,7 +57,7 @@ static inline universe_iterator_t universe_iterator(
   };
 }
 
-__attribute__((nonnull))
+MUON_HINT(nonnull)
 static inline type_edge_t *universe_next(universe_iterator_t *iterator) {
   const universe_t *universe = iterator->universe;
 
@@ -72,7 +72,7 @@ static inline type_edge_t *universe_next(universe_iterator_t *iterator) {
   return NULL;
 }
 
-__attribute__((nonnull))
+MUON_HINT(nonnull)
 static inline MuonCoercion *coerce_with(
     mu_inductor_t *inductor, type_edge_t *edge) {
   // If the edge has a coercion, return it
@@ -86,7 +86,7 @@ static inline MuonCoercion *coerce_with(
   return edge->coercion = &result->as_coercion;
 }
 
-__attribute__((nonnull, pure))
+MUON_HINT(nonnull, pure)
 static inline MuonCoercion *course_coercion(const type_edge_t *edge) {
   MuonCoercion *result;
   if ((result = edge->coercion) == NULL || result->kind == MU_EDGE_COERCION)
@@ -94,7 +94,7 @@ static inline MuonCoercion *course_coercion(const type_edge_t *edge) {
   return result;
 }
 
-__attribute__((nonnull))
+MUON_HINT(nonnull)
 static inline MuonCoercion *edge_assign(
     type_edge_t *edge, MuonCoercion *coercion) {
   assert(coercion->kind != MU_EDGE_COERCION);

@@ -17,7 +17,7 @@
 _Thread_local induce_t *debug_induce;
 
 static MuonType *instantiate_scheme(induce_t *induce, MuonSchemeType *scheme)
-  __attribute__((nonnull));
+  MUON_HINT_SUFFIX(nonnull);
 
 static MuonCoercion *retrieve_core_coercion(
     induce_t *induce, MuonCoreType *source, MuonCoreType *target);

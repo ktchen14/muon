@@ -12,7 +12,6 @@ if [[ $# -ne 1 ]]; then
   exit 1
 fi
 
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 FILE="$1"
 TEMP=$(mktemp)
 trap 'rm -f "$TEMP" "$TEMP.out"' EXIT
@@ -24,13 +23,8 @@ sed -E 's/__attribute__\(\((.*)\)\)/[[muon::sentinel(\1)]]/g' "$FILE" > "$TEMP"
 sed -E '/\)$/ { N; s/\n([[:space:]]*)\[\[muon::sentinel/\n\1\/**\/ [[muon::sentinel/; P; D; }' "$TEMP" > "$TEMP.out"
 mv "$TEMP.out" "$TEMP"
 
-# Step 1c: Prepend /**/ to attribute macros at start of line when previous line ends with )
-MUON_ATTR='MUON_CONST|MUON_COUNTED_BY|MUON_FORMAT|MUON_MALLOC|MUON_NONNULL_ARGS|MUON_NONNULL|MUON_PURE|MUON_RETURNS_NONNULL'
-sed -E "/\)$/ { N; s/\n([[:space:]]*)(${MUON_ATTR})/\n\1\/**\/ \2/; P; D; }" "$TEMP" > "$TEMP.out"
-mv "$TEMP.out" "$TEMP"
-
 # Step 2: Run clang-format
-CLANG_FORMAT="docker run --rm -i -v $ROOT:/work muon-clang-format"
+CLANG_FORMAT=clang-format
 # Use .c extension for --assume-filename so clang-format detects C, not ObjC
 $CLANG_FORMAT --style=file --assume-filename="${FILE%.h}.c" < "$TEMP" > "$TEMP.out"
 mv "$TEMP.out" "$TEMP"

@@ -12,7 +12,7 @@
 #include <string.h>
 
 /// @internal Allocate a type of size @a size in the @a inductor
-__attribute__((malloc, nonnull))
+MUON_HINT(malloc, nonnull)
 static inline void *type_allocate(mu_inductor_t *inductor, size_t size) {
   if (rare((size = struct_size(TypeHeader, data, size)) == 0))
     return errno = ENOMEM, NULL;
@@ -26,7 +26,7 @@ static inline void *type_allocate(mu_inductor_t *inductor, size_t size) {
 }
 
 /// @internal Assign the abstract @a type to the @a inductor
-__attribute__((nonnull, returns_nonnull))
+MUON_HINT(nonnull, returns_nonnull)
 static inline MuonType *assign_type(
     mu_inductor_t *inductor, struct MuonType *type) {
   type->induce = inductor;

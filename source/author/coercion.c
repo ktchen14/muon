@@ -14,22 +14,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-__attribute__((nonnull)) static LLVMValueRef id_coercion_emit(
+MUON_HINT(nonnull) static LLVMValueRef id_coercion_emit(
     author_t *author, MuonIdCoercion *coercion, info_t info) {
   return info.source;
 }
 
-__attribute__((nonnull)) static LLVMValueRef edge_coercion_emit(
+MUON_HINT(nonnull) static LLVMValueRef edge_coercion_emit(
     author_t *author, MuonEdgeCoercion *coercion, info_t info) {
   abort();
 }
 
-__attribute__((nonnull)) static LLVMValueRef slot_coercion_emit(
+MUON_HINT(nonnull) static LLVMValueRef slot_coercion_emit(
     author_t *author, MuonSlotCoercion *coercion, info_t info) {
   abort();
 }
 
-__attribute__((nonnull)) static LLVMValueRef indirect_coercion_emit(
+MUON_HINT(nonnull) static LLVMValueRef indirect_coercion_emit(
     author_t *author, MuonIndirectCoercion *coercion, info_t info) {
   MuonType *middle_type = coercion->head->target;
   LLVMTypeRef middle_llvm_type;
@@ -44,7 +44,7 @@ __attribute__((nonnull)) static LLVMValueRef indirect_coercion_emit(
   return coercion_emit(author, coercion->tail, info);
 }
 
-__attribute__((nonnull)) static LLVMValueRef variance_coercion_emit(
+MUON_HINT(nonnull) static LLVMValueRef variance_coercion_emit(
     author_t *author, MuonVarianceCoercion *coercion, info_t info) {
   switch ON_ABSTRACT_OBJECT(coercion->core) {
     case MU_BOOLEAN_CORE:
@@ -64,17 +64,17 @@ __attribute__((nonnull)) static LLVMValueRef variance_coercion_emit(
   }
 }
 
-__attribute__((nonnull)) static LLVMValueRef instance_coercion_emit(
+MUON_HINT(nonnull) static LLVMValueRef instance_coercion_emit(
     author_t *author, MuonInstanceCoercion *coercion, info_t info) {
   abort();
 }
 
-__attribute__((nonnull)) static LLVMValueRef unscheme_coercion_emit(
+MUON_HINT(nonnull) static LLVMValueRef unscheme_coercion_emit(
     author_t *author, MuonUnschemeCoercion *coercion, info_t info) {
   abort();
 }
 
-__attribute__((nonnull)) static LLVMValueRef join_coercion_emit(
+MUON_HINT(nonnull) static LLVMValueRef join_coercion_emit(
     author_t *author, MuonJoinCoercion *coercion, info_t info) {
   LLVMBuilderRef tail = author->tail;
 
@@ -120,7 +120,7 @@ __attribute__((nonnull)) static LLVMValueRef join_coercion_emit(
   return result;
 }
 
-__attribute__((nonnull)) static LLVMValueRef unjoin_coercion_emit(
+MUON_HINT(nonnull) static LLVMValueRef unjoin_coercion_emit(
     author_t *author, MuonUnjoinCoercion *coercion, info_t info) {
   // Ensure that the source type is a join type
   MuonJoinType *source_type = mu_type_cast(info.source_type, source_type);
@@ -211,12 +211,12 @@ __attribute__((nonnull)) static LLVMValueRef unjoin_coercion_emit(
   return result;
 }
 
-__attribute__((nonnull)) static LLVMValueRef meet_coercion_emit(
+MUON_HINT(nonnull) static LLVMValueRef meet_coercion_emit(
     author_t *author, MuonMeetCoercion *coercion, info_t info) {
   abort();
 }
 
-__attribute__((nonnull)) static LLVMValueRef unmeet_coercion_emit(
+MUON_HINT(nonnull) static LLVMValueRef unmeet_coercion_emit(
     author_t *author, MuonUnmeetCoercion *coercion, info_t info) {
   abort();
 }

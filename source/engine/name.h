@@ -9,7 +9,7 @@
 #include <string.h>
 
 /// Compare name @a a to name @a b
-__attribute__((nonnull, pure))
+MUON_HINT(nonnull, pure)
 static inline int name_cmp(MuonName *a, MuonName *b) {
   int result;
   if ((result = memcmp(a->text, b->text, minimum(a->length, b->length))) != 0)

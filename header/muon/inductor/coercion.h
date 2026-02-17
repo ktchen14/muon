@@ -101,54 +101,54 @@ typedef const struct MuonUnschemeCoercion {
 extern const void *const MU_NO_SUCH_COERCION;
 
 MuonIdCoercion *mu_id_coercion(mu_inductor_t *inductor, MuonType *target)
-  MUON_MALLOC MUON_NONNULL;
+  MUON_HINT_SUFFIX(malloc, nonnull);
 
 MuonSlotCoercion *mu_slot_coercion(mu_inductor_t *inductor, MuonType *target)
-  MUON_MALLOC MUON_NONNULL;
+  MUON_HINT_SUFFIX(malloc, nonnull);
 
 MuonIndirectCoercion *mu_indirect_coercion(
     mu_inductor_t *inductor, MuonCoercion *head, MuonCoercion *tail)
-  MUON_MALLOC MUON_NONNULL;
+  MUON_HINT_SUFFIX(malloc, nonnull);
 
 MuonInstanceCoercion *mu_instance_coercion(
     mu_inductor_t *inductor, MuonType *target, const mu_instance_t *instance)
-  MUON_MALLOC MUON_NONNULL;
+  MUON_HINT_SUFFIX(malloc, nonnull);
 
 MuonVarianceCoercion *mu_variance_coercion(
     mu_inductor_t *inductor,
     MuonType *target,
     const mu_core_t *core,
     MuonCoercion *argv[/* target->core->argc */])
-  MUON_MALLOC MUON_NONNULL_ARGS(1);
+  MUON_HINT_SUFFIX(malloc, nonnull(1));
 
 MuonJoinCoercion *mu_join_coercion(
     mu_inductor_t *inductor, MuonType *target, size_t i)
-  MUON_MALLOC;
+  MUON_HINT_SUFFIX(malloc);
 
 MuonUnjoinCoercion *mu_unjoin_coercion(
     mu_inductor_t *inductor,
     MuonType *target,
     size_t argc,
     MuonCoercion *argv[/* argc */])
-  MUON_MALLOC;
+  MUON_HINT_SUFFIX(malloc);
 
 MuonMeetCoercion *mu_meet_coercion(
     mu_inductor_t *inductor,
     MuonType *target,
     size_t argc,
     MuonCoercion *argv[/* argc */])
-  MUON_MALLOC;
+  MUON_HINT_SUFFIX(malloc);
 
 MuonUnmeetCoercion *mu_unmeet_coercion(
     mu_inductor_t *inductor, MuonType *target, size_t i)
-  MUON_MALLOC;
+  MUON_HINT_SUFFIX(malloc);
 
 MuonUnschemeCoercion *mu_unscheme_coercion(
     mu_inductor_t *inductor, MuonType *target)
-  MUON_MALLOC;
+  MUON_HINT_SUFFIX(malloc);
 
 void mu_coercion_debug(MuonCoercion *coercion)
-  MUON_NONNULL;
+  MUON_HINT_SUFFIX(nonnull);
 
 /// @internal Used to emit each branch in MU_COERCION_ENUMERATOR()
 #define MU_COERCION_ENUMERATOR_EMIT(l, upper, title) \

@@ -46,7 +46,7 @@ static inline MuonNode *assign_node(MuonEngine *engine, struct MuonNode *node) {
   return node;
 }
 
-/* __attribute__((malloc, nonnull)) */
+/* MUON_HINT(malloc, nonnull) */
 /* static inline MuonNode *node_create( */
 /*     mu_engine_t *engine, size_t size, void *data) { */
 /*   MuonNode *result; */

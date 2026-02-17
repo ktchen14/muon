@@ -7,6 +7,6 @@
 #include <llvm-c/Types.h>
 
 LLVMValueRef standard_native_expr_emit(author_t *author, MuonNativeExpr *expr)
-  __attribute__((nonnull));
+  MUON_HINT_SUFFIX(nonnull);
 
 #endif /* MU_STANDARD_I */

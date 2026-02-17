@@ -3,7 +3,6 @@ Language: C
 
 AlignAfterOpenBracket: DontAlign
 AlignOperands: DontAlign
-# AllowShortCaseLabelsOnASingleLine: true
 AllowShortFunctionsOnASingleLine: Empty
 BinPackArguments: false
 BinPackLongBracedList: true
@@ -17,6 +16,7 @@ BreakBeforeCloseBracketBracedList: true
 Cpp11BracedListStyle: true
 IndentCaseLabels: true
 IndentPPDirectives: BeforeHash
+OneLineFormatOffRegex: '^MUON_HINT_SUFFIX$'
 PenaltyBreakAssignment: 80
 PenaltyReturnTypeOnItsOwnLine: 1000
 SkipMacroDefinitionBody: true
@@ -24,13 +24,7 @@ SpaceAfterCStyleCast: true
 SpacesBeforeTrailingComments: 2
 
 Macros:
-- MUON_CONST=[[gnu::const]]
-- MUON_FORMAT(...)=[[gnu::format(__VA_ARGS__)]]
-- MUON_MALLOC=[[gnu::malloc]]
-- MUON_NONNULL=[[gnu::nonnull]]
-- MUON_NONNULL_ARGS(...)=[[gnu::nonnull(__VA_ARGS__)]]
-- MUON_PURE=[[gnu::pure]]
-- MUON_RETURNS_NONNULL=[[gnu::returns_nonnull]]
+- "MUON_HINT(x)=[[muon::hint(x)]]"
 - ON_ABSTRACT_OBJECT(x)=(x)
 - "IS_CONCRETE_NODE(x)=({ x = NULL; }):"
 - "IS_CONCRETE_TYPE(x)=({ x = NULL; }):"

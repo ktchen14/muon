@@ -31,7 +31,7 @@ static_assert(sizeof(MuonEngine) <= sizeof(Engine));
 #ifdef MUON_ENGINE_MODULE
 
 /// @internal Allocate an object of the @a size in the @a engine
-__attribute__((malloc, nonnull))
+MUON_HINT(malloc, nonnull)
 static inline void *engine_allocate(MuonEngine *engine, size_t size) {
   return malloc(size);
 }

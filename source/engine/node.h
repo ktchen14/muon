@@ -26,7 +26,7 @@ typedef struct {
 } NodeHeader;
 
 /// Return the cursor attached to the @a node
-__attribute__((const, nonnull, returns_nonnull))
+MUON_HINT(const, nonnull, returns_nonnull)
 static inline NodeCursor *node_cursor(MuonNode *node) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-align"
@@ -46,7 +46,7 @@ static inline MuonNode *node_continue(MuonNode *node, MuonNode *next) {
 }
 
 /// Return from the node
-__attribute__((nonnull))
+MUON_HINT(nonnull)
 static inline MuonNode *node_return(MuonNode *node) {
   NodeCursor *cursor = node_cursor(node);
   MuonNode *anterior = cursor->anterior;
@@ -86,10 +86,10 @@ static inline MuonNode *node_return(MuonNode *node) {
   _Pragma("GCC diagnostic ignored \"-Wunknown-warning-option\"") \
   _Pragma("GCC diagnostic ignored \"-Wdefault-const-init-var-unsafe\"") \
   MUON_NODE_ENUMERATOR_MINIMUM( \
-    __extension__ ({ __attribute__((unused)) __VA_ARGS__, _; &_; }) \
+    __extension__ ({ MUON_HINT(unused) __VA_ARGS__, _; &_; }) \
   ) ... \
   MUON_NODE_ENUMERATOR_MAXIMUM( \
-    __extension__ ({ __attribute__((unused)) __VA_ARGS__, _; &_; }) \
+    __extension__ ({ MUON_HINT(unused) __VA_ARGS__, _; &_; }) \
   ) \
   _Pragma("GCC diagnostic pop"): __VA_ARGS__ = _object;
 
@@ -203,40 +203,40 @@ static inline size_t node_announce_length(MuonNode *node) {
 }
 
 struct MuonRecordExpr *record_expr_allocate(MuonEngine *engine, size_t argc)
-  __attribute__((malloc, nonnull));
+  MUON_HINT_SUFFIX(malloc, nonnull);
 
 MuonRecordExpr *record_expr_activate(struct MuonRecordExpr *expr)
-  __attribute__((nonnull));
+  MUON_HINT_SUFFIX(nonnull);
 
 struct MuonSwitchExpr *switch_expr_allocate(MuonEngine *engine, size_t argc)
-  __attribute__((malloc, nonnull));
+  MUON_HINT_SUFFIX(malloc, nonnull);
 
 MuonSwitchExpr *switch_expr_activate(struct MuonSwitchExpr *expr)
-  __attribute__((nonnull));
+  MUON_HINT_SUFFIX(nonnull);
 
 struct MuonSequenceExpr *sequence_expr_allocate(MuonEngine *engine, size_t argc)
-  __attribute__((malloc, nonnull));
+  MUON_HINT_SUFFIX(malloc, nonnull);
 
 MuonSequenceExpr *sequence_expr_activate(struct MuonSequenceExpr *expr)
-  __attribute__((nonnull));
+  MUON_HINT_SUFFIX(nonnull);
 
 struct MuonDatatypeStmt *datatype_stmt_allocate(MuonEngine *engine, size_t argc)
-  __attribute__((malloc, nonnull));
+  MUON_HINT_SUFFIX(malloc, nonnull);
 
 MuonDatatypeStmt *datatype_stmt_activate(
     struct MuonDatatypeStmt *stmt, MuonName *name)
-  __attribute__((nonnull));
+  MUON_HINT_SUFFIX(nonnull);
 
 struct MuonRecordView *record_view_allocate(MuonEngine *engine, size_t argc)
-  __attribute__((malloc, nonnull));
+  MUON_HINT_SUFFIX(malloc, nonnull);
 
 MuonRecordView *record_view_activate(struct MuonRecordView *view)
-  __attribute__((nonnull));
+  MUON_HINT_SUFFIX(nonnull);
 
 struct MuonScript *script_allocate(MuonEngine *engine, size_t argc)
-  __attribute__((malloc, nonnull));
+  MUON_HINT_SUFFIX(malloc, nonnull);
 
 MuonScript *script_activate(MuonEngine *engine, struct MuonScript *script)
-  __attribute__((nonnull));
+  MUON_HINT_SUFFIX(nonnull);
 
 #endif /* MUON_ENGINE_NODE_I */

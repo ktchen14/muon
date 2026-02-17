@@ -28,7 +28,7 @@ struct author_t {
   size_t node_length;
 
   LLVMValueRef (*native_expr_emit)(author_t *author, MuonNativeExpr *expr)
-    __attribute__((nonnull));
+    MUON_HINT_SUFFIX(nonnull);
 
   /// LLVM data layout
   LLVMTargetDataRef layout;
@@ -77,7 +77,7 @@ typedef struct {
 
 author_t *author_initialize(
     author_t *author, const detect_result_t *detect, mu_inductor_t *inductor)
-  __attribute__((nonnull));
+  MUON_HINT_SUFFIX(nonnull);
 
 LLVMTypeRef get_type(author_t *author, MuonType *root);
 LLVMModuleRef script_emit(

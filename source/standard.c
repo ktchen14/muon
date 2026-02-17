@@ -17,7 +17,7 @@ uint64_t handle_list(struct { uint64_t length; void *data; } argument) {
   return result;
 }
 
-__attribute__((nonnull))
+MUON_HINT(nonnull)
 static LLVMValueRef handle_list_emit(author_t *author, MuonNativeExpr *expr) {
   LLVMTypeRef integer_type = LLVMInt64Type();
   LLVMTypeRef argv[] = {author->vector_type};

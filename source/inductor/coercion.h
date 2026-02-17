@@ -30,30 +30,30 @@ enum {
 
 MuonEdgeCoercion *mu_edge_coercion(
     mu_inductor_t *inductor, MuonType *target, MuonType *source)
-  __attribute__((malloc, nonnull));
+  MUON_HINT_SUFFIX(malloc, nonnull);
 
 struct MuonVarianceCoercion *variance_coercion_allocate(
     mu_inductor_t *inductor, const mu_core_t *core)
-  __attribute__((malloc));
+  MUON_HINT_SUFFIX(malloc);
 
 MuonVarianceCoercion *variance_coercion_activate(
     struct MuonVarianceCoercion *coercion, MuonType *target)
-  __attribute__((nonnull));
+  MUON_HINT_SUFFIX(nonnull);
 
 struct MuonUnjoinCoercion *unjoin_coercion_allocate(
     mu_inductor_t *inductor, size_t argc)
-  __attribute__((malloc));
+  MUON_HINT_SUFFIX(malloc);
 
 MuonUnjoinCoercion *unjoin_coercion_activate(
     struct MuonUnjoinCoercion *coercion, MuonType *target)
-  __attribute__((nonnull));
+  MUON_HINT_SUFFIX(nonnull);
 
 struct MuonMeetCoercion *meet_coercion_allocate(
     mu_inductor_t *inductor, size_t argc)
-  __attribute__((malloc));
+  MUON_HINT_SUFFIX(malloc);
 
 MuonMeetCoercion *meet_coercion_activate(
     struct MuonMeetCoercion *coercion, MuonType *target)
-  __attribute__((nonnull));
+  MUON_HINT_SUFFIX(nonnull);
 
 #endif /* MU_INDUCTOR_COERCION_I */

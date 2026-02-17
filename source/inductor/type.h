@@ -46,7 +46,7 @@ typedef struct {
 } TypeHeader;
 
 /// Return the header of the @a type
-__attribute__((const, nonnull, returns_nonnull))
+MUON_HINT(const, nonnull, returns_nonnull)
 static inline TypeHeader *type_header(MuonType *type) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-align"
@@ -56,7 +56,7 @@ static inline TypeHeader *type_header(MuonType *type) {
 }
 
 /// Return the cursor attached to the @a type
-__attribute__((const, nonnull, returns_nonnull))
+MUON_HINT(const, nonnull, returns_nonnull)
 static inline TypeCursor *type_cursor(MuonType *type, _Bool charge) {
   return &type_header(type)->cursor[charge];
 }
@@ -75,7 +75,7 @@ static inline MuonType *type_continue(
 }
 
 /// Return from the type
-__attribute__((nonnull))
+MUON_HINT(nonnull)
 static inline MuonType *type_return(MuonType *type) {
   TypeCursor *cursor = type_cursor(type, charge);
   charge = cursor->charge;
@@ -128,28 +128,28 @@ static inline MuonType *type_next(MuonType *type, _Bool *next_charge) {
 }
 
 struct MuonCoreType *core_type_allocate(induce_t *induce, const mu_core_t *core)
-  __attribute__((malloc, nonnull));
+  MUON_HINT_SUFFIX(malloc, nonnull);
 
 MuonCoreType *core_type_activate(struct MuonCoreType *type)
-  __attribute__((nonnull, warn_unused_result));
+  MUON_HINT_SUFFIX(nonnull, warn_unused_result);
 
 struct MuonSchemeType *scheme_type_allocate(induce_t *induce, size_t argc)
-  __attribute__((malloc, nonnull));
+  MUON_HINT_SUFFIX(malloc, nonnull);
 
 MuonSchemeType *scheme_type_activate(
     struct MuonSchemeType *type, MuonType *matter)
-  __attribute__((nonnull, warn_unused_result));
+  MUON_HINT_SUFFIX(nonnull, warn_unused_result);
 
 struct MuonJoinType *join_type_allocate(induce_t *induce, size_t argc)
-  __attribute__((malloc, nonnull));
+  MUON_HINT_SUFFIX(malloc, nonnull);
 
 MuonJoinType *join_type_activate(struct MuonJoinType *join)
-  __attribute__((nonnull, warn_unused_result));
+  MUON_HINT_SUFFIX(nonnull, warn_unused_result);
 
 void type_debug(MuonType *type, _Bool expand)
-  __attribute__((nonnull));
+  MUON_HINT_SUFFIX(nonnull);
 
-__attribute__((nonnull))
+MUON_HINT(nonnull)
 static inline MuonType *assign_solution(
     MuonVariableType *variable_type, MuonType *solution) {
   return ((struct MuonVariableType *) variable_type)->solution = solution;

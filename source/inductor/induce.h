@@ -68,9 +68,9 @@ extern _Thread_local induce_t *debug_induce;
 /// Initialize the @a inductor to handle nodes and types in the @a engine
 induce_t *induce_initialize(
     induce_t *induce, MuonEngine *engine, const detect_t *detect)
-  __attribute__((nonnull));
+  MUON_HINT_SUFFIX(nonnull);
 
-__attribute__((nonnull, pure, returns_nonnull))
+MUON_HINT(nonnull, pure, returns_nonnull)
 static inline MuonType *node_type(const induce_t *induce, MuonNode *node) {
   assert(node->engine == induce->engine);
   assert(node->id < induce->node_length);
@@ -80,7 +80,7 @@ static inline MuonType *node_type(const induce_t *induce, MuonNode *node) {
   return result.source_type;
 }
 
-__attribute__((nonnull, pure))
+MUON_HINT(nonnull, pure)
 static inline MuonCoercion *node_coercion(
     const induce_t *induce, MuonNode *node) {
   assert(node->engine == induce->engine);
@@ -90,7 +90,7 @@ static inline MuonCoercion *node_coercion(
   return result.coercion;
 }
 
-__attribute__((nonnull))
+MUON_HINT(nonnull)
 static inline void override_coercion(
     induce_t *induce, MuonNode *node, MuonCoercion *coercion) {
   assert(node->engine == induce->engine);
@@ -106,7 +106,7 @@ static inline void override_coercion(
  * constraints to the @a inductor.
  */
 MuonType *induce_node(induce_t *inductor, MuonNode *node)
-  __attribute__((nonnull));
+  MUON_HINT_SUFFIX(nonnull);
 
 MuonType *reduce_node(induce_t *induce, MuonNode *root);
 
@@ -115,10 +115,10 @@ MuonType *reduce_node(induce_t *induce, MuonNode *root);
  */
 MuonCoercion *retrieve_coercion(
     induce_t *induce, MuonType *source, MuonType *target)
-  __attribute__((nonnull));
+  MUON_HINT_SUFFIX(nonnull);
 
 MuonCoercion *coerce_node(induce_t *induce, MuonNode *node, MuonType *target)
-  __attribute__((nonnull));
+  MUON_HINT_SUFFIX(nonnull);
 
 /**
  * @brief Restrict type @a a to be a subtype of @a b in the @a induce engine
@@ -138,13 +138,13 @@ MuonCoercion *coerce_node(induce_t *induce, MuonNode *node, MuonType *target)
 // Return that coercion.
 MuonCoercion *ensure_coercion(
     induce_t *induce, MuonType *source, MuonType *target)
-  __attribute__((nonnull));
+  MUON_HINT_SUFFIX(nonnull);
 
 MuonType *generalize_type(induce_t *induce, MuonType *root)
-  __attribute__((nonnull));
+  MUON_HINT_SUFFIX(nonnull);
 
 mu_scheme_t *mu_scheme(mu_scheme_t *parent)
-  __attribute__((malloc));
+  MUON_HINT_SUFFIX(malloc);
 
 extern MuonName *vector_access;
 extern MuonName *vector_join;

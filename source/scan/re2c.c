@@ -4,7 +4,7 @@
 #include <string.h>
 
 /// Return the next symbol in the @a scan
-__attribute__((nonnull))
+MUON_HINT(nonnull)
 static yytoken_kind_t symbol(Scan *scan, YYSTYPE *yylval, YYLTYPE *yylloc) {
   typedef unsigned char YYCTYPE;
 

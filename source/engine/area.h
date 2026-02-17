@@ -49,15 +49,15 @@ static const size_t AREA_UNIT = _Alignof(void *);
  * @return the created area on success; otherwise @c NULL
  */
 area_t *area_create(area_t *area)
-  __attribute__((malloc));
+  MUON_HINT_SUFFIX(malloc);
 
 /// @internal Create and allocate an object in an area
 void *area_create_allocate(area_t **area, size_t size)
-  __attribute__((malloc, nonnull));
+  MUON_HINT_SUFFIX(malloc, nonnull);
 
 /// @internal Create an area sized to hold a single object of size @a size
 void *area_create_single(area_t **area, size_t size)
-  __attribute__((malloc, nonnull));
+  MUON_HINT_SUFFIX(malloc, nonnull);
 
 /**
  * @brief Allocate an object (of the @a size and alignment @a m) in the @a area
@@ -84,7 +84,7 @@ void *area_create_single(area_t **area, size_t size)
  * @param unit alignment requirement of the object to allocate
  * @return the allocation on success; otherwise @c NULL
  */
-__attribute__((malloc, nonnull))
+MUON_HINT(malloc, nonnull)
 static inline void *area_allocate(area_t **area, size_t size, size_t unit) {
   assert(*area != NULL);
   assert(size != 0);
@@ -118,7 +118,7 @@ static inline void *area_allocate(area_t **area, size_t size, size_t unit) {
  *
  * @param object the object to deallocate
  */
-__attribute__((nonnull))
+MUON_HINT(nonnull)
 static inline void area_deallocate(void *object) {
   // Find the area from the object by aligning it down to a 4096 byte boundary
   area_t *area = (area_t *) ((uintptr_t) object & ~(4096U - 1));

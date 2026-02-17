@@ -373,11 +373,11 @@ variable_view: name {
 /// Emit debugging information on the symbol to the debug stream
 static void symbol_debug(
     yytoken_kind_t kind, const YYSTYPE *yylval, const YYLTYPE *yylloc)
-  __attribute__((nonnull));
+  MUON_HINT_SUFFIX(nonnull);
 
 /// Return the name of a @a kind of symbol
 static const char *symbol_name(yytoken_kind_t kind)
-  __attribute__((returns_nonnull));
+  MUON_HINT_SUFFIX(returns_nonnull);
 
 MuonScript *muon_scan(
     MuonEngine *engine, mu_status_t *status, const char *text) {

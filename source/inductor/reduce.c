@@ -15,7 +15,7 @@ MuonCoercion *reduce_coercion(induce_t *induce, MuonCoercion *coercion);
 
 /// Load the coercion that is assigned to the <em>coercion</em>'s edge. If that
 /// coercion is the edge @a coercion itself, then return @c NULL.
-__attribute__((nonnull, pure))
+MUON_HINT(nonnull, pure)
 MuonCoercion *mu_edge_coercion_reload(
     const universe_t *universe, MuonEdgeCoercion *coercion) {
   MuonType *source = coercion->source;
