@@ -1,7 +1,7 @@
 #ifndef MU_INDUCTOR_TYPE_I
 #define MU_INDUCTOR_TYPE_I
 
-#include <muon/inductor/type.h>  // IWYU pragma: export
+#include <muon/inductor/type.h> // IWYU pragma: export
 
 #include "../common.h"
 #include "core.h"

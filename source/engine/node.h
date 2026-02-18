@@ -1,7 +1,7 @@
 #ifndef MUON_ENGINE_NODE_I
 #define MUON_ENGINE_NODE_I
 
-#include <muon/engine/node.h>  // IWYU pragma: export
+#include <muon/engine/node.h> // IWYU pragma: export
 
 #include "common.h"
 #include "name.h"

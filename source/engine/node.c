@@ -625,7 +625,7 @@ static inline int debug_node_coercion(MuonNode *node) {
 }
 
 /// Emit debugging information on the abstract @a node to the debug stream
-void muon_node_debug(MuonNode *node) {  // NOLINT(misc-no-recursion)
+void muon_node_debug(MuonNode *node) { // NOLINT(misc-no-recursion)
   // Kind -> Text, e.g. [MUON_ACCESS_EXPR_NODE] = "AccessExpr"
   static const char *const KIND_TEXT[] = {
 #define MUON_EMIT(Title, lower, UPPER) [MUON_##UPPER##_NODE] = #Title,

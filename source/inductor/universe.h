@@ -18,7 +18,7 @@ typedef struct {
     MuonType *vertex[2];
   };
 
-  MuonCoercion *coercion;  // optional
+  MuonCoercion *coercion; // optional
   _Bool indirect : 1;
   _Bool transitive : 1;
 } type_edge_t;

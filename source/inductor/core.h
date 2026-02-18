@@ -1,7 +1,7 @@
 #ifndef MU_INDUCTOR_CORE_I
 #define MU_INDUCTOR_CORE_I
 
-#include <muon/inductor/core.h>  // IWYU pragma: export
+#include <muon/inductor/core.h> // IWYU pragma: export
 
 #include "../engine/name.h"
 

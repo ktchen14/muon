@@ -69,7 +69,7 @@ typedef const struct MuonVariableType {
   MuonType *solution;
 
   // Debugging
-  size_t number;  ///< Used to generate a name
+  size_t number; ///< Used to generate a name
 
   // Polymorphism
   _Bool reduced;

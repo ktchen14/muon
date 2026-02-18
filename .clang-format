@@ -21,7 +21,6 @@ PenaltyBreakAssignment: 80
 PenaltyReturnTypeOnItsOwnLine: 1000
 SkipMacroDefinitionBody: true
 SpaceAfterCStyleCast: true
-SpacesBeforeTrailingComments: 2
 
 Macros:
 - "MUON_HINT(x)=[[muon::hint(x)]]"

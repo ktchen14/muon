@@ -112,7 +112,7 @@ typedef const struct MuonNativeExpr {
 
 typedef const struct MuonExprMember {
   MUON_NODE_HEADER;
-  MuonName *name;  // optional
+  MuonName *name; // optional
   MuonExpr *expr;
 } MuonExprMember;
 
@@ -222,7 +222,7 @@ typedef const struct MuonNameSign {
 } MuonNameSign;
 
 typedef struct {
-  MuonName *name;  // optional
+  MuonName *name; // optional
   MuonSign *sign;
 } MuonSignMember;
 
@@ -320,7 +320,7 @@ MUON_HINT(malloc) MuonDefineStmt *muon_define_stmt(
 typedef const struct MuonViewMember {
   MUON_NODE_HEADER;
   size_t announce_length;
-  MuonName *name;  // optional
+  MuonName *name; // optional
   MuonView *view;
 } MuonViewMember;
 

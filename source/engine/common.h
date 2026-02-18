@@ -1,7 +1,7 @@
 #ifndef MUON_ENGINE_COMMON_I
 #define MUON_ENGINE_COMMON_I
 
-#include <muon/engine/common.h>  // IWYU pragma: export
+#include <muon/engine/common.h> // IWYU pragma: export
 #include <muon/engine/name.h>
 
 #include <assert.h>

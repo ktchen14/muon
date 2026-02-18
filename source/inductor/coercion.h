@@ -1,7 +1,7 @@
 #ifndef MU_INDUCTOR_COERCION_I
 #define MU_INDUCTOR_COERCION_I
 
-#include <muon/inductor/coercion.h>  // IWYU pragma: export
+#include <muon/inductor/coercion.h> // IWYU pragma: export
 #include <muon/inductor/type.h>
 
 #include "core.h"
