@@ -1,26 +1,26 @@
 BasedOnStyle: LLVM
 Language: C
 
-AlignAfterOpenBracket: DontAlign
 AlignOperands: DontAlign
 AllowShortFunctionsOnASingleLine: Empty
 BinPackArguments: false
-BinPackLongBracedList: true
 BinPackParameters: OnePerLine
 BracedInitializerIndentWidth: 2
-BreakAfterAttributes: Leave
-BreakAfterOpenBracketBracedList: true
-BreakAfterOpenBracketFunction: true
-BreakAfterOpenBracketIf: true
-BreakBeforeCloseBracketBracedList: true
 Cpp11BracedListStyle: true
 IndentCaseLabels: true
 IndentPPDirectives: BeforeHash
 OneLineFormatOffRegex: '^MUON_HINT_SUFFIX$|^//-'
-PenaltyBreakAssignment: 80
-PenaltyReturnTypeOnItsOwnLine: 1000
 SkipMacroDefinitionBody: true
 SpaceAfterCStyleCast: true
+
+AlignAfterOpenBracket: DontAlign
+BreakAfterOpenBracketBracedList: true
+BreakAfterOpenBracketFunction: true
+BreakAfterOpenBracketIf: true
+BreakBeforeCloseBracketBracedList: true
+
+PenaltyBreakAssignment: 80
+PenaltyReturnTypeOnItsOwnLine: 1000
 
 Macros:
 - "MUON_HINT(x)=[[muon::hint(x)]]"
