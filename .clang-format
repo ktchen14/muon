@@ -9,7 +9,6 @@ BracedInitializerIndentWidth: 2
 BreakBeforeBinaryOperators: NonAssignment
 Cpp11BracedListStyle: true
 IndentCaseLabels: true
-IndentPPDirectives: BeforeHash
 OneLineFormatOffRegex: '^MUON_HINT_SUFFIX$|^//-'
 SkipMacroDefinitionBody: true
 SpaceAfterCStyleCast: true
