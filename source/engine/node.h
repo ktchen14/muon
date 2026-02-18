@@ -31,8 +31,8 @@ static inline NodeCursor *node_cursor(MuonNode *node) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-align"
 #pragma GCC diagnostic ignored "-Wcast-qual"
-  NodeHeader *header = (NodeHeader *) ((char *) node -
-      offsetof(NodeHeader, data));
+  NodeHeader *header = (NodeHeader *) ((char *) node
+      - offsetof(NodeHeader, data));
 #pragma GCC diagnostic pop
   return &header->cursor;
 }

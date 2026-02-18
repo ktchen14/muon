@@ -101,8 +101,8 @@ roster_t *handle_script(roster_t *roster, MuonScript *script) {
     announce_length += node_announce_length(&stmt->as_node);
   }
 
-  if ((roster = roster_create(roster, announce_length, &script->as_node)) ==
-      NULL)
+  if ((roster = roster_create(roster, announce_length, &script->as_node))
+      == NULL)
     return NULL;
 
   for (size_t i = 0; i < script->argc; i++) {
@@ -138,8 +138,8 @@ roster_t *handle_sequence_expr(
     announce_length += node_announce_length(&stmt->as_node);
   }
 
-  if ((roster = roster_create(
-           roster, announce_length, &sequence_expr->as_node)) == NULL)
+  if ((roster = roster_create(roster, announce_length, &sequence_expr->as_node))
+      == NULL)
     return NULL;
 
   for (size_t i = 0; i < sequence_expr->argc; i++) {
@@ -183,7 +183,8 @@ detect_t *detect_node(detect_t *detect, MuonNode *root) {
 
           roster_t *next_roster;
           if ((next_roster = roster_create(
-                   roster, length, &lambda_expr->as_node)) == NULL)
+                   roster, length, &lambda_expr->as_node))
+              == NULL)
             return NULL;
           roster = next_roster;
           view_announce(roster, lambda_expr->argument);
@@ -192,8 +193,8 @@ detect_t *detect_node(detect_t *detect, MuonNode *root) {
 
         case IS_CONCRETE_NODE(MuonSequenceExpr *sequence_expr) {
           roster_t *next_roster;
-          if ((next_roster = handle_sequence_expr(roster, sequence_expr)) ==
-              NULL)
+          if ((next_roster = handle_sequence_expr(roster, sequence_expr))
+              == NULL)
             return NULL;
           roster = next_roster;
           break;

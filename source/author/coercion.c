@@ -93,8 +93,8 @@ MUON_HINT(nonnull) static LLVMValueRef join_coercion_emit(
     return NULL;
 
   // %result = insertvalue <info.target_type> %result, %discriminant, 0
-  if ((result = LLVMBuildInsertValue(tail, result, discriminant, 0, "")) ==
-      NULL)
+  if ((result = LLVMBuildInsertValue(tail, result, discriminant, 0, ""))
+      == NULL)
     return NULL;
 
   LLVMTypeRef data_type = LLVMStructGetTypeAtIndex(target_type, 1);
@@ -197,8 +197,8 @@ MUON_HINT(nonnull) static LLVMValueRef unjoin_coercion_emit(
 
     info_t info = {.source_type = source_type->argv[i], .source = data};
     LLVMValueRef branch_result;
-    if ((branch_result = coercion_emit(author, coercion->argv[i], info)) ==
-        NULL)
+    if ((branch_result = coercion_emit(author, coercion->argv[i], info))
+        == NULL)
       return NULL;
 
     // br %next

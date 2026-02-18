@@ -30,8 +30,8 @@ MuonCoercion *ensure_coercion(
 
   // If ∃⟨source ⇒ target⟩, then just return the coercion on that edge
   type_edge_t *result_edge;
-  if ((result_edge = universe_search(&induce->universe, source, target)) !=
-      NULL)
+  if ((result_edge = universe_search(&induce->universe, source, target))
+      != NULL)
     return coerce_with(induce, result_edge);
 
   // A join type shouldn't ever appear as a target
@@ -161,8 +161,8 @@ MuonCoercion *ensure_coercion(
   MuonJoinType *join_type;
   if ((join_type = mu_type_cast(source, join_type)) != NULL) {
     struct MuonUnjoinCoercion *allocation;
-    if ((allocation = unjoin_coercion_allocate(induce, join_type->argc)) ==
-        NULL)
+    if ((allocation = unjoin_coercion_allocate(induce, join_type->argc))
+        == NULL)
       return NULL;
 
     for (size_t i = 0; i < join_type->argc; i++) {
@@ -212,8 +212,8 @@ MuonCoercion *ensure_coercion(
 
     // Then return the coercion (source ⇝ instance) ∘ (instance ⇝ target)
     MuonIndirectCoercion *result;
-    if ((result = mu_indirect_coercion(induce, &head->as_coercion, coercion)) ==
-        NULL)
+    if ((result = mu_indirect_coercion(induce, &head->as_coercion, coercion))
+        == NULL)
       return NULL;
     return edge_assign(result_edge, &result->as_coercion);
   }
@@ -311,8 +311,8 @@ MuonType *generalize_type(induce_t *induce, MuonType *root) {
       type_header(next)->access[next_charge] = 1;
 
       // Mark a variable type that's both + and - accessible as polymorphic
-      if (next->kind == MU_VARIABLE_TYPE && type_header(next)->access[0] &&
-          type_header(next)->access[1]) {
+      if (next->kind == MU_VARIABLE_TYPE && type_header(next)->access[0]
+          && type_header(next)->access[1]) {
         polymorphic_length++;
         type_header(next)->polymorphic = 1;
       }
@@ -455,8 +455,8 @@ static MuonType *instantiate_scheme(induce_t *induce, MuonSchemeType *scheme) {
 
       case IS_CONCRETE_TYPE(MuonSchemeType * nominate(scheme_type)) {
         struct MuonSchemeType *allocation;
-        if ((allocation = scheme_type_allocate(induce, scheme_type->argc)) ==
-            NULL)
+        if ((allocation = scheme_type_allocate(induce, scheme_type->argc))
+            == NULL)
           return NULL;
         equation[scheme_type->as_type.id] = &allocation->as_type;
         break;
@@ -549,8 +549,8 @@ static MuonType *instantiate_scheme(induce_t *induce, MuonSchemeType *scheme) {
             source = equation[source->id];
 
           // TODO: make this check unnecessary
-          if (universe_search(&induce->universe, source, &result->as_type) !=
-              NULL)
+          if (universe_search(&induce->universe, source, &result->as_type)
+              != NULL)
             continue;
           append_edge(&induce->universe, source, &result->as_type);
         }
@@ -563,8 +563,8 @@ static MuonType *instantiate_scheme(induce_t *induce, MuonSchemeType *scheme) {
             target = equation[target->id];
 
           // TODO: make this check unnecessary
-          if (universe_search(&induce->universe, &result->as_type, target) !=
-              NULL)
+          if (universe_search(&induce->universe, &result->as_type, target)
+              != NULL)
             continue;
           append_edge(&induce->universe, &result->as_type, target);
         }
@@ -624,8 +624,8 @@ static MuonCoercion *retrieve_core_coercion(
   }
 
   MuonVarianceCoercion *result;
-  if ((result = variance_coercion_activate(allocation, &target->as_type)) ==
-      NULL)
+  if ((result = variance_coercion_activate(allocation, &target->as_type))
+      == NULL)
     return NULL;
   return &result->as_coercion;
 }
@@ -647,8 +647,8 @@ MuonCoercion *retrieve_coercion(
     MuonCoreType *next_target = (MuonCoreType *) target;
 
     MuonCoercion *result;
-    if ((result = retrieve_core_coercion(induce, next_source, next_target)) ==
-        NULL)
+    if ((result = retrieve_core_coercion(induce, next_source, next_target))
+        == NULL)
       return NULL;
 
     if (result == MU_NO_SUCH_COERCION)

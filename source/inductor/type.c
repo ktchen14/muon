@@ -286,7 +286,8 @@ static void type_debug_internal(
 
           MuonVariableType *upper_variable_type;
           if ((upper_variable_type = mu_type_cast(
-                   edge.target, upper_variable_type)) == NULL)
+                   edge.target, upper_variable_type))
+              == NULL)
             type_debug_internal(edge.target, expand, 2, 1);
           else
             debug_variable_type_name(upper_variable_type);
@@ -306,7 +307,8 @@ static void type_debug_internal(
 
           MuonVariableType *lower_variable_type;
           if ((lower_variable_type = mu_type_cast(
-                   edge.source, lower_variable_type)) == NULL)
+                   edge.source, lower_variable_type))
+              == NULL)
             type_debug_internal(edge.source, expand, 2, 1);
           else
             debug_variable_type_name(lower_variable_type);

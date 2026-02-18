@@ -307,7 +307,8 @@ MUON_HINT(nonnull) static MuonType *coercion_stmt_return(
 
   const mu_instance_t *instance;
   if ((instance = mu_instance(
-           source_core_type->core, target_core_type->core, stmt->expr)) == NULL)
+           source_core_type->core, target_core_type->core, stmt->expr))
+      == NULL)
     return NULL;
   induce->instance[induce->instance_length++] = instance;
 
