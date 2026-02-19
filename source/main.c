@@ -121,8 +121,8 @@ int main(int argc, char *argv[/* argc */]) {
 
   if (getenv("LLVM") != NULL) {
     author_t *author, _author;
-    if ((author = author_initialize(
-             &_author, detect_result(&detect), &induce)) == NULL)
+    if ((author = author_initialize(&_author, detect_result(&detect), &induce))
+        == NULL)
       assert(0);
     author->native_expr_emit = standard_native_expr_emit;
 

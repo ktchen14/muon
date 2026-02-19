@@ -1,7 +1,7 @@
 #ifndef MU_STATUS_I
 #define MU_STATUS_I
 
-#include <muon/status.h>  // IWYU pragma: export
+#include <muon/status.h> // IWYU pragma: export
 
 typedef struct memo_t memo_t;
 

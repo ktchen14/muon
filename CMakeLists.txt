@@ -57,9 +57,9 @@ target_link_libraries(main PRIVATE muon)
 add_subdirectory(source)
 
 file(GLOB_RECURSE FORMAT_SOURCES
-  "${CMAKE_CURRENT_SOURCE_DIR}/header/**/*.h"
-  "${CMAKE_CURRENT_SOURCE_DIR}/source/**/*.c"
-  "${CMAKE_CURRENT_SOURCE_DIR}/source/**/*.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/header/*.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/source/*.c"
+  "${CMAKE_CURRENT_SOURCE_DIR}/source/*.h"
 )
 add_custom_target(format COMMAND clang-format -i ${FORMAT_SOURCES} VERBATIM)
 
