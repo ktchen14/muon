@@ -20,9 +20,16 @@
 #define nominate(name) , name
 
 typedef struct {
+  /// @internal The type to return to, or @c NULL if this is the root type
   MuonType *anterior;
-  _Bool charge : 1;
+
   size_t i : sizeof(size_t) * CHAR_BIT - 1;
+
+  /// @internal Used to decide which cursor to return to in the @a anterior type
+  size_t charge : 1;
+
+  /// @internal Used to mark if the type is accessible
+  size_t access : 1;
 } TypeCursor;
 
 typedef struct {
