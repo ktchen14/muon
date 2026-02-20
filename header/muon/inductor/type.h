@@ -22,6 +22,9 @@ typedef enum {
 #undef MU_EMIT
 } MuonTypeKind;
 
+typedef const struct MuonType MuonType;
+typedef const struct MuonSchemeType MuonSchemeType;
+
 /**
  * @brief An abstract type
  *
@@ -32,6 +35,9 @@ typedef const struct MuonType {
   MuonTypeKind kind;
   const induce_t *induce;
   size_t id;
+
+  MuonSchemeType *scheme;
+  MuonType *origin;
 } MuonType;
 
 /// The header that each concrete type must have

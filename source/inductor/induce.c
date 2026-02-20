@@ -288,34 +288,26 @@ MuonType *generalize_type(induce_t *induce, MuonType *root) {
   if (root->id < induce->scheme->id)
     return root;
 
-  // Mark each type in the active scheme with whether it's accessible from the
-  // root type.
-  MuonType *accessible[1000] = {root};
-  size_t accessible_length = 1;
-  size_t polymorphic_length = 0;
-  type_header(root)->access[0] = 1;
+  size_t first_number = induce->scheme->id;
+  size_t last_number = induce->type_number;
+
+  TypeHeader a, b;
+  MuonType *head[2] = { (MuonType *) &a.data, (MuonType *) &b.data };
+  size_t series_length[2] = {};
 
   for (MuonType *type = root; type != NULL; type = type_return(type)) {
     MuonType *next;
-    _Bool next_charge;
-    while ((next = type_next(type, &next_charge)) != NULL) {
+    for (_Bool next_charge; (next = type_next(type, &next_charge)) != NULL;) {
+      // Don't continue into the root type with charge 1
+      if (next == root && next_charge == 1)
+        continue;
+
       if (next->id < induce->scheme->id)
         continue;
 
       // Don't continue into a type that we've already accessed
-      if (type_header(next)->access[next_charge])
+      if (type_series(next, next_charge)->next != NULL)
         continue;
-
-      if (!type_header(next)->access[0] && !type_header(next)->access[1])
-        accessible[accessible_length++] = next;
-      type_header(next)->access[next_charge] = 1;
-
-      // Mark a variable type that's both + and - accessible as polymorphic
-      if (next->kind == MU_VARIABLE_TYPE && type_header(next)->access[0]
-          && type_header(next)->access[1]) {
-        polymorphic_length++;
-        type_header(next)->polymorphic = 1;
-      }
 
       // Don't continue into a variable type from a variable type. We maintain
       // the transitive closure of each variable type, so no new information is
@@ -325,14 +317,43 @@ MuonType *generalize_type(induce_t *induce, MuonType *root) {
 
       type = type_continue(type, next, next_charge);
     }
+
+    type_attach(head[charge], next, charge);
+    series_length[charge]++;
   };
+
+  size_t argc = 0;
+
+  // head[0] is the head of a list of all the types that were positively
+  // reachable. head[1] is the head of a list of all the types that were
+  // negatively reachable (this is possibly backwards). Loop through all types
+  // from head[0]. All variables that are negatively reachable are polymorphic.
+  // Destruct the list while doing this.
+  for (MuonType *type = head[0]; (type = type_detach(type, 0)) != NULL;) {
+    if (type->kind == MU_VARIABLE_TYPE && type_series(type, 1)->next != NULL)
+      argc++;
+  }
+
+  // We have all the polymorphic types. Destruct the other list.
+  for (MuonType *type = head[1]; ((type = type_detach(type, 1)) != NULL);)
+    ;
 
   // If we don't have any polymorphic variables, then just reset everything and
   // return matter
-  if (polymorphic_length == 0) {
-    for (size_t i = 0; i < accessible_length; i++)
-      type_header(accessible[i])->status = 0;
+  if (argc == 0)
     return root;
+
+  // Now, we know how many polymorphic variables we have, and they're still
+  // collected in the head[0] list. Make the allocation, fully destruct the
+  // list, and populate argv.
+  struct MuonSchemeType *allocation;
+  if ((allocation = scheme_type_allocate(induce, argc)) == NULL)
+    return NULL;
+
+  size_t i = 0;
+  for (MuonType *type = head[0]; (type = type_detach(type, 0)) != NULL;) {
+    ((struct MuonVariableType *) type)->scheme = allocation;
+    allocation->argv[i] = type;
   }
 
   // Each variable type that's both + and - accessible from matter is a
@@ -346,88 +367,62 @@ MuonType *generalize_type(induce_t *induce, MuonType *root) {
   //
   // So we'll mark each type that can reach a polymorphic root as polymorphic.
 
-  for (size_t i = 0; i < accessible_length; i++)
-    type_header(accessible[i])->access[0] =
-        type_header(accessible[i])->access[1] = 0;
-  type_header(root)->access[0] = 1;
+  // for (MuonType *type = root, *next;;) {
+  //   _Bool next_charge;
+  //   while ((next = type_next(type, &next_charge)) != NULL) {
+  //     if (next->id < induce->scheme->id)
+  //       continue;
+  //
+  //     if (type_header(next)->polymorphic)
+  //       goto handle_polymorphic;
+  //
+  //     if (type_header(next)->access[next_charge])
+  //       continue;
+  //     type_header(next)->access[next_charge] = 1;
+  //     type = type_continue(type, next, next_charge);
+  //   }
+  //
+  //   if ((type = type_return(next = type)) == NULL)
+  //     break;
+  //
+  //   if (!type_header(next)->polymorphic)
+  //     continue;
+  //
+  // handle_polymorphic:
+  //   if (!type_header(type)->polymorphic)
+  //     argc++;
+  //   type_header(type)->polymorphic = 1;
+  //
+  //   if (type->kind != MU_VARIABLE_TYPE)
+  //     continue;
+  //
+  //   universe_iterator_t jt;
+  //   jt = universe_iterator(&induce->universe, type, charge);
+  //   for (type_edge_t *edge; (edge = universe_next(&jt)) != NULL;) {
+  //     MuonType *vertex = edge->vertex[charge];
+  //
+  //     if (vertex == next)
+  //       continue;
+  //     if (type_header(vertex)->polymorphic)
+  //       continue;
+  //     if (vertex->kind != MU_VARIABLE_TYPE)
+  //       continue;
+  //
+  //     // If vertex is a sibling of next, and ∃
+  //     if (charge == 0) {
+  //       if (!universe_search(&induce->universe, vertex, next))
+  //         continue;
+  //     } else {
+  //       if (!universe_search(&induce->universe, next, vertex))
+  //         continue;
+  //     }
+  //
+  //     argc++;
+  //     type_header(vertex)->polymorphic = 1;
+  //   }
+  // }
 
-  for (MuonType *type = root, *next;;) {
-    _Bool next_charge;
-    while ((next = type_next(type, &next_charge)) != NULL) {
-      if (next->id < induce->scheme->id)
-        continue;
-
-      if (type_header(next)->polymorphic)
-        goto handle_polymorphic;
-
-      if (type_header(next)->access[next_charge])
-        continue;
-      type_header(next)->access[next_charge] = 1;
-      type = type_continue(type, next, next_charge);
-    }
-
-    if ((type = type_return(next = type)) == NULL)
-      break;
-
-    if (!type_header(next)->polymorphic)
-      continue;
-
-  handle_polymorphic:
-    if (!type_header(type)->polymorphic)
-      polymorphic_length++;
-    type_header(type)->polymorphic = 1;
-
-    if (type->kind != MU_VARIABLE_TYPE)
-      continue;
-
-    universe_iterator_t jt;
-    jt = universe_iterator(&induce->universe, type, charge);
-    for (type_edge_t *edge; (edge = universe_next(&jt)) != NULL;) {
-      MuonType *vertex = edge->vertex[charge];
-
-      if (vertex == next)
-        continue;
-      if (type_header(vertex)->polymorphic)
-        continue;
-      if (vertex->kind != MU_VARIABLE_TYPE)
-        continue;
-
-      // If vertex is a sibling of next, and ∃
-      if (charge == 0) {
-        if (!universe_search(&induce->universe, vertex, next))
-          continue;
-      } else {
-        if (!universe_search(&induce->universe, next, vertex))
-          continue;
-      }
-
-      polymorphic_length++;
-      type_header(vertex)->polymorphic = 1;
-    }
-  }
-
-  assert(type_header(root)->polymorphic);
-
-  struct MuonSchemeType *allocation;
-  if ((allocation = scheme_type_allocate(induce, polymorphic_length)) == NULL)
-    return NULL;
-
-  size_t j = 0;
-  for (size_t i = 0; i < accessible_length; i++) {
-    MuonType *type = accessible[i];
-
-    if (type_header(type)->polymorphic) {
-      allocation->argv[j++] = type;
-
-      MuonVariableType *v;
-      if ((v = mu_type_cast(type, v)) != NULL) {
-        if (v->scheme == NULL)
-          ((struct MuonVariableType *) v)->scheme = allocation;
-      }
-    }
-
-    type_header(type)->status = 0;
-  }
+  // assert(type_header(root)->polymorphic);
 
   MuonSchemeType *result;
   if (rare((result = scheme_type_activate(allocation, root)) == NULL))

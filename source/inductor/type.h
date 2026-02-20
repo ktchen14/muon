@@ -27,22 +27,19 @@ typedef struct {
 
   /// @internal Used to decide which cursor to return to in the @a anterior type
   size_t charge : 1;
-
-  /// @internal Used to mark if the type is accessible
-  size_t access : 1;
 } TypeCursor;
 
 typedef struct {
   MuonType *next;
-  TypeCursor cursor[2];
+} TypeSeries;
 
-  // TODO
+typedef struct {
   union {
-    unsigned int status;
-    struct {
-      _Bool access[2];
-      _Bool polymorphic;
-    };
+    union {
+      TypeCursor cursor;
+      TypeSeries series;
+    } info[2];
+    TypeCursor cursor[2];
   };
 
   _Alignas(union {
@@ -51,6 +48,7 @@ typedef struct {
 #undef MU_EMIT
   }) char data[];
 } TypeHeader;
+
 
 /// Return the header of the @a type
 MUON_HINT(const, nonnull, returns_nonnull)
@@ -132,6 +130,33 @@ static inline MuonType *type_next(MuonType *type, _Bool *next_charge) {
     }
   }
   __builtin_unreachable();
+}
+
+__attribute__((const, nonnull, returns_nonnull))
+static inline TypeSeries *type_series(MuonType *type, _Bool charge) {
+  return &type_header(type)->info[charge].series;
+}
+
+__attribute__((nonnull(2), returns_nonnull))
+static inline MuonType *type_attach(
+    MuonType *restrict type, MuonType *restrict next, _Bool next_charge) {
+  assert(type_series(next, next_charge)->next == NULL);
+
+  if (type == NULL)
+    return type_series(next, next_charge)->next = next;
+
+  auto series = type_series(type, next_charge);
+  assert(series->next != NULL);
+  type_series(next, next_charge)->next = series->next;
+  return series->next = next;
+}
+
+__attribute__((nonnull))
+static inline MuonType *type_detach(MuonType *type, _Bool next_charge) {
+  auto next = type_series(type, next_charge)->next;
+  assert(next != NULL);
+  type_series(type, next_charge)->next = type_series(next, next_charge)->next;
+  return type_series(next, next_charge)->next = NULL, next;
 }
 
 struct MuonCoreType *core_type_allocate(induce_t *induce, const mu_core_t *core)
