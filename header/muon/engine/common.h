@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 typedef struct {
+  void *remote;
   _Alignas(max_align_t) char data[sizeof(void *[256])];
 } MuonEngine;
 

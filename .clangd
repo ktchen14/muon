@@ -20,4 +20,12 @@ If:
 CompileFlags:
   Add: [-DMUON_ENGINE_MODULE]
 
+---
+
+If:
+  PathMatch: ruby/.*
+
+Diagnostics:
+  MissingIncludes: None
+
 # vim: set ft=yaml:

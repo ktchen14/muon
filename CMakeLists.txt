@@ -66,12 +66,25 @@ add_custom_target(format COMMAND clang-format -i ${FORMAT_SOURCES} VERBATIM)
 # Ruby extension
 find_package(Ruby COMPONENTS Development)
 if(Ruby_FOUND)
-  add_library(ruby MODULE ruby/muon.c)
+  add_library(ruby MODULE ruby/common.c ruby/muon.c ruby/node.c)
   get_target_property(suffix Ruby::Module INTERFACE_RUBY_EXTENSION_SUFFIX)
   set_target_properties(ruby PROPERTIES
     OUTPUT_NAME muon PREFIX "" SUFFIX "${suffix}"
   )
   target_link_libraries(ruby PRIVATE muon Ruby::Module)
+
+  target_compile_features(ruby PRIVATE c_std_23)
+  target_compile_options(ruby PRIVATE
+    -Wall -Wextra -pedantic
+    -Wcast-align
+    -Wconversion
+    -Wno-gnu-case-range
+    -Wno-gnu-zero-variadic-macro-arguments  # Ignore , ##__VA_ARGS__
+    -Wno-logical-op-parentheses
+    -Wno-parentheses
+    -Wno-unknown-pragmas
+    -Wno-unused-parameter
+  )
 
   # Strip sanitizer flags — they can't be loaded into the Ruby process
   target_compile_options(ruby PRIVATE -fno-sanitize=all)
