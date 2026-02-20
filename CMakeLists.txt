@@ -63,6 +63,21 @@ file(GLOB_RECURSE FORMAT_SOURCES
 )
 add_custom_target(format COMMAND clang-format -i ${FORMAT_SOURCES} VERBATIM)
 
+# Ruby extension
+find_package(Ruby COMPONENTS Development)
+if(Ruby_FOUND)
+  add_library(ruby MODULE ruby/muon.c)
+  get_target_property(suffix Ruby::Module INTERFACE_RUBY_EXTENSION_SUFFIX)
+  set_target_properties(ruby PROPERTIES
+    OUTPUT_NAME muon PREFIX "" SUFFIX "${suffix}"
+  )
+  target_link_libraries(ruby PRIVATE muon Ruby::Module)
+
+  # Strip sanitizer flags — they can't be loaded into the Ruby process
+  target_compile_options(ruby PRIVATE -fno-sanitize=all)
+  target_link_options(ruby PRIVATE -fno-sanitize=all)
+endif()
+
 if(PROJECT_IS_TOP_LEVEL)
   include(CTest)
   if(BUILD_TESTING)
