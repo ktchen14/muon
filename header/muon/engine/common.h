@@ -250,26 +250,6 @@ enum {
 #define MUON_ENUMERATOR_EMIT(Title, l, UPPER, US) \
   , Muon##Title *: MUON_##UPPER, struct Muon##Title *: MUON_##UPPER
 
-/**
- * @brief An abstract stator
- *
- * Note that an MuonStator is a constant object; the mutable equivalent is a
- * struct MuonStator.
- */
-typedef const struct MuonStator {
-  /// Enumerator used to discriminate the kind of the stator
-  MuonStatorEnumerator enumerator : 8;
-
-  /// Hash of the stator (if the stator is hashable)
-  MuonHash hash : sizeof(MuonHash) * CHAR_BIT - 8;
-
-  /// Engine of the stator
-  const MuonEngine *engine;
-} MuonStator;
-
-/// The header that each concrete stator must have
-#define MUON_STATOR_HEADER struct MuonStator as_stator
-
 typedef MuonNodeEnumerator MuonNodeTag;
 typedef MuonExprEnumerator MuonExprTag;
 typedef MuonSignEnumerator MuonSignTag;
