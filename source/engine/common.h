@@ -32,14 +32,10 @@ static_assert(sizeof(MuonEngine) <= sizeof(Engine));
   MuonEngine *: (Engine *) {}, const MuonEngine *: (const Engine *) {} \
 ))) (engine))
 
-#ifdef MUON_ENGINE_MODULE
-
 /// @internal Allocate an object of the @a size in the @a engine
 MUON_HINT(malloc, nonnull)
 static inline void *engine_allocate(MuonEngine *engine, size_t size) {
   return malloc(size);
 }
-
-#endif
 
 #endif /* MUON_ENGINE_COMMON_I */

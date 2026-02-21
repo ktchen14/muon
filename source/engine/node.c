@@ -1,5 +1,3 @@
-#define MUON_ENGINE_MODULE
-
 #include "node.h"
 
 #include "common.h"
