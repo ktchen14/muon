@@ -55,14 +55,15 @@
   emit(ViewMember, view_member, VIEW_MEMBER __VA_OPT__(,) __VA_ARGS__) \
   emit(Script, script, SCRIPT __VA_OPT__(,) __VA_ARGS__)
 
-#define MUON_NODE_TAG_EMIT2(T, l, UPPER) MUON_##UPPER##_NODE,
+#define MUON_NODE_TAG_EMIT(T, l, UPPER) MUON_##UPPER##_NODE,
 
 /// An enumeration over each kind of node, e.g. @c MUON_ACCESS_EXPR_NODE
 typedef enum {
-  MUON_EACH_NODE_STEM(MUON_NODE_TAG_EMIT2)
+  MUON_EACH_NODE_STEM(MUON_NODE_TAG_EMIT)
 
   /// Equivalent to the maximum enumerator in MuonNodeEnumerator
-  MUON_MINORANT_NODE = MUON_INDIRECT(MUON_TAKE, MUON_EACH_NODE_STEM(MUON_NODE_TAG_EMIT2)),
+  MUON_MINORANT_NODE = MUON_INDIRECT(
+    MUON_TAKE, MUON_EACH_NODE_STEM(MUON_NODE_TAG_EMIT)),
 
   MUON_EXPR_MEMBER = MUON_EXPR_MEMBER_NODE, //-
   MUON_SWITCH_CASE = MUON_SWITCH_CASE_NODE,
@@ -78,7 +79,8 @@ typedef enum {
 #undef MUON_EMIT
 
   /// Equivalent to the minimum enumerator in MuonExprEnumerator
-  MUON_MINORANT_EXPR = MUON_INDIRECT(MUON_TAKE, MUON_EACH_EXPR_STEM(MUON_NODE_TAG_EMIT2)),
+  MUON_MINORANT_EXPR = MUON_INDIRECT(
+    MUON_TAKE, MUON_EACH_EXPR_STEM(MUON_NODE_TAG_EMIT)),
 } MuonExprTag;
 
 /// An enumeration over each kind of sign, e.g. @c MUON_BOOLEAN_SIGN
@@ -88,7 +90,8 @@ typedef enum {
 #undef MUON_EMIT
 
   /// Equivalent to the minimum enumerator in MuonSignEnumerator
-  MUON_MINORANT_SIGN = MUON_INDIRECT(MUON_TAKE, MUON_EACH_SIGN_STEM(MUON_NODE_TAG_EMIT2)),
+  MUON_MINORANT_SIGN = MUON_INDIRECT(
+    MUON_TAKE, MUON_EACH_SIGN_STEM(MUON_NODE_TAG_EMIT)),
 } MuonSignTag;
 
 /// An enumeration over each kind of stmt, e.g. @c MUON_COERCION_STMT
@@ -98,7 +101,8 @@ typedef enum {
 #undef MUON_EMIT
 
   /// Equivalent to the minimum enumerator in MuonSignEnumerator
-  MUON_MINORANT_STMT = MUON_INDIRECT(MUON_TAKE, MUON_EACH_STMT_STEM(MUON_NODE_TAG_EMIT2)),
+  MUON_MINORANT_STMT = MUON_INDIRECT(
+    MUON_TAKE, MUON_EACH_STMT_STEM(MUON_NODE_TAG_EMIT)),
 } MuonStmtTag;
 
 /// An enumeration over each kind of view, e.g. @c MUON_RECORD_VIEW
@@ -108,8 +112,11 @@ typedef enum {
 #undef MUON_EMIT
 
   /// Equivalent to the minimum enumerator in MuonSignEnumerator
-  MUON_MINORANT_VIEW = MUON_INDIRECT(MUON_TAKE, MUON_EACH_VIEW_STEM(MUON_NODE_TAG_EMIT2)),
+  MUON_MINORANT_VIEW = MUON_INDIRECT(
+    MUON_TAKE, MUON_EACH_VIEW_STEM(MUON_NODE_TAG_EMIT)),
 } MuonViewTag;
+
+#undef MUON_NODE_TAG_EMIT
 
 enum {
 #define MUON_EMIT(...) + 1
@@ -134,7 +141,7 @@ enum {
  * @brief An abstract node
  *
  * Note that a MuonNode is a constant object; the mutable equivalent is a
- * struct MuonNode.
+ * <tt>struct MuonNode</tt>.
  */
 typedef const struct MuonNode {
   MuonNodeTag kind;
@@ -142,52 +149,67 @@ typedef const struct MuonNode {
   size_t id;
 } MuonNode;
 
-/// The header that each concrete node must have
+/// The header that each subtype of MuonNode must have
 #define MUON_NODE_HEADER struct MuonNode as_node
 
 /**
  * @brief An abstract expr
  *
  * Note that a MuonExpr is a constant object; the mutable equivalent is a
- * struct MuonExpr.
+ * <tt>struct MuonExpr</tt>.
  */
 typedef const struct MuonExpr {
   union { MUON_NODE_HEADER; MuonExprTag kind; }; //-
 } MuonExpr;
 
+/// The header that each subtype of MuonExpr must have
+#define MUON_EXPR_HEADER union { \
+  struct MuonExpr as_expr; MUON_NODE_HEADER; \
+}
+
 /**
  * @brief An abstract sign
  *
  * Note that a MuonSign is a constant object; the mutable equivalent is a
- * struct MuonSign.
+ * <tt>struct MuonSign</tt>.
  */
 typedef const struct MuonSign {
   union { MUON_NODE_HEADER; MuonSignTag kind; }; //-
 } MuonSign;
 
+/// The header that each subtype of MuonSign must have
+#define MUON_SIGN_HEADER union { \
+  struct MuonSign as_sign; MUON_NODE_HEADER; \
+}
+
 /**
  * @brief An abstract stmt
  *
  * Note that a MuonStmt is a constant object; the mutable equivalent is a
- * struct MuonStmt.
+ * <tt>struct MuonStmt</tt>.
  */
 typedef const struct MuonStmt {
   union { MUON_NODE_HEADER; MuonStmtTag kind; }; //-
 } MuonStmt;
 
+/// The header that each subtype of MuonStmt must have
+#define MUON_STMT_HEADER union { \
+  struct MuonStmt as_stmt; MUON_NODE_HEADER; \
+}
+
 /**
  * @brief An abstract view
  *
  * Note that a MuonView is a constant object; the mutable equivalent is a
- * struct MuonView.
+ * <tt>struct MuonView</tt>.
  */
 typedef const struct MuonView {
   union { MUON_NODE_HEADER; MuonViewTag kind; }; //-
 } MuonView;
 
-/// The header that each concrete expr must have
-#define MUON_EXPR_HEADER union { \
-  struct MuonExpr as_expr; struct MuonNode as_node; \
+/// The header that each subtype of MuonView must have
+#define MUON_VIEW_HEADER union { \
+  struct MuonView as_view; MUON_NODE_HEADER; \
 }
 
 typedef const struct MuonAccessExpr {
@@ -269,6 +291,142 @@ typedef const struct MuonVectorExpr {
   MuonExpr *argv[] MUON_HINT(counted_by(argc));
 } MuonVectorExpr;
 
+typedef const struct MuonBooleanSign {
+  MUON_SIGN_HEADER;
+} MuonBooleanSign;
+
+typedef const struct MuonIntegerSign {
+  MUON_SIGN_HEADER;
+} MuonIntegerSign;
+
+typedef const struct MuonLambdaSign {
+  MUON_SIGN_HEADER;
+  MuonSign *argument;
+  MuonSign *output;
+} MuonLambdaSign;
+
+typedef const struct MuonNameSign {
+  MUON_SIGN_HEADER;
+  MuonName *name;
+} MuonNameSign;
+
+typedef struct {
+  MuonName *name; // optional
+  MuonSign *sign;
+} MuonSignMember;
+
+typedef const struct MuonRecordSign {
+  MUON_SIGN_HEADER;
+  size_t argc;
+  MuonSignMember argv[] MUON_HINT(counted_by(argc));
+} MuonRecordSign;
+
+typedef const struct MuonVectorSign {
+  MUON_SIGN_HEADER;
+  MuonSign *matter;
+} MuonVectorSign;
+
+typedef const struct MuonCoercionStmt {
+  MUON_STMT_HEADER;
+  MuonSign *source;
+  MuonSign *target;
+  MuonExpr *expr;
+} MuonCoercionStmt;
+
+typedef const struct MuonTypeNode {
+  MUON_NODE_HEADER;
+  MuonName *name;
+  size_t argc;
+  MuonName *argv[] MUON_HINT(counted_by(argc));
+} MuonTypeNode;
+
+typedef const struct MuonDatatypeOption {
+  MUON_NODE_HEADER;
+  MuonName *name;
+} MuonDatatypeOption;
+
+typedef const struct MuonDatatypeStmt {
+  MUON_STMT_HEADER;
+  MuonName *name;
+  size_t argc;
+  MuonDatatypeOption *argv[] MUON_HINT(counted_by(argc));
+} MuonDatatypeStmt;
+
+typedef const struct MuonDefineStmt {
+  MUON_STMT_HEADER;
+  MuonName *name;
+  MuonExpr *expr;
+} MuonDefineStmt;
+
+typedef const struct MuonViewMember {
+  MUON_NODE_HEADER;
+  size_t announce_length;
+  MuonName *name; // optional
+  MuonView *view;
+} MuonViewMember;
+
+typedef const struct MuonRecordView {
+  MUON_VIEW_HEADER;
+  size_t announce_length;
+  size_t argc;
+  MuonViewMember *argv[] MUON_HINT(counted_by(argc));
+} MuonRecordView;
+
+typedef const struct MuonVariableView {
+  MUON_VIEW_HEADER;
+  MuonName *name;
+} MuonVariableView;
+
+typedef const struct MuonScript {
+  MUON_NODE_HEADER;
+  size_t argc;
+  MuonStmt *argv[] MUON_HINT(counted_by(argc));
+} MuonScript;
+
+/// @internal Used to emit each branch in MUON_NODE_TAG(), etc.
+#define MUON_NODE_TAG_EMIT(Title, l, UPPER, SUFFIX) \
+  , Muon##Title *: MUON_##UPPER##SUFFIX
+
+/// Return the enumerator indicative of the concrete @a node
+#define MUON_NODE_TAG(node) _Generic((node) {} \
+  MUON_EACH_NODE_STEM(MUON_NODE_TAG_EMIT, _NODE))
+
+/// @internal Used to decide the cast result in muon_node_cast()
+MUON_HINT(nonnull)
+static inline MuonNode *muon_node_cast(MuonNode *node, MuonNodeTag tag) {
+  return node->kind == tag ? node : NULL;
+}
+
+/**
+ * @brief Downcast the @a abstract node to the <tt>typeof(concrete)</tt>
+ *
+ * @a abstract should have type <tt>MuonNode *</tt>. @a concrete should have the
+ * type of a pointer to a const qualified concrete node. Then if
+ * @a abstract is an instance of that type, it will be cast to that type and
+ * returned. Otherwise, this will return @c NULL.
+ *
+ * Then if @a abstract is an instance of that type, it will be cast to that type
+ * and returned. Otherwise, this will return @c NULL.
+ *
+ * @par Example:
+ * @code{.c}
+ *   MuonNode *abstract_node = ...;
+ *
+ *   MuonAccessExpr *expr;
+ *   if ((expr = mu_expr_cast(abstract_node, expr)) == NULL)
+ *     return ...;
+ * @endcode
+ *
+ * The behavior is undefined if:
+ * - @a abstract is @c NULL
+ * - @a abstract doesn't have type <tt>MuonNode *</tt>
+ * - @a concrete isn't, or doesn't have, the type of a const qualified pointer
+ *   to a concrete node
+ */
+#define muon_node_cast(node, concrete) ( \
+  (typeof(concrete)) muon_node_cast((node), MUON_NODE_TAG(typeof(concrete))) \
+)
+
 MuonAccessExpr *muon_access_expr(MuonEngine *engine, MuonName *name)
   MUON_HINT_SUFFIX(malloc, nonnull);
 
@@ -320,46 +478,6 @@ MuonVectorExpr *muon_vector_expr(
     MuonEngine *engine, size_t argc, MuonExpr *const argv[/* argc */])
   MUON_HINT_SUFFIX(malloc, nonnull(1));
 
-/// The header that each concrete sign must have
-#define MUON_SIGN_HEADER union { \
-  struct MuonSign as_sign; struct MuonNode as_node; \
-}
-
-typedef const struct MuonBooleanSign {
-  MUON_SIGN_HEADER;
-} MuonBooleanSign;
-
-typedef const struct MuonIntegerSign {
-  MUON_SIGN_HEADER;
-} MuonIntegerSign;
-
-typedef const struct MuonLambdaSign {
-  MUON_SIGN_HEADER;
-  MuonSign *argument;
-  MuonSign *output;
-} MuonLambdaSign;
-
-typedef const struct MuonNameSign {
-  MUON_SIGN_HEADER;
-  MuonName *name;
-} MuonNameSign;
-
-typedef struct {
-  MuonName *name; // optional
-  MuonSign *sign;
-} MuonSignMember;
-
-typedef const struct MuonRecordSign {
-  MUON_SIGN_HEADER;
-  size_t argc;
-  MuonSignMember argv[] MUON_HINT(counted_by(argc));
-} MuonRecordSign;
-
-typedef const struct MuonVectorSign {
-  MUON_SIGN_HEADER;
-  MuonSign *matter;
-} MuonVectorSign;
-
 MuonBooleanSign *muon_boolean_sign(MuonEngine *engine)
   MUON_HINT_SUFFIX(malloc, nonnull);
 
@@ -380,43 +498,6 @@ MuonRecordSign *muon_record_sign(
 MuonVectorSign *muon_vector_sign(MuonEngine *engine, MuonSign *matter)
   MUON_HINT_SUFFIX(malloc, nonnull);
 
-/// The header that each concrete stmt must have
-#define MUON_STMT_HEADER union { \
-  struct MuonStmt as_stmt; struct MuonNode as_node; \
-}
-
-typedef const struct MuonCoercionStmt {
-  MUON_STMT_HEADER;
-  MuonSign *source;
-  MuonSign *target;
-  MuonExpr *expr;
-} MuonCoercionStmt;
-
-typedef const struct MuonTypeNode {
-  MUON_NODE_HEADER;
-  MuonName *name;
-  size_t argc;
-  MuonName *argv[] MUON_HINT(counted_by(argc));
-} MuonTypeNode;
-
-typedef const struct MuonDatatypeOption {
-  MUON_NODE_HEADER;
-  MuonName *name;
-} MuonDatatypeOption;
-
-typedef const struct MuonDatatypeStmt {
-  MUON_STMT_HEADER;
-  MuonName *name;
-  size_t argc;
-  MuonDatatypeOption *argv[] MUON_HINT(counted_by(argc));
-} MuonDatatypeStmt;
-
-typedef const struct MuonDefineStmt {
-  MUON_STMT_HEADER;
-  MuonName *name;
-  MuonExpr *expr;
-} MuonDefineStmt;
-
 MuonCoercionStmt *muon_coercion_stmt(
     MuonEngine *engine, MuonSign *source, MuonSign *target, MuonExpr *expr)
   MUON_HINT_SUFFIX(malloc, nonnull);
@@ -431,33 +512,9 @@ MuonDatatypeStmt *muon_datatype_stmt(
     MuonDatatypeOption *argv[/* argc */])
   MUON_HINT_SUFFIX(malloc, nonnull(1, 2));
 
-MUON_HINT(malloc) MuonDefineStmt *muon_define_stmt(
+MuonDefineStmt *muon_define_stmt(
     MuonEngine *engine, MuonName *name, MuonExpr *expr)
-  MUON_HINT_SUFFIX(nonnull);
-
-/// The header that each concrete view must have
-#define MUON_VIEW_HEADER union { \
-  struct MuonView as_view; struct MuonNode as_node; \
-}
-
-typedef const struct MuonViewMember {
-  MUON_NODE_HEADER;
-  size_t announce_length;
-  MuonName *name; // optional
-  MuonView *view;
-} MuonViewMember;
-
-typedef const struct MuonRecordView {
-  MUON_VIEW_HEADER;
-  size_t announce_length;
-  size_t argc;
-  MuonViewMember *argv[] MUON_HINT(counted_by(argc));
-} MuonRecordView;
-
-typedef const struct MuonVariableView {
-  MUON_VIEW_HEADER;
-  MuonName *name;
-} MuonVariableView;
+  MUON_HINT_SUFFIX(malloc, nonnull);
 
 MuonViewMember *muon_view_member(
     MuonEngine *engine, MuonName *name, MuonView *view)
@@ -470,12 +527,6 @@ MuonRecordView *muon_record_view(
 MuonVariableView *muon_variable_view(MuonEngine *engine, MuonName *name)
   MUON_HINT_SUFFIX(malloc, nonnull);
 
-typedef const struct MuonScript {
-  MUON_NODE_HEADER;
-  size_t argc;
-  MuonStmt *argv[] MUON_HINT(counted_by(argc));
-} MuonScript;
-
 MuonScript *muon_script(
     MuonEngine *engine, size_t argc, MuonStmt *argv[/* argc */])
   MUON_HINT_SUFFIX(malloc, nonnull);
@@ -483,50 +534,5 @@ MuonScript *muon_script(
 /// Emit debugging information on the abstract @a node to the debug stream
 void muon_node_debug(MuonNode *node)
   MUON_HINT_SUFFIX(nonnull);
-
-/// @internal Used to emit each branch in MUON_NODE_TAG(), etc.
-#define MUON_NODE_TAG_EMIT(Title, l, UPPER, SUFFIX) \
-  , Muon##Title *: MUON_##UPPER##SUFFIX \
-  , struct Muon##Title *: MUON_##UPPER##SUFFIX
-
-/// Return the enumerator indicative of the concrete @a node
-#define MUON_NODE_TAG(node) _Generic( \
-  (node) {} MUON_EACH_NODE_STEM(MUON_NODE_TAG_EMIT, _NODE))
-
-/// @internal Used to decide the cast result in muon_node_cast()
-MUON_HINT(nonnull)
-static inline MuonNode *muon_node_cast(MuonNode *node, MuonNodeTag tag) {
-  return node->kind == tag ? node : NULL;
-}
-
-/**
- * @brief Downcast the @a abstract node to the <tt>typeof(concrete)</tt>
- *
- * @a abstract should have type <tt>MuonNode *</tt>. @a concrete should be, or
- * have, the type of a pointer to a const qualified concrete node. Then if
- * @a abstract is an instance of that type, it will be cast to that type and
- * returned. Otherwise, this will return @c NULL.
- *
- * Then if @a abstract is an instance of that type, it will be cast to that type
- * and returned. Otherwise, this will return @c NULL.
- *
- * @par Example:
- * @code{.c}
- *   MuonNode *abstract_node = ...;
- *
- *   MuonAccessExpr *expr;
- *   if ((expr = mu_expr_cast(abstract_node, expr)) == NULL)
- *     return ...;
- * @endcode
- *
- * The behavior is undefined if:
- * - @a abstract is @c NULL
- * - @a abstract doesn't have type <tt>MuonNode *</tt>
- * - @a concrete isn't, or doesn't have, the type of a const qualified pointer
- *   to a concrete node
- */
-#define muon_node_cast(node, concrete) ( \
-  (typeof(concrete)) muon_node_cast((node), MUON_NODE_TAG(typeof(concrete))) \
-)
 
 #endif /* MUON_ENGINE_NODE_H */
