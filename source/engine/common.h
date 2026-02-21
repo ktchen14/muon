@@ -4,6 +4,8 @@
 #include <muon/engine/common.h> // IWYU pragma: export
 #include <muon/engine/name.h>
 
+#include "../common.h" // IWYU pragma: export
+
 #include <assert.h>
 #include <stddef.h>
 #include <stdlib.h>

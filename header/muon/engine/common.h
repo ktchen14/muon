@@ -59,74 +59,13 @@ typedef struct {
   emit(ViewMember, view_member, VIEW_MEMBER __VA_OPT__(,) __VA_ARGS__) \
   emit(Script, script, SCRIPT __VA_OPT__(,) __VA_ARGS__)
 
-/// Expands to emit(Title, lower, UPPER, ...) for each kind of stator
-#define MUON_EACH_STATOR_STEM(emit, ...) \
-  emit(Name, name, NAME __VA_OPT__(,) __VA_ARGS__) \
-  MUON_EACH_NODE_STEM(emit __VA_OPT__(,) __VA_ARGS__)
-
-/// An enumeration over each kind of stator, e.g. @c MUON_NAME_STATOR
-typedef enum {
-#define MUON_EMIT(T, l, UPPER) MUON_##UPPER##_STATOR,
-  MUON_EACH_STATOR_STEM(MUON_EMIT)
-#undef MUON_EMIT
-
-#define MUON_EMIT(T, l, UPPER) MUON_##UPPER##_STATOR,
-  /// Equivalent to the minimum enumerator in MuonStatorEnumerator
-  MUON_MINORANT_STATOR = MUON_INDIRECT(
-      MUON_TAKE, MUON_EACH_STATOR_STEM(MUON_EMIT)),
-
-  /// Equivalent to the maximum enumerator in MuonNodeEnumerator
-  MUON_MINORANT_NODE_STATOR = MUON_INDIRECT(
-      MUON_TAKE, MUON_EACH_NODE_STEM(MUON_EMIT)),
-
-  /// Equivalent to the minimum enumerator in MuonExprEnumerator
-  MUON_MINORANT_EXPR_STATOR = MUON_INDIRECT(
-      MUON_TAKE, MUON_EACH_EXPR_STEM(MUON_EMIT)),
-
-  /// Equivalent to the minimum enumerator in MuonSignEnumerator
-  MUON_MINORANT_SIGN_STATOR = MUON_INDIRECT(
-      MUON_TAKE, MUON_EACH_SIGN_STEM(MUON_EMIT)),
-
-  /// Equivalent to the minimum enumerator in MuonStmtEnumerator
-  MUON_MINORANT_STMT_STATOR = MUON_INDIRECT(
-      MUON_TAKE, MUON_EACH_STMT_STEM(MUON_EMIT)),
-
-  /// Equivalent to the minimum enumerator in MuonStmtEnumerator
-  MUON_MINORANT_VIEW_STATOR = MUON_INDIRECT(
-      MUON_TAKE, MUON_EACH_VIEW_STEM(MUON_EMIT)),
-#undef MUON_EMIT
-
-#define MUON_EMIT(...) 1 +
-  /// Equivalent to the maximum enumerator in MuonStatorEnumerator
-  MUON_MAJORANT_STATOR = MUON_MINORANT_STATOR + MUON_EACH_STATOR_STEM(MUON_EMIT)
-      - 1,
-
-  /// Equivalent to the maximum enumerator in MuonNodeEnumerator
-  MUON_MAJORANT_NODE_STATOR = MUON_MINORANT_NODE_STATOR
-      + MUON_EACH_NODE_STEM(MUON_EMIT) - 1,
-
-  /// Equivalent to the maximum enumerator in MuonExprEnumerator
-  MUON_MAJORANT_EXPR_STATOR = MUON_MINORANT_EXPR_STATOR
-      + MUON_EACH_EXPR_STEM(MUON_EMIT) - 1,
-
-  /// Equivalent to the maximum enumerator in MuonSignEnumerator
-  MUON_MAJORANT_SIGN_STATOR = MUON_MINORANT_SIGN_STATOR
-      + MUON_EACH_SIGN_STEM(MUON_EMIT) - 1,
-
-  /// Equivalent to the maximum enumerator in MuonStmtEnumerator
-  MUON_MAJORANT_STMT_STATOR = MUON_MINORANT_STMT_STATOR
-      + MUON_EACH_STMT_STEM(MUON_EMIT) - 1,
-
-  /// Equivalent to the maximum enumerator in MuonStmtEnumerator
-  MUON_MAJORANT_VIEW_STATOR = MUON_MINORANT_VIEW_STATOR
-      + MUON_EACH_VIEW_STEM(MUON_EMIT) - 1,
-#undef MUON_EMIT
-} MuonStatorEnumerator;
-
 /// An enumeration over each kind of node, e.g. @c MUON_ACCESS_EXPR_NODE
 typedef enum {
-#define MUON_EMIT(T, l, UPPER) MUON_##UPPER##_NODE = MUON_##UPPER##_STATOR,
+#define MUON_EMIT(T, l, UPPER) MUON_##UPPER##_NODE,
   MUON_EACH_NODE_STEM(MUON_EMIT)
+
+  /// Equivalent to the maximum enumerator in MuonNodeEnumerator
+  MUON_MINORANT_NODE = MUON_INDIRECT(MUON_TAKE, MUON_EACH_NODE_STEM(MUON_EMIT)),
 #undef MUON_EMIT
 
   MUON_EXPR_MEMBER = MUON_EXPR_MEMBER_NODE, //-
@@ -134,37 +73,7 @@ typedef enum {
   MUON_DATATYPE_OPTION = MUON_DATATYPE_OPTION_NODE,
   MUON_VIEW_MEMBER = MUON_VIEW_MEMBER_NODE,
   MUON_SCRIPT = MUON_SCRIPT_NODE,
-
-  /// Equivalent to the minimum enumerator in MuonNodeEnumerator
-  MUON_MINORANT_NODE = MUON_MINORANT_NODE_STATOR,
-
-  /// Equivalent to the minimum enumerator in MuonExprEnumerator
-  MUON_MINORANT_EXPR_NODE = MUON_MINORANT_EXPR_STATOR,
-
-  /// Equivalent to the minimum enumerator in MuonSignEnumerator
-  MUON_MINORANT_SIGN_NODE = MUON_MINORANT_SIGN_STATOR,
-
-  /// Equivalent to the minimum enumerator in MuonStmtEnumerator
-  MUON_MINORANT_STMT_NODE = MUON_MINORANT_STMT_STATOR,
-
-  /// Equivalent to the minimum enumerator in MuonViewEnumerator
-  MUON_MINORANT_VIEW_NODE = MUON_MINORANT_VIEW_STATOR,
-
-  /// Equivalent to the maximum enumerator in MuonNodeEnumerator
-  MUON_MAJORANT_NODE = MUON_MAJORANT_NODE_STATOR,
-
-  /// Equivalent to the maximum enumerator in MuonExprEnumerator
-  MUON_MAJORANT_EXPR_NODE = MUON_MAJORANT_EXPR_STATOR,
-
-  /// Equivalent to the maximum enumerator in MuonSignEnumerator
-  MUON_MAJORANT_SIGN_NODE = MUON_MAJORANT_SIGN_STATOR,
-
-  /// Equivalent to the maximum enumerator in MuonStmtEnumerator
-  MUON_MAJORANT_STMT_NODE = MUON_MAJORANT_STMT_STATOR,
-
-  /// Equivalent to the maximum enumerator in MuonViewEnumerator
-  MUON_MAJORANT_VIEW_NODE = MUON_MAJORANT_VIEW_STATOR,
-} MuonNodeEnumerator;
+} MuonNodeTag;
 
 /// An enumeration over each kind of expr, e.g. @c MUON_ACCESS_EXPR
 typedef enum {
@@ -172,12 +81,11 @@ typedef enum {
   MUON_EACH_EXPR_STEM(MUON_EMIT)
 #undef MUON_EMIT
 
+#define MUON_EMIT(T, l, UPPER) MUON_##UPPER,
   /// Equivalent to the minimum enumerator in MuonExprEnumerator
-  MUON_MINORANT_EXPR = MUON_MINORANT_EXPR_NODE,
-
-  /// Equivalent to the maximum enumerator in MuonExprEnumerator
-  MUON_MAJORANT_EXPR = MUON_MAJORANT_EXPR_NODE,
-} MuonExprEnumerator;
+  MUON_MINORANT_EXPR = MUON_INDIRECT(MUON_TAKE, MUON_EACH_EXPR_STEM(MUON_EMIT)),
+#undef MUON_EMIT
+} MuonExprTag;
 
 /// An enumeration over each kind of sign, e.g. @c MUON_BOOLEAN_SIGN
 typedef enum {
@@ -185,12 +93,11 @@ typedef enum {
   MUON_EACH_SIGN_STEM(MUON_EMIT)
 #undef MUON_EMIT
 
+#define MUON_EMIT(T, l, UPPER) MUON_##UPPER,
   /// Equivalent to the minimum enumerator in MuonSignEnumerator
-  MUON_MINORANT_SIGN = MUON_MINORANT_SIGN_NODE,
-
-  /// Equivalent to the maximum enumerator in MuonSignEnumerator
-  MUON_MAJORANT_SIGN = MUON_MAJORANT_SIGN_NODE,
-} MuonSignEnumerator;
+  MUON_MINORANT_SIGN = MUON_INDIRECT(MUON_TAKE, MUON_EACH_SIGN_STEM(MUON_EMIT)),
+#undef MUON_EMIT
+} MuonSignTag;
 
 /// An enumeration over each kind of stmt, e.g. @c MUON_COERCION_STMT
 typedef enum {
@@ -198,12 +105,11 @@ typedef enum {
   MUON_EACH_STMT_STEM(MUON_EMIT)
 #undef MUON_EMIT
 
-  /// Equivalent to the minimum enumerator in MuonStmtEnumerator
-  MUON_MINORANT_STMT = MUON_MINORANT_STMT_NODE,
-
-  /// Equivalent to the maximum enumerator in MuonStmtEnumerator
-  MUON_MAJORANT_STMT = MUON_MAJORANT_STMT_NODE,
-} MuonStmtEnumerator;
+#define MUON_EMIT(T, l, UPPER) MUON_##UPPER,
+  /// Equivalent to the minimum enumerator in MuonSignEnumerator
+  MUON_MINORANT_STMT = MUON_INDIRECT(MUON_TAKE, MUON_EACH_STMT_STEM(MUON_EMIT)),
+#undef MUON_EMIT
+} MuonStmtTag;
 
 /// An enumeration over each kind of view, e.g. @c MUON_RECORD_VIEW
 typedef enum {
@@ -211,41 +117,34 @@ typedef enum {
   MUON_EACH_VIEW_STEM(MUON_EMIT)
 #undef MUON_EMIT
 
-  /// Equivalent to the minimum enumerator in MuonViewEnumerator
-  MUON_MINORANT_VIEW = MUON_MINORANT_VIEW_NODE,
-
-  /// Equivalent to the maximum enumerator in MuonViewEnumerator
-  MUON_MAJORANT_VIEW = MUON_MAJORANT_VIEW_NODE,
-} MuonViewEnumerator;
+#define MUON_EMIT(T, l, UPPER) MUON_##UPPER,
+  /// Equivalent to the minimum enumerator in MuonSignEnumerator
+  MUON_MINORANT_VIEW = MUON_INDIRECT(MUON_TAKE, MUON_EACH_VIEW_STEM(MUON_EMIT)),
+#undef MUON_EMIT
+} MuonViewTag;
 
 enum {
-  /// Number of distinct kinds of stators
-  MUON_STATOR_NUMBER = MUON_MAJORANT_STATOR - MUON_MINORANT_STATOR + 1,
-
+#define MUON_EMIT(...) + 1
   /// Number of distinct kinds of nodes
-  MUON_NODE_NUMBER = MUON_MAJORANT_NODE - MUON_MINORANT_NODE + 1,
+  MUON_NODE_NUMBER = MUON_EACH_NODE_STEM(MUON_EMIT),
 
   /// Number of distinct kinds of exprs
-  MUON_EXPR_NUMBER = MUON_MAJORANT_EXPR - MUON_MINORANT_EXPR + 1,
+  MUON_EXPR_NUMBER = MUON_EACH_EXPR_STEM(MUON_EMIT),
 
   /// Number of distinct kinds of signs
-  MUON_SIGN_NUMBER = MUON_MAJORANT_SIGN - MUON_MINORANT_SIGN + 1,
+  MUON_SIGN_NUMBER = MUON_EACH_SIGN_STEM(MUON_EMIT),
 
   /// Number of distinct kinds of stmts
-  MUON_STMT_NUMBER = MUON_MAJORANT_STMT - MUON_MINORANT_STMT + 1,
+  MUON_STMT_NUMBER = MUON_EACH_STMT_STEM(MUON_EMIT),
 
   /// Number of distinct kinds of views
-  MUON_VIEW_NUMBER = MUON_MAJORANT_VIEW - MUON_MINORANT_VIEW + 1,
+  MUON_VIEW_NUMBER = MUON_EACH_VIEW_STEM(MUON_EMIT),
+#undef MUON_EMIT
 };
 
 /// @internal Used to emit each branch in MUON_STATOR_ENUMERATOR(), etc.
-#define MUON_ENUMERATOR_EMIT(Title, l, UPPER, US) \
-  , Muon##Title *: MUON_##UPPER, struct Muon##Title *: MUON_##UPPER
-
-typedef MuonNodeEnumerator MuonNodeTag;
-typedef MuonExprEnumerator MuonExprTag;
-typedef MuonSignEnumerator MuonSignTag;
-typedef MuonStmtEnumerator MuonStmtTag;
-typedef MuonViewEnumerator MuonViewTag;
+#define MUON_ENUMERATOR_EMIT(Title, l, UPPER, SUFFIX) \
+  , Muon##Title *: MUON_##UPPER##SUFFIX \
+  , struct Muon##Title *: MUON_##UPPER##SUFFIX
 
 #endif /* MUON_ENGINE_COMMON_H */

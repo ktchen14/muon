@@ -361,47 +361,17 @@ MuonScript *muon_script(
 void muon_node_debug(MuonNode *node)
   MUON_HINT_SUFFIX(nonnull);
 
-/**
- * @brief Return the minimum enumerator indicative of the concrete @a node
- *
- * @a node must be a pointer to a concrete node.
- *
- * This is equivalent to MUON_NODE_ENUMERATOR() if @a node is the type of a
- * concrete node. However, if @a node is <tt>MuonExpr *</tt>, then this returns
- * MUON_MINORANT_EXPR.
- */
-#define MUON_NODE_ENUMERATOR_MINIMUM(node) \
-  _Generic((node) MUON_EACH_NODE_STEM(MUON_ENUMERATOR_EMIT, NODE), \
-    MuonExpr *: MUON_MINORANT_EXPR, \
-    MuonSign *: MUON_MINORANT_SIGN)
-
-/**
- * @brief Return the maximum enumerator indicative of the concrete @a node
- *
- * @a node must be a pointer to a concrete node.
- *
- * This is equivalent to MUON_NODE_ENUMERATOR() if @a node is the type of a
- * concrete node. However, if @a node is <tt>MuonExpr *</tt>, then this returns
- * MUON_MAJORANT_EXPR.
- */
-#define MUON_NODE_ENUMERATOR_MAXIMUM(node) \
-  _Generic((node) MUON_EACH_NODE_STEM(MUON_ENUMERATOR_EMIT, NODE), \
-    MuonExpr *: MUON_MAJORANT_EXPR, \
-    MuonSign *: MUON_MAJORANT_SIGN)
-
 /// Return the enumerator indicative of the concrete @a node
-#define MUON_NODE_ENUMERATOR(node) \
-  _Generic((node) MUON_EACH_NODE_STEM(MUON_ENUMERATOR_EMIT, NODE))
+#define MUON_NODE_TAG(node) \
+  _Generic((node) {} MUON_EACH_NODE_STEM(MUON_ENUMERATOR_EMIT, _NODE))
 
 /// Return the enumerator indicative of the type of the concrete @a expr
-#define MUON_EXPR_ENUMERATOR(expr) _Generic((expr) \
-  MUON_EACH_EXPR_STEM(MUON_ENUMERATOR_EMIT) \
-)
+#define MUON_EXPR_ENUMERATOR(expr) \
+  _Generic((expr) MUON_EACH_EXPR_STEM(MUON_ENUMERATOR_EMIT))
 
 /// Return the enumerator indicative of the type of the concrete @a sign
-#define MUON_SIGN_ENUMERATOR(sign) _Generic((sign) \
-  MUON_EACH_SIGN_STEM(MUON_ENUMERATOR_EMIT) \
-)
+#define MUON_SIGN_ENUMERATOR(sign) \
+  _Generic((sign) MUON_EACH_SIGN_STEM(MUON_ENUMERATOR_EMIT))
 
 /// @internal Used to emit each branch in mu_stmt_cast()
 #define MUON_STMT_CAST_EMIT(l, upper, title, ...) \
@@ -413,22 +383,20 @@ void muon_node_debug(MuonNode *node)
 
 /// @internal Used to decide the cast result in muon_node_cast()
 MUON_HINT(nonnull)
-static inline MuonNode *muon_node_cast(
-    MuonNode *node, MuonNodeTag minimum, MuonNodeTag maximum) {
-  MuonNodeTag kind = node->kind;
-  return kind >= minimum && kind <= maximum ? node : NULL;
+static inline MuonNode *muon_node_cast(MuonNode *node, MuonNodeTag tag) {
+  return node->kind == tag ? node : NULL;
 }
 
 /// @internal Used to decide the cast result in muon_expr_cast()
 MUON_HINT(nonnull)
-static inline MuonExpr *muon_expr_cast(MuonExpr *expr, MuonExprTag kind) {
-  return expr->kind == kind ? expr : NULL;
+static inline MuonExpr *muon_expr_cast(MuonExpr *expr, MuonExprTag tag) {
+  return expr->kind == tag ? expr : NULL;
 }
 
 /// @internal Used to decide the cast result in muon_sign_cast()
 MUON_HINT(nonnull)
-static inline MuonSign *muon_sign_cast(MuonSign *sign, MuonSignTag kind) {
-  return sign->kind == kind ? sign : NULL;
+static inline MuonSign *muon_sign_cast(MuonSign *sign, MuonSignTag tag) {
+  return sign->kind == tag ? sign : NULL;
 }
 
 /**
@@ -458,9 +426,7 @@ static inline MuonSign *muon_sign_cast(MuonSign *sign, MuonSignTag kind) {
  *   to a concrete node
  */
 #define muon_node_cast(node, concrete) ( \
-  (__typeof__((concrete))) (muon_node_cast)((node), \
-    MUON_NODE_ENUMERATOR_MINIMUM((concrete)), \
-    MUON_NODE_ENUMERATOR_MAXIMUM((concrete))) \
+  (typeof(concrete)) muon_node_cast((node), MUON_NODE_TAG(typeof(concrete))) \
 )
 
 /**
@@ -487,8 +453,7 @@ static inline MuonSign *muon_sign_cast(MuonSign *sign, MuonSignTag kind) {
  *   to a concrete expr
  */
 #define muon_expr_cast(expr, concrete) ( \
-  (__typeof__((concrete))) (muon_expr_cast)((expr), \
-    MUON_EXPR_ENUMERATOR((concrete))) \
+  (typeof(concrete)) (muon_expr_cast)((expr), MUON_EXPR_ENUMERATOR((concrete))) \
 )
 
 /**

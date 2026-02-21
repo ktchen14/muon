@@ -82,16 +82,8 @@ static inline MuonNode *node_return(MuonNode *node) {
  * - @c ... isn't a declaration of a variable with the type of a concrete node
  */
 #define IS_CONCRETE_NODE(...) \
-  _Pragma("GCC diagnostic push") \
-  _Pragma("GCC diagnostic ignored \"-Wunknown-warning-option\"") \
-  _Pragma("GCC diagnostic ignored \"-Wdefault-const-init-var-unsafe\"") \
-  MUON_NODE_ENUMERATOR_MINIMUM( \
-    __extension__ ({ MUON_HINT(unused) __VA_ARGS__, _; &_; }) \
-  ) ... \
-  MUON_NODE_ENUMERATOR_MAXIMUM( \
-    __extension__ ({ MUON_HINT(unused) __VA_ARGS__, _; &_; }) \
-  ) \
-  _Pragma("GCC diagnostic pop"): __VA_ARGS__ = _object;
+  MUON_NODE_TAG(typeof(&(union { __VA_ARGS__, _; }) {}._)): \
+    __VA_ARGS__ = _object;
 
 /// Return the <em>i</em>th node in the abstract @a node
 static inline MuonNode *node_at(MuonNode *node, size_t i) {

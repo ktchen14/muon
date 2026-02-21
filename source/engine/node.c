@@ -5,8 +5,6 @@
 #include "common.h"
 #include "name.h"
 
-#include "../common.h"
-
 #include <assert.h>
 #include <errno.h>
 #include <inttypes.h>

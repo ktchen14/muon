@@ -15,6 +15,7 @@ target_compile_features(muon PRIVATE c_std_23)
 target_compile_options(muon PRIVATE
   -Wall -Wextra -pedantic
   -Wcast-align
+  # -Wcast-qual
   -Wconversion
   -Wno-gnu-case-range
   -Wno-gnu-zero-variadic-macro-arguments  # Ignore , ##__VA_ARGS__
