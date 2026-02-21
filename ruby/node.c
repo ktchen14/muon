@@ -31,12 +31,12 @@ static const struct {
 
   [MUON_NODE] = { &rb_cObject, NULL },
 
-#define EMIT(Title, lower, UPPER, Super, super, SUPER) \
-    [MUON_##UPPER##_##SUPER] = { &c##Super, &super##_type },
-  MUON_EACH_EXPR_STEM(EMIT, Expr, expr, EXPR)
-  MUON_EACH_SIGN_STEM(EMIT, Sign, sign, SIGN)
-  MUON_EACH_STMT_STEM(EMIT, Stmt, stmt, STMT)
-  MUON_EACH_VIEW_STEM(EMIT, View, view, VIEW)
+#define EMIT(Title, lower, UPPER, Super, super) \
+    [MUON_##UPPER] = { &c##Super, &super##_type },
+  MUON_EACH_EXPR_STEM(EMIT, Expr, expr)
+  MUON_EACH_SIGN_STEM(EMIT, Sign, sign)
+  MUON_EACH_STMT_STEM(EMIT, Stmt, stmt)
+  MUON_EACH_VIEW_STEM(EMIT, View, view)
 #undef EMIT
 
 #pragma GCC diagnostic pop

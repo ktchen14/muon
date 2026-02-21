@@ -44,50 +44,30 @@ EACH_ABSTRACT_NODE_STEM(EMIT)
 MUON_EACH_NODE_STEM(EMIT)
 #undef EMIT
 
-[[gnu::nonnull]] static inline VALUE as_expr(MuonExpr *expr) {
-  switch (expr->kind) {
-#define EMIT(Title, lower, UPPER) case MUON_##UPPER##_EXPR: \
-      return as_##lower##_expr((Muon##Title##Expr *) expr);
-    MUON_EACH_EXPR_STEM(EMIT)
-#undef EMIT
-  }
+#define EMIT(Title, lower, UPPER) \
+  case MUON_##UPPER: return as_##lower((Muon##Title *) node);
+
+[[gnu::nonnull]] static inline VALUE as_expr(MuonExpr *node) {
+  switch (node->kind) { MUON_EACH_EXPR_STEM(EMIT) }
 }
 
-[[gnu::nonnull]] static inline VALUE as_sign(MuonSign *sign) {
-  switch (sign->kind) {
-#define EMIT(Title, lower, UPPER) case MUON_##UPPER##_SIGN: \
-      return as_##lower##_sign((Muon##Title##Sign *) sign);
-    MUON_EACH_SIGN_STEM(EMIT)
-#undef EMIT
-  }
+[[gnu::nonnull]] static inline VALUE as_sign(MuonSign *node) {
+  switch (node->kind) { MUON_EACH_SIGN_STEM(EMIT) }
 }
 
-[[gnu::nonnull]] static inline VALUE as_stmt(MuonStmt *stmt) {
-  switch (stmt->kind) {
-#define EMIT(Title, lower, UPPER) case MUON_##UPPER##_STMT: \
-      return as_##lower##_stmt((Muon##Title##Stmt *) stmt);
-    MUON_EACH_STMT_STEM(EMIT)
-#undef EMIT
-  }
+[[gnu::nonnull]] static inline VALUE as_stmt(MuonStmt *node) {
+  switch (node->kind) { MUON_EACH_STMT_STEM(EMIT) }
 }
 
-[[gnu::nonnull]] static inline VALUE as_view(MuonView *view) {
-  switch (view->kind) {
-#define EMIT(Title, lower, UPPER) case MUON_##UPPER##_VIEW: \
-      return as_##lower##_view((Muon##Title##View *) view);
-    MUON_EACH_VIEW_STEM(EMIT)
-#undef EMIT
-  }
+[[gnu::nonnull]] static inline VALUE as_view(MuonView *node) {
+  switch (node->kind) { MUON_EACH_VIEW_STEM(EMIT) }
 }
 
 [[gnu::nonnull]] static inline VALUE as_node(MuonNode *node) {
-  switch (node->kind) {
-#define EMIT(Title, lower, UPPER) \
-      case MUON_##UPPER: return as_##lower((Muon##Title *) node);
-    MUON_EACH_NODE_STEM(EMIT)
-#undef EMIT
-  }
+  switch (node->kind) { MUON_EACH_NODE_STEM(EMIT) }
 }
+
+#undef EMIT
 
 void Init_muon_node(VALUE mMuon);
 

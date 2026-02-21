@@ -13,63 +13,56 @@ typedef struct {
 
 /// Expands to emit(Title, lower, UPPER, ...) for each kind of expr
 #define MUON_EACH_EXPR_STEM(emit, ...) \
-  emit(Access, access, ACCESS, ##__VA_ARGS__) \
-  emit(Boolean, boolean, BOOLEAN, ##__VA_ARGS__) \
-  emit(Cast, cast, CAST, ##__VA_ARGS__) \
-  emit(Integer, integer, INTEGER, ##__VA_ARGS__) \
-  emit(Invoke, invoke, INVOKE, ##__VA_ARGS__) \
-  emit(Lambda, lambda, LAMBDA, ##__VA_ARGS__) \
-  emit(Name, name, NAME, ##__VA_ARGS__) \
-  emit(Native, native, NATIVE, ##__VA_ARGS__) \
-  emit(Record, record, RECORD, ##__VA_ARGS__) \
-  emit(Sequence, sequence, SEQUENCE, ##__VA_ARGS__) \
-  emit(Switch, switch, SWITCH, ##__VA_ARGS__) \
-  emit(Vector, vector, VECTOR, ##__VA_ARGS__)
+  emit(AccessExpr, access_expr, ACCESS_EXPR __VA_OPT__(,) __VA_ARGS__) \
+  emit(BooleanExpr, boolean_expr, BOOLEAN_EXPR __VA_OPT__(,) __VA_ARGS__) \
+  emit(CastExpr, cast_expr, CAST_EXPR __VA_OPT__(,) __VA_ARGS__) \
+  emit(IntegerExpr, integer_expr, INTEGER_EXPR __VA_OPT__(,) __VA_ARGS__) \
+  emit(InvokeExpr, invoke_expr, INVOKE_EXPR __VA_OPT__(,) __VA_ARGS__) \
+  emit(LambdaExpr, lambda_expr, LAMBDA_EXPR __VA_OPT__(,) __VA_ARGS__) \
+  emit(NameExpr, name_expr, NAME_EXPR __VA_OPT__(,) __VA_ARGS__) \
+  emit(NativeExpr, native_expr, NATIVE_EXPR __VA_OPT__(,) __VA_ARGS__) \
+  emit(RecordExpr, record_expr, RECORD_EXPR __VA_OPT__(,) __VA_ARGS__) \
+  emit(SequenceExpr, sequence_expr, SEQUENCE_EXPR __VA_OPT__(,) __VA_ARGS__) \
+  emit(SwitchExpr, switch_expr, SWITCH_EXPR __VA_OPT__(,) __VA_ARGS__) \
+  emit(VectorExpr, vector_expr, VECTOR_EXPR __VA_OPT__(,) __VA_ARGS__)
 
 /// Expands to emit(Title, lower, UPPER, ...) for each kind of sign
 #define MUON_EACH_SIGN_STEM(emit, ...) \
-  emit(Boolean, boolean, BOOLEAN, ##__VA_ARGS__) \
-  emit(Integer, integer, INTEGER, ##__VA_ARGS__) \
-  emit(Lambda, lambda, LAMBDA, ##__VA_ARGS__) \
-  emit(Name, name, NAME, ##__VA_ARGS__) \
-  emit(Record, record, RECORD, ##__VA_ARGS__) \
-  emit(Vector, vector, VECTOR, ##__VA_ARGS__)
+  emit(BooleanSign, boolean_sign, BOOLEAN_SIGN __VA_OPT__(,) __VA_ARGS__) \
+  emit(IntegerSign, integer_sign, INTEGER_SIGN __VA_OPT__(,) __VA_ARGS__) \
+  emit(LambdaSign, lambda_sign, LAMBDA_SIGN __VA_OPT__(,) __VA_ARGS__) \
+  emit(NameSign, name_sign, NAME_SIGN __VA_OPT__(,) __VA_ARGS__) \
+  emit(RecordSign, record_sign, RECORD_SIGN __VA_OPT__(,) __VA_ARGS__) \
+  emit(VectorSign, vector_sign, VECTOR_SIGN __VA_OPT__(,) __VA_ARGS__)
 
 /// Expands to emit(Title, lower, UPPER, ...) for each kind of stmt
 #define MUON_EACH_STMT_STEM(emit, ...) \
-  emit(Coercion, coercion, COERCION, ##__VA_ARGS__) \
-  emit(Datatype, datatype, DATATYPE, ##__VA_ARGS__) \
-  emit(Define, define, DEFINE, ##__VA_ARGS__)
+  emit(CoercionStmt, coercion_stmt, COERCION_STMT __VA_OPT__(,) __VA_ARGS__) \
+  emit(DatatypeStmt, datatype_stmt, DATATYPE_STMT __VA_OPT__(,) __VA_ARGS__) \
+  emit(DefineStmt, define_stmt, DEFINE_STMT __VA_OPT__(,) __VA_ARGS__)
 
 /// Expands to emit(Title, lower, UPPER, ...) for each kind of view
 #define MUON_EACH_VIEW_STEM(emit, ...) \
-  emit(Record, record, RECORD, ##__VA_ARGS__) \
-  emit(Variable, variable, VARIABLE, ##__VA_ARGS__)
-
-/// @internal Used as @c emit in MUON_EACH_NODE_STEM()
-#define MUON_EACH_STEM_EMIT(T, l, U, emit, Ts, ls, US, ...) \
-  emit(T##Ts, l##_##ls, U##_##US, ##__VA_ARGS__)
+  emit(RecordView, record_view, RECORD_VIEW __VA_OPT__(,) __VA_ARGS__) \
+  emit(VariableView, variable_view, VARIABLE_VIEW __VA_OPT__(,) __VA_ARGS__)
 
 /// Expands to emit(Title, lower, UPPER, ...) for each kind of node
 #define MUON_EACH_NODE_STEM(emit, ...) \
-  MUON_EACH_EXPR_STEM(MUON_EACH_STEM_EMIT, emit, \
-    Expr, expr, EXPR, ##__VA_ARGS__) \
-  MUON_EACH_SIGN_STEM(MUON_EACH_STEM_EMIT, emit, \
-    Sign, sign, SIGN, ##__VA_ARGS__) \
-  MUON_EACH_STMT_STEM(MUON_EACH_STEM_EMIT, emit, \
-    Stmt, stmt, STMT, ##__VA_ARGS__) \
-  MUON_EACH_VIEW_STEM(MUON_EACH_STEM_EMIT, emit, \
-    View, view, VIEW, ##__VA_ARGS__) \
-  emit(ExprMember, expr_member, EXPR_MEMBER, ##__VA_ARGS__) \
-  emit(SwitchCase, switch_case, SWITCH_CASE, ##__VA_ARGS__) \
-  emit(DatatypeOption, datatype_option, DATATYPE_OPTION, ##__VA_ARGS__) \
-  emit(ViewMember, view_member, VIEW_MEMBER, ##__VA_ARGS__) \
-  emit(Script, script, SCRIPT, ##__VA_ARGS__)
+  MUON_EACH_EXPR_STEM(emit __VA_OPT__(,) __VA_ARGS__) \
+  MUON_EACH_SIGN_STEM(emit __VA_OPT__(,) __VA_ARGS__) \
+  MUON_EACH_STMT_STEM(emit __VA_OPT__(,) __VA_ARGS__) \
+  MUON_EACH_VIEW_STEM(emit __VA_OPT__(,) __VA_ARGS__) \
+  emit(ExprMember, expr_member, EXPR_MEMBER __VA_OPT__(,) __VA_ARGS__) \
+  emit(SwitchCase, switch_case, SWITCH_CASE __VA_OPT__(,) __VA_ARGS__) \
+  emit(DatatypeOption, datatype_option, DATATYPE_OPTION \
+    __VA_OPT__(,) __VA_ARGS__) \
+  emit(ViewMember, view_member, VIEW_MEMBER __VA_OPT__(,) __VA_ARGS__) \
+  emit(Script, script, SCRIPT __VA_OPT__(,) __VA_ARGS__)
 
 /// Expands to emit(Title, lower, UPPER, ...) for each kind of stator
 #define MUON_EACH_STATOR_STEM(emit, ...) \
-  emit(Name, name, NAME, ##__VA_ARGS__) \
-  MUON_EACH_NODE_STEM(emit, ##__VA_ARGS__)
+  emit(Name, name, NAME __VA_OPT__(,) __VA_ARGS__) \
+  MUON_EACH_NODE_STEM(emit __VA_OPT__(,) __VA_ARGS__)
 
 /// An enumeration over each kind of stator, e.g. @c MUON_NAME_STATOR
 typedef enum {
@@ -83,30 +76,30 @@ typedef enum {
 /// @internal Expands to @a argument
 #define MUON_TAKE(argument, ...) argument
 
-#define MUON_EMIT(T, l, UPPER, Ts, ls, US) MUON_##UPPER##_##US,
+#define MUON_EMIT(T, l, UPPER) MUON_##UPPER##_STATOR,
   /// Equivalent to the minimum enumerator in MuonStatorEnumerator
   MUON_MINORANT_STATOR = MUON_INDIRECT(
-      MUON_TAKE, MUON_EACH_STATOR_STEM(MUON_EMIT, , , STATOR)),
+      MUON_TAKE, MUON_EACH_STATOR_STEM(MUON_EMIT)),
 
   /// Equivalent to the maximum enumerator in MuonNodeEnumerator
   MUON_MINORANT_NODE_STATOR = MUON_INDIRECT(
-      MUON_TAKE, MUON_EACH_NODE_STEM(MUON_EMIT, , , STATOR)),
+      MUON_TAKE, MUON_EACH_NODE_STEM(MUON_EMIT)),
 
   /// Equivalent to the minimum enumerator in MuonExprEnumerator
   MUON_MINORANT_EXPR_STATOR = MUON_INDIRECT(
-      MUON_TAKE, MUON_EACH_EXPR_STEM(MUON_EMIT, , , EXPR_STATOR)),
+      MUON_TAKE, MUON_EACH_EXPR_STEM(MUON_EMIT)),
 
   /// Equivalent to the minimum enumerator in MuonSignEnumerator
   MUON_MINORANT_SIGN_STATOR = MUON_INDIRECT(
-      MUON_TAKE, MUON_EACH_SIGN_STEM(MUON_EMIT, , , SIGN_STATOR)),
+      MUON_TAKE, MUON_EACH_SIGN_STEM(MUON_EMIT)),
 
   /// Equivalent to the minimum enumerator in MuonStmtEnumerator
   MUON_MINORANT_STMT_STATOR = MUON_INDIRECT(
-      MUON_TAKE, MUON_EACH_STMT_STEM(MUON_EMIT, , , STMT_STATOR)),
+      MUON_TAKE, MUON_EACH_STMT_STEM(MUON_EMIT)),
 
   /// Equivalent to the minimum enumerator in MuonStmtEnumerator
   MUON_MINORANT_VIEW_STATOR = MUON_INDIRECT(
-      MUON_TAKE, MUON_EACH_VIEW_STEM(MUON_EMIT, , , VIEW_STATOR)),
+      MUON_TAKE, MUON_EACH_VIEW_STEM(MUON_EMIT)),
 #undef MUON_EMIT
 #undef MUON_TAKE
 #undef MUON_INDIRECT
@@ -183,7 +176,7 @@ typedef enum {
 
 /// An enumeration over each kind of expr, e.g. @c MUON_ACCESS_EXPR
 typedef enum {
-#define MUON_EMIT(T, l, UPPER) MUON_##UPPER##_EXPR = MUON_##UPPER##_EXPR_NODE,
+#define MUON_EMIT(T, l, UPPER) MUON_##UPPER = MUON_##UPPER##_NODE,
   MUON_EACH_EXPR_STEM(MUON_EMIT)
 #undef MUON_EMIT
 
@@ -196,7 +189,7 @@ typedef enum {
 
 /// An enumeration over each kind of sign, e.g. @c MUON_BOOLEAN_SIGN
 typedef enum {
-#define MUON_EMIT(T, l, UPPER) MUON_##UPPER##_SIGN = MUON_##UPPER##_SIGN_NODE,
+#define MUON_EMIT(T, l, UPPER) MUON_##UPPER = MUON_##UPPER##_NODE,
   MUON_EACH_SIGN_STEM(MUON_EMIT)
 #undef MUON_EMIT
 
@@ -209,7 +202,7 @@ typedef enum {
 
 /// An enumeration over each kind of stmt, e.g. @c MUON_COERCION_STMT
 typedef enum {
-#define MUON_EMIT(T, l, UPPER) MUON_##UPPER##_STMT = MUON_##UPPER##_STMT_NODE,
+#define MUON_EMIT(T, l, UPPER) MUON_##UPPER = MUON_##UPPER##_NODE,
   MUON_EACH_STMT_STEM(MUON_EMIT)
 #undef MUON_EMIT
 
@@ -222,7 +215,7 @@ typedef enum {
 
 /// An enumeration over each kind of view, e.g. @c MUON_RECORD_VIEW
 typedef enum {
-#define MUON_EMIT(T, l, UPPER) MUON_##UPPER##_VIEW = MUON_##UPPER##_VIEW_NODE,
+#define MUON_EMIT(T, l, UPPER) MUON_##UPPER = MUON_##UPPER##_NODE,
   MUON_EACH_VIEW_STEM(MUON_EMIT)
 #undef MUON_EMIT
 
@@ -254,8 +247,8 @@ enum {
 };
 
 /// @internal Used to emit each branch in MUON_STATOR_ENUMERATOR(), etc.
-#define MUON_ENUMERATOR_EMIT(T, l, U, Ts, ls, US) \
-  , Muon##T##Ts *: MUON_##U##_##US, struct Muon##T##Ts *: MUON_##U##_##US
+#define MUON_ENUMERATOR_EMIT(Title, l, UPPER, US) \
+  , Muon##Title *: MUON_##UPPER, struct Muon##Title *: MUON_##UPPER
 
 /**
  * @brief An abstract stator
