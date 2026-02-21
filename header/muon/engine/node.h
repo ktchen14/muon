@@ -7,6 +7,129 @@
 #include <stddef.h>
 #include <stdint.h>
 
+/// Expands to emit(Title, lower, UPPER, ...) for each kind of expr
+#define MUON_EACH_EXPR_STEM(emit, ...) \
+  emit(AccessExpr, access_expr, ACCESS_EXPR __VA_OPT__(,) __VA_ARGS__) \
+  emit(BooleanExpr, boolean_expr, BOOLEAN_EXPR __VA_OPT__(,) __VA_ARGS__) \
+  emit(CastExpr, cast_expr, CAST_EXPR __VA_OPT__(,) __VA_ARGS__) \
+  emit(IntegerExpr, integer_expr, INTEGER_EXPR __VA_OPT__(,) __VA_ARGS__) \
+  emit(InvokeExpr, invoke_expr, INVOKE_EXPR __VA_OPT__(,) __VA_ARGS__) \
+  emit(LambdaExpr, lambda_expr, LAMBDA_EXPR __VA_OPT__(,) __VA_ARGS__) \
+  emit(NameExpr, name_expr, NAME_EXPR __VA_OPT__(,) __VA_ARGS__) \
+  emit(NativeExpr, native_expr, NATIVE_EXPR __VA_OPT__(,) __VA_ARGS__) \
+  emit(RecordExpr, record_expr, RECORD_EXPR __VA_OPT__(,) __VA_ARGS__) \
+  emit(SequenceExpr, sequence_expr, SEQUENCE_EXPR __VA_OPT__(,) __VA_ARGS__) \
+  emit(SwitchExpr, switch_expr, SWITCH_EXPR __VA_OPT__(,) __VA_ARGS__) \
+  emit(VectorExpr, vector_expr, VECTOR_EXPR __VA_OPT__(,) __VA_ARGS__)
+
+/// Expands to emit(Title, lower, UPPER, ...) for each kind of sign
+#define MUON_EACH_SIGN_STEM(emit, ...) \
+  emit(BooleanSign, boolean_sign, BOOLEAN_SIGN __VA_OPT__(,) __VA_ARGS__) \
+  emit(IntegerSign, integer_sign, INTEGER_SIGN __VA_OPT__(,) __VA_ARGS__) \
+  emit(LambdaSign, lambda_sign, LAMBDA_SIGN __VA_OPT__(,) __VA_ARGS__) \
+  emit(NameSign, name_sign, NAME_SIGN __VA_OPT__(,) __VA_ARGS__) \
+  emit(RecordSign, record_sign, RECORD_SIGN __VA_OPT__(,) __VA_ARGS__) \
+  emit(VectorSign, vector_sign, VECTOR_SIGN __VA_OPT__(,) __VA_ARGS__)
+
+/// Expands to emit(Title, lower, UPPER, ...) for each kind of stmt
+#define MUON_EACH_STMT_STEM(emit, ...) \
+  emit(CoercionStmt, coercion_stmt, COERCION_STMT __VA_OPT__(,) __VA_ARGS__) \
+  emit(DatatypeStmt, datatype_stmt, DATATYPE_STMT __VA_OPT__(,) __VA_ARGS__) \
+  emit(DefineStmt, define_stmt, DEFINE_STMT __VA_OPT__(,) __VA_ARGS__)
+
+/// Expands to emit(Title, lower, UPPER, ...) for each kind of view
+#define MUON_EACH_VIEW_STEM(emit, ...) \
+  emit(RecordView, record_view, RECORD_VIEW __VA_OPT__(,) __VA_ARGS__) \
+  emit(VariableView, variable_view, VARIABLE_VIEW __VA_OPT__(,) __VA_ARGS__)
+
+/// Expands to emit(Title, lower, UPPER, ...) for each kind of node
+#define MUON_EACH_NODE_STEM(emit, ...) \
+  MUON_EACH_EXPR_STEM(emit __VA_OPT__(,) __VA_ARGS__) \
+  MUON_EACH_SIGN_STEM(emit __VA_OPT__(,) __VA_ARGS__) \
+  MUON_EACH_STMT_STEM(emit __VA_OPT__(,) __VA_ARGS__) \
+  MUON_EACH_VIEW_STEM(emit __VA_OPT__(,) __VA_ARGS__) \
+  emit(ExprMember, expr_member, EXPR_MEMBER __VA_OPT__(,) __VA_ARGS__) \
+  emit(SwitchCase, switch_case, SWITCH_CASE __VA_OPT__(,) __VA_ARGS__) \
+  emit(DatatypeOption, datatype_option, DATATYPE_OPTION \
+    __VA_OPT__(,) __VA_ARGS__) \
+  emit(ViewMember, view_member, VIEW_MEMBER __VA_OPT__(,) __VA_ARGS__) \
+  emit(Script, script, SCRIPT __VA_OPT__(,) __VA_ARGS__)
+
+#define MUON_NODE_TAG_EMIT2(T, l, UPPER) MUON_##UPPER##_NODE,
+
+/// An enumeration over each kind of node, e.g. @c MUON_ACCESS_EXPR_NODE
+typedef enum {
+  MUON_EACH_NODE_STEM(MUON_NODE_TAG_EMIT2)
+
+  /// Equivalent to the maximum enumerator in MuonNodeEnumerator
+  MUON_MINORANT_NODE = MUON_INDIRECT(MUON_TAKE, MUON_EACH_NODE_STEM(MUON_NODE_TAG_EMIT2)),
+
+  MUON_EXPR_MEMBER = MUON_EXPR_MEMBER_NODE, //-
+  MUON_SWITCH_CASE = MUON_SWITCH_CASE_NODE,
+  MUON_DATATYPE_OPTION = MUON_DATATYPE_OPTION_NODE,
+  MUON_VIEW_MEMBER = MUON_VIEW_MEMBER_NODE,
+  MUON_SCRIPT = MUON_SCRIPT_NODE,
+} MuonNodeTag;
+
+/// An enumeration over each kind of expr, e.g. @c MUON_ACCESS_EXPR
+typedef enum {
+#define MUON_EMIT(T, l, UPPER) MUON_##UPPER = MUON_##UPPER##_NODE,
+  MUON_EACH_EXPR_STEM(MUON_EMIT)
+#undef MUON_EMIT
+
+  /// Equivalent to the minimum enumerator in MuonExprEnumerator
+  MUON_MINORANT_EXPR = MUON_INDIRECT(MUON_TAKE, MUON_EACH_EXPR_STEM(MUON_NODE_TAG_EMIT2)),
+} MuonExprTag;
+
+/// An enumeration over each kind of sign, e.g. @c MUON_BOOLEAN_SIGN
+typedef enum {
+#define MUON_EMIT(T, l, UPPER) MUON_##UPPER = MUON_##UPPER##_NODE,
+  MUON_EACH_SIGN_STEM(MUON_EMIT)
+#undef MUON_EMIT
+
+  /// Equivalent to the minimum enumerator in MuonSignEnumerator
+  MUON_MINORANT_SIGN = MUON_INDIRECT(MUON_TAKE, MUON_EACH_SIGN_STEM(MUON_NODE_TAG_EMIT2)),
+} MuonSignTag;
+
+/// An enumeration over each kind of stmt, e.g. @c MUON_COERCION_STMT
+typedef enum {
+#define MUON_EMIT(T, l, UPPER) MUON_##UPPER = MUON_##UPPER##_NODE,
+  MUON_EACH_STMT_STEM(MUON_EMIT)
+#undef MUON_EMIT
+
+  /// Equivalent to the minimum enumerator in MuonSignEnumerator
+  MUON_MINORANT_STMT = MUON_INDIRECT(MUON_TAKE, MUON_EACH_STMT_STEM(MUON_NODE_TAG_EMIT2)),
+} MuonStmtTag;
+
+/// An enumeration over each kind of view, e.g. @c MUON_RECORD_VIEW
+typedef enum {
+#define MUON_EMIT(T, l, UPPER) MUON_##UPPER = MUON_##UPPER##_NODE,
+  MUON_EACH_VIEW_STEM(MUON_EMIT)
+#undef MUON_EMIT
+
+  /// Equivalent to the minimum enumerator in MuonSignEnumerator
+  MUON_MINORANT_VIEW = MUON_INDIRECT(MUON_TAKE, MUON_EACH_VIEW_STEM(MUON_NODE_TAG_EMIT2)),
+} MuonViewTag;
+
+enum {
+#define MUON_EMIT(...) + 1
+  /// Number of distinct kinds of nodes
+  MUON_NODE_NUMBER = MUON_EACH_NODE_STEM(MUON_EMIT),
+
+  /// Number of distinct kinds of exprs
+  MUON_EXPR_NUMBER = MUON_EACH_EXPR_STEM(MUON_EMIT),
+
+  /// Number of distinct kinds of signs
+  MUON_SIGN_NUMBER = MUON_EACH_SIGN_STEM(MUON_EMIT),
+
+  /// Number of distinct kinds of stmts
+  MUON_STMT_NUMBER = MUON_EACH_STMT_STEM(MUON_EMIT),
+
+  /// Number of distinct kinds of views
+  MUON_VIEW_NUMBER = MUON_EACH_VIEW_STEM(MUON_EMIT),
+#undef MUON_EMIT
+};
+
 /**
  * @brief An abstract node
  *
@@ -361,21 +484,26 @@ MuonScript *muon_script(
 void muon_node_debug(MuonNode *node)
   MUON_HINT_SUFFIX(nonnull);
 
+/// @internal Used to emit each branch in MUON_NODE_TAG(), etc.
+#define MUON_NODE_TAG_EMIT(Title, l, UPPER, SUFFIX) \
+  , Muon##Title *: MUON_##UPPER##SUFFIX \
+  , struct Muon##Title *: MUON_##UPPER##SUFFIX
+
 /// Return the enumerator indicative of the concrete @a node
-#define MUON_NODE_TAG(node) \
-  _Generic((node) {} MUON_EACH_NODE_STEM(MUON_ENUMERATOR_EMIT, _NODE))
+#define MUON_NODE_TAG(node) _Generic( \
+  (node) {} MUON_EACH_NODE_STEM(MUON_NODE_TAG_EMIT, _NODE))
 
 /// Return the enumerator indicative of the type of the concrete @a expr
-#define MUON_EXPR_ENUMERATOR(expr) \
-  _Generic((expr) MUON_EACH_EXPR_STEM(MUON_ENUMERATOR_EMIT))
+#define MuonExprTag(expr) \
+  _Generic((expr) {} MUON_EACH_EXPR_STEM(MUON_NODE_TAG_EMIT))
 
 /// Return the enumerator indicative of the type of the concrete @a sign
-#define MUON_SIGN_ENUMERATOR(sign) \
-  _Generic((sign) MUON_EACH_SIGN_STEM(MUON_ENUMERATOR_EMIT))
+#define MuonSignTag(sign) \
+  _Generic((sign) {} MUON_EACH_SIGN_STEM(MUON_NODE_TAG_EMIT))
 
-/// @internal Used to emit each branch in mu_stmt_cast()
-#define MUON_STMT_CAST_EMIT(l, upper, title, ...) \
-  , Muon##title *: _tag == MUON_##upper##__VA_ARGS__
+/// Return the tag indicative of the type of the concrete @a stmt
+#define MuonStmtTag(stmt) \
+  _Generic((stmt) {} MUON_EACH_STMT_STEM(MUON_NODE_TAG_EMIT))
 
 /// @internal Used to emit each branch in mu_view_cast()
 #define MUON_VIEW_CAST_EMIT(l, upper, title, ...) \
@@ -397,6 +525,12 @@ static inline MuonExpr *muon_expr_cast(MuonExpr *expr, MuonExprTag tag) {
 MUON_HINT(nonnull)
 static inline MuonSign *muon_sign_cast(MuonSign *sign, MuonSignTag tag) {
   return sign->kind == tag ? sign : NULL;
+}
+
+/// @internal Used to decide the cast result in muon_stmt_cast()
+MUON_HINT(nonnull)
+static inline MuonStmt *muon_stmt_cast(MuonStmt *stmt, MuonStmtTag tag) {
+  return stmt->kind == tag ? stmt : NULL;
 }
 
 /**
@@ -439,21 +573,19 @@ static inline MuonSign *muon_sign_cast(MuonSign *sign, MuonSignTag tag) {
  *
  * @par Example:
  * @code{.c}
- *   MuonExpr *abstract_expr = ...;
- *
- *   MuonAccessExpr *expr;
- *   if ((expr = mu_expr_cast(abstract_expr, expr)) == NULL)
+ *   MuonExpr *expr = ...;
+ *   MuonAccessExpr *access_expr;
+ *   if ((access_expr = mu_expr_cast(expr, access_expr)) == NULL)
  *     return ...;
  * @endcode
  *
  * The behavior is undefined if:
  * - @a abstract is @c NULL
  * - @a abstract doesn't have type <tt>MuonExpr *</tt>
- * - @a concrete isn't, or doesn't have, the type of a const qualified pointer
- *   to a concrete expr
+ * - @a concrete isn't a const qualified pointer to a concrete expr
  */
 #define muon_expr_cast(expr, concrete) ( \
-  (typeof(concrete)) (muon_expr_cast)((expr), MUON_EXPR_ENUMERATOR((concrete))) \
+  (typeof(concrete)) muon_expr_cast((expr), MuonExprTag(typeof(concrete))) \
 )
 
 /**
@@ -480,8 +612,7 @@ static inline MuonSign *muon_sign_cast(MuonSign *sign, MuonSignTag tag) {
  *   to a concrete sign
  */
 #define mu_sign_cast(sign, concrete) ( \
-  (__typeof__((concrete))) (muon_sign_cast)((sign), \
-    MUON_SIGN_ENUMERATOR((concrete))) \
+  (typeof(concrete)) muon_sign_cast((sign), MuonSignTag(typeof(concrete))) \
 )
 
 /**
@@ -507,13 +638,9 @@ static inline MuonSign *muon_sign_cast(MuonSign *sign, MuonSignTag tag) {
  * - @a concrete isn't, or doesn't have, the type of a const qualified pointer
  *   to a concrete stmt
  */
-#define mu_stmt_cast(abstract, concrete) __extension__ ({ \
-    MuonStmt *_abstract = (abstract); \
-    typeof(concrete) _concrete; \
-    MuonStmtTag _tag = _abstract->kind; \
-    int _castable = _Generic(_concrete MUON_EACH_STMT_STEM(MUON_STMT_CAST_EMIT)); \
-    _castable ? (typeof(_concrete)) _abstract : NULL; \
-  })
+#define mu_stmt_cast(stmt, concrete) ( \
+  (typeof(concrete)) muon_stmt_cast((stmt), MuonStmtTag(typeof(concrete))) \
+)
 
 /**
  * @brief Downcast the @a abstract view to the <tt>typeof(concrete)</tt>
