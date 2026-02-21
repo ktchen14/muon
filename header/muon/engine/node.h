@@ -493,44 +493,10 @@ void muon_node_debug(MuonNode *node)
 #define MUON_NODE_TAG(node) _Generic( \
   (node) {} MUON_EACH_NODE_STEM(MUON_NODE_TAG_EMIT, _NODE))
 
-/// Return the enumerator indicative of the type of the concrete @a expr
-#define MuonExprTag(expr) \
-  _Generic((expr) {} MUON_EACH_EXPR_STEM(MUON_NODE_TAG_EMIT))
-
-/// Return the enumerator indicative of the type of the concrete @a sign
-#define MuonSignTag(sign) \
-  _Generic((sign) {} MUON_EACH_SIGN_STEM(MUON_NODE_TAG_EMIT))
-
-/// Return the tag indicative of the type of the concrete @a stmt
-#define MuonStmtTag(stmt) \
-  _Generic((stmt) {} MUON_EACH_STMT_STEM(MUON_NODE_TAG_EMIT))
-
-/// @internal Used to emit each branch in mu_view_cast()
-#define MUON_VIEW_CAST_EMIT(l, upper, title, ...) \
-  , Muon##title *: _tag == MUON_##upper##__VA_ARGS__
-
 /// @internal Used to decide the cast result in muon_node_cast()
 MUON_HINT(nonnull)
 static inline MuonNode *muon_node_cast(MuonNode *node, MuonNodeTag tag) {
   return node->kind == tag ? node : NULL;
-}
-
-/// @internal Used to decide the cast result in muon_expr_cast()
-MUON_HINT(nonnull)
-static inline MuonExpr *muon_expr_cast(MuonExpr *expr, MuonExprTag tag) {
-  return expr->kind == tag ? expr : NULL;
-}
-
-/// @internal Used to decide the cast result in muon_sign_cast()
-MUON_HINT(nonnull)
-static inline MuonSign *muon_sign_cast(MuonSign *sign, MuonSignTag tag) {
-  return sign->kind == tag ? sign : NULL;
-}
-
-/// @internal Used to decide the cast result in muon_stmt_cast()
-MUON_HINT(nonnull)
-static inline MuonStmt *muon_stmt_cast(MuonStmt *stmt, MuonStmtTag tag) {
-  return stmt->kind == tag ? stmt : NULL;
 }
 
 /**
@@ -562,115 +528,5 @@ static inline MuonStmt *muon_stmt_cast(MuonStmt *stmt, MuonStmtTag tag) {
 #define muon_node_cast(node, concrete) ( \
   (typeof(concrete)) muon_node_cast((node), MUON_NODE_TAG(typeof(concrete))) \
 )
-
-/**
- * @brief Downcast the abstract @a expr to the <tt>typeof(concrete)</tt>
- *
- * @a abstract should have type <tt>MuonExpr *</tt>. @a concrete should be, or
- * have, the type of a pointer to a const qualified concrete expr. Then if
- * @a abstract is an instance of that type, it will be cast to that type and
- * returned. Otherwise, this will return @c NULL.
- *
- * @par Example:
- * @code{.c}
- *   MuonExpr *expr = ...;
- *   MuonAccessExpr *access_expr;
- *   if ((access_expr = mu_expr_cast(expr, access_expr)) == NULL)
- *     return ...;
- * @endcode
- *
- * The behavior is undefined if:
- * - @a abstract is @c NULL
- * - @a abstract doesn't have type <tt>MuonExpr *</tt>
- * - @a concrete isn't a const qualified pointer to a concrete expr
- */
-#define muon_expr_cast(expr, concrete) ( \
-  (typeof(concrete)) muon_expr_cast((expr), MuonExprTag(typeof(concrete))) \
-)
-
-/**
- * @brief Downcast the abstract @a sign to the <tt>typeof(concrete)</tt>
- *
- * @a abstract should have type <tt>MuonSign *</tt>. @a concrete should be, or
- * have, the type of a pointer to a const qualified concrete sign. Then if
- * @a abstract is an instance of that type, it will be cast to that type and
- * returned. Otherwise, this will return @c NULL.
- *
- * @par Example:
- * @code{.c}
- *   MuonSign *abstract_sign = ...;
- *
- *   MuonVectorSign *sign;
- *   if ((sign = mu_sign_cast(abstract_sign, sign)) == NULL)
- *     return ...;
- * @endcode
- *
- * The behavior is undefined if:
- * - @a abstract is @c NULL
- * - @a abstract doesn't have type <tt>MuonSign *</tt>
- * - @a concrete isn't, or doesn't have, the type of a const qualified pointer
- *   to a concrete sign
- */
-#define mu_sign_cast(sign, concrete) ( \
-  (typeof(concrete)) muon_sign_cast((sign), MuonSignTag(typeof(concrete))) \
-)
-
-/**
- * @brief Downcast the @a abstract stmt to the <tt>typeof(concrete)</tt>
- *
- * @a abstract should have type <tt>MuonStmt *</tt>. @a concrete should be, or
- * have, the type of a pointer to a const qualified concrete stmt. Then if
- * @a abstract is an instance of that type, it will be cast to that type and
- * returned. Otherwise, this will return @c NULL.
- *
- * @par Example:
- * @code{.c}
- *   MuonStmt *abstract_stmt = ...;
- *
- *   MuonVectorStmt *stmt;
- *   if ((stmt = mu_stmt_cast(abstract_stmt, stmt)) == NULL)
- *     return ...;
- * @endcode
- *
- * The behavior is undefined if:
- * - @a abstract is @c NULL
- * - @a abstract doesn't have type <tt>MuonStmt *</tt>
- * - @a concrete isn't, or doesn't have, the type of a const qualified pointer
- *   to a concrete stmt
- */
-#define mu_stmt_cast(stmt, concrete) ( \
-  (typeof(concrete)) muon_stmt_cast((stmt), MuonStmtTag(typeof(concrete))) \
-)
-
-/**
- * @brief Downcast the @a abstract view to the <tt>typeof(concrete)</tt>
- *
- * @a abstract should have type <tt>MuonView *</tt>. @a concrete should
- * be, or have, the type of a pointer to a const qualified concrete view. Then
- * if @a abstract is an instance of that type, it will be cast to that type and
- * returned. Otherwise, this will return @c NULL.
- *
- * @par Example:
- * @code{.c}
- *   MuonView *abstract_view = ...;
- *
- *   MuonVectorView *view;
- *   if ((view = mu_view_cast(abstract_view, view)) == NULL)
- *     return ...;
- * @endcode
- *
- * The behavior is undefined if:
- * - @a abstract is @c NULL
- * - @a abstract doesn't have type <tt>MuonView *</tt>
- * - @a concrete isn't, or doesn't have, the type of a const qualified pointer
- *   to a concrete view
- */
-#define mu_view_cast(abstract, concrete) __extension__ ({ \
-    MuonView *_abstract = (abstract); \
-    typeof(concrete) _concrete; \
-    MuonViewTag _tag = _abstract->kind; \
-    int _castable = _Generic(_concrete MUON_EACH_VIEW_STEM(MUON_VIEW_CAST_EMIT)); \
-    _castable ? (typeof(_concrete)) _abstract : NULL; \
-  })
 
 #endif /* MUON_ENGINE_NODE_H */
