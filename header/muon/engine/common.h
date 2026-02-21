@@ -70,12 +70,6 @@ typedef enum {
   MUON_EACH_STATOR_STEM(MUON_EMIT)
 #undef MUON_EMIT
 
-/// @internal Expands to <tt>emit(...)</tt>
-#define MUON_INDIRECT(emit, ...) emit(__VA_ARGS__)
-
-/// @internal Expands to @a argument
-#define MUON_TAKE(argument, ...) argument
-
 #define MUON_EMIT(T, l, UPPER) MUON_##UPPER##_STATOR,
   /// Equivalent to the minimum enumerator in MuonStatorEnumerator
   MUON_MINORANT_STATOR = MUON_INDIRECT(
@@ -101,8 +95,6 @@ typedef enum {
   MUON_MINORANT_VIEW_STATOR = MUON_INDIRECT(
       MUON_TAKE, MUON_EACH_VIEW_STEM(MUON_EMIT)),
 #undef MUON_EMIT
-#undef MUON_TAKE
-#undef MUON_INDIRECT
 
 #define MUON_EMIT(...) 1 +
   /// Equivalent to the maximum enumerator in MuonStatorEnumerator
