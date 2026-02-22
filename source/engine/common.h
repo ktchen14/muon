@@ -15,7 +15,7 @@ typedef struct {
     MuonEngine as_engine;
 
     struct {
-      void *remote;
+      _Alignas(MuonEngine) char _[offsetof(MuonEngine, data)];
 
       size_t name_number;
       size_t node_number;

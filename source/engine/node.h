@@ -6,8 +6,6 @@
 #include "common.h"
 #include "name.h"
 
-#include "../common.h"
-
 #include <assert.h>
 #include <stddef.h>
 
@@ -18,21 +16,22 @@ typedef struct {
 
 typedef struct {
   NodeCursor cursor;
+
   _Alignas(union {
 #define MUON_EMIT(Title, lower, U) Muon##Title lower;
     MUON_EACH_NODE_STEM(MUON_EMIT)
 #undef MUON_EMIT
-  }) char data[];
+  }) struct MuonNode node[];
 } NodeHeader;
 
 /// Return the cursor attached to the @a node
 MUON_HINT(const, nonnull, returns_nonnull)
 static inline NodeCursor *node_cursor(MuonNode *node) {
+  const size_t offset = offsetof(NodeHeader, node);
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-align"
 #pragma GCC diagnostic ignored "-Wcast-qual"
-  NodeHeader *header = (NodeHeader *) ((char *) node
-      - offsetof(NodeHeader, data));
+  auto header = (NodeHeader *) ((char *) node - offset);
 #pragma GCC diagnostic pop
   return &header->cursor;
 }
@@ -41,8 +40,7 @@ static inline NodeCursor *node_cursor(MuonNode *node) {
 static inline MuonNode *node_continue(MuonNode *node, MuonNode *next) {
   NodeCursor *cursor = node_cursor(next);
   assert(cursor->anterior == NULL && cursor->i == 0);
-  cursor->anterior = node;
-  return next;
+  return cursor->anterior = node, next;
 }
 
 /// Return from the node
@@ -50,37 +48,10 @@ MUON_HINT(nonnull)
 static inline MuonNode *node_return(MuonNode *node) {
   NodeCursor *cursor = node_cursor(node);
   MuonNode *anterior = cursor->anterior;
-  *cursor = (NodeCursor) {0};
-  return anterior;
+  return *cursor = (NodeCursor) {0}, anterior;
 }
 
-/**
- * @brief Used to emit a case label within a switch ON_ABSTRACT_OBJECT()
- *
- * @c ... must be a declaration of a variable with a concrete node type.
- *
- * TODO
- *
- * @par Example
- * @code{.c}
- *   MuonNode *node = ...
- *
- *   switch ON_ABSTRACT_OBJECT(node) {
- *     case IS_CONCRETE_NODE(MuonAccessExpr *access_expr)
- *       return access_expr->name;
- *
- *     case IS_CONCRETE_NODE(MuonNameExpr *name_expr)
- *       return name_expr->name;
- *
- *     ...
- *   }
- * @endcode
- *
- * The behavior is undefined if:
- * - This is used except after the case keyword within a switch statement
- *   controlled by ON_ABSTRACT_OBJECT()
- * - @c ... isn't a declaration of a variable with the type of a concrete node
- */
+/// Emit a case within a switch ON_ABSTRACT_OBJECT()
 #define IS_CONCRETE_NODE(...) \
   MUON_NODE_TAG(typeof(&(union { __VA_ARGS__, _; }) {}._)): \
     __VA_ARGS__ = _object;

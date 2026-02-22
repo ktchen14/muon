@@ -1,7 +1,7 @@
 #ifndef MU_COMMON_I
 #define MU_COMMON_I
 
-#include <muon/common.h>
+#include <muon/common.h> // IWYU pragma: export
 
 #include <stdarg.h>
 #include <stddef.h>

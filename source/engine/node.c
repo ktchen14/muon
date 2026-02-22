@@ -21,7 +21,7 @@ static inline MuonEngine *unlock_engine(MuonNode *node) {
 /// @internal Allocate a node of size @a size in the @a engine
 [[gnu::malloc, gnu::nonnull]]
 static inline void *node_allocate(MuonEngine *engine, size_t size) {
-  if (rare((size = struct_size(NodeHeader, data, size)) == 0))
+  if (rare((size = struct_size(NodeHeader, node, size)) == 0))
     return errno = ENOMEM, NULL;
 
   NodeHeader *header;
@@ -29,7 +29,7 @@ static inline void *node_allocate(MuonEngine *engine, size_t size) {
     return NULL;
   *header = (NodeHeader) {};
 
-  return header->data;
+  return header->node;
 }
 
 /// @internal Assign the abstract @a node to the @a engine
