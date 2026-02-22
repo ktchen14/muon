@@ -47,7 +47,7 @@ typedef struct {
 
   _Alignas(union {
 #define MU_EMIT(lower, u, title) Muon##title##Type lower;
-    MU_EACH_TYPE_KIND(MU_EMIT)
+    MUON_EACH_TYPE_KIND(MU_EMIT)
 #undef MU_EMIT
   }) char data[];
 } TypeHeader;

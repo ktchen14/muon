@@ -6,33 +6,33 @@
 
 #include <stddef.h>
 
-/// Expands to emit(lower, upper, title, ...) for each kind of type
-#define MU_EACH_TYPE_KIND(emit, ...) \
-  emit(core, CORE, Core, ##__VA_ARGS__) \
-  emit(scheme, SCHEME, Scheme, ##__VA_ARGS__) \
-  emit(variable, VARIABLE, Variable, ##__VA_ARGS__) \
-  emit(join, JOIN, Join, ##__VA_ARGS__)
+/// Expands to emit(lower, upper, title, ...) for each concrete type
+#define MUON_EACH_TYPE_KIND(emit, ...) \
+  emit(core, CORE, Core __VA_OPT__(,) __VA_ARGS__) \
+  emit(scheme, SCHEME, Scheme __VA_OPT__(,) __VA_ARGS__) \
+  emit(variable, VARIABLE, Variable __VA_OPT__(,) __VA_ARGS__) \
+  emit(join, JOIN, Join __VA_OPT__(,) __VA_ARGS__)
 
-/// An enumeration over each kind of type, e.g. @c MU_CORE_TYPE
+/// An enumeration over each concrete type, e.g. @c MU_CORE_TYPE
 typedef enum {
 #define MU_EMIT(l, upper, t) MU_##upper##_TYPE,
-  MU_EACH_TYPE_KIND(MU_EMIT)
+  MUON_EACH_TYPE_KIND(MU_EMIT)
 #undef MU_EMIT
-} MuonTypeKind;
+} MuonTypeTag;
 
 /**
  * @brief An abstract type
  *
  * Note that a MuonType is a constant object; the mutable equivalent is a
- * struct MuonType.
+ * <tt>struct MuonType</tt>.
  */
 typedef const struct MuonType {
-  MuonTypeKind kind;
+  MuonTypeTag kind;
   const induce_t *induce;
   size_t id;
 } MuonType;
 
-/// The header that each concrete type must have
+/// The header that each MuonType subtype must have
 #define MUON_TYPE_HEADER struct MuonType as_type
 
 /// A core type
@@ -112,7 +112,7 @@ MuonVariableType *mu_variable_type(induce_t *induce)
 
 /// Return the enumerator indicative of the @a concrete type
 #define MU_TYPE_ENUMERATOR(concrete) \
-  _Generic((concrete) {0} MU_EACH_TYPE_KIND(MU_TYPE_ENUMERATOR_EMIT))
+  _Generic((concrete) {0} MUON_EACH_TYPE_KIND(MU_TYPE_ENUMERATOR_EMIT))
 
 /**
  * @brief Downcast the @a abstract type to the <tt>typeof(concrete)</tt>

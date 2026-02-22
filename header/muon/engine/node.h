@@ -149,7 +149,7 @@ typedef const struct MuonNode {
   size_t id;
 } MuonNode;
 
-/// The header that each subtype of MuonNode must have
+/// The header that each MuonNode subtype must have
 #define MUON_NODE_HEADER struct MuonNode as_node
 
 /**
@@ -162,7 +162,7 @@ typedef const struct MuonExpr {
   union { MUON_NODE_HEADER; MuonExprTag kind; }; //-
 } MuonExpr;
 
-/// The header that each subtype of MuonExpr must have
+/// The header that each MuonExpr subtype must have
 #define MUON_EXPR_HEADER union { \
   struct MuonExpr as_expr; MUON_NODE_HEADER; \
 }
@@ -177,7 +177,7 @@ typedef const struct MuonSign {
   union { MUON_NODE_HEADER; MuonSignTag kind; }; //-
 } MuonSign;
 
-/// The header that each subtype of MuonSign must have
+/// The header that each MuonSign subtype must have
 #define MUON_SIGN_HEADER union { \
   struct MuonSign as_sign; MUON_NODE_HEADER; \
 }
@@ -192,7 +192,7 @@ typedef const struct MuonStmt {
   union { MUON_NODE_HEADER; MuonStmtTag kind; }; //-
 } MuonStmt;
 
-/// The header that each subtype of MuonStmt must have
+/// The header that each MuonStmt subtype must have
 #define MUON_STMT_HEADER union { \
   struct MuonStmt as_stmt; MUON_NODE_HEADER; \
 }
@@ -207,7 +207,7 @@ typedef const struct MuonView {
   union { MUON_NODE_HEADER; MuonViewTag kind; }; //-
 } MuonView;
 
-/// The header that each subtype of MuonView must have
+/// The header that each MuonView subtype must have
 #define MUON_VIEW_HEADER union { \
   struct MuonView as_view; MUON_NODE_HEADER; \
 }
