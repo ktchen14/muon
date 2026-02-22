@@ -104,9 +104,9 @@ static inline MuonType *type_next(MuonType *type, _Bool *next_charge) {
       if (cursor->i >= core->argc)
         return NULL;
 
-      mu_variance_t variance = core->argv[cursor->i].variance;
-      assert(variance != MU_INVARIANCE);
-      if (variance == MU_CONTRAVARIANCE)
+      MuonVariance variance = core->argv[cursor->i].variance;
+      assert(variance != MUON_INVARIANCE);
+      if (variance == MUON_CONTRAVARIANCE)
         *next_charge = !*next_charge;
       return core_type->argv[cursor->i++];
     }

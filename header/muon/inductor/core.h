@@ -5,6 +5,8 @@
 
 #include <stddef.h>
 
+typedef struct induce_t induce_t;
+
 typedef enum {
   MU_BOOLEAN_CORE,
   MU_CUSTOM_CORE,
@@ -15,17 +17,15 @@ typedef enum {
 } mu_core_kind_t;
 
 typedef enum {
-  MU_COVARIANCE,
-  MU_CONTRAVARIANCE,
-  MU_INVARIANCE,
-} mu_variance_t;
+  MUON_COVARIANCE     = 1 << 0,
+  MUON_CONTRAVARIANCE = 1 << 1,
+  MUON_INVARIANCE     = MUON_COVARIANCE | MUON_CONTRAVARIANCE,
+} MuonVariance;
 
 typedef struct {
   MuonName *name;
-  mu_variance_t variance;
+  MuonVariance variance : 2;
 } mu_core_member_t;
-
-typedef struct induce_t induce_t;
 
 typedef struct {
   mu_core_kind_t kind;

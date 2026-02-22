@@ -136,7 +136,7 @@ const record_instance_t *get_record_instance(
 
 void mu_core_debug(const mu_core_t *core) {
   static const char *const VARIANCE_TEXT[] = {
-    [MU_COVARIANCE] = "+", [MU_CONTRAVARIANCE] = "+", [MU_INVARIANCE] = "±"
+    [MUON_COVARIANCE] = "+", [MUON_CONTRAVARIANCE] = "+", [MUON_INVARIANCE] = "±"
   };
 
   if (debug_shortcore) {

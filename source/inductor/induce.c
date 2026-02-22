@@ -262,9 +262,9 @@ MuonCoercion *ensure_coercion(
     MuonType *next_source = core_source->argv[i];
     MuonType *next_target = core_target->argv[i];
 
-    mu_variance_t variance = core->argv[i].variance;
-    assert(variance != MU_INVARIANCE);
-    if (variance == MU_CONTRAVARIANCE) {
+    MuonVariance variance = core->argv[i].variance;
+    assert(variance != MUON_INVARIANCE);
+    if (variance == MUON_CONTRAVARIANCE) {
       MuonType *t;
       t = next_source;
       next_source = next_target;
@@ -605,9 +605,9 @@ static MuonCoercion *retrieve_core_coercion(
     MuonType *next_source = source->argv[i];
     MuonType *next_target = target->argv[i];
 
-    mu_variance_t variance = core->argv[i].variance;
-    assert(variance != MU_INVARIANCE);
-    if (variance == MU_CONTRAVARIANCE) {
+    MuonVariance variance = core->argv[i].variance;
+    assert(variance != MUON_INVARIANCE);
+    if (variance == MUON_CONTRAVARIANCE) {
       MuonType *t;
       t = next_source;
       next_source = next_target;
@@ -708,8 +708,8 @@ induce_t *induce_initialize(
   *lambda_core = (mu_core_t) {
     .kind = MU_LAMBDA_CORE, .induce = induce, .argc = 2
   };
-  lambda_core->argv[0] = (mu_core_member_t) {.variance = MU_CONTRAVARIANCE};
-  lambda_core->argv[1] = (mu_core_member_t) {.variance = MU_COVARIANCE};
+  lambda_core->argv[0] = (mu_core_member_t) {.variance = MUON_CONTRAVARIANCE};
+  lambda_core->argv[1] = (mu_core_member_t) {.variance = MUON_COVARIANCE};
 
   mu_core_t *vector_core;
   size = struct_size(mu_core_t, argv, 1);
@@ -718,7 +718,7 @@ induce_t *induce_initialize(
   *vector_core = (mu_core_t) {
     .kind = MU_VECTOR_CORE, .induce = induce, .argc = 1
   };
-  vector_core->argv[0] = (mu_core_member_t) {.variance = MU_COVARIANCE};
+  vector_core->argv[0] = (mu_core_member_t) {.variance = MUON_COVARIANCE};
 
   *induce = (induce_t) {
     .engine = engine,
