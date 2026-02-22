@@ -43,7 +43,7 @@ MUON_HINT(nonnull) static LLVMTypeRef lambda_type_emit(
 /// argument in @c type->argv at the same index.
 MUON_HINT(nonnull) static LLVMTypeRef record_type_emit(
     author_t *author, MuonCoreType *type) {
-  const mu_core_t *core = type->core;
+  const MuonCore *core = type->core;
 
   unsigned int argc;
   if (rare(llvm_length_overflow(core->argc, &argc)))
@@ -140,22 +140,22 @@ MUON_HINT(nonnull) static LLVMTypeRef type_emit(
   switch ON_ABSTRACT_OBJECT(type) {
     case IS_CONCRETE_TYPE(MuonCoreType * nominate(core_type))
       switch (core_type->core->kind) {
-        case MU_BOOLEAN_CORE:
+        case MUON_BOOLEAN_CORE:
           return boolean_type_emit(author, core_type);
 
-        case MU_CUSTOM_CORE:
+        case MUON_CUSTOM_CORE:
           return custom_type_emit(author, core_type);
 
-        case MU_INTEGER_CORE:
+        case MUON_INTEGER_CORE:
           return integer_type_emit(author, core_type);
 
-        case MU_LAMBDA_CORE:
+        case MUON_LAMBDA_CORE:
           return lambda_type_emit(author, core_type);
 
-        case MU_RECORD_CORE:
+        case MUON_RECORD_CORE:
           return record_type_emit(author, core_type);
 
-        case MU_VECTOR_CORE:
+        case MUON_VECTOR_CORE:
           return vector_type_emit(author, core_type);
       }
       __builtin_unreachable();

@@ -42,13 +42,13 @@ struct induce_t {
 
   universe_t universe;
 
-  const mu_core_t *boolean_core;
-  const mu_core_t *integer_core;
-  const mu_core_t *lambda_core;
-  const mu_core_t *vector_core;
+  const MuonCore *boolean_core;
+  const MuonCore *integer_core;
+  const MuonCore *lambda_core;
+  const MuonCore *vector_core;
 
-  const mu_core_t *datatype_core;
-  const mu_core_t *core[200];
+  const MuonCore *datatype_core;
+  const MuonCore *core[200];
   size_t core_length;
 
   const record_instance_t *record_instance[200];

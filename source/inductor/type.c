@@ -36,7 +36,7 @@ static inline MuonType *assign_type(
 
 MuonCoreType *mu_core_type(
     mu_inductor_t *inductor,
-    const mu_core_t *core,
+    const MuonCore *core,
     MuonType *const argv[/* core->argc */]) {
   struct MuonCoreType *result;
   if ((result = core_type_allocate(inductor, core)) == NULL)
@@ -101,7 +101,7 @@ MuonSchemeType *mu_scheme_type(
 }
 
 struct MuonCoreType *core_type_allocate(
-    induce_t *induce, const mu_core_t *core) {
+    induce_t *induce, const MuonCore *core) {
   assert(core->induce == induce);
 
   size_t size;
@@ -216,16 +216,16 @@ static void type_debug_internal(
     MuonType *type, _Bool expand, unsigned char prec, int assoc) {
   switch ON_ABSTRACT_OBJECT(type) {
     case IS_CONCRETE_TYPE(MuonCoreType * nominate(core_type)) {
-      const mu_core_t *core = core_type->core;
+      const MuonCore *core = core_type->core;
 
       switch (core->kind) {
-        case MU_BOOLEAN_CORE:
-        case MU_INTEGER_CORE:
-        case MU_CUSTOM_CORE:
+        case MUON_BOOLEAN_CORE:
+        case MUON_INTEGER_CORE:
+        case MUON_CUSTOM_CORE:
           mu_core_debug(core);
           break;
 
-        case MU_LAMBDA_CORE:
+        case MUON_LAMBDA_CORE:
           if (prec > 1 || prec == 1 && assoc == 1)
             debug("(");
 
@@ -239,13 +239,13 @@ static void type_debug_internal(
             debug(")");
           break;
 
-        case MU_VECTOR_CORE:
+        case MUON_VECTOR_CORE:
           debug("[");
           type_debug_internal(core_type->argv[0], expand, 0, 0);
           debug("]");
           break;
 
-        case MU_RECORD_CORE:
+        case MUON_RECORD_CORE:
           debug("(");
           for (size_t i = 0; i < core->argc; i++) {
             if (i > 0)

@@ -224,8 +224,8 @@ MuonCoercion *ensure_coercion(
   MuonCoreType *core_target = mu_type_cast(target, core_target);
   assert(core_target != NULL);
 
-  const mu_core_t *source_core = core_source->core;
-  const mu_core_t *target_core = core_target->core;
+  const MuonCore *source_core = core_source->core;
+  const MuonCore *target_core = core_target->core;
 
   if (source_core != target_core) {
     const mu_instance_t *instance;
@@ -252,7 +252,7 @@ MuonCoercion *ensure_coercion(
     return edge_assign(result_edge, &result->as_coercion);
   }
 
-  const mu_core_t *core = source_core;
+  const MuonCore *core = source_core;
 
   struct MuonVarianceCoercion *allocation;
   if ((allocation = variance_coercion_allocate(induce, core)) == NULL)
@@ -581,8 +581,8 @@ static MuonType *instantiate_scheme(induce_t *induce, MuonSchemeType *scheme) {
 
 static MuonCoercion *retrieve_core_coercion(
     induce_t *induce, MuonCoreType *source, MuonCoreType *target) {
-  const mu_core_t *source_core = source->core;
-  const mu_core_t *target_core = target->core;
+  const MuonCore *source_core = source->core;
+  const MuonCore *target_core = target->core;
 
   /* if (source_core->kind == MU_INTEGER_CORE && target_core->kind ==
    * MU_RECORD_CORE) */
@@ -595,7 +595,7 @@ static MuonCoercion *retrieve_core_coercion(
   if (source_core != target_core)
     return MU_NO_SUCH_COERCION;
 
-  const mu_core_t *core = source_core;
+  const MuonCore *core = source_core;
 
   struct MuonVarianceCoercion *allocation;
   if ((allocation = variance_coercion_allocate(induce, core)) == NULL)
@@ -689,36 +689,36 @@ induce_t *induce_initialize(
     return NULL;
   *slot_coercion = (MuonSlotCoercion) {.as_coercion.kind = MU_SLOT_COERCION};
 
-  mu_core_t *boolean_core;
-  if ((boolean_core = malloc(sizeof(mu_core_t))) == NULL)
+  MuonCore *boolean_core;
+  if ((boolean_core = malloc(sizeof(MuonCore))) == NULL)
     return NULL;
-  *boolean_core = (mu_core_t) {.kind = MU_BOOLEAN_CORE, .induce = induce};
+  *boolean_core = (MuonCore) {.kind = MUON_BOOLEAN_CORE, .induce = induce};
 
-  mu_core_t *integer_core;
-  if ((integer_core = malloc(sizeof(mu_core_t))) == NULL)
+  MuonCore *integer_core;
+  if ((integer_core = malloc(sizeof(MuonCore))) == NULL)
     return NULL;
-  *integer_core = (mu_core_t) {.kind = MU_INTEGER_CORE, .induce = induce};
+  *integer_core = (MuonCore) {.kind = MUON_INTEGER_CORE, .induce = induce};
 
   size_t size;
 
-  mu_core_t *lambda_core;
-  size = struct_size(mu_core_t, argv, 2);
+  MuonCore *lambda_core;
+  size = struct_size(MuonCore, argv, 2);
   if ((lambda_core = malloc(size)) == NULL)
     return NULL;
-  *lambda_core = (mu_core_t) {
-    .kind = MU_LAMBDA_CORE, .induce = induce, .argc = 2
+  *lambda_core = (MuonCore) {
+    .kind = MUON_LAMBDA_CORE, .induce = induce, .argc = 2
   };
-  lambda_core->argv[0] = (mu_core_member_t) {.variance = MUON_CONTRAVARIANCE};
-  lambda_core->argv[1] = (mu_core_member_t) {.variance = MUON_COVARIANCE};
+  lambda_core->argv[0] = (MuonCoreMember) {.variance = MUON_CONTRAVARIANCE};
+  lambda_core->argv[1] = (MuonCoreMember) {.variance = MUON_COVARIANCE};
 
-  mu_core_t *vector_core;
-  size = struct_size(mu_core_t, argv, 1);
+  MuonCore *vector_core;
+  size = struct_size(MuonCore, argv, 1);
   if ((vector_core = malloc(size)) == NULL)
     return NULL;
-  *vector_core = (mu_core_t) {
-    .kind = MU_VECTOR_CORE, .induce = induce, .argc = 1
+  *vector_core = (MuonCore) {
+    .kind = MUON_VECTOR_CORE, .induce = induce, .argc = 1
   };
-  vector_core->argv[0] = (mu_core_member_t) {.variance = MUON_COVARIANCE};
+  vector_core->argv[0] = (MuonCoreMember) {.variance = MUON_COVARIANCE};
 
   *induce = (induce_t) {
     .engine = engine,

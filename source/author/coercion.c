@@ -47,19 +47,19 @@ MUON_HINT(nonnull) static LLVMValueRef indirect_coercion_emit(
 MUON_HINT(nonnull) static LLVMValueRef variance_coercion_emit(
     author_t *author, MuonVarianceCoercion *coercion, info_t info) {
   switch ON_ABSTRACT_OBJECT(coercion->core) {
-    case MU_BOOLEAN_CORE:
-    case MU_INTEGER_CORE:
+    case MUON_BOOLEAN_CORE:
+    case MUON_INTEGER_CORE:
       return info.source;
 
-    case MU_LAMBDA_CORE:
-    case MU_RECORD_CORE:
+    case MUON_LAMBDA_CORE:
+    case MUON_RECORD_CORE:
       return info.source;
 
-    case MU_VECTOR_CORE: {
+    case MUON_VECTOR_CORE: {
       return info.source;
     }
 
-    case MU_CUSTOM_CORE:
+    case MUON_CUSTOM_CORE:
       return info.source;
   }
 }

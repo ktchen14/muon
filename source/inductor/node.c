@@ -51,10 +51,10 @@ MUON_HINT(nonnull) static MuonType *access_expr_return(
   if ((variable_type = mu_variable_type(induce)) == NULL)
     return NULL;
 
-  const mu_core_t *core;
+  const MuonCore *core;
   if ((core = single_record_core(induce, expr->name)) == NULL)
     return NULL;
-  assert(core->kind == MU_RECORD_CORE);
+  assert(core->kind == MUON_RECORD_CORE);
 
   MuonType *record_argv[] = {&variable_type->as_type};
   MuonCoreType *record_type;
@@ -150,14 +150,14 @@ MUON_HINT(nonnull) static MuonType *native_expr_return(
 
 MUON_HINT(nonnull) static MuonType *record_expr_return(
     induce_t *induce, MuonRecordExpr *expr) {
-  mu_core_t *core_allocation;
+  MuonCore *core_allocation;
   if ((core_allocation = record_core_allocate(induce, expr->argc)) == NULL)
     return NULL;
 
   for (size_t i = 0; i < expr->argc; i++) {
     MuonName *name = expr->argv[i]->name;
 
-    mu_core_member_t member = {.name = name};
+    MuonCoreMember member = {.name = name};
     core_allocation->argv[i] = member;
   }
   /* qsort(&core_allocation->argv[j], expr->argc - j, sizeof(mu_expr_member_t),
@@ -165,7 +165,7 @@ MUON_HINT(nonnull) static MuonType *record_expr_return(
   /*     type_member_cmp); */
   // TODO: check for duplicates
 
-  const mu_core_t *core;
+  const MuonCore *core;
   if (rare((core = record_core_activate(core_allocation)) == NULL))
     return NULL;
 
@@ -317,7 +317,7 @@ MUON_HINT(nonnull) static MuonType *coercion_stmt_return(
 
 MUON_HINT(nonnull) static MuonType *datatype_option_return(
     induce_t *induce, MuonDatatypeOption *option) {
-  const mu_core_t *core = induce->datatype_core;
+  const MuonCore *core = induce->datatype_core;
   assert(core != NULL);
 
   MuonCoreType *result;
@@ -328,7 +328,7 @@ MUON_HINT(nonnull) static MuonType *datatype_option_return(
 
 MUON_HINT(nonnull) static MuonNode *datatype_stmt_continue(
     induce_t *induce, MuonDatatypeStmt *stmt) {
-  const mu_core_t *core;
+  const MuonCore *core;
   if ((core = mu_simple_core(induce, stmt->name)) == NULL)
     return NULL;
   induce->core[induce->core_length++] = core;
@@ -340,7 +340,7 @@ MUON_HINT(nonnull) static MuonNode *datatype_stmt_continue(
 MUON_HINT(nonnull) static MuonType *datatype_stmt_return(
     induce_t *induce, MuonDatatypeStmt *stmt) {
   // TODO: No arguments supported for now
-  const mu_core_t *core = induce->datatype_core;
+  const MuonCore *core = induce->datatype_core;
   MuonCoreType *result;
   if ((result = mu_core_type(induce, core, NULL)) == NULL)
     return NULL;
@@ -374,14 +374,14 @@ MUON_HINT(nonnull) static MuonType *define_stmt_return(
 
 MUON_HINT(nonnull) static MuonType *record_view_return(
     induce_t *induce, MuonRecordView *view) {
-  mu_core_t *core_allocation;
+  MuonCore *core_allocation;
   if ((core_allocation = record_core_allocate(induce, view->argc)) == NULL)
     return NULL;
 
   for (size_t i = 0; i < view->argc; i++) {
     MuonName *name = view->argv[i]->name;
 
-    mu_core_member_t member = {.name = name};
+    MuonCoreMember member = {.name = name};
     core_allocation->argv[i] = member;
   }
   /* qsort(&core_allocation->argv[j], view->argc - j, sizeof(mu_view_member_t),
@@ -389,7 +389,7 @@ MUON_HINT(nonnull) static MuonType *record_view_return(
   /*     type_member_cmp); */
   // TODO: check for duplicates
 
-  const mu_core_t *core;
+  const MuonCore *core;
   if (rare((core = record_core_activate(core_allocation)) == NULL))
     return NULL;
 

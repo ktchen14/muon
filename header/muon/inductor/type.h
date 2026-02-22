@@ -1,12 +1,10 @@
 #ifndef MU_INDUCTOR_TYPE_H
 #define MU_INDUCTOR_TYPE_H
 
+#include "common.h"
 #include "core.h"
 
 #include <stddef.h>
-
-typedef struct induce_t induce_t;
-typedef struct induce_t mu_inductor_t;
 
 /// Expands to emit(lower, upper, title, ...) for each kind of type
 #define MU_EACH_TYPE_KIND(emit, ...) \
@@ -40,7 +38,7 @@ typedef const struct MuonType {
 /// A core type
 typedef const struct MuonCoreType {
   MUON_TYPE_HEADER;
-  const mu_core_t *core;
+  const MuonCore *core;
   MuonType *argv[/* core->argc */];
 } MuonCoreType;
 
@@ -78,8 +76,8 @@ typedef const struct MuonVariableType {
 } MuonVariableType;
 
 MuonCoreType *mu_core_type(
-    mu_inductor_t *inductor,
-    const mu_core_t *core,
+    induce_t *inductor,
+    const MuonCore *core,
     MuonType *const argv[/* core->argc */])
   MUON_HINT_SUFFIX(malloc, nonnull(1, 2));
 

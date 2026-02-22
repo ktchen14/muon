@@ -99,7 +99,7 @@ static inline MuonType *type_next(MuonType *type, _Bool *next_charge) {
 
   switch ON_ABSTRACT_OBJECT(type) {
     case IS_CONCRETE_TYPE(MuonCoreType * nominate(core_type)) {
-      const mu_core_t *core = core_type->core;
+      const MuonCore *core = core_type->core;
 
       if (cursor->i >= core->argc)
         return NULL;
@@ -134,7 +134,7 @@ static inline MuonType *type_next(MuonType *type, _Bool *next_charge) {
   __builtin_unreachable();
 }
 
-struct MuonCoreType *core_type_allocate(induce_t *induce, const mu_core_t *core)
+struct MuonCoreType *core_type_allocate(induce_t *induce, const MuonCore *core)
   MUON_HINT_SUFFIX(malloc, nonnull);
 
 MuonCoreType *core_type_activate(struct MuonCoreType *type)

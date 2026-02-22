@@ -33,7 +33,7 @@ MuonEdgeCoercion *mu_edge_coercion(
   MUON_HINT_SUFFIX(malloc, nonnull);
 
 struct MuonVarianceCoercion *variance_coercion_allocate(
-    mu_inductor_t *inductor, const mu_core_t *core)
+    mu_inductor_t *inductor, const MuonCore *core)
   MUON_HINT_SUFFIX(malloc);
 
 MuonVarianceCoercion *variance_coercion_activate(

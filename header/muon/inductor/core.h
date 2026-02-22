@@ -1,20 +1,20 @@
 #ifndef MU_INDUCTOR_CORE_H
 #define MU_INDUCTOR_CORE_H
 
-#include "../engine/name.h"
+#include "common.h"
+
+#include "../engine.h"
 
 #include <stddef.h>
 
-typedef struct induce_t induce_t;
-
 typedef enum {
-  MU_BOOLEAN_CORE,
-  MU_CUSTOM_CORE,
-  MU_INTEGER_CORE,
-  MU_LAMBDA_CORE,
-  MU_RECORD_CORE,
-  MU_VECTOR_CORE,
-} mu_core_kind_t;
+  MUON_BOOLEAN_CORE,
+  MUON_CUSTOM_CORE,
+  MUON_INTEGER_CORE,
+  MUON_LAMBDA_CORE,
+  MUON_RECORD_CORE,
+  MUON_VECTOR_CORE,
+} MuonCoreTag;
 
 typedef enum {
   MUON_COVARIANCE     = 1 << 0,
@@ -25,31 +25,31 @@ typedef enum {
 typedef struct {
   MuonName *name;
   MuonVariance variance : 2;
-} mu_core_member_t;
+} MuonCoreMember;
 
 typedef struct {
-  mu_core_kind_t kind;
+  MuonCoreTag kind;
   const induce_t *induce;
   MuonName *name;
   size_t argc;
-  mu_core_member_t argv[/* argc */];
-} mu_core_t;
+  MuonCoreMember argv[/* argc */];
+} MuonCore;
 
 typedef const struct MuonExpr MuonExpr;
 typedef struct {
-  const mu_core_t *source;
-  const mu_core_t *target;
+  const MuonCore *source;
+  const MuonCore *target;
   MuonExpr *expr;
 } mu_instance_t;
 
-const mu_core_t *mu_simple_core(induce_t *induce, MuonName *name);
+const MuonCore *mu_simple_core(induce_t *induce, MuonName *name);
 
 const mu_instance_t *mu_instance(
-    const mu_core_t *source, const mu_core_t *target, MuonExpr *expr)
+    const MuonCore *source, const MuonCore *target, MuonExpr *expr)
   MUON_HINT_SUFFIX(malloc, nonnull);
 
 /// Emit debugging information on the abstract @a core to the debug stream
-void mu_core_debug(const mu_core_t *core)
+void mu_core_debug(const MuonCore *core)
   MUON_HINT_SUFFIX(nonnull);
 
 /// Emit debugging information on the abstract @a instance to the debug stream
