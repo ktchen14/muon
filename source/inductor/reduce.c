@@ -60,7 +60,7 @@ void *redirect_source(
 
   // ∀⟨v ⇒ τ⟩ | τ is a variable type
   for (type_edge_t *direct; (next = universe_next(&it)) != NULL;) {
-    if (next->target->kind != MU_VARIABLE_TYPE)
+    if (next->target->kind != MUON_VARIABLE_TYPE)
       continue;
 
     // Locate ⟨α ⇒ τ⟩
@@ -108,7 +108,7 @@ const void *reduce_type_to_join(induce_t *induce, MuonVariableType *target) {
 
     // If the edge's source isn't a variable type, then length++
     MuonVariableType *next_variable;
-    if ((next_variable = mu_type_cast(edge->source, next_variable)) == NULL)
+    if ((next_variable = muon_type_cast(edge->source, next_variable)) == NULL)
       continue;
 
     // Otherwise, reduce it. Then add its join length to length.
@@ -130,13 +130,13 @@ const void *reduce_type_to_join(induce_t *induce, MuonVariableType *target) {
   it = universe_iterator(universe, &target->as_type, 0);
   for (type_edge_t *a_edge; (a_edge = universe_next(&it)) != NULL;) {
     MuonType *a;
-    if (a_edge->indirect || (a = a_edge->source)->kind == MU_VARIABLE_TYPE)
+    if (a_edge->indirect || (a = a_edge->source)->kind == MUON_VARIABLE_TYPE)
       continue;
 
     universe_iterator_t jt = it;
     for (type_edge_t *b_edge; (b_edge = universe_next(&jt)) != NULL;) {
       MuonType *b;
-      if (b_edge->indirect || (b = b_edge->source)->kind == MU_VARIABLE_TYPE)
+      if (b_edge->indirect || (b = b_edge->source)->kind == MUON_VARIABLE_TYPE)
         continue;
 
       // If we have b ⇝ a, then assign b ⇝ a ⇝ v to ⟨b ⇒ v⟩ and skip this b
@@ -209,7 +209,7 @@ const void *reduce_type_to_join(induce_t *induce, MuonVariableType *target) {
 
   it = universe_iterator(universe, &target->as_type, 0);
   for (type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
-    if (edge->indirect || edge->source->kind == MU_VARIABLE_TYPE)
+    if (edge->indirect || edge->source->kind == MUON_VARIABLE_TYPE)
       continue;
 
     allocation->argv[argc] = edge->source;
@@ -250,9 +250,9 @@ MuonCoercion *reduce_coercion(induce_t *induce, MuonCoercion *coercion) {
       MuonType *target = edge_coercion->as_coercion.target;
 
       assert(
-          target->kind == MU_VARIABLE_TYPE || source->kind == MU_VARIABLE_TYPE);
+          target->kind == MUON_VARIABLE_TYPE || source->kind == MUON_VARIABLE_TYPE);
 
-      if (target->kind == MU_VARIABLE_TYPE) {
+      if (target->kind == MUON_VARIABLE_TYPE) {
         MuonVariableType *v = (MuonVariableType *) target;
         if (reduce_type_to_join(induce, v) == NULL)
           return NULL;
@@ -266,7 +266,7 @@ MuonCoercion *reduce_coercion(induce_t *induce, MuonCoercion *coercion) {
           != NULL)
         return reduce_coercion(induce, next_coercion);
 
-      if (source->kind == MU_VARIABLE_TYPE) {
+      if (source->kind == MUON_VARIABLE_TYPE) {
         MuonVariableType *v = (MuonVariableType *) source;
         if (reduce_type_to_join(induce, v) == NULL)
           return NULL;
@@ -275,7 +275,7 @@ MuonCoercion *reduce_coercion(induce_t *induce, MuonCoercion *coercion) {
         /* assert(v->solution != NULL); */
 
         switch ON_ABSTRACT_OBJECT(v->solution) {
-          case IS_CONCRETE_TYPE(MuonCoreType * nominate(core_type)) {
+          case IS_CONCRETE_TYPE(MuonCoreType *core_type) {
             type_edge_t *edge;
             edge = universe_search(
                 &induce->universe, &core_type->as_type, target);
@@ -289,7 +289,7 @@ MuonCoercion *reduce_coercion(induce_t *induce, MuonCoercion *coercion) {
             return edge_assign(edge, coercion);
           }
 
-          case IS_CONCRETE_TYPE(MuonSchemeType * nominate(scheme_type)) {
+          case IS_CONCRETE_TYPE(MuonSchemeType *scheme_type) {
             type_edge_t *edge;
             edge = universe_search(
                 &induce->universe, &scheme_type->as_type, target);
@@ -303,7 +303,7 @@ MuonCoercion *reduce_coercion(induce_t *induce, MuonCoercion *coercion) {
             return edge_assign(edge, coercion);
           }
 
-          case IS_CONCRETE_TYPE(MuonJoinType * nominate(join_type)) {
+          case IS_CONCRETE_TYPE(MuonJoinType *join_type) {
             struct MuonUnjoinCoercion *allocation;
             if ((allocation = unjoin_coercion_allocate(induce, join_type->argc))
                 == NULL)
@@ -328,7 +328,7 @@ MuonCoercion *reduce_coercion(induce_t *induce, MuonCoercion *coercion) {
           }
 
           // TODO: this is incorrect
-          case MU_VARIABLE_TYPE:
+          case MUON_VARIABLE_TYPE:
             abort();
         }
       }

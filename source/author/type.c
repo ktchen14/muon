@@ -138,7 +138,7 @@ MUON_HINT(nonnull) static LLVMTypeRef join_type_emit(
 MUON_HINT(nonnull) static LLVMTypeRef type_emit(
     author_t *author, MuonType *type) {
   switch ON_ABSTRACT_OBJECT(type) {
-    case IS_CONCRETE_TYPE(MuonCoreType * nominate(core_type))
+    case IS_CONCRETE_TYPE(MuonCoreType *core_type)
       switch (core_type->core->kind) {
         case MUON_BOOLEAN_CORE:
           return boolean_type_emit(author, core_type);
@@ -160,14 +160,14 @@ MUON_HINT(nonnull) static LLVMTypeRef type_emit(
       }
       __builtin_unreachable();
 
-    case MU_SCHEME_TYPE:
+    case MUON_SCHEME_TYPE:
       abort();
 
-    case IS_CONCRETE_TYPE(MuonVariableType * nominate(variable_type))
+    case IS_CONCRETE_TYPE(MuonVariableType *variable_type)
       assert(variable_type->solution != NULL);
       return type_emit(author, variable_type->solution);
 
-    case IS_CONCRETE_TYPE(MuonJoinType * nominate(join_type))
+    case IS_CONCRETE_TYPE(MuonJoinType *join_type)
       return join_type_emit(author, join_type);
   }
   __builtin_unreachable();

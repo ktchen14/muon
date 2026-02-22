@@ -1,24 +1,34 @@
-#ifndef MU_INDUCTOR_TYPE_H
-#define MU_INDUCTOR_TYPE_H
+#ifndef MUON_INDUCTOR_TYPE_H
+#define MUON_INDUCTOR_TYPE_H
 
 #include "common.h"
 #include "core.h"
 
 #include <stddef.h>
 
-/// Expands to emit(lower, upper, title, ...) for each concrete type
-#define MUON_EACH_TYPE_KIND(emit, ...) \
-  emit(core, CORE, Core __VA_OPT__(,) __VA_ARGS__) \
-  emit(scheme, SCHEME, Scheme __VA_OPT__(,) __VA_ARGS__) \
-  emit(variable, VARIABLE, Variable __VA_OPT__(,) __VA_ARGS__) \
-  emit(join, JOIN, Join __VA_OPT__(,) __VA_ARGS__)
+/// Expands to emit(title, lower, upper, ...) for each concrete type
+#define MUON_EACH_TYPE(emit, ...) \
+  emit(CoreType, core_type, CORE_TYPE __VA_OPT__(,) __VA_ARGS__) \
+  emit(JoinType, join_type, JOIN_TYPE __VA_OPT__(,) __VA_ARGS__) \
+  emit(SchemeType, scheme_type, SCHEME_TYPE __VA_OPT__(,) __VA_ARGS__) \
+  emit(VariableType, variable_type, VARIABLE_TYPE __VA_OPT__(,) __VA_ARGS__)
 
-/// An enumeration over each concrete type, e.g. @c MU_CORE_TYPE
+/// An enumeration over each concrete type, e.g. @c MUON_CORE_TYPE
 typedef enum {
-#define MU_EMIT(l, upper, t) MU_##upper##_TYPE,
-  MUON_EACH_TYPE_KIND(MU_EMIT)
-#undef MU_EMIT
+#define MUON_EMIT(T, l, UPPER) MUON_##UPPER,
+  MUON_EACH_TYPE(MUON_EMIT)
+
+  /// Equivalent to the minimum enumerator in MuonTypeTag
+  MUON_MINORANT_TYPE = MUON_INDIRECT(MUON_TAKE, MUON_EACH_TYPE(MUON_EMIT)),
+#undef MUON_EMIT
 } MuonTypeTag;
+
+enum {
+#define MUON_EMIT(...) + 1
+  /// Number of distinct kinds of types
+  MUON_TYPE_NUMBER = MUON_EACH_TYPE(MUON_EMIT),
+#undef MUON_EMIT
+};
 
 /**
  * @brief An abstract type
@@ -27,7 +37,9 @@ typedef enum {
  * <tt>struct MuonType</tt>.
  */
 typedef const struct MuonType {
-  MuonTypeTag kind;
+  union {
+    MuonTypeTag kind, tag;
+  };
   const induce_t *induce;
   size_t id;
 } MuonType;
@@ -35,14 +47,12 @@ typedef const struct MuonType {
 /// The header that each MuonType subtype must have
 #define MUON_TYPE_HEADER struct MuonType as_type
 
-/// A core type
 typedef const struct MuonCoreType {
   MUON_TYPE_HEADER;
   const MuonCore *core;
   MuonType *argv[/* core->argc */];
 } MuonCoreType;
 
-/// A scheme type
 typedef const struct MuonSchemeType {
   MUON_TYPE_HEADER;
 
@@ -53,14 +63,12 @@ typedef const struct MuonSchemeType {
   MuonType *argv[/* argc */];
 } MuonSchemeType;
 
-/// A join type
 typedef const struct MuonJoinType {
   MUON_TYPE_HEADER;
   size_t argc;
   MuonType *argv[/* argc */];
 } MuonJoinType;
 
-/// A variable type
 typedef const struct MuonVariableType {
   MUON_TYPE_HEADER;
 
@@ -75,72 +83,54 @@ typedef const struct MuonVariableType {
   MuonSchemeType *scheme;
 } MuonVariableType;
 
-MuonCoreType *mu_core_type(
+/// @internal Used to emit each branch in MUON_TYPE_TAG()
+#define MUON_TYPE_TAG_EMIT(Title, l, UPPER) , Muon##Title *: MUON_##UPPER
+
+/// Return the enumerator indicative of the concrete @a type
+#define MUON_TYPE_TAG(type) _Generic( \
+  (type) {} MUON_EACH_TYPE(MUON_TYPE_TAG_EMIT))
+
+/// @internal Used to decide the cast result in muon_type_cast()
+MUON_HINT(nonnull)
+static inline MuonType *muon_type_cast(MuonType *type, MuonTypeTag tag) {
+  return type->kind == tag ? type : NULL;
+}
+
+/**
+ * @brief Downcast the @a abstract type to the <tt>typeof(concrete)</tt>
+ */
+#define muon_type_cast(type, concrete) ( \
+  (typeof(concrete)) muon_type_cast((type), MUON_TYPE_TAG(typeof(concrete))) \
+)
+
+MuonCoreType *muon_core_type(
     induce_t *inductor,
     const MuonCore *core,
     MuonType *const argv[/* core->argc */])
   MUON_HINT_SUFFIX(malloc, nonnull(1, 2));
 
 /// Create a boolean type in the @a inductor
-MuonCoreType *mu_boolean_type(induce_t *induce)
+MuonCoreType *muon_boolean_type(induce_t *induce)
   MUON_HINT_SUFFIX(malloc, nonnull);
 
 /// Create an integer type in the @a inductor
-MuonCoreType *mu_integer_type(induce_t *induce)
+MuonCoreType *muon_integer_type(induce_t *induce)
   MUON_HINT_SUFFIX(malloc, nonnull);
 
 /// Create a lambda type in the @a inductor
-MuonCoreType *mu_lambda_type(
+MuonCoreType *muon_lambda_type(
     induce_t *induce, MuonType *argument, MuonType *output)
   MUON_HINT_SUFFIX(malloc, nonnull);
 
 /// Create a vector type in the @a inductor
-MuonCoreType *mu_vector_type(induce_t *induce, MuonType *matter)
+MuonCoreType *muon_vector_type(induce_t *induce, MuonType *matter)
   MUON_HINT_SUFFIX(malloc, nonnull);
 
-MuonSchemeType *mu_scheme_type(
+MuonSchemeType *muon_scheme_type(
     induce_t *induce, MuonType *matter, size_t argc, MuonType *const argv[argc])
   MUON_HINT_SUFFIX(malloc, nonnull(1, 2));
 
-MuonVariableType *mu_variable_type(induce_t *induce)
+MuonVariableType *muon_variable_type(induce_t *induce)
   MUON_HINT_SUFFIX(malloc, nonnull);
 
-/// @internal Used to emit each branch in MU_TYPE_ENUMERATOR()
-#define MU_TYPE_ENUMERATOR_EMIT(l, upper, title) \
-  , Muon##title##Type *: MU_##upper##_TYPE \
-  , struct Muon##title##Type *: MU_##upper##_TYPE
-
-/// Return the enumerator indicative of the @a concrete type
-#define MU_TYPE_ENUMERATOR(concrete) \
-  _Generic((concrete) {0} MUON_EACH_TYPE_KIND(MU_TYPE_ENUMERATOR_EMIT))
-
-/**
- * @brief Downcast the @a abstract type to the <tt>typeof(concrete)</tt>
- *
- * @a abstract should have type <tt>MuonType *</tt>. @a concrete should
- * be, or have, the type of a pointer to a const qualified concrete type. Then
- * if @a abstract is an instance of that type, it will be cast to that type and
- * returned. Otherwise, this will return @c NULL.
- *
- * @par Example:
- * @code{.c}
- *   MuonType *abstract_type = ...;
- *
- *   mu_core_type_t *type;
- *   if ((type = mu_type_cast(abstract_type, type)) == NULL)
- *     return ...;
- * @endcode
- *
- * The behavior is undefined if:
- * - @a abstract is @c NULL
- * - @a abstract doesn't have type <tt>MuonType *</tt>
- * - @a concrete isn't, or doesn't have, the type of a const qualified pointer
- *   to a concrete type
- */
-#define mu_type_cast(abstract, concrete) __extension__ ({ \
-  MuonType *_abstract = (abstract); \
-  _abstract->kind == MU_TYPE_ENUMERATOR(__typeof__(concrete)) ? \
-    (__typeof__(concrete)) _abstract : NULL; \
-})
-
-#endif /* MU_INDUCTOR_TYPE_H */
+#endif /* MUON_INDUCTOR_TYPE_H */

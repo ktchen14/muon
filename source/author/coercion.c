@@ -123,7 +123,7 @@ MUON_HINT(nonnull) static LLVMValueRef join_coercion_emit(
 MUON_HINT(nonnull) static LLVMValueRef unjoin_coercion_emit(
     author_t *author, MuonUnjoinCoercion *coercion, info_t info) {
   // Ensure that the source type is a join type
-  MuonJoinType *source_type = mu_type_cast(info.source_type, source_type);
+  MuonJoinType *source_type = muon_type_cast(info.source_type, source_type);
   assert(source_type != NULL);
 
   unsigned int argc;

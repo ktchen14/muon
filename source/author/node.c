@@ -180,7 +180,7 @@ static LLVMValueRef switch_expr_emit(author_t *author, MuonSwitchExpr *expr) {
 MUON_HINT(nonnull)
 static LLVMValueRef vector_expr_emit(author_t *author, MuonVectorExpr *expr) {
   MuonType *type = node_type(author->inductor, &expr->as_node);
-  MuonCoreType *vector_type = mu_type_cast(type, vector_type);
+  MuonCoreType *vector_type = muon_type_cast(type, vector_type);
   assert(vector_type != NULL);
   assert(vector_type->core == vector_type->as_type.induce->vector_core);
   MuonType *matter_muon_type = vector_type->argv[0];

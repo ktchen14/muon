@@ -35,13 +35,13 @@ MuonCoercion *ensure_coercion(
     return coerce_with(induce, result_edge);
 
   // A join type shouldn't ever appear as a target
-  assert(target->kind != MU_JOIN_TYPE);
+  assert(target->kind != MUON_JOIN_TYPE);
 
   // Make ⟨source ⇒ target⟩ here in case of recursion
   if ((result_edge = append_edge(&induce->universe, source, target)) == NULL)
     return NULL;
 
-  if (source->kind == MU_VARIABLE_TYPE && target->kind != MU_VARIABLE_TYPE) {
+  if (source->kind == MUON_VARIABLE_TYPE && target->kind != MUON_VARIABLE_TYPE) {
     universe_iterator_t it;
 
     // ∀(τ) | ∃⟨τ ⇒ source⟩ and τ isn't a variable type, ensure that we're able
@@ -49,7 +49,7 @@ MuonCoercion *ensure_coercion(
     it = universe_iterator(&induce->universe, source, 0);
     for (const type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
       MuonType *t;
-      if (edge->indirect || (t = edge->source)->kind == MU_VARIABLE_TYPE)
+      if (edge->indirect || (t = edge->source)->kind == MUON_VARIABLE_TYPE)
         continue;
 
       if (ensure_coercion(induce, t, target) == NULL)
@@ -61,7 +61,7 @@ MuonCoercion *ensure_coercion(
     it = universe_iterator(&induce->universe, source, 0);
     for (const type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
       MuonType *t;
-      if (edge->indirect || (t = edge->source)->kind != MU_VARIABLE_TYPE)
+      if (edge->indirect || (t = edge->source)->kind != MUON_VARIABLE_TYPE)
         continue;
 
       type_edge_t *addition;
@@ -73,7 +73,7 @@ MuonCoercion *ensure_coercion(
     return coerce_with(induce, result_edge);
   }
 
-  if (source->kind != MU_VARIABLE_TYPE && target->kind == MU_VARIABLE_TYPE) {
+  if (source->kind != MUON_VARIABLE_TYPE && target->kind == MUON_VARIABLE_TYPE) {
     universe_iterator_t it;
 
     // ∀(τ) | ∃⟨target ⇒ τ⟩ and τ isn't a variable type, ensure that we're able
@@ -81,7 +81,7 @@ MuonCoercion *ensure_coercion(
     it = universe_iterator(&induce->universe, target, 1);
     for (const type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
       MuonType *t;
-      if (edge->indirect || (t = edge->target)->kind == MU_VARIABLE_TYPE)
+      if (edge->indirect || (t = edge->target)->kind == MUON_VARIABLE_TYPE)
         continue;
 
       if (ensure_coercion(induce, source, t) == NULL)
@@ -93,7 +93,7 @@ MuonCoercion *ensure_coercion(
     it = universe_iterator(&induce->universe, target, 1);
     for (const type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
       MuonType *t;
-      if (edge->indirect || (t = edge->target)->kind != MU_VARIABLE_TYPE)
+      if (edge->indirect || (t = edge->target)->kind != MUON_VARIABLE_TYPE)
         continue;
 
       type_edge_t *addition;
@@ -105,7 +105,7 @@ MuonCoercion *ensure_coercion(
     return coerce_with(induce, result_edge);
   }
 
-  if (source->kind == MU_VARIABLE_TYPE && target->kind == MU_VARIABLE_TYPE) {
+  if (source->kind == MUON_VARIABLE_TYPE && target->kind == MUON_VARIABLE_TYPE) {
     universe_iterator_t it, jt;
 
     // ∀(α) | ∃⟨α ⇒ source⟩ and α isn't a variable type, ∀(β) | ∃⟨target ⇒ β⟩
@@ -113,13 +113,13 @@ MuonCoercion *ensure_coercion(
     it = universe_iterator(&induce->universe, source, 0);
     for (const type_edge_t *a_edge; (a_edge = universe_next(&it)) != NULL;) {
       MuonType *a;
-      if (a_edge->indirect || (a = a_edge->source)->kind == MU_VARIABLE_TYPE)
+      if (a_edge->indirect || (a = a_edge->source)->kind == MUON_VARIABLE_TYPE)
         continue;
 
       jt = universe_iterator(&induce->universe, target, 1);
       for (const type_edge_t *b_edge; (b_edge = universe_next(&jt)) != NULL;) {
         MuonType *b;
-        if (b_edge->indirect || (b = b_edge->target)->kind == MU_VARIABLE_TYPE)
+        if (b_edge->indirect || (b = b_edge->target)->kind == MUON_VARIABLE_TYPE)
           continue;
 
         if (ensure_coercion(induce, a, b) == NULL)
@@ -159,7 +159,7 @@ MuonCoercion *ensure_coercion(
   }
 
   MuonJoinType *join_type;
-  if ((join_type = mu_type_cast(source, join_type)) != NULL) {
+  if ((join_type = muon_type_cast(source, join_type)) != NULL) {
     struct MuonUnjoinCoercion *allocation;
     if ((allocation = unjoin_coercion_allocate(induce, join_type->argc))
         == NULL)
@@ -184,10 +184,10 @@ MuonCoercion *ensure_coercion(
   }
 
   // We can't handle this at this time
-  assert(target->kind != MU_SCHEME_TYPE);
+  assert(target->kind != MUON_SCHEME_TYPE);
 
   MuonSchemeType *scheme_type;
-  if ((scheme_type = mu_type_cast(source, scheme_type)) != NULL) {
+  if ((scheme_type = muon_type_cast(source, scheme_type)) != NULL) {
     // Create an unscheme coercion source ⇝ instance to instantiate the scheme
     // type
     MuonType *instance;
@@ -218,10 +218,10 @@ MuonCoercion *ensure_coercion(
     return edge_assign(result_edge, &result->as_coercion);
   }
 
-  MuonCoreType *core_source = mu_type_cast(source, core_source);
+  MuonCoreType *core_source = muon_type_cast(source, core_source);
   assert(core_source != NULL);
 
-  MuonCoreType *core_target = mu_type_cast(target, core_target);
+  MuonCoreType *core_target = muon_type_cast(target, core_target);
   assert(core_target != NULL);
 
   const MuonCore *source_core = core_source->core;
@@ -311,7 +311,7 @@ MuonType *generalize_type(induce_t *induce, MuonType *root) {
       type_header(next)->access[next_charge] = 1;
 
       // Mark a variable type that's both + and - accessible as polymorphic
-      if (next->kind == MU_VARIABLE_TYPE && type_header(next)->access[0]
+      if (next->kind == MUON_VARIABLE_TYPE && type_header(next)->access[0]
           && type_header(next)->access[1]) {
         polymorphic_length++;
         type_header(next)->polymorphic = 1;
@@ -320,7 +320,7 @@ MuonType *generalize_type(induce_t *induce, MuonType *root) {
       // Don't continue into a variable type from a variable type. We maintain
       // the transitive closure of each variable type, so no new information is
       // available in the next variable.
-      if (next->kind == MU_VARIABLE_TYPE && type->kind == MU_VARIABLE_TYPE)
+      if (next->kind == MUON_VARIABLE_TYPE && type->kind == MUON_VARIABLE_TYPE)
         continue;
 
       type = type_continue(type, next, next_charge);
@@ -377,7 +377,7 @@ MuonType *generalize_type(induce_t *induce, MuonType *root) {
       polymorphic_length++;
     type_header(type)->polymorphic = 1;
 
-    if (type->kind != MU_VARIABLE_TYPE)
+    if (type->kind != MUON_VARIABLE_TYPE)
       continue;
 
     universe_iterator_t jt;
@@ -389,7 +389,7 @@ MuonType *generalize_type(induce_t *induce, MuonType *root) {
         continue;
       if (type_header(vertex)->polymorphic)
         continue;
-      if (vertex->kind != MU_VARIABLE_TYPE)
+      if (vertex->kind != MUON_VARIABLE_TYPE)
         continue;
 
       // If vertex is a sibling of next, and ∃
@@ -420,7 +420,7 @@ MuonType *generalize_type(induce_t *induce, MuonType *root) {
       allocation->argv[j++] = type;
 
       MuonVariableType *v;
-      if ((v = mu_type_cast(type, v)) != NULL) {
+      if ((v = muon_type_cast(type, v)) != NULL) {
         if (v->scheme == NULL)
           ((struct MuonVariableType *) v)->scheme = allocation;
       }
@@ -445,7 +445,7 @@ static MuonType *instantiate_scheme(induce_t *induce, MuonSchemeType *scheme) {
 
   for (size_t i = 0; i < scheme->argc; i++) {
     switch ON_ABSTRACT_OBJECT(scheme->argv[i]) {
-      case IS_CONCRETE_TYPE(MuonCoreType * nominate(core_type)) {
+      case IS_CONCRETE_TYPE(MuonCoreType *core_type) {
         struct MuonCoreType *allocation;
         if ((allocation = core_type_allocate(induce, core_type->core)) == NULL)
           return NULL;
@@ -453,7 +453,7 @@ static MuonType *instantiate_scheme(induce_t *induce, MuonSchemeType *scheme) {
         break;
       }
 
-      case IS_CONCRETE_TYPE(MuonSchemeType * nominate(scheme_type)) {
+      case IS_CONCRETE_TYPE(MuonSchemeType *scheme_type) {
         struct MuonSchemeType *allocation;
         if ((allocation = scheme_type_allocate(induce, scheme_type->argc))
             == NULL)
@@ -462,7 +462,7 @@ static MuonType *instantiate_scheme(induce_t *induce, MuonSchemeType *scheme) {
         break;
       }
 
-      case IS_CONCRETE_TYPE(MuonJoinType * nominate(join_type)) {
+      case IS_CONCRETE_TYPE(MuonJoinType *join_type) {
         struct MuonJoinType *allocation;
         if ((allocation = join_type_allocate(induce, join_type->argc)) == NULL)
           return NULL;
@@ -470,9 +470,9 @@ static MuonType *instantiate_scheme(induce_t *induce, MuonSchemeType *scheme) {
         break;
       }
 
-      case IS_CONCRETE_TYPE(MuonVariableType * nominate(variable_type)) {
+      case IS_CONCRETE_TYPE(MuonVariableType *variable_type) {
         MuonVariableType *result;
-        if ((result = mu_variable_type(induce)) == NULL)
+        if ((result = muon_variable_type(induce)) == NULL)
           return NULL;
         equation[variable_type->as_type.id] =
             (struct MuonType *) &result->as_type;
@@ -483,7 +483,7 @@ static MuonType *instantiate_scheme(induce_t *induce, MuonSchemeType *scheme) {
 
   for (size_t i = 0; i < scheme->argc; i++) {
     switch ON_ABSTRACT_OBJECT(scheme->argv[i]) {
-      case IS_CONCRETE_TYPE(MuonCoreType * nominate(core_type)) {
+      case IS_CONCRETE_TYPE(MuonCoreType *core_type) {
         struct MuonCoreType *allocation =
             (struct MuonCoreType *) equation[core_type->as_type.id];
         assert(allocation != NULL);
@@ -500,7 +500,7 @@ static MuonType *instantiate_scheme(induce_t *induce, MuonSchemeType *scheme) {
         break;
       }
 
-      case IS_CONCRETE_TYPE(MuonSchemeType * nominate(scheme_type)) {
+      case IS_CONCRETE_TYPE(MuonSchemeType *scheme_type) {
         struct MuonSchemeType *allocation =
             (struct MuonSchemeType *) equation[scheme_type->as_type.id];
         assert(allocation != NULL);
@@ -519,7 +519,7 @@ static MuonType *instantiate_scheme(induce_t *induce, MuonSchemeType *scheme) {
         break;
       }
 
-      case IS_CONCRETE_TYPE(MuonJoinType * nominate(join_type)) {
+      case IS_CONCRETE_TYPE(MuonJoinType *join_type) {
         struct MuonJoinType *allocation =
             (struct MuonJoinType *) equation[join_type->as_type.id];
         assert(allocation != NULL);
@@ -535,7 +535,7 @@ static MuonType *instantiate_scheme(induce_t *induce, MuonSchemeType *scheme) {
         break;
       }
 
-      case IS_CONCRETE_TYPE(MuonVariableType * nominate(variable_type)) {
+      case IS_CONCRETE_TYPE(MuonVariableType *variable_type) {
         struct MuonVariableType *result =
             (struct MuonVariableType *) equation[variable_type->as_type.id];
         assert(result != NULL);
@@ -584,12 +584,12 @@ static MuonCoercion *retrieve_core_coercion(
   const MuonCore *source_core = source->core;
   const MuonCore *target_core = target->core;
 
-  /* if (source_core->kind == MU_INTEGER_CORE && target_core->kind ==
-   * MU_RECORD_CORE) */
+  /* if (source_core->kind == MUON_INTEGER_CORE && target_core->kind ==
+   * MUON_RECORD_CORE) */
   /*   return induce->id_coercion; */
 
-  /* if (source_core->kind == MU_BOOLEAN_CORE && target_core->kind ==
-   * MU_INTEGER_CORE) */
+  /* if (source_core->kind == MUON_BOOLEAN_CORE && target_core->kind ==
+   * MUON_INTEGER_CORE) */
   /*   return induce->id_coercion; */
 
   if (source_core != target_core)
@@ -632,7 +632,7 @@ static MuonCoercion *retrieve_core_coercion(
 
 MuonCoercion *retrieve_coercion(
     induce_t *induce, MuonType *source, MuonType *target) {
-  assert(source->kind != MU_SCHEME_TYPE && target->kind != MU_SCHEME_TYPE);
+  assert(source->kind != MUON_SCHEME_TYPE && target->kind != MUON_SCHEME_TYPE);
 
   if (source == target)
     return induce->id_coercion;
@@ -642,7 +642,7 @@ MuonCoercion *retrieve_coercion(
   if ((edge = universe_search(&induce->universe, source, target)) != NULL)
     return coerce_with(induce, edge);
 
-  if (source->kind == MU_CORE_TYPE && target->kind == MU_CORE_TYPE) {
+  if (source->kind == MUON_CORE_TYPE && target->kind == MUON_CORE_TYPE) {
     MuonCoreType *next_source = (MuonCoreType *) source;
     MuonCoreType *next_target = (MuonCoreType *) target;
 

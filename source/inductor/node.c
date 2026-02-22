@@ -48,7 +48,7 @@ MuonType *induce_node(induce_t *induce, MuonNode *root) {
 MUON_HINT(nonnull) static MuonType *access_expr_return(
     induce_t *induce, MuonAccessExpr *expr) {
   MuonVariableType *variable_type;
-  if ((variable_type = mu_variable_type(induce)) == NULL)
+  if ((variable_type = muon_variable_type(induce)) == NULL)
     return NULL;
 
   const MuonCore *core;
@@ -58,12 +58,12 @@ MUON_HINT(nonnull) static MuonType *access_expr_return(
 
   MuonType *record_argv[] = {&variable_type->as_type};
   MuonCoreType *record_type;
-  if ((record_type = mu_core_type(induce, core, record_argv)) == NULL)
+  if ((record_type = muon_core_type(induce, core, record_argv)) == NULL)
     return NULL;
 
   MuonType *argv[] = {&record_type->as_type, &variable_type->as_type};
   MuonCoreType *result;
-  if ((result = mu_lambda_type(induce, argv[0], argv[1])) == NULL)
+  if ((result = muon_lambda_type(induce, argv[0], argv[1])) == NULL)
     return NULL;
   return &result->as_type;
 }
@@ -71,7 +71,7 @@ MUON_HINT(nonnull) static MuonType *access_expr_return(
 MUON_HINT(nonnull) static MuonType *boolean_expr_return(
     induce_t *induce, MuonBooleanExpr *expr) {
   MuonCoreType *result;
-  if ((result = mu_boolean_type(induce)) == NULL)
+  if ((result = muon_boolean_type(induce)) == NULL)
     return NULL;
   return &result->as_type;
 }
@@ -87,7 +87,7 @@ MUON_HINT(nonnull) static MuonType *cast_expr_return(
 MUON_HINT(nonnull) static MuonType *integer_expr_return(
     induce_t *induce, MuonIntegerExpr *expr) {
   MuonCoreType *result;
-  if ((result = mu_integer_type(induce)) == NULL)
+  if ((result = muon_integer_type(induce)) == NULL)
     return NULL;
   return &result->as_type;
 }
@@ -97,12 +97,12 @@ MUON_HINT(nonnull) static MuonType *invoke_expr_return(
   MuonType *argument_type = node_type(induce, &expr->argument->as_node);
 
   MuonVariableType *result;
-  if ((result = mu_variable_type(induce)) == NULL)
+  if ((result = muon_variable_type(induce)) == NULL)
     return NULL;
 
   MuonType *argv[] = {argument_type, &result->as_type};
   MuonCoreType *lambda_type;
-  if ((lambda_type = mu_lambda_type(induce, argv[0], argv[1])) == NULL)
+  if ((lambda_type = muon_lambda_type(induce, argv[0], argv[1])) == NULL)
     return NULL;
 
   MuonType *target = &lambda_type->as_type;
@@ -118,7 +118,7 @@ MUON_HINT(nonnull) static MuonType *lambda_expr_return(
   MuonType *output_type = node_type(induce, &expr->matter->as_node);
 
   MuonCoreType *result;
-  if ((result = mu_lambda_type(induce, argument_type, output_type)) == NULL)
+  if ((result = muon_lambda_type(induce, argument_type, output_type)) == NULL)
     return NULL;
   return &result->as_type;
 }
@@ -133,17 +133,17 @@ MUON_HINT(nonnull) static MuonType *name_expr_return(
 MUON_HINT(nonnull) static MuonType *native_expr_return(
     induce_t *induce, MuonNativeExpr *expr) {
   MuonCoreType *integer_type;
-  if ((integer_type = mu_integer_type(induce)) == NULL)
+  if ((integer_type = muon_integer_type(induce)) == NULL)
     return NULL;
 
   MuonCoreType *vector_type;
-  if ((vector_type = mu_vector_type(induce, &integer_type->as_type)) == NULL)
+  if ((vector_type = muon_vector_type(induce, &integer_type->as_type)) == NULL)
     return NULL;
 
   MuonType *argument_type = &vector_type->as_type;
   MuonType *output_type = &integer_type->as_type;
   MuonCoreType *result;
-  if ((result = mu_lambda_type(induce, argument_type, output_type)) == NULL)
+  if ((result = muon_lambda_type(induce, argument_type, output_type)) == NULL)
     return NULL;
   return &result->as_type;
 }
@@ -188,12 +188,12 @@ MUON_HINT(nonnull) static MuonType *switch_case_return(
   if ((target = detect_evince(induce->detect, &node->as_node)) == NULL)
     abort();
   MuonType *case_type = node_type(induce, target);
-  assert(case_type->kind != MU_SCHEME_TYPE);
+  assert(case_type->kind != MUON_SCHEME_TYPE);
 
   MuonType *expr_type = node_type(induce, &node->expr->as_node);
 
   MuonCoreType *result;
-  if ((result = mu_lambda_type(induce, case_type, expr_type)) == NULL)
+  if ((result = muon_lambda_type(induce, case_type, expr_type)) == NULL)
     return NULL;
   return &result->as_type;
 }
@@ -201,7 +201,7 @@ MUON_HINT(nonnull) static MuonType *switch_case_return(
 MUON_HINT(nonnull) static MuonType *switch_expr_return(
     induce_t *induce, MuonSwitchExpr *expr) {
   MuonVariableType *result;
-  if ((result = mu_variable_type(induce)) == NULL)
+  if ((result = muon_variable_type(induce)) == NULL)
     return NULL;
 
   for (size_t i = 0; i < expr->argc; i++) {
@@ -215,7 +215,7 @@ MUON_HINT(nonnull) static MuonType *switch_expr_return(
 MUON_HINT(nonnull) static MuonType *sequence_expr_return(
     induce_t *induce, MuonSequenceExpr *expr) {
   MuonVariableType *result;
-  if ((result = mu_variable_type(induce)) == NULL)
+  if ((result = muon_variable_type(induce)) == NULL)
     return NULL;
   return &result->as_type;
 }
@@ -223,7 +223,7 @@ MUON_HINT(nonnull) static MuonType *sequence_expr_return(
 MUON_HINT(nonnull) static MuonType *vector_expr_return(
     induce_t *induce, MuonVectorExpr *expr) {
   MuonVariableType *matter_type;
-  if ((matter_type = mu_variable_type(induce)) == NULL)
+  if ((matter_type = muon_variable_type(induce)) == NULL)
     return NULL;
 
   for (size_t i = 0; i < expr->argc; i++) {
@@ -233,7 +233,7 @@ MUON_HINT(nonnull) static MuonType *vector_expr_return(
   }
 
   MuonCoreType *result;
-  if ((result = mu_vector_type(induce, &matter_type->as_type)) == NULL)
+  if ((result = muon_vector_type(induce, &matter_type->as_type)) == NULL)
     return NULL;
   return &result->as_type;
 }
@@ -241,7 +241,7 @@ MUON_HINT(nonnull) static MuonType *vector_expr_return(
 MUON_HINT(nonnull) static MuonType *boolean_sign_return(
     induce_t *induce, MuonBooleanSign *sign) {
   MuonCoreType *result;
-  if ((result = mu_boolean_type(induce)) == NULL)
+  if ((result = muon_boolean_type(induce)) == NULL)
     return NULL;
   return &result->as_type;
 }
@@ -249,7 +249,7 @@ MUON_HINT(nonnull) static MuonType *boolean_sign_return(
 MUON_HINT(nonnull) static MuonType *integer_sign_return(
     induce_t *induce, MuonIntegerSign *sign) {
   MuonCoreType *result;
-  if ((result = mu_integer_type(induce)) == NULL)
+  if ((result = muon_integer_type(induce)) == NULL)
     return NULL;
   return &result->as_type;
 }
@@ -260,7 +260,7 @@ MUON_HINT(nonnull) static MuonType *lambda_sign_return(
   MuonType *output_type = node_type(induce, &sign->output->as_node);
 
   MuonCoreType *result;
-  if ((result = mu_lambda_type(induce, argument_type, output_type)) == NULL)
+  if ((result = muon_lambda_type(induce, argument_type, output_type)) == NULL)
     return NULL;
   return &result->as_type;
 }
@@ -282,7 +282,7 @@ MUON_HINT(nonnull) static MuonType *vector_sign_return(
   MuonType *matter = node_type(induce, &sign->matter->as_node);
 
   MuonCoreType *result;
-  if ((result = mu_vector_type(induce, matter)) == NULL)
+  if ((result = muon_vector_type(induce, matter)) == NULL)
     return NULL;
   return &result->as_type;
 }
@@ -293,16 +293,16 @@ MUON_HINT(nonnull) static MuonType *coercion_stmt_return(
   MuonType *target_type = node_type(induce, &stmt->target->as_node);
 
   MuonCoreType *lambda_type;
-  if ((lambda_type = mu_lambda_type(induce, source_type, target_type)) == NULL)
+  if ((lambda_type = muon_lambda_type(induce, source_type, target_type)) == NULL)
     return NULL;
 
   // TODO: ensure that this isn't tautological
   if (coerce_node(induce, &stmt->expr->as_node, &lambda_type->as_type) == NULL)
     return NULL;
 
-  MuonCoreType *source_core_type = mu_type_cast(source_type, source_core_type);
+  MuonCoreType *source_core_type = muon_type_cast(source_type, source_core_type);
   assert(source_core_type != NULL);
-  MuonCoreType *target_core_type = mu_type_cast(target_type, target_core_type);
+  MuonCoreType *target_core_type = muon_type_cast(target_type, target_core_type);
   assert(target_core_type != NULL);
 
   const mu_instance_t *instance;
@@ -321,7 +321,7 @@ MUON_HINT(nonnull) static MuonType *datatype_option_return(
   assert(core != NULL);
 
   MuonCoreType *result;
-  if ((result = mu_core_type(induce, core, NULL)) == NULL)
+  if ((result = muon_core_type(induce, core, NULL)) == NULL)
     return NULL;
   return &result->as_type;
 }
@@ -342,7 +342,7 @@ MUON_HINT(nonnull) static MuonType *datatype_stmt_return(
   // TODO: No arguments supported for now
   const MuonCore *core = induce->datatype_core;
   MuonCoreType *result;
-  if ((result = mu_core_type(induce, core, NULL)) == NULL)
+  if ((result = muon_core_type(induce, core, NULL)) == NULL)
     return NULL;
   return &result->as_type;
 }
@@ -409,7 +409,7 @@ MUON_HINT(nonnull) static MuonType *record_view_return(
 MUON_HINT(nonnull) static MuonType *variable_view_return(
     induce_t *induce, MuonVariableView *view) {
   MuonVariableType *result;
-  if ((result = mu_variable_type(induce)) == NULL)
+  if ((result = muon_variable_type(induce)) == NULL)
     return NULL;
   return &result->as_type;
 }
@@ -428,7 +428,7 @@ MUON_HINT(nonnull) static MuonType *script_return(
     induce_t *induce, MuonScript *script) {
   // TODO: this is nonsense
   MuonCoreType *result;
-  if ((result = mu_integer_type(induce)) == NULL)
+  if ((result = muon_integer_type(induce)) == NULL)
     return NULL;
   return &result->as_type;
 }

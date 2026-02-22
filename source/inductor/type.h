@@ -12,21 +12,21 @@
 #include <limits.h>
 #include <stddef.h>
 
-#define INTERNAL_IS_CONCRETE_TYPE(type, name) \
-  MU_TYPE_ENUMERATOR(type):; __typeof__(type) name = _object;
-
-#define IS_CONCRETE_TYPE(...) INTERNAL_IS_CONCRETE_TYPE(__VA_ARGS__)
-
-#define nominate(name) , name
+/// Emit a case within a switch ON_ABSTRACT_OBJECT()
+#define IS_CONCRETE_TYPE(...) \
+  MUON_TYPE_TAG(typeof(&(union { __VA_ARGS__, _; }) {}._)): \
+    __VA_ARGS__ = _object;
 
 typedef struct {
   /// @internal The type to return to, or @c NULL if this is the root type
   MuonType *anterior;
 
-  size_t i : sizeof(size_t) * CHAR_BIT - 1;
+  size_t i : sizeof(size_t) * CHAR_BIT - 3;
 
   /// @internal Used to decide which cursor to return to in the @a anterior type
   size_t charge : 1;
+
+  size_t variance : 1;
 
   /// @internal Used to mark if the type is accessible
   size_t access : 1;
@@ -46,8 +46,8 @@ typedef struct {
   };
 
   _Alignas(union {
-#define MU_EMIT(lower, u, title) Muon##title##Type lower;
-    MUON_EACH_TYPE_KIND(MU_EMIT)
+#define MU_EMIT(Title, lower, U) Muon##Title lower;
+    MUON_EACH_TYPE(MU_EMIT)
 #undef MU_EMIT
   }) char data[];
 } TypeHeader;
@@ -88,7 +88,6 @@ static inline MuonType *type_return(MuonType *type) {
   charge = cursor->charge;
   MuonType *anterior = cursor->anterior;
   *cursor = (TypeCursor) {0};
-  assert(anterior != NULL || charge == 0);
   return anterior;
 }
 
@@ -98,7 +97,7 @@ static inline MuonType *type_next(MuonType *type, _Bool *next_charge) {
   *next_charge = charge;
 
   switch ON_ABSTRACT_OBJECT(type) {
-    case IS_CONCRETE_TYPE(MuonCoreType * nominate(core_type)) {
+    case IS_CONCRETE_TYPE(MuonCoreType *core_type) {
       const MuonCore *core = core_type->core;
 
       if (cursor->i >= core->argc)
@@ -111,16 +110,16 @@ static inline MuonType *type_next(MuonType *type, _Bool *next_charge) {
       return core_type->argv[cursor->i++];
     }
 
-    case IS_CONCRETE_TYPE(MuonSchemeType * nominate(scheme_type))
+    case IS_CONCRETE_TYPE(MuonSchemeType *scheme_type)
       if (cursor->i > 0)
         return NULL;
       return cursor->i++, scheme_type->matter;
 
-    case IS_CONCRETE_TYPE(MuonJoinType * nominate(join_type))
+    case IS_CONCRETE_TYPE(MuonJoinType *join_type)
       assert(charge == 0);
       return cursor->i < join_type->argc ? join_type->argv[cursor->i++] : NULL;
 
-    case MU_VARIABLE_TYPE: {
+    case MUON_VARIABLE_TYPE: {
       const universe_t *universe = &type->induce->universe;
 
       for (size_t i; (i = cursor->i++) < universe->length;) {

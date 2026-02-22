@@ -61,7 +61,7 @@
 typedef enum {
   MUON_EACH_NODE_STEM(MUON_NODE_TAG_EMIT)
 
-  /// Equivalent to the maximum enumerator in MuonNodeEnumerator
+  /// Equivalent to the minimum enumerator in MuonNodeTag
   MUON_MINORANT_NODE = MUON_INDIRECT(
     MUON_TAKE, MUON_EACH_NODE_STEM(MUON_NODE_TAG_EMIT)),
 
@@ -78,7 +78,7 @@ typedef enum {
   MUON_EACH_EXPR_STEM(MUON_EMIT)
 #undef MUON_EMIT
 
-  /// Equivalent to the minimum enumerator in MuonExprEnumerator
+  /// Equivalent to the minimum enumerator in MuonExprTag
   MUON_MINORANT_EXPR = MUON_INDIRECT(
     MUON_TAKE, MUON_EACH_EXPR_STEM(MUON_NODE_TAG_EMIT)),
 } MuonExprTag;
@@ -89,7 +89,7 @@ typedef enum {
   MUON_EACH_SIGN_STEM(MUON_EMIT)
 #undef MUON_EMIT
 
-  /// Equivalent to the minimum enumerator in MuonSignEnumerator
+  /// Equivalent to the minimum enumerator in MuonSignTag
   MUON_MINORANT_SIGN = MUON_INDIRECT(
     MUON_TAKE, MUON_EACH_SIGN_STEM(MUON_NODE_TAG_EMIT)),
 } MuonSignTag;
@@ -100,7 +100,7 @@ typedef enum {
   MUON_EACH_STMT_STEM(MUON_EMIT)
 #undef MUON_EMIT
 
-  /// Equivalent to the minimum enumerator in MuonSignEnumerator
+  /// Equivalent to the minimum enumerator in MuonStmtTag
   MUON_MINORANT_STMT = MUON_INDIRECT(
     MUON_TAKE, MUON_EACH_STMT_STEM(MUON_NODE_TAG_EMIT)),
 } MuonStmtTag;
@@ -111,7 +111,7 @@ typedef enum {
   MUON_EACH_VIEW_STEM(MUON_EMIT)
 #undef MUON_EMIT
 
-  /// Equivalent to the minimum enumerator in MuonSignEnumerator
+  /// Equivalent to the minimum enumerator in MuonViewTag
   MUON_MINORANT_VIEW = MUON_INDIRECT(
     MUON_TAKE, MUON_EACH_VIEW_STEM(MUON_NODE_TAG_EMIT)),
 } MuonViewTag;
@@ -383,7 +383,7 @@ typedef const struct MuonScript {
   MuonStmt *argv[] MUON_HINT(counted_by(argc));
 } MuonScript;
 
-/// @internal Used to emit each branch in MUON_NODE_TAG(), etc.
+/// @internal Used to emit each branch in MUON_NODE_TAG()
 #define MUON_NODE_TAG_EMIT(Title, l, UPPER, SUFFIX) \
   , Muon##Title *: MUON_##UPPER##SUFFIX
 
