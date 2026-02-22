@@ -11,9 +11,4 @@ typedef struct {
   _Alignas(max_align_t) char data[sizeof(void *[256])];
 } MuonEngine;
 
-/// @internal Used to emit each branch in MUON_STATOR_ENUMERATOR(), etc.
-#define MUON_ENUMERATOR_EMIT(Title, l, UPPER, SUFFIX) \
-  , Muon##Title *: MUON_##UPPER##SUFFIX \
-  , struct Muon##Title *: MUON_##UPPER##SUFFIX
-
 #endif /* MUON_ENGINE_COMMON_H */
