@@ -144,9 +144,7 @@ enum {
  * <tt>struct MuonNode</tt>.
  */
 typedef const struct MuonNode {
-  union {
-    MuonNodeTag kind, tag;
-  };
+  MuonNodeTag tag;
   const MuonEngine *engine;
   size_t id;
 } MuonNode;
@@ -191,7 +189,7 @@ typedef const struct MuonSign {
  * <tt>struct MuonStmt</tt>.
  */
 typedef const struct MuonStmt {
-  union { MUON_NODE_HEADER; union { MuonStmtTag kind, tag; }; }; //-
+  union { MUON_NODE_HEADER; MuonStmtTag tag; }; //-
 } MuonStmt;
 
 /// The header that each MuonStmt subtype must have

@@ -37,9 +37,7 @@ enum {
  * <tt>struct MuonType</tt>.
  */
 typedef const struct MuonType {
-  union {
-    MuonTypeTag kind, tag;
-  };
+  MuonTypeTag tag;
   const induce_t *induce;
   size_t id;
 } MuonType;

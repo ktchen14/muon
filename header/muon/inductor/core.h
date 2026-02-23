@@ -28,7 +28,7 @@ typedef struct {
 } MuonCoreMember;
 
 typedef const struct MuonCore {
-  union { MuonCoreTag kind, tag; };
+  MuonCoreTag tag;
   const induce_t *induce;
   MuonName *name;
   size_t argc;
