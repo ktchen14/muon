@@ -3,6 +3,7 @@
 
 #include <muon/inductor/type.h>
 
+#include "common.h"
 #include "coercion.h"
 
 #include <assert.h>

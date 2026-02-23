@@ -4,6 +4,7 @@
 #include <muon/inductor/coercion.h> // IWYU pragma: export
 #include <muon/inductor/type.h>
 
+#include "common.h"
 #include "core.h"
 
 #include <stddef.h>
