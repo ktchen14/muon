@@ -69,7 +69,7 @@ MuonVariableType *muon_variable_type(induce_t *induce) {
   struct MuonVariableType *result;
   if ((result = type_allocate(induce, sizeof(MuonVariableType))) == NULL)
     return NULL;
-  *result = (MuonVariableType) {.as_type.kind = MUON_VARIABLE_TYPE};
+  *result = (MuonVariableType) {.as_type.tag = MUON_VARIABLE_TYPE};
   return assign_type(induce, &result->as_type), result;
 }
 
@@ -111,7 +111,7 @@ struct MuonCoreType *core_type_allocate(induce_t *induce, MuonCore *core) {
   if ((result = type_allocate(induce, size)) == NULL)
     return NULL;
   *result = (MuonCoreType) {
-    .as_type = {.kind = MUON_CORE_TYPE, .induce = induce},
+    .as_type = {.tag = MUON_CORE_TYPE, .induce = induce},
     .core = core,
   };
   return result;
@@ -137,7 +137,7 @@ struct MuonSchemeType *scheme_type_allocate(induce_t *induce, size_t argc) {
   if ((result = type_allocate(induce, size)) == NULL)
     return NULL;
   *result = (MuonSchemeType) {
-    .as_type = {.kind = MUON_SCHEME_TYPE, .induce = induce},
+    .as_type = {.tag = MUON_SCHEME_TYPE, .induce = induce},
     .argc = argc,
   };
   return result;
@@ -164,7 +164,7 @@ struct MuonJoinType *join_type_allocate(induce_t *induce, size_t argc) {
   if ((result = type_allocate(induce, size)) == NULL)
     return NULL;
   *result = (MuonJoinType) {
-    .as_type = {.kind = MUON_JOIN_TYPE, .induce = induce},
+    .as_type = {.tag = MUON_JOIN_TYPE, .induce = induce},
     .argc = argc,
   };
   return result;

@@ -35,13 +35,13 @@ MuonCoercion *ensure_coercion(
     return coerce_with(induce, result_edge);
 
   // A join type shouldn't ever appear as a target
-  assert(target->kind != MUON_JOIN_TYPE);
+  assert(target->tag != MUON_JOIN_TYPE);
 
   // Make ⟨source ⇒ target⟩ here in case of recursion
   if ((result_edge = append_edge(&induce->universe, source, target)) == NULL)
     return NULL;
 
-  if (source->kind == MUON_VARIABLE_TYPE && target->kind != MUON_VARIABLE_TYPE) {
+  if (source->tag == MUON_VARIABLE_TYPE && target->tag != MUON_VARIABLE_TYPE) {
     universe_iterator_t it;
 
     // ∀(τ) | ∃⟨τ ⇒ source⟩ and τ isn't a variable type, ensure that we're able
@@ -49,7 +49,7 @@ MuonCoercion *ensure_coercion(
     it = universe_iterator(&induce->universe, source, 0);
     for (const type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
       MuonType *t;
-      if (edge->indirect || (t = edge->source)->kind == MUON_VARIABLE_TYPE)
+      if (edge->indirect || (t = edge->source)->tag == MUON_VARIABLE_TYPE)
         continue;
 
       if (ensure_coercion(induce, t, target) == NULL)
@@ -61,7 +61,7 @@ MuonCoercion *ensure_coercion(
     it = universe_iterator(&induce->universe, source, 0);
     for (const type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
       MuonType *t;
-      if (edge->indirect || (t = edge->source)->kind != MUON_VARIABLE_TYPE)
+      if (edge->indirect || (t = edge->source)->tag != MUON_VARIABLE_TYPE)
         continue;
 
       type_edge_t *addition;
@@ -73,7 +73,7 @@ MuonCoercion *ensure_coercion(
     return coerce_with(induce, result_edge);
   }
 
-  if (source->kind != MUON_VARIABLE_TYPE && target->kind == MUON_VARIABLE_TYPE) {
+  if (source->tag != MUON_VARIABLE_TYPE && target->tag == MUON_VARIABLE_TYPE) {
     universe_iterator_t it;
 
     // ∀(τ) | ∃⟨target ⇒ τ⟩ and τ isn't a variable type, ensure that we're able
@@ -81,7 +81,7 @@ MuonCoercion *ensure_coercion(
     it = universe_iterator(&induce->universe, target, 1);
     for (const type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
       MuonType *t;
-      if (edge->indirect || (t = edge->target)->kind == MUON_VARIABLE_TYPE)
+      if (edge->indirect || (t = edge->target)->tag == MUON_VARIABLE_TYPE)
         continue;
 
       if (ensure_coercion(induce, source, t) == NULL)
@@ -93,7 +93,7 @@ MuonCoercion *ensure_coercion(
     it = universe_iterator(&induce->universe, target, 1);
     for (const type_edge_t *edge; (edge = universe_next(&it)) != NULL;) {
       MuonType *t;
-      if (edge->indirect || (t = edge->target)->kind != MUON_VARIABLE_TYPE)
+      if (edge->indirect || (t = edge->target)->tag != MUON_VARIABLE_TYPE)
         continue;
 
       type_edge_t *addition;
@@ -105,7 +105,7 @@ MuonCoercion *ensure_coercion(
     return coerce_with(induce, result_edge);
   }
 
-  if (source->kind == MUON_VARIABLE_TYPE && target->kind == MUON_VARIABLE_TYPE) {
+  if (source->tag == MUON_VARIABLE_TYPE && target->tag == MUON_VARIABLE_TYPE) {
     universe_iterator_t it, jt;
 
     // ∀(α) | ∃⟨α ⇒ source⟩ and α isn't a variable type, ∀(β) | ∃⟨target ⇒ β⟩
@@ -113,13 +113,13 @@ MuonCoercion *ensure_coercion(
     it = universe_iterator(&induce->universe, source, 0);
     for (const type_edge_t *a_edge; (a_edge = universe_next(&it)) != NULL;) {
       MuonType *a;
-      if (a_edge->indirect || (a = a_edge->source)->kind == MUON_VARIABLE_TYPE)
+      if (a_edge->indirect || (a = a_edge->source)->tag == MUON_VARIABLE_TYPE)
         continue;
 
       jt = universe_iterator(&induce->universe, target, 1);
       for (const type_edge_t *b_edge; (b_edge = universe_next(&jt)) != NULL;) {
         MuonType *b;
-        if (b_edge->indirect || (b = b_edge->target)->kind == MUON_VARIABLE_TYPE)
+        if (b_edge->indirect || (b = b_edge->target)->tag == MUON_VARIABLE_TYPE)
           continue;
 
         if (ensure_coercion(induce, a, b) == NULL)
@@ -184,7 +184,7 @@ MuonCoercion *ensure_coercion(
   }
 
   // We can't handle this at this time
-  assert(target->kind != MUON_SCHEME_TYPE);
+  assert(target->tag != MUON_SCHEME_TYPE);
 
   MuonSchemeType *scheme_type;
   if ((scheme_type = muon_type_cast(source, scheme_type)) != NULL) {
@@ -311,7 +311,7 @@ MuonType *generalize_type(induce_t *induce, MuonType *root) {
       type_header(next)->access[next_charge] = 1;
 
       // Mark a variable type that's both + and - accessible as polymorphic
-      if (next->kind == MUON_VARIABLE_TYPE && type_header(next)->access[0]
+      if (next->tag == MUON_VARIABLE_TYPE && type_header(next)->access[0]
           && type_header(next)->access[1]) {
         polymorphic_length++;
         type_header(next)->polymorphic = 1;
@@ -320,7 +320,7 @@ MuonType *generalize_type(induce_t *induce, MuonType *root) {
       // Don't continue into a variable type from a variable type. We maintain
       // the transitive closure of each variable type, so no new information is
       // available in the next variable.
-      if (next->kind == MUON_VARIABLE_TYPE && type->kind == MUON_VARIABLE_TYPE)
+      if (next->tag == MUON_VARIABLE_TYPE && type->tag == MUON_VARIABLE_TYPE)
         continue;
 
       type = type_continue(type, next, next_charge);
@@ -377,7 +377,7 @@ MuonType *generalize_type(induce_t *induce, MuonType *root) {
       polymorphic_length++;
     type_header(type)->polymorphic = 1;
 
-    if (type->kind != MUON_VARIABLE_TYPE)
+    if (type->tag != MUON_VARIABLE_TYPE)
       continue;
 
     universe_iterator_t jt;
@@ -389,7 +389,7 @@ MuonType *generalize_type(induce_t *induce, MuonType *root) {
         continue;
       if (type_header(vertex)->polymorphic)
         continue;
-      if (vertex->kind != MUON_VARIABLE_TYPE)
+      if (vertex->tag != MUON_VARIABLE_TYPE)
         continue;
 
       // If vertex is a sibling of next, and ∃
@@ -632,7 +632,7 @@ static MuonCoercion *retrieve_core_coercion(
 
 MuonCoercion *retrieve_coercion(
     induce_t *induce, MuonType *source, MuonType *target) {
-  assert(source->kind != MUON_SCHEME_TYPE && target->kind != MUON_SCHEME_TYPE);
+  assert(source->tag != MUON_SCHEME_TYPE && target->tag != MUON_SCHEME_TYPE);
 
   if (source == target)
     return induce->id_coercion;
@@ -642,7 +642,7 @@ MuonCoercion *retrieve_coercion(
   if ((edge = universe_search(&induce->universe, source, target)) != NULL)
     return coerce_with(induce, edge);
 
-  if (source->kind == MUON_CORE_TYPE && target->kind == MUON_CORE_TYPE) {
+  if (source->tag == MUON_CORE_TYPE && target->tag == MUON_CORE_TYPE) {
     MuonCoreType *next_source = (MuonCoreType *) source;
     MuonCoreType *next_target = (MuonCoreType *) target;
 

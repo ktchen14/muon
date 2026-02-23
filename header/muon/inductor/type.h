@@ -93,7 +93,7 @@ typedef const struct MuonVariableType {
 /// @internal Used to decide the cast result in muon_type_cast()
 MUON_HINT(nonnull)
 static inline MuonType *muon_type_cast(MuonType *type, MuonTypeTag tag) {
-  return type->kind == tag ? type : NULL;
+  return type->tag == tag ? type : NULL;
 }
 
 /**

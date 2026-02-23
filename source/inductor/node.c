@@ -188,7 +188,7 @@ MUON_HINT(nonnull) static MuonType *switch_case_return(
   if ((target = detect_evince(induce->detect, &node->as_node)) == NULL)
     abort();
   MuonType *case_type = node_type(induce, target);
-  assert(case_type->kind != MUON_SCHEME_TYPE);
+  assert(case_type->tag != MUON_SCHEME_TYPE);
 
   MuonType *expr_type = node_type(induce, &node->expr->as_node);
 
