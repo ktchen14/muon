@@ -48,23 +48,23 @@ MUON_EACH_NODE_STEM(EMIT)
   case MUON_##UPPER: return as_##lower((Muon##Title *) node);
 
 [[gnu::nonnull]] static inline VALUE as_expr(MuonExpr *node) {
-  switch (node->kind) { MUON_EACH_EXPR_STEM(EMIT) }
+  switch (node->tag) { MUON_EACH_EXPR_STEM(EMIT) }
 }
 
 [[gnu::nonnull]] static inline VALUE as_sign(MuonSign *node) {
-  switch (node->kind) { MUON_EACH_SIGN_STEM(EMIT) }
+  switch (node->tag) { MUON_EACH_SIGN_STEM(EMIT) }
 }
 
 [[gnu::nonnull]] static inline VALUE as_stmt(MuonStmt *node) {
-  switch (node->kind) { MUON_EACH_STMT_STEM(EMIT) }
+  switch (node->tag) { MUON_EACH_STMT_STEM(EMIT) }
 }
 
 [[gnu::nonnull]] static inline VALUE as_view(MuonView *node) {
-  switch (node->kind) { MUON_EACH_VIEW_STEM(EMIT) }
+  switch (node->tag) { MUON_EACH_VIEW_STEM(EMIT) }
 }
 
 [[gnu::nonnull]] static inline VALUE as_node(MuonNode *node) {
-  switch (node->kind) { MUON_EACH_NODE_STEM(EMIT) }
+  switch (node->tag) { MUON_EACH_NODE_STEM(EMIT) }
 }
 
 #undef EMIT

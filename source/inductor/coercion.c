@@ -34,7 +34,7 @@ MuonIdCoercion *mu_id_coercion(mu_inductor_t *inductor, MuonType *target) {
   if ((result = malloc(sizeof(MuonIdCoercion))) == NULL)
     return NULL;
   *result = (MuonIdCoercion) {
-    .as_coercion = {.kind = MU_ID_COERCION, .target = target},
+    .as_coercion = {.tag = MU_ID_COERCION, .target = target},
   };
   return assign_coercion(inductor, &result->as_coercion), result;
 }
@@ -45,7 +45,7 @@ MuonEdgeCoercion *mu_edge_coercion(
   if ((result = malloc(sizeof(MuonEdgeCoercion))) == NULL)
     return NULL;
   *result = (MuonEdgeCoercion) {
-    .as_coercion = {.kind = MU_EDGE_COERCION, .target = target},
+    .as_coercion = {.tag = MU_EDGE_COERCION, .target = target},
     .source = source,
   };
   return assign_coercion(inductor, &result->as_coercion), result;
@@ -62,7 +62,7 @@ MuonIndirectCoercion *mu_indirect_coercion(
   if ((result = malloc(sizeof(MuonIndirectCoercion))) == NULL)
     return NULL;
   *result = (MuonIndirectCoercion) {
-    .as_coercion = {.kind = MU_INDIRECT_COERCION, .target = target},
+    .as_coercion = {.tag = MU_INDIRECT_COERCION, .target = target},
     .head = head,
     .tail = tail,
   };
@@ -75,7 +75,7 @@ MuonInstanceCoercion *mu_instance_coercion(
   if ((result = malloc(sizeof(MuonInstanceCoercion))) == NULL)
     return NULL;
   *result = (MuonInstanceCoercion) {
-    .as_coercion = {.kind = MU_INSTANCE_COERCION, .target = target},
+    .as_coercion = {.tag = MU_INSTANCE_COERCION, .target = target},
     .instance = instance,
   };
   return assign_coercion(inductor, &result->as_coercion), result;
@@ -102,7 +102,7 @@ MuonJoinCoercion *mu_join_coercion(
   if ((result = malloc(sizeof(MuonJoinCoercion))) == NULL)
     return NULL;
   *result = (MuonJoinCoercion) {
-    .as_coercion = {.kind = MU_JOIN_COERCION, .target = target},
+    .as_coercion = {.tag = MU_JOIN_COERCION, .target = target},
     .i = i,
   };
   return assign_coercion(inductor, &result->as_coercion), result;
@@ -144,7 +144,7 @@ MuonUnmeetCoercion *mu_unmeet_coercion(
   if ((result = malloc(sizeof(MuonUnmeetCoercion))) == NULL)
     return NULL;
   *result = (MuonUnmeetCoercion) {
-    .as_coercion = {.kind = MU_UNMEET_COERCION, .target = target},
+    .as_coercion = {.tag = MU_UNMEET_COERCION, .target = target},
     .i = i,
   };
   return assign_coercion(inductor, &result->as_coercion), result;
@@ -156,7 +156,7 @@ MuonUnschemeCoercion *mu_unscheme_coercion(
   if ((result = malloc(sizeof(MuonUnschemeCoercion))) == NULL)
     return NULL;
   *result = (MuonUnschemeCoercion) {
-    .as_coercion = {.kind = MU_UNSCHEME_COERCION, .target = target},
+    .as_coercion = {.tag = MU_UNSCHEME_COERCION, .target = target},
   };
   return assign_coercion(inductor, &result->as_coercion), result;
 }
@@ -187,7 +187,7 @@ MuonVarianceCoercion *variance_coercion_activate(
   }
 
   MuonVarianceCoercion source = {
-    .as_coercion = {.kind = MU_VARIANCE_COERCION, .target = target},
+    .as_coercion = {.tag = MU_VARIANCE_COERCION, .target = target},
     .core = coercion->core,
   };
   memcpy(coercion, &source, offsetof(MuonVarianceCoercion, argv));
@@ -219,7 +219,7 @@ MuonUnjoinCoercion *unjoin_coercion_activate(
   }
 
   MuonUnjoinCoercion source = {
-    .as_coercion = {.kind = MU_UNJOIN_COERCION, .target = target},
+    .as_coercion = {.tag = MU_UNJOIN_COERCION, .target = target},
     .argc = coercion->argc,
   };
   memcpy(coercion, &source, offsetof(MuonUnjoinCoercion, argv));
@@ -252,7 +252,7 @@ MuonMeetCoercion *meet_coercion_activate(
   }
 
   MuonMeetCoercion source = {
-    .as_coercion = {.kind = MU_MEET_COERCION, .target = target},
+    .as_coercion = {.tag = MU_MEET_COERCION, .target = target},
     .argc = coercion->argc,
   };
   memcpy(coercion, &source, offsetof(MuonMeetCoercion, argv));
@@ -270,7 +270,7 @@ void mu_coercion_debug(MuonCoercion *coercion) {
   KIND_TEXT[MU_EDGE_COERCION] = "";
   KIND_TEXT[MU_INDIRECT_COERCION] = "";
   KIND_TEXT[MU_VARIANCE_COERCION] = "∇";
-  const char *kind = KIND_TEXT[coercion->kind];
+  const char *kind = KIND_TEXT[coercion->tag];
 
   debug(PRIsKIND, DEBUG_COERCION_KIND(kind));
 

@@ -100,7 +100,7 @@ MUON_HINT(unused) static _Thread_local const void *_object;
  * integer type.
  */
 #define ON_ABSTRACT_OBJECT(object) ( \
-  (_object = (object)), ((typeof((object))) _object)->kind \
+  (_object = (object)), ((typeof((object))) _object)->tag \
 )
 
 /// The amount of indentation to insert before each line of debug output

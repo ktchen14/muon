@@ -29,7 +29,7 @@ typedef enum {
 
 /// An abstract coercion
 typedef const struct MuonCoercion {
-  MuonCoercionKind kind;
+  union { MuonCoercionKind kind, tag; };
   const mu_inductor_t *inductor;
   size_t id;
   MuonType *target;

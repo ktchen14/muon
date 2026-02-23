@@ -217,7 +217,7 @@ static void type_debug_internal(
     case IS_CONCRETE_TYPE(MuonCoreType *core_type) {
       MuonCore *core = core_type->core;
 
-      switch (core->kind) {
+      switch (core->tag) {
         case MUON_BOOLEAN_CORE:
         case MUON_INTEGER_CORE:
         case MUON_CUSTOM_CORE:

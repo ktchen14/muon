@@ -139,7 +139,7 @@ MUON_HINT(nonnull) static LLVMTypeRef type_emit(
     author_t *author, MuonType *type) {
   switch ON_ABSTRACT_OBJECT(type) {
     case IS_CONCRETE_TYPE(MuonCoreType *core_type)
-      switch (core_type->core->kind) {
+      switch (core_type->core->tag) {
         case MUON_BOOLEAN_CORE:
           return boolean_type_emit(author, core_type);
 

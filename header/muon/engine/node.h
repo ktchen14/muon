@@ -144,7 +144,9 @@ enum {
  * <tt>struct MuonNode</tt>.
  */
 typedef const struct MuonNode {
-  MuonNodeTag kind;
+  union {
+    MuonNodeTag kind, tag;
+  };
   const MuonEngine *engine;
   size_t id;
 } MuonNode;
@@ -159,7 +161,7 @@ typedef const struct MuonNode {
  * <tt>struct MuonExpr</tt>.
  */
 typedef const struct MuonExpr {
-  union { MUON_NODE_HEADER; MuonExprTag kind; }; //-
+  union { MUON_NODE_HEADER; MuonExprTag tag; }; //-
 } MuonExpr;
 
 /// The header that each MuonExpr subtype must have
@@ -174,7 +176,7 @@ typedef const struct MuonExpr {
  * <tt>struct MuonSign</tt>.
  */
 typedef const struct MuonSign {
-  union { MUON_NODE_HEADER; MuonSignTag kind; }; //-
+  union { MUON_NODE_HEADER; MuonSignTag tag; }; //-
 } MuonSign;
 
 /// The header that each MuonSign subtype must have
@@ -189,7 +191,7 @@ typedef const struct MuonSign {
  * <tt>struct MuonStmt</tt>.
  */
 typedef const struct MuonStmt {
-  union { MUON_NODE_HEADER; MuonStmtTag kind; }; //-
+  union { MUON_NODE_HEADER; union { MuonStmtTag kind, tag; }; }; //-
 } MuonStmt;
 
 /// The header that each MuonStmt subtype must have
@@ -204,7 +206,7 @@ typedef const struct MuonStmt {
  * <tt>struct MuonView</tt>.
  */
 typedef const struct MuonView {
-  union { MUON_NODE_HEADER; MuonViewTag kind; }; //-
+  union { MUON_NODE_HEADER; MuonViewTag tag; }; //-
 } MuonView;
 
 /// The header that each MuonView subtype must have
@@ -394,7 +396,7 @@ typedef const struct MuonScript {
 /// @internal Used to decide the cast result in muon_node_cast()
 MUON_HINT(nonnull)
 static inline MuonNode *muon_node_cast(MuonNode *node, MuonNodeTag tag) {
-  return node->kind == tag ? node : NULL;
+  return node->tag == tag ? node : NULL;
 }
 
 /**

@@ -223,7 +223,7 @@ MUON_HINT(nonnull) static LLVMValueRef unmeet_coercion_emit(
 
 LLVMValueRef coercion_emit(
     author_t *author, MuonCoercion *coercion, info_t info) {
-  switch (coercion->kind) {
+  switch (coercion->tag) {
 #define MU_EMIT(lower, upper, title) case MU_##upper##_COERCION: \
       return lower##_coercion_emit( \
           author, (Muon##title##Coercion *) coercion, info);

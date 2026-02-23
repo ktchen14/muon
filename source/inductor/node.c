@@ -54,7 +54,7 @@ MUON_HINT(nonnull) static MuonType *access_expr_return(
   MuonCore *core;
   if ((core = single_record_core(induce, expr->name)) == NULL)
     return NULL;
-  assert(core->kind == MUON_RECORD_CORE);
+  assert(core->tag == MUON_RECORD_CORE);
 
   MuonType *record_argv[] = {&variable_type->as_type};
   MuonCoreType *record_type;

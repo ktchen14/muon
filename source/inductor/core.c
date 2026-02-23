@@ -20,14 +20,14 @@ MuonCore *mu_simple_core(induce_t *induce, MuonName *name) {
   struct MuonCore *core;
   if ((core = malloc(sizeof(MuonCore))) == NULL)
     return NULL;
-  *core = (MuonCore) {.kind = MUON_CUSTOM_CORE, .induce = induce, .name = name};
+  *core = (MuonCore) {.tag = MUON_CUSTOM_CORE, .induce = induce, .name = name};
   return core;
 }
 
 MuonCore *single_record_core(induce_t *induce, MuonName *name) {
   for (size_t i = 0; i < induce->core_length; i++) {
     MuonCore *candidate = induce->core[i];
-    if (candidate->kind != MUON_RECORD_CORE)
+    if (candidate->tag != MUON_RECORD_CORE)
       continue;
 
     if (candidate->argc != 1)
@@ -41,7 +41,7 @@ MuonCore *single_record_core(induce_t *induce, MuonName *name) {
   if ((result = malloc(struct_size(MuonCore, argv, 1))) == NULL)
     return NULL;
 
-  *result = (MuonCore) {.kind = MUON_RECORD_CORE, .induce = induce, .argc = 1};
+  *result = (MuonCore) {.tag = MUON_RECORD_CORE, .induce = induce, .argc = 1};
   result->argv[0] = (MuonCoreMember) {.name = name};
 
   induce->core[induce->core_length++] = result;
@@ -68,7 +68,7 @@ struct MuonCore *record_core_allocate(induce_t *induce, size_t argc) {
   if ((allocation = malloc(size)) == NULL)
     return NULL;
   *allocation = (MuonCore) {
-    .kind = MUON_RECORD_CORE, .induce = induce, .argc = argc
+    .tag = MUON_RECORD_CORE, .induce = induce, .argc = argc
   };
   return allocation;
 }
@@ -82,7 +82,7 @@ MuonCore *record_core_activate(struct MuonCore *allocation) {
 
   for (size_t i = 0; i < inductor->core_length; i++) {
     MuonCore *core = inductor->core[i];
-    if (core->kind != MUON_RECORD_CORE)
+    if (core->tag != MUON_RECORD_CORE)
       continue;
 
     if (allocation->argc != core->argc)
@@ -104,8 +104,8 @@ MuonCore *record_core_activate(struct MuonCore *allocation) {
 
 const record_instance_t *get_record_instance(
     induce_t *induce, MuonCore *source, MuonCore *target) {
-  assert(source->kind == MUON_RECORD_CORE);
-  assert(target->kind == MUON_RECORD_CORE);
+  assert(source->tag == MUON_RECORD_CORE);
+  assert(target->tag == MUON_RECORD_CORE);
 
   for (size_t i = 0; i < induce->record_instance_length; i++) {
     const record_instance_t *instance = induce->record_instance[i];
@@ -147,7 +147,7 @@ void mu_core_debug(MuonCore *core) {
   };
 
   if (debug_shortcore) {
-    switch (core->kind) {
+    switch (core->tag) {
       case MUON_BOOLEAN_CORE:
         debug(PRIsKIND, DEBUG_CORE_KIND("𝔹"));
         return;
@@ -170,7 +170,7 @@ void mu_core_debug(MuonCore *core) {
     __builtin_unreachable();
   }
 
-  switch (core->kind) {
+  switch (core->tag) {
     case MUON_BOOLEAN_CORE:
       debug(PRIsKIND, DEBUG_CORE_KIND("Boolean"));
       return;

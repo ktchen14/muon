@@ -90,7 +90,7 @@ static inline MuonCoercion *coerce_with(
 MUON_HINT(nonnull, pure)
 static inline MuonCoercion *course_coercion(const type_edge_t *edge) {
   MuonCoercion *result;
-  if ((result = edge->coercion) == NULL || result->kind == MU_EDGE_COERCION)
+  if ((result = edge->coercion) == NULL || result->tag == MU_EDGE_COERCION)
     return NULL;
   return result;
 }
@@ -98,9 +98,9 @@ static inline MuonCoercion *course_coercion(const type_edge_t *edge) {
 MUON_HINT(nonnull)
 static inline MuonCoercion *edge_assign(
     type_edge_t *edge, MuonCoercion *coercion) {
-  assert(coercion->kind != MU_EDGE_COERCION);
+  assert(coercion->tag != MU_EDGE_COERCION);
 
-  if (coercion->kind == MU_INDIRECT_COERCION)
+  if (coercion->tag == MU_INDIRECT_COERCION)
     edge->indirect = 1;
 
   return edge->coercion = coercion;
