@@ -6,14 +6,16 @@
 
 #include <stddef.h>
 
-/// Expands to emit(title, lower, upper, ...) for each concrete type
+/// Expands to emit(title, lower, upper, ...) for each concrete subtype of
+/// MuonType
 #define MUON_EACH_TYPE(emit, ...) \
   emit(CoreType, core_type, CORE_TYPE __VA_OPT__(,) __VA_ARGS__) \
   emit(JoinType, join_type, JOIN_TYPE __VA_OPT__(,) __VA_ARGS__) \
   emit(SchemeType, scheme_type, SCHEME_TYPE __VA_OPT__(,) __VA_ARGS__) \
   emit(VariableType, variable_type, VARIABLE_TYPE __VA_OPT__(,) __VA_ARGS__)
 
-/// An enumeration over each concrete type, e.g. @c MUON_CORE_TYPE
+/// An enumeration over each concrete subtype of MuonType, e.g.
+/// @c MUON_CORE_TYPE
 typedef enum {
 #define MUON_EMIT(T, l, UPPER) MUON_##UPPER,
   MUON_EACH_TYPE(MUON_EMIT)
@@ -25,7 +27,7 @@ typedef enum {
 
 enum {
 #define MUON_EMIT(...) + 1
-  /// Number of distinct kinds of types
+  /// Number of distinct concrete subtypes of MuonType
   MUON_TYPE_NUMBER = MUON_EACH_TYPE(MUON_EMIT),
 #undef MUON_EMIT
 };

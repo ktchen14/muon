@@ -622,19 +622,18 @@ static inline int debug_node_coercion(MuonNode *node) {
 
 /// Emit debugging information on the abstract @a node to the debug stream
 void muon_node_debug(MuonNode *node) { // NOLINT(misc-no-recursion)
-  // Kind -> Text, e.g. [MUON_ACCESS_EXPR_NODE] = "AccessExpr"
-  static const char *const KIND_TEXT[] = {
+  // Tag -> Text, e.g. [MUON_ACCESS_EXPR_NODE] = "AccessExpr"
+  static const char *const TAG_TEXT[] = {
 #define MUON_EMIT(Title, lower, UPPER) [MUON_##UPPER##_NODE] = #Title,
     MUON_EACH_NODE_STEM(MUON_EMIT)
 #undef MUON_EMIT
   };
-  const char *kind = KIND_TEXT[node->tag];
 
   int indent = debug_indent;
   debug_indent = debug_node_coercion(node);
 
   debug("%*s", debug_indent, "");
-  debug(PRIsKIND, DEBUG_NODE_KIND(kind));
+  debug(PRIsKIND, DEBUG_NODE_KIND(TAG_TEXT[node->tag]));
 
   switch ON_ABSTRACT_OBJECT(node) {
     case IS_CONCRETE_NODE(MuonAccessExpr *access_expr)

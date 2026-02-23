@@ -7,7 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-/// Expands to emit(Title, lower, UPPER, ...) for each kind of expr
+/// Expands to emit(Title, lower, UPPER, ...) for each concrete subtype of
+/// MuonExpr
 #define MUON_EACH_EXPR_STEM(emit, ...) \
   emit(AccessExpr, access_expr, ACCESS_EXPR __VA_OPT__(,) __VA_ARGS__) \
   emit(BooleanExpr, boolean_expr, BOOLEAN_EXPR __VA_OPT__(,) __VA_ARGS__) \
@@ -22,7 +23,8 @@
   emit(SwitchExpr, switch_expr, SWITCH_EXPR __VA_OPT__(,) __VA_ARGS__) \
   emit(VectorExpr, vector_expr, VECTOR_EXPR __VA_OPT__(,) __VA_ARGS__)
 
-/// Expands to emit(Title, lower, UPPER, ...) for each kind of sign
+/// Expands to emit(Title, lower, UPPER, ...) for each concrete subtype of
+/// MuonSign
 #define MUON_EACH_SIGN_STEM(emit, ...) \
   emit(BooleanSign, boolean_sign, BOOLEAN_SIGN __VA_OPT__(,) __VA_ARGS__) \
   emit(IntegerSign, integer_sign, INTEGER_SIGN __VA_OPT__(,) __VA_ARGS__) \
@@ -31,18 +33,21 @@
   emit(RecordSign, record_sign, RECORD_SIGN __VA_OPT__(,) __VA_ARGS__) \
   emit(VectorSign, vector_sign, VECTOR_SIGN __VA_OPT__(,) __VA_ARGS__)
 
-/// Expands to emit(Title, lower, UPPER, ...) for each kind of stmt
+/// Expands to emit(Title, lower, UPPER, ...) for each concrete subtype of
+/// MuonStmt
 #define MUON_EACH_STMT_STEM(emit, ...) \
   emit(CoercionStmt, coercion_stmt, COERCION_STMT __VA_OPT__(,) __VA_ARGS__) \
   emit(DatatypeStmt, datatype_stmt, DATATYPE_STMT __VA_OPT__(,) __VA_ARGS__) \
   emit(DefineStmt, define_stmt, DEFINE_STMT __VA_OPT__(,) __VA_ARGS__)
 
-/// Expands to emit(Title, lower, UPPER, ...) for each kind of view
+/// Expands to emit(Title, lower, UPPER, ...) for each concrete subtype of
+/// MuonView
 #define MUON_EACH_VIEW_STEM(emit, ...) \
   emit(RecordView, record_view, RECORD_VIEW __VA_OPT__(,) __VA_ARGS__) \
   emit(VariableView, variable_view, VARIABLE_VIEW __VA_OPT__(,) __VA_ARGS__)
 
-/// Expands to emit(Title, lower, UPPER, ...) for each kind of node
+/// Expands to emit(Title, lower, UPPER, ...) for each concrete subtype of
+/// MuonNode
 #define MUON_EACH_NODE_STEM(emit, ...) \
   MUON_EACH_EXPR_STEM(emit __VA_OPT__(,) __VA_ARGS__) \
   MUON_EACH_SIGN_STEM(emit __VA_OPT__(,) __VA_ARGS__) \
@@ -57,7 +62,8 @@
 
 #define MUON_NODE_TAG_EMIT(T, l, UPPER) MUON_##UPPER##_NODE,
 
-/// An enumeration over each kind of node, e.g. @c MUON_ACCESS_EXPR_NODE
+/// An enumeration over each concrete subtype of MuonNode, e.g.
+/// @c MUON_ACCESS_EXPR_NODE
 typedef enum {
   MUON_EACH_NODE_STEM(MUON_NODE_TAG_EMIT)
 
@@ -72,7 +78,8 @@ typedef enum {
   MUON_SCRIPT = MUON_SCRIPT_NODE,
 } MuonNodeTag;
 
-/// An enumeration over each kind of expr, e.g. @c MUON_ACCESS_EXPR
+/// An enumeration over each concrete subtype of MuonExpr, e.g.
+/// @c MUON_ACCESS_EXPR
 typedef enum {
 #define MUON_EMIT(T, l, UPPER) MUON_##UPPER = MUON_##UPPER##_NODE,
   MUON_EACH_EXPR_STEM(MUON_EMIT)
@@ -83,7 +90,8 @@ typedef enum {
     MUON_TAKE, MUON_EACH_EXPR_STEM(MUON_NODE_TAG_EMIT)),
 } MuonExprTag;
 
-/// An enumeration over each kind of sign, e.g. @c MUON_BOOLEAN_SIGN
+/// An enumeration over each concrete subtype of MuonSign, e.g.
+/// @c MUON_BOOLEAN_SIGN
 typedef enum {
 #define MUON_EMIT(T, l, UPPER) MUON_##UPPER = MUON_##UPPER##_NODE,
   MUON_EACH_SIGN_STEM(MUON_EMIT)
@@ -94,7 +102,8 @@ typedef enum {
     MUON_TAKE, MUON_EACH_SIGN_STEM(MUON_NODE_TAG_EMIT)),
 } MuonSignTag;
 
-/// An enumeration over each kind of stmt, e.g. @c MUON_COERCION_STMT
+/// An enumeration over each concrete subtype of MuonStmt, e.g.
+/// @c MUON_COERCION_STMT
 typedef enum {
 #define MUON_EMIT(T, l, UPPER) MUON_##UPPER = MUON_##UPPER##_NODE,
   MUON_EACH_STMT_STEM(MUON_EMIT)
@@ -105,7 +114,8 @@ typedef enum {
     MUON_TAKE, MUON_EACH_STMT_STEM(MUON_NODE_TAG_EMIT)),
 } MuonStmtTag;
 
-/// An enumeration over each kind of view, e.g. @c MUON_RECORD_VIEW
+/// An enumeration over each concrete subtype of MuonView, e.g.
+/// @c MUON_RECORD_VIEW
 typedef enum {
 #define MUON_EMIT(T, l, UPPER) MUON_##UPPER = MUON_##UPPER##_NODE,
   MUON_EACH_VIEW_STEM(MUON_EMIT)
@@ -120,19 +130,19 @@ typedef enum {
 
 enum {
 #define MUON_EMIT(...) + 1
-  /// Number of distinct kinds of nodes
+  /// Number of distinct concrete subtypes of MuonNode
   MUON_NODE_NUMBER = MUON_EACH_NODE_STEM(MUON_EMIT),
 
-  /// Number of distinct kinds of exprs
+  /// Number of distinct concrete subtypes of MuonExpr
   MUON_EXPR_NUMBER = MUON_EACH_EXPR_STEM(MUON_EMIT),
 
-  /// Number of distinct kinds of signs
+  /// Number of distinct concrete subtypes of MuonSign
   MUON_SIGN_NUMBER = MUON_EACH_SIGN_STEM(MUON_EMIT),
 
-  /// Number of distinct kinds of stmts
+  /// Number of distinct concrete subtypes of MuonStmt
   MUON_STMT_NUMBER = MUON_EACH_STMT_STEM(MUON_EMIT),
 
-  /// Number of distinct kinds of views
+  /// Number of distinct concrete subtypes of MuonView
   MUON_VIEW_NUMBER = MUON_EACH_VIEW_STEM(MUON_EMIT),
 #undef MUON_EMIT
 };
