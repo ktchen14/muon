@@ -9,13 +9,16 @@
 #include <assert.h>
 #include <stddef.h>
 
-typedef struct {
-  MuonNode *anterior;
-  size_t i;
-} NodeCursor;
+/// Emit a case within a switch ON_ABSTRACT_OBJECT()
+#define IS_CONCRETE_NODE(...) \
+  MUON_NODE_TAG(typeof(&(union { __VA_ARGS__, _; }) {}._)): \
+    __VA_ARGS__ = _object;
 
 typedef struct {
-  NodeCursor cursor;
+  /// @internal Used to traverse a node tree
+  struct NodeCursor {
+    MuonNode *anterior; size_t i; //-
+  } cursor;
 
   _Alignas(union {
 #define MUON_EMIT(Title, lower, U) Muon##Title lower;
@@ -26,7 +29,7 @@ typedef struct {
 
 /// Return the cursor attached to the @a node
 MUON_HINT(const, nonnull, returns_nonnull)
-static inline NodeCursor *node_cursor(MuonNode *node) {
+static inline struct NodeCursor *node_cursor(MuonNode *node) {
   const size_t offset = offsetof(NodeHeader, node);
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-align"
@@ -38,7 +41,7 @@ static inline NodeCursor *node_cursor(MuonNode *node) {
 
 /// Continue into the node
 static inline MuonNode *node_continue(MuonNode *node, MuonNode *next) {
-  NodeCursor *cursor = node_cursor(next);
+  struct NodeCursor *cursor = node_cursor(next);
   assert(cursor->anterior == NULL && cursor->i == 0);
   return cursor->anterior = node, next;
 }
@@ -46,15 +49,10 @@ static inline MuonNode *node_continue(MuonNode *node, MuonNode *next) {
 /// Return from the node
 MUON_HINT(nonnull)
 static inline MuonNode *node_return(MuonNode *node) {
-  NodeCursor *cursor = node_cursor(node);
+  struct NodeCursor *cursor = node_cursor(node);
   MuonNode *anterior = cursor->anterior;
-  return *cursor = (NodeCursor) {0}, anterior;
+  return *cursor = (struct NodeCursor) {0}, anterior;
 }
-
-/// Emit a case within a switch ON_ABSTRACT_OBJECT()
-#define IS_CONCRETE_NODE(...) \
-  MUON_NODE_TAG(typeof(&(union { __VA_ARGS__, _; }) {}._)): \
-    __VA_ARGS__ = _object;
 
 /// Return the <em>i</em>th node in the abstract @a node
 static inline MuonNode *node_at(MuonNode *node, size_t i) {

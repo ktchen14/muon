@@ -1,5 +1,5 @@
-#ifndef MU_INDUCTOR_TYPE_I
-#define MU_INDUCTOR_TYPE_I
+#ifndef MUON_INDUCTOR_TYPE_I
+#define MUON_INDUCTOR_TYPE_I
 
 #include <muon/inductor/type.h> // IWYU pragma: export
 
@@ -44,9 +44,9 @@ typedef struct {
   };
 
   _Alignas(union {
-#define MU_EMIT(Title, lower, U) Muon##Title lower;
-    MUON_EACH_TYPE(MU_EMIT)
-#undef MU_EMIT
+#define MUON_EMIT(Title, lower, U) Muon##Title lower;
+    MUON_EACH_TYPE(MUON_EMIT)
+#undef MUON_EMIT
   }) char data[];
 } TypeHeader;
 
@@ -161,4 +161,4 @@ static inline MuonType *assign_solution(
   return ((struct MuonVariableType *) variable_type)->solution = solution;
 }
 
-#endif /* MU_INDUCTOR_TYPE_I */
+#endif /* MUON_INDUCTOR_TYPE_I */
