@@ -9,16 +9,25 @@
 #include <assert.h>
 #include <stddef.h>
 
-/// Emit a case within a switch ON_ABSTRACT_OBJECT()
+/// Emit a @c case to handle a subtype of MuonNode within a switch
+/// ON_ABSTRACT_OBJECT()
 #define IS_CONCRETE_NODE(...) \
   MUON_NODE_TAG(typeof(&(union { __VA_ARGS__, _; }) {}._)): \
     __VA_ARGS__ = _object;
 
 typedef struct {
-  /// @internal Used to traverse a node tree
-  struct NodeCursor {
-    MuonNode *anterior; size_t i; //-
-  } cursor;
+  union {
+    /// @internal Used to traverse a node tree
+    struct NodeCursor {
+      MuonNode *anterior;
+      size_t i;
+    } cursor;
+
+    /// @internal Used to assemble a node list
+    struct NodeSeries {
+      MuonNode *next;
+    } series;
+  };
 
   _Alignas(union {
 #define MUON_EMIT(Title, lower, U) Muon##Title lower;
@@ -27,20 +36,34 @@ typedef struct {
   }) struct MuonNode node[];
 } NodeHeader;
 
-/// Return the cursor attached to the @a node
+/// Return the cursor of the @a node
 MUON_HINT(const, nonnull, returns_nonnull)
 static inline struct NodeCursor *node_cursor(MuonNode *node) {
   const size_t offset = offsetof(NodeHeader, node);
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-align"
 #pragma GCC diagnostic ignored "-Wcast-qual"
-  auto header = (NodeHeader *) ((char *) node - offset);
+  NodeHeader *header = (NodeHeader *) ((char *) node - offset);
 #pragma GCC diagnostic pop
   return &header->cursor;
 }
 
+/// Return the series of the @a node
+MUON_HINT(const, nonnull, returns_nonnull)
+static inline struct NodeSeries *node_series(MuonNode *node) {
+  const size_t offset = offsetof(NodeHeader, node);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-align"
+#pragma GCC diagnostic ignored "-Wcast-qual"
+  NodeHeader *header = (NodeHeader *) ((char *) node - offset);
+#pragma GCC diagnostic pop
+  return &header->series;
+}
+
 /// Continue into the node
-static inline MuonNode *node_continue(MuonNode *node, MuonNode *next) {
+MUON_HINT(nonnull(2), returns_nonnull)
+static inline MuonNode *node_continue(
+    MuonNode *restrict node, MuonNode *restrict next) {
   struct NodeCursor *cursor = node_cursor(next);
   assert(cursor->anterior == NULL && cursor->i == 0);
   return cursor->anterior = node, next;
@@ -52,6 +75,28 @@ static inline MuonNode *node_return(MuonNode *node) {
   struct NodeCursor *cursor = node_cursor(node);
   MuonNode *anterior = cursor->anterior;
   return *cursor = (struct NodeCursor) {0}, anterior;
+}
+
+MUON_HINT(nonnull(2), returns_nonnull)
+static inline MuonNode *node_attach(
+    MuonNode *restrict node, MuonNode *restrict next) {
+  assert(node_series(next)->next == NULL);
+
+  if (node == NULL)
+    return node_series(next)->next = next;
+
+  struct NodeSeries *series = node_series(node);
+  assert(series->next != NULL);
+  node_series(next)->next = series->next;
+  return series->next = next;
+}
+
+__attribute__((nonnull))
+static inline MuonNode *node_detach(MuonNode *node) {
+  MuonNode *next = node_series(node)->next;
+  assert(next != NULL);
+  node_series(node)->next = node_series(next)->next;
+  return node_series(next)->next = NULL, next;
 }
 
 /// Return the <em>i</em>th node in the abstract @a node
