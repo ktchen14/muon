@@ -136,7 +136,8 @@ typedef struct {
 %type <record_view> record_view
 %type <variable_view> variable_view
 
-%type <i> datatype_argv record_argv switch_argv vector_argv record_view_argv
+%type <i> datatype_argv record_argv switch_argv record_view_argv
+%type <expr_series> vector_expr_argv
 %type <stmt_series> script_argv
 
 %left "∷"
@@ -252,7 +253,6 @@ expr_member: name ':' expr {
   $$ = muon_expr_member(scan->engine, $name, $expr);
 }
 
-
 switch_expr: "switch" _ '(' switch_argv ')' { // {{{2
   size_t i = $switch_argv;
   scan->switch_case_i -= i;
@@ -272,23 +272,25 @@ switch_case: "case" _ name '=' expr {
   $$ = muon_switch_case(scan->engine, $name, $expr);
 }
 
-
-vector_expr: '[' vector_argv ']' { // {{{2
-  size_t i = $vector_argv;
-  scan->expr_i -= i;
-  $$ = muon_vector_expr(scan->engine, i, &scan->expr[scan->expr_i]);
+vector_expr: '[' vector_expr_argv[argv] ']' { // {{{2
+  struct MuonVectorExpr *result;
+  if ((result = vector_expr_allocate(scan->engine, $argv.length)) == NULL)
+    YYNOMEM;
+  for (size_t i = 0; i < $argv.length; i++)
+    result->argv[i] = node_detach($argv.node);
+  $$ = vector_expr_activate(result);
 
 } | '[' ']' {
   $$ = muon_vector_expr(scan->engine, 0, NULL);
 }
 
-vector_argv: expr {
-  scan->expr[scan->expr_i++] = $expr;
-  $$ = 1;
+vector_expr_argv: expr {
+  $$ = (struct ExprSeries) { .node = node_attach(NULL, $expr), .length = 1 };
 
-} | vector_argv ',' expr {
-  scan->expr[scan->expr_i++] = $expr;
-  $$ = $1 + 1;
+} | vector_expr_argv[argv] ',' expr {
+  $$ = (struct ExprSeries) {
+    .node = node_attach($argv.node, $expr), .length = $argv.length + 1
+  };
 }
 
 sign: '(' sign[matter] ')' { $$ = $matter; } // {{{1

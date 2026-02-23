@@ -102,8 +102,9 @@ __attribute__((nonnull))
 static inline MuonNode *node_detach(MuonNode *node) {
   MuonNode *next = node_stream(node)->next;
   assert(next != NULL);
-  node_stream(node)->next = node_stream(next)->next;
-  return node_stream(next)->next = NULL, next;
+  *node_stream(node) = *node_stream(next);
+  *node_stream(next) = (struct NodeStream) {};
+  return next;
 }
 
 #define node_detach(node) ((typeof(node)) node_detach(&(node)->as_node))
@@ -216,6 +217,12 @@ static inline size_t node_announce_length(MuonNode *node) {
   }
   __builtin_unreachable();
 }
+
+struct MuonVectorExpr *vector_expr_allocate(MuonEngine *engine, size_t argc)
+  MUON_HINT_SUFFIX(malloc, nonnull);
+
+MuonVectorExpr *vector_expr_activate(struct MuonVectorExpr *expr)
+  MUON_HINT_SUFFIX(nonnull);
 
 struct MuonRecordExpr *record_expr_allocate(MuonEngine *engine, size_t argc)
   MUON_HINT_SUFFIX(malloc, nonnull);

@@ -221,6 +221,33 @@ MuonVectorExpr *muon_vector_expr(
   return assign_node(engine, &result->as_node), result;
 }
 
+struct MuonVectorExpr *vector_expr_allocate(MuonEngine *engine, size_t argc) {
+  size_t size;
+  if (rare((size = struct_size(MuonVectorExpr, argv, argc)) == 0))
+    return errno = ENOMEM, NULL;
+
+  struct MuonVectorExpr *result;
+  if ((result = node_allocate(engine, size)) == NULL)
+    return NULL;
+  *result = (MuonVectorExpr) {.as_node.engine = engine, .argc = argc};
+  return result;
+}
+
+MuonVectorExpr *vector_expr_activate(struct MuonVectorExpr *expr) {
+  MuonEngine *engine = unlock_engine(&expr->as_node);
+
+  for (size_t i = 0; i < expr->argc; i++) {
+    assert(expr->argv[i] != NULL);
+    assert(expr->argv[i]->as_node.engine == engine);
+  }
+
+  MuonVectorExpr source = {
+    .as_expr.tag = MUON_VECTOR_EXPR, .argc = expr->argc
+  };
+  memcpy(expr, &source, offsetof(MuonVectorExpr, argv));
+  return assign_node(engine, &expr->as_node), expr;
+}
+
 struct MuonRecordExpr *record_expr_allocate(MuonEngine *engine, size_t argc) {
   size_t size;
   if (rare((size = struct_size(MuonRecordExpr, argv, argc)) == 0))
