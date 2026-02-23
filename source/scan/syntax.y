@@ -14,9 +14,6 @@ typedef struct {
 
   MuonScript *script;
 
-  MuonStmt *stmt[256];
-  size_t stmt_i;
-
   MuonExpr *expr[800];
   size_t expr_i;
 
@@ -51,18 +48,26 @@ typedef struct {
     const char *c; size_t length;
   } text;
 
-  size_t i;
-
   MuonName *name;
 
-  MuonExpr *expr;
-  MuonSign *sign;
-  MuonStmt *stmt;
-  MuonView *view;
+  struct {
+    union {
+      MuonNode *node;
+
+      MuonExpr *expr;
+      MuonSign *sign;
+      MuonStmt *stmt;
+      MuonView *view;
 
 #define MUON_EMIT(Title, lower, U) Muon##Title *lower;
-  MUON_EACH_NODE_STEM(MUON_EMIT)
+      MUON_EACH_NODE_STEM(MUON_EMIT)
 #undef MUON_EMIT
+    };
+
+    size_t length;
+  };
+
+  size_t i;
 }
 
 %token CASE "case"
@@ -119,6 +124,7 @@ typedef struct {
 %type <variable_view> variable_view
 
 %type <i> datatype_argv record_argv switch_argv vector_argv record_view_argv
+%type <stmt> script_argv
 
 %left "∷"
 %right "→"
@@ -144,15 +150,21 @@ static void yyerror(YYLTYPE *yylloc, Scan *scan, char const *s);
 %}
 %%
 
-script: script_argv { // {{{1
-  scan->script = muon_script(scan->engine, scan->stmt_i, scan->stmt);
+script: script_argv[argv] { // {{{1
+  struct MuonScript *result;
+  if ((result = script_allocate(scan->engine, $<length>argv)) == NULL)
+    YYNOMEM;
+  for (size_t i = 0; i < $<length>argv; i++)
+    result->argv[i] = node_detach($argv);
+  scan->script = script_activate(scan->engine, result);
 }
 
 script_argv: {
-  scan->stmt_i = 0;
+  $$ = NULL; $<length>$ = 0;
 
-} | script_argv stmt {
-  scan->stmt[scan->stmt_i++] = $stmt;
+} | script_argv[argv] stmt {
+  $$ = node_attach($argv, $stmt);
+  $<length>$ = $<length>argv + 1;
 }
 
 name: NAME {

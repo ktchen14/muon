@@ -91,6 +91,13 @@ static inline MuonNode *node_attach(
   return series->next = next;
 }
 
+#define node_attach(node, next) __extension__ ({ \
+  /* Ensure that node is assignable to typeof(next) */ \
+  typeof(next) _node = (node); \
+  auto _argv = _node != NULL ? &_node->as_node : NULL; \
+  (typeof(next)) node_attach(_argv, &(next)->as_node); \
+})
+
 __attribute__((nonnull))
 static inline MuonNode *node_detach(MuonNode *node) {
   MuonNode *next = node_series(node)->next;
@@ -98,6 +105,8 @@ static inline MuonNode *node_detach(MuonNode *node) {
   node_series(node)->next = node_series(next)->next;
   return node_series(next)->next = NULL, next;
 }
+
+#define node_detach(node) ((typeof(node)) node_detach(&(node)->as_node))
 
 /// Return the <em>i</em>th node in the abstract @a node
 static inline MuonNode *node_at(MuonNode *node, size_t i) {
