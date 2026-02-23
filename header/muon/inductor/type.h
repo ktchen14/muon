@@ -49,7 +49,7 @@ typedef const struct MuonType {
 
 typedef const struct MuonCoreType {
   MUON_TYPE_HEADER;
-  const MuonCore *core;
+  MuonCore *core;
   MuonType *argv[/* core->argc */];
 } MuonCoreType;
 
@@ -105,7 +105,7 @@ static inline MuonType *muon_type_cast(MuonType *type, MuonTypeTag tag) {
 
 MuonCoreType *muon_core_type(
     induce_t *inductor,
-    const MuonCore *core,
+    MuonCore *core,
     MuonType *const argv[/* core->argc */])
   MUON_HINT_SUFFIX(malloc, nonnull(1, 2));
 

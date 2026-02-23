@@ -57,7 +57,7 @@ typedef const struct MuonInstanceCoercion {
 
 typedef const struct MuonVarianceCoercion {
   MU_COERCION_HEADER;
-  const MuonCore *core;
+  MuonCore *core;
   MuonCoercion *argv[/* target->core->argc */];
 } MuonVarianceCoercion;
 
@@ -117,7 +117,7 @@ MuonInstanceCoercion *mu_instance_coercion(
 MuonVarianceCoercion *mu_variance_coercion(
     mu_inductor_t *inductor,
     MuonType *target,
-    const MuonCore *core,
+    MuonCore *core,
     MuonCoercion *argv[/* target->core->argc */])
   MUON_HINT_SUFFIX(malloc, nonnull(1));
 

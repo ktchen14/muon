@@ -11,22 +11,22 @@
 typedef struct induce_t induce_t;
 
 typedef struct {
-  const MuonCore *target;
-  const MuonCore *source;
+  MuonCore *target;
+  MuonCore *source;
   size_t argv[/* target->argc */];
 } record_instance_t;
 
-const MuonCore *single_record_core(induce_t *induce, MuonName *name)
+MuonCore *single_record_core(induce_t *induce, MuonName *name)
   MUON_HINT_SUFFIX(malloc, nonnull);
 
-MuonCore *record_core_allocate(induce_t *induce, size_t argc)
+struct MuonCore *record_core_allocate(induce_t *induce, size_t argc)
   MUON_HINT_SUFFIX(malloc, nonnull);
 
-const MuonCore *record_core_activate(MuonCore *core)
+MuonCore *record_core_activate(struct MuonCore *core)
   MUON_HINT_SUFFIX(nonnull);
 
 const record_instance_t *get_record_instance(
-    induce_t *induce, const MuonCore *source, const MuonCore *target)
+    induce_t *induce, MuonCore *source, MuonCore *target)
   MUON_HINT_SUFFIX(nonnull);
 
 /// Compare the core member @a a to the core member @a b

@@ -36,7 +36,7 @@ static inline MuonType *assign_type(
 
 MuonCoreType *muon_core_type(
     mu_inductor_t *inductor,
-    const MuonCore *core,
+    MuonCore *core,
     MuonType *const argv[/* core->argc */]) {
   struct MuonCoreType *result;
   if ((result = core_type_allocate(inductor, core)) == NULL)
@@ -100,8 +100,7 @@ MuonSchemeType *muon_scheme_type(
   return scheme_type_activate(allocation, matter);
 }
 
-struct MuonCoreType *core_type_allocate(
-    induce_t *induce, const MuonCore *core) {
+struct MuonCoreType *core_type_allocate(induce_t *induce, MuonCore *core) {
   assert(core->induce == induce);
 
   size_t size;
@@ -216,7 +215,7 @@ static void type_debug_internal(
     MuonType *type, _Bool expand, unsigned char prec, int assoc) {
   switch ON_ABSTRACT_OBJECT(type) {
     case IS_CONCRETE_TYPE(MuonCoreType *core_type) {
-      const MuonCore *core = core_type->core;
+      MuonCore *core = core_type->core;
 
       switch (core->kind) {
         case MUON_BOOLEAN_CORE:

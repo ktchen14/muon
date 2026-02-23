@@ -84,7 +84,7 @@ MuonInstanceCoercion *mu_instance_coercion(
 MuonVarianceCoercion *mu_variance_coercion(
     mu_inductor_t *inductor,
     MuonType *target,
-    const MuonCore *core,
+    MuonCore *core,
     MuonCoercion *argv[/* target->core->argc */]) {
   assert(core->argc == 0 || argv != NULL);
 
@@ -162,7 +162,7 @@ MuonUnschemeCoercion *mu_unscheme_coercion(
 }
 
 struct MuonVarianceCoercion *variance_coercion_allocate(
-    mu_inductor_t *inductor, const MuonCore *core) {
+    mu_inductor_t *inductor, MuonCore *core) {
   size_t size;
   if (rare((size = struct_size(MuonVarianceCoercion, argv, core->argc)) == 0))
     return errno = ENOMEM, NULL;
@@ -303,7 +303,7 @@ void mu_coercion_debug(MuonCoercion *coercion) {
 
     case IS_COERCION(MuonVarianceCoercion * nominate(variance_coercion))
       debug("(");
-      const MuonCore *core = variance_coercion->core;
+      MuonCore *core = variance_coercion->core;
       mu_core_debug(core);
 
       for (size_t i = 0; i < core->argc; i++) {

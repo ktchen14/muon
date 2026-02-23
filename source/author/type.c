@@ -43,7 +43,7 @@ MUON_HINT(nonnull) static LLVMTypeRef lambda_type_emit(
 /// argument in @c type->argv at the same index.
 MUON_HINT(nonnull) static LLVMTypeRef record_type_emit(
     author_t *author, MuonCoreType *type) {
-  const MuonCore *core = type->core;
+  MuonCore *core = type->core;
 
   unsigned int argc;
   if (rare(llvm_length_overflow(core->argc, &argc)))

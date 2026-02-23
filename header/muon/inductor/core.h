@@ -27,7 +27,7 @@ typedef struct {
   MuonVariance variance : 2;
 } MuonCoreMember;
 
-typedef struct {
+typedef const struct MuonCore {
   MuonCoreTag kind;
   const induce_t *induce;
   MuonName *name;
@@ -37,19 +37,19 @@ typedef struct {
 
 typedef const struct MuonExpr MuonExpr;
 typedef struct {
-  const MuonCore *source;
-  const MuonCore *target;
+  MuonCore *source;
+  MuonCore *target;
   MuonExpr *expr;
 } mu_instance_t;
 
-const MuonCore *mu_simple_core(induce_t *induce, MuonName *name);
+MuonCore *mu_simple_core(induce_t *induce, MuonName *name);
 
 const mu_instance_t *mu_instance(
-    const MuonCore *source, const MuonCore *target, MuonExpr *expr)
+    MuonCore *source, MuonCore *target, MuonExpr *expr)
   MUON_HINT_SUFFIX(malloc, nonnull);
 
 /// Emit debugging information on the abstract @a core to the debug stream
-void mu_core_debug(const MuonCore *core)
+void mu_core_debug(MuonCore *core)
   MUON_HINT_SUFFIX(nonnull);
 
 /// Emit debugging information on the abstract @a instance to the debug stream

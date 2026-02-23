@@ -353,7 +353,7 @@ MuonCoercion *reduce_coercion(induce_t *induce, MuonCoercion *coercion) {
       return &instance_coercion->as_coercion;
 
     case IS_COERCION(MuonVarianceCoercion * nominate(variance_coercion)) {
-      const MuonCore *core = variance_coercion->core;
+      MuonCore *core = variance_coercion->core;
 
       struct MuonVarianceCoercion *allocation;
       if ((allocation = variance_coercion_allocate(induce, core)) == NULL)

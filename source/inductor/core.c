@@ -8,17 +8,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-const MuonCore *mu_simple_core(induce_t *induce, MuonName *name) {
-  MuonCore *core;
+MuonCore *mu_simple_core(induce_t *induce, MuonName *name) {
+  struct MuonCore *core;
   if ((core = malloc(sizeof(MuonCore))) == NULL)
     return NULL;
   *core = (MuonCore) {.kind = MUON_CUSTOM_CORE, .induce = induce, .name = name};
   return core;
 }
 
-const MuonCore *single_record_core(induce_t *induce, MuonName *name) {
+MuonCore *single_record_core(induce_t *induce, MuonName *name) {
   for (size_t i = 0; i < induce->core_length; i++) {
-    const MuonCore *candidate = induce->core[i];
+    MuonCore *candidate = induce->core[i];
     if (candidate->kind != MUON_RECORD_CORE)
       continue;
 
@@ -29,7 +29,7 @@ const MuonCore *single_record_core(induce_t *induce, MuonName *name) {
       return candidate;
   }
 
-  MuonCore *result;
+  struct MuonCore *result;
   if ((result = malloc(struct_size(MuonCore, argv, 1))) == NULL)
     return NULL;
 
@@ -41,7 +41,7 @@ const MuonCore *single_record_core(induce_t *induce, MuonName *name) {
 }
 
 const mu_instance_t *mu_instance(
-    const MuonCore *source, const MuonCore *target, MuonExpr *expr) {
+    MuonCore *source, MuonCore *target, MuonExpr *expr) {
   mu_instance_t *instance;
   if ((instance = malloc(sizeof(mu_instance_t))) == NULL)
     return NULL;
@@ -51,12 +51,12 @@ const mu_instance_t *mu_instance(
   return instance;
 }
 
-MuonCore *record_core_allocate(induce_t *induce, size_t argc) {
+struct MuonCore *record_core_allocate(induce_t *induce, size_t argc) {
   size_t size;
   if (rare((size = struct_size(MuonCore, argv, argc)) == 0))
     return NULL;
 
-  MuonCore *allocation;
+  struct MuonCore *allocation;
   if ((allocation = malloc(size)) == NULL)
     return NULL;
   *allocation = (MuonCore) {
@@ -65,7 +65,7 @@ MuonCore *record_core_allocate(induce_t *induce, size_t argc) {
   return allocation;
 }
 
-const MuonCore *record_core_activate(MuonCore *core) {
+MuonCore *record_core_activate(struct MuonCore *core) {
   // Ensure that each member is sorted after the previous one
   for (size_t i = 1; i < core->argc; i++)
     assert(name_cmp(core->argv[i].name, core->argv[i - 1].name) > 0);
@@ -73,7 +73,7 @@ const MuonCore *record_core_activate(MuonCore *core) {
   induce_t *induce = (induce_t *) core->induce;
 
   for (size_t i = 0; i < induce->core_length; i++) {
-    const MuonCore *candidate = induce->core[i];
+    MuonCore *candidate = induce->core[i];
     if (candidate->kind != MUON_RECORD_CORE)
       continue;
 
@@ -96,7 +96,7 @@ const MuonCore *record_core_activate(MuonCore *core) {
 }
 
 const record_instance_t *get_record_instance(
-    induce_t *induce, const MuonCore *source, const MuonCore *target) {
+    induce_t *induce, MuonCore *source, MuonCore *target) {
   assert(source->kind == MUON_RECORD_CORE);
   assert(target->kind == MUON_RECORD_CORE);
 
@@ -134,7 +134,7 @@ const record_instance_t *get_record_instance(
   return allocation;
 }
 
-void mu_core_debug(const MuonCore *core) {
+void mu_core_debug(MuonCore *core) {
   static const char *const VARIANCE_TEXT[] = {
     [MUON_COVARIANCE] = "+", [MUON_CONTRAVARIANCE] = "+", [MUON_INVARIANCE] = "±"
   };
