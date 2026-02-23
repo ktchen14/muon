@@ -24,9 +24,9 @@ typedef struct {
     } cursor;
 
     /// @internal Used to assemble a node list
-    struct NodeSeries {
+    struct NodeStream {
       MuonNode *next;
-    } series;
+    } stream;
   };
 
   _Alignas(union {
@@ -48,16 +48,16 @@ static inline struct NodeCursor *node_cursor(MuonNode *node) {
   return &header->cursor;
 }
 
-/// Return the series of the @a node
+/// Return the stream of the @a node
 MUON_HINT(const, nonnull, returns_nonnull)
-static inline struct NodeSeries *node_series(MuonNode *node) {
+static inline struct NodeStream *node_stream(MuonNode *node) {
   const size_t offset = offsetof(NodeHeader, node);
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-align"
 #pragma GCC diagnostic ignored "-Wcast-qual"
   NodeHeader *header = (NodeHeader *) ((char *) node - offset);
 #pragma GCC diagnostic pop
-  return &header->series;
+  return &header->stream;
 }
 
 /// Continue into the node
@@ -80,15 +80,15 @@ static inline MuonNode *node_return(MuonNode *node) {
 MUON_HINT(nonnull(2), returns_nonnull)
 static inline MuonNode *node_attach(
     MuonNode *restrict node, MuonNode *restrict next) {
-  assert(node_series(next)->next == NULL);
+  assert(node_stream(next)->next == NULL);
 
   if (node == NULL)
-    return node_series(next)->next = next;
+    return node_stream(next)->next = next;
 
-  struct NodeSeries *series = node_series(node);
-  assert(series->next != NULL);
-  node_series(next)->next = series->next;
-  return series->next = next;
+  struct NodeStream *stream = node_stream(node);
+  assert(stream->next != NULL);
+  node_stream(next)->next = stream->next;
+  return stream->next = next;
 }
 
 #define node_attach(node, next) __extension__ ({ \
@@ -100,10 +100,10 @@ static inline MuonNode *node_attach(
 
 __attribute__((nonnull))
 static inline MuonNode *node_detach(MuonNode *node) {
-  MuonNode *next = node_series(node)->next;
+  MuonNode *next = node_stream(node)->next;
   assert(next != NULL);
-  node_series(node)->next = node_series(next)->next;
-  return node_series(next)->next = NULL, next;
+  node_stream(node)->next = node_stream(next)->next;
+  return node_stream(next)->next = NULL, next;
 }
 
 #define node_detach(node) ((typeof(node)) node_detach(&(node)->as_node))

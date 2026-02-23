@@ -50,22 +50,35 @@ typedef struct {
 
   MuonName *name;
 
-  struct {
-    union {
-      MuonNode *node;
-
-      MuonExpr *expr;
-      MuonSign *sign;
-      MuonStmt *stmt;
-      MuonView *view;
+  MuonExpr *expr;
+  MuonSign *sign;
+  MuonStmt *stmt;
+  MuonView *view;
 
 #define MUON_EMIT(Title, lower, U) Muon##Title *lower;
-      MUON_EACH_NODE_STEM(MUON_EMIT)
+  MUON_EACH_NODE_STEM(MUON_EMIT)
 #undef MUON_EMIT
-    };
 
-    size_t length;
-  };
+  struct ExprSeries {
+    MuonExpr *node; size_t length;
+  } expr_series;
+
+  struct SignSeries {
+    MuonSign *node; size_t length;
+  } sign_series;
+
+  struct StmtSeries {
+    MuonStmt *node; size_t length;
+  } stmt_series;
+
+  struct ViewSeries {
+    MuonView *node; size_t length;
+  } view_series;
+
+#define MUON_EMIT(Title, lower, U) \
+    struct Title##Series { Muon##Title *node; size_t length; } lower##_series;
+  MUON_EACH_NODE_STEM(MUON_EMIT)
+#undef MUON_EMIT
 
   size_t i;
 }
@@ -124,7 +137,7 @@ typedef struct {
 %type <variable_view> variable_view
 
 %type <i> datatype_argv record_argv switch_argv vector_argv record_view_argv
-%type <stmt> script_argv
+%type <stmt_series> script_argv
 
 %left "∷"
 %right "→"
@@ -152,19 +165,20 @@ static void yyerror(YYLTYPE *yylloc, Scan *scan, char const *s);
 
 script: script_argv[argv] { // {{{1
   struct MuonScript *result;
-  if ((result = script_allocate(scan->engine, $<length>argv)) == NULL)
+  if ((result = script_allocate(scan->engine, $argv.length)) == NULL)
     YYNOMEM;
-  for (size_t i = 0; i < $<length>argv; i++)
-    result->argv[i] = node_detach($argv);
+  for (size_t i = 0; i < $argv.length; i++)
+    result->argv[i] = node_detach($argv.node);
   scan->script = script_activate(scan->engine, result);
 }
 
 script_argv: {
-  $$ = NULL; $<length>$ = 0;
+  $$ = (struct StmtSeries) {};
 
 } | script_argv[argv] stmt {
-  $$ = node_attach($argv, $stmt);
-  $<length>$ = $<length>argv + 1;
+  $$ = (struct StmtSeries) {
+    .node = node_attach($argv.node, $stmt), .length = $argv.length + 1
+  };
 }
 
 name: NAME {
