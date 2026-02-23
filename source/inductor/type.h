@@ -21,12 +21,10 @@ typedef struct {
   /// @internal The type to return to, or @c NULL if this is the root type
   MuonType *anterior;
 
-  size_t i : sizeof(size_t) * CHAR_BIT - 3;
+  size_t i : sizeof(size_t) * CHAR_BIT - 2;
 
   /// @internal Used to decide which cursor to return to in the @a anterior type
   size_t charge : 1;
-
-  size_t variance : 1;
 
   /// @internal Used to mark if the type is accessible
   size_t access : 1;
@@ -100,14 +98,16 @@ static inline MuonType *type_next(MuonType *type, _Bool *next_charge) {
     case IS_CONCRETE_TYPE(MuonCoreType *core_type) {
       MuonCore *core = core_type->core;
 
-      if (cursor->i >= core->argc)
-        return NULL;
-
-      MuonVariance variance = core->argv[cursor->i].variance;
-      assert(variance != MUON_INVARIANCE);
-      if (variance == MUON_CONTRAVARIANCE)
-        *next_charge = !*next_charge;
-      return core_type->argv[cursor->i++];
+      size_t i;
+      while ((i = cursor->i++) >> 1 < core->argc) {
+        MuonCoreMember member = core->argv[i >> 1];
+        _Bool variance = i & 1;
+        if ((member.variance & (1 << variance)) == 0)
+          continue;
+        *next_charge ^= variance;
+        return core_type->argv[i >> 1];
+      }
+      return NULL;
     }
 
     case IS_CONCRETE_TYPE(MuonSchemeType *scheme_type)
