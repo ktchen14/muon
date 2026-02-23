@@ -1,12 +1,20 @@
 #include "core.h"
-#include "induce.h"
 
-#include "../common.h"
-#include "../engine/name.h"
+#include "common.h"
+#include "induce.h"
+#include "../engine.h"
 
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+/// @internal Return the mutable inductor of the @a core
+static inline MuonInductor *unlock_inductor(struct MuonCore *core) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-qual"
+  return (MuonInductor *) core->induce;
+#pragma GCC diagnostic pop
+}
 
 MuonCore *mu_simple_core(induce_t *induce, MuonName *name) {
   struct MuonCore *core;
@@ -65,34 +73,33 @@ struct MuonCore *record_core_allocate(induce_t *induce, size_t argc) {
   return allocation;
 }
 
-MuonCore *record_core_activate(struct MuonCore *core) {
+MuonCore *record_core_activate(struct MuonCore *allocation) {
   // Ensure that each member is sorted after the previous one
-  for (size_t i = 1; i < core->argc; i++)
-    assert(name_cmp(core->argv[i].name, core->argv[i - 1].name) > 0);
+  for (size_t i = 1; i < allocation->argc; i++)
+    assert(name_cmp(allocation->argv[i].name, allocation->argv[i - 1].name) > 0);
 
-  induce_t *induce = (induce_t *) core->induce;
+  MuonInductor *inductor = unlock_inductor(allocation);
 
-  for (size_t i = 0; i < induce->core_length; i++) {
-    MuonCore *candidate = induce->core[i];
-    if (candidate->kind != MUON_RECORD_CORE)
+  for (size_t i = 0; i < inductor->core_length; i++) {
+    MuonCore *core = inductor->core[i];
+    if (core->kind != MUON_RECORD_CORE)
       continue;
 
-    if (core->argc != candidate->argc)
+    if (allocation->argc != core->argc)
       continue;
 
-    for (size_t j = 0; j < core->argc; j++) {
-      if (candidate->argv[j].name != core->argv[j].name)
-        goto next_record_core;
+    for (size_t j = 0; j < allocation->argc; j++) {
+      if (core->argv[j].name != allocation->argv[j].name)
+        goto next;
     }
 
-    free(core);
-    return candidate;
+    free(allocation);
+    return core;
 
-  next_record_core:;
+  next:;
   }
 
-  induce->core[induce->core_length++] = core;
-  return core;
+  return inductor->core[inductor->core_length++] = allocation;
 }
 
 const record_instance_t *get_record_instance(

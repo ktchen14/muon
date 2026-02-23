@@ -11,7 +11,7 @@
 #include <string.h>
 
 /// @internal Return the mutable engine of the @a node
-static inline MuonEngine *unlock_engine(MuonNode *node) {
+static inline MuonEngine *unlock_engine(struct MuonNode *node) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-qual"
   return (MuonEngine *) node->engine;

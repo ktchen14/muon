@@ -5,5 +5,6 @@
 
 typedef struct induce_t induce_t;
 typedef struct induce_t mu_inductor_t;
+typedef struct induce_t MuonInductor;
 
 #endif /* MUON_INDUCTOR_COMMON_H */
