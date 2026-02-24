@@ -137,8 +137,8 @@ typedef struct {
 %type <variable_view> variable_view
 
 %type <i> datatype_argv record_argv switch_argv record_view_argv
-%type <expr_series> vector_expr_argv
-%type <stmt_series> script_argv
+%type <expr> vector_expr_argv
+%type <stmt> script_argv
 
 %left "∷"
 %right "→"
@@ -165,21 +165,22 @@ static void yyerror(YYLTYPE *yylloc, Scan *scan, char const *s);
 %%
 
 script: script_argv[argv] { // {{{1
+  size_t argc = node_stream(&$argv->as_node)->n;
   struct MuonScript *result;
-  if ((result = script_allocate(scan->engine, $argv.length)) == NULL)
+  if ((result = script_allocate(scan->engine, argc)) == NULL)
     YYNOMEM;
-  for (size_t i = 0; i < $argv.length; i++)
-    result->argv[i] = node_detach($argv.node);
+  for (size_t i = 0; i < argc; i++)
+    result->argv[i] = node_detach($argv);
   scan->script = script_activate(scan->engine, result);
 }
 
 script_argv: {
-  $$ = (struct StmtSeries) {};
+  $$ = NULL;
 
 } | script_argv[argv] stmt {
-  $$ = (struct StmtSeries) {
-    .node = node_attach($argv.node, $stmt), .length = $argv.length + 1
-  };
+  $$ = node_attach($argv, $stmt);
+  if (rare(++node_stream(&$$->as_node)->n == 0))
+    YYNOMEM;
 }
 
 name: NAME {
@@ -273,11 +274,12 @@ switch_case: "case" _ name '=' expr {
 }
 
 vector_expr: '[' vector_expr_argv[argv] ']' { // {{{2
+  size_t argc = node_stream(&$argv->as_node)->n;
   struct MuonVectorExpr *result;
-  if ((result = vector_expr_allocate(scan->engine, $argv.length)) == NULL)
+  if ((result = vector_expr_allocate(scan->engine, argc)) == NULL)
     YYNOMEM;
-  for (size_t i = 0; i < $argv.length; i++)
-    result->argv[i] = node_detach($argv.node);
+  for (size_t i = 0; i < argc; i++)
+    result->argv[i] = node_detach($argv);
   $$ = vector_expr_activate(result);
 
 } | '[' ']' {
@@ -285,12 +287,12 @@ vector_expr: '[' vector_expr_argv[argv] ']' { // {{{2
 }
 
 vector_expr_argv: expr {
-  $$ = (struct ExprSeries) { .node = node_attach(NULL, $expr), .length = 1 };
+  $$ = node_attach(NULL, $expr), node_stream(&$$->as_node)->n = 1;
 
 } | vector_expr_argv[argv] ',' expr {
-  $$ = (struct ExprSeries) {
-    .node = node_attach($argv.node, $expr), .length = $argv.length + 1
-  };
+  $$ = node_attach($argv, $expr);
+  if (rare(++node_stream(&$$->as_node)->n == 0))
+    YYNOMEM;
 }
 
 sign: '(' sign[matter] ')' { $$ = $matter; } // {{{1

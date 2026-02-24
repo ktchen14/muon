@@ -26,6 +26,7 @@ typedef struct {
     /// @internal Used to assemble a node list
     struct NodeStream {
       MuonNode *next;
+      size_t n;
     } stream;
   };
 
@@ -74,20 +75,21 @@ MUON_HINT(nonnull)
 static inline MuonNode *node_return(MuonNode *node) {
   struct NodeCursor *cursor = node_cursor(node);
   MuonNode *anterior = cursor->anterior;
-  return *cursor = (struct NodeCursor) {0}, anterior;
+  return *cursor = (struct NodeCursor) {}, anterior;
 }
 
 MUON_HINT(nonnull(2), returns_nonnull)
 static inline MuonNode *node_attach(
     MuonNode *restrict node, MuonNode *restrict next) {
-  assert(node_stream(next)->next == NULL);
+  struct NodeStream *stream = node_stream(next);
+  assert(stream->next == NULL && stream->n == 0);
 
   if (node == NULL)
-    return node_stream(next)->next = next;
+    return stream->next = next;
 
-  struct NodeStream *stream = node_stream(node);
+  stream = node_stream(node);
   assert(stream->next != NULL);
-  node_stream(next)->next = stream->next;
+  *node_stream(next) = *stream;
   return stream->next = next;
 }
 
@@ -102,9 +104,9 @@ __attribute__((nonnull))
 static inline MuonNode *node_detach(MuonNode *node) {
   MuonNode *next = node_stream(node)->next;
   assert(next != NULL);
-  *node_stream(node) = *node_stream(next);
-  *node_stream(next) = (struct NodeStream) {};
-  return next;
+  struct NodeStream *stream = node_stream(next);
+  node_stream(node)->next = stream->next;
+  return *stream = (struct NodeStream) {}, next;
 }
 
 #define node_detach(node) ((typeof(node)) node_detach(&(node)->as_node))
