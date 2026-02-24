@@ -19,14 +19,12 @@ typedef struct {
   union {
     /// @internal Used to traverse a node tree
     struct NodeCursor {
-      MuonNode *anterior;
-      size_t i;
+      MuonNode *node; size_t i; //-
     } cursor;
 
     /// @internal Used to assemble a node list
     struct NodeStream {
-      MuonNode *next;
-      size_t n;
+      MuonNode *next; size_t n; //-
     } stream;
   };
 
@@ -66,16 +64,16 @@ MUON_HINT(nonnull(2), returns_nonnull)
 static inline MuonNode *node_continue(
     MuonNode *restrict node, MuonNode *restrict next) {
   struct NodeCursor *cursor = node_cursor(next);
-  assert(cursor->anterior == NULL && cursor->i == 0);
-  return cursor->anterior = node, next;
+  assert(cursor->node == NULL && cursor->i == 0);
+  return cursor->node = node, next;
 }
 
 /// Return from the node
 MUON_HINT(nonnull)
 static inline MuonNode *node_return(MuonNode *node) {
   struct NodeCursor *cursor = node_cursor(node);
-  MuonNode *anterior = cursor->anterior;
-  return *cursor = (struct NodeCursor) {}, anterior;
+  node = cursor->node;
+  return *cursor = (struct NodeCursor) {}, node;
 }
 
 MUON_HINT(nonnull(2), returns_nonnull)

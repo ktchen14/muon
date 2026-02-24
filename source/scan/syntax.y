@@ -13,21 +13,6 @@ typedef struct {
   size_t marker;
 
   MuonScript *script;
-
-  MuonExpr *expr[800];
-  size_t expr_i;
-
-  MuonExprMember *expr_member[800];
-  size_t expr_member_i;
-
-  MuonViewMember *view_member[800];
-  size_t view_member_i;
-
-  MuonSwitchCase *switch_case[800];
-  size_t switch_case_i;
-
-  MuonDatatypeOption *datatype_option[200];
-  size_t datatype_option_i;
 } Scan;
 
 #define YYLTYPE mu_source_t
@@ -58,29 +43,6 @@ typedef struct {
 #define MUON_EMIT(Title, lower, U) Muon##Title *lower;
   MUON_EACH_NODE_STEM(MUON_EMIT)
 #undef MUON_EMIT
-
-  struct ExprSeries {
-    MuonExpr *node; size_t length;
-  } expr_series;
-
-  struct SignSeries {
-    MuonSign *node; size_t length;
-  } sign_series;
-
-  struct StmtSeries {
-    MuonStmt *node; size_t length;
-  } stmt_series;
-
-  struct ViewSeries {
-    MuonView *node; size_t length;
-  } view_series;
-
-#define MUON_EMIT(Title, lower, U) \
-    struct Title##Series { Muon##Title *node; size_t length; } lower##_series;
-  MUON_EACH_NODE_STEM(MUON_EMIT)
-#undef MUON_EMIT
-
-  size_t i;
 }
 
 %token CASE "case"
@@ -103,9 +65,9 @@ typedef struct {
 %token <text>    NAME
 
 %type <name> name
-%type <expr> expr
+%type <expr> expr vector_expr_argv
 %type <sign> sign
-%type <stmt> stmt
+%type <stmt> stmt script_argv
 %type <view> view
 
 %type <access_expr> access_expr
@@ -117,7 +79,6 @@ typedef struct {
 %type <name_expr> name_expr
 %type <expr_member> expr_member
 %type <record_expr> record_expr
-%type <switch_case> switch_case
 %type <switch_expr> switch_expr
 %type <vector_expr> vector_expr
 
@@ -128,17 +89,16 @@ typedef struct {
 %type <vector_sign> vector_sign
 
 %type <coercion_stmt> coercion_stmt
-%type <datatype_option> datatype_option
 %type <datatype_stmt> datatype_stmt
 %type <define_stmt> define_stmt
 
-%type <view_member> view_member
 %type <record_view> record_view
 %type <variable_view> variable_view
 
-%type <i> datatype_argv record_argv switch_argv record_view_argv
-%type <expr> vector_expr_argv
-%type <stmt> script_argv
+%type <datatype_option> datatype_option datatype_stmt_argv
+%type <expr_member> record_expr_argv
+%type <switch_case> switch_case switch_expr_argv
+%type <view_member> view_member record_view_argv
 
 %left "∷"
 %right "→"
@@ -232,41 +192,49 @@ name_expr: name {
   $$ = muon_name_expr(scan->engine, $1);
 }
 
-record_expr: '(' record_argv ')' { // {{{2
-  size_t i = $record_argv;
-  scan->expr_member_i -= i;
-  $$ = muon_record_expr(scan->engine, i, &scan->expr_member[scan->expr_member_i]);
+record_expr: '(' record_expr_argv[argv] ')' { // {{{2
+  size_t argc = node_stream(&$argv->as_node)->n;
+  struct MuonRecordExpr *result;
+  if ((result = record_expr_allocate(scan->engine, argc)) == NULL)
+    YYNOMEM;
+  for (size_t i = 0; i < argc; i++)
+    result->argv[i] = node_detach($argv);
+  $$ = record_expr_activate(result);
 
 } | '(' ')' {
   $$ = muon_record_expr(scan->engine, 0, NULL);
 }
 
-record_argv: expr_member {
-  scan->expr_member[scan->expr_member_i++] = $expr_member;
-  $$ = 1;
+record_expr_argv: expr_member {
+  $$ = node_attach(NULL, $expr_member), node_stream(&$$->as_node)->n = 1;
 
-} | record_argv ',' expr_member {
-  scan->expr_member[scan->expr_member_i++] = $expr_member;
-  $$ = $1 + 1;
+} | record_expr_argv[argv] ',' expr_member {
+  $$ = node_attach($argv, $expr_member);
+  if (rare(++node_stream(&$$->as_node)->n == 0))
+    YYNOMEM;
 }
 
 expr_member: name ':' expr {
   $$ = muon_expr_member(scan->engine, $name, $expr);
 }
 
-switch_expr: "switch" _ '(' switch_argv ')' { // {{{2
-  size_t i = $switch_argv;
-  scan->switch_case_i -= i;
-  $$ = muon_switch_expr(scan->engine, i, &scan->switch_case[scan->switch_case_i]);
+switch_expr: "switch" _ '(' switch_expr_argv[argv] ')' { // {{{2
+  size_t argc = node_stream(&$argv->as_node)->n;
+  struct MuonSwitchExpr *result;
+  if ((result = switch_expr_allocate(scan->engine, argc)) == NULL)
+    YYNOMEM;
+  for (size_t i = 0; i < argc; i++)
+    result->argv[i] = node_detach($argv);
+  $$ = switch_expr_activate(result);
 }
 
-switch_argv: switch_case {
-  scan->switch_case[scan->switch_case_i++] = $switch_case;
-  $$ = 1;
+switch_expr_argv: switch_case {
+  $$ = node_attach(NULL, $switch_case), node_stream(&$$->as_node)->n = 1;
 
-} | switch_argv ',' switch_case {
-  scan->switch_case[scan->switch_case_i++] = $switch_case;
-  $$ = $1 + 1;
+} | switch_expr_argv[argv] ',' switch_case {
+  $$ = node_attach($argv, $switch_case);
+  if (rare(++node_stream(&$$->as_node)->n == 0))
+    YYNOMEM;
 }
 
 switch_case: "case" _ name '=' expr {
@@ -328,19 +296,23 @@ stmt: // {{{1
   datatype_stmt { $$ = &$datatype_stmt->as_stmt; } |
   define_stmt   { $$ = &$define_stmt->as_stmt; }
 
-datatype_stmt: "datatype" _ name '=' datatype_argv '\n' {
-  size_t i = $datatype_argv;
-  scan->datatype_option_i -= i;
-  $$ = muon_datatype_stmt(scan->engine, $name, i, &scan->datatype_option[scan->datatype_option_i]);
+datatype_stmt: "datatype" _ name '=' datatype_stmt_argv[argv] '\n' {
+  size_t argc = node_stream(&$argv->as_node)->n;
+  struct MuonDatatypeStmt *result;
+  if ((result = datatype_stmt_allocate(scan->engine, argc)) == NULL)
+    YYNOMEM;
+  for (size_t i = 0; i < argc; i++)
+    result->argv[i] = node_detach($argv);
+  $$ = datatype_stmt_activate(result, $name);
 }
 
-datatype_argv: datatype_option {
-  scan->datatype_option[scan->datatype_option_i++] = $datatype_option;
-  $$ = 1;
+datatype_stmt_argv: datatype_option {
+  $$ = node_attach(NULL, $datatype_option), node_stream(&$$->as_node)->n = 1;
 
-} | datatype_argv '|' datatype_option {
-  scan->datatype_option[scan->datatype_option_i++] = $datatype_option;
-  $$ = $1 + 1;
+} | datatype_stmt_argv[argv] '|' datatype_option {
+  $$ = node_attach($argv, $datatype_option);
+  if (rare(++node_stream(&$$->as_node)->n == 0))
+    YYNOMEM;
 }
 
 datatype_option: name {
@@ -368,22 +340,26 @@ view_member: name ':' view {
   $$ = muon_view_member(scan->engine, $name, &view->as_view);
 }
 
-record_view: '(' record_view_argv ')' {
-  size_t i = $record_view_argv;
-  scan->view_member_i -= i;
-  $$ = muon_record_view(scan->engine, i, &scan->view_member[scan->view_member_i]);
+record_view: '(' record_view_argv[argv] ')' {
+  size_t argc = node_stream(&$argv->as_node)->n;
+  struct MuonRecordView *result;
+  if ((result = record_view_allocate(scan->engine, argc)) == NULL)
+    YYNOMEM;
+  for (size_t i = 0; i < argc; i++)
+    result->argv[i] = node_detach($argv);
+  $$ = record_view_activate(result);
 
 } | '(' ')' {
   $$ = muon_record_view(scan->engine, 0, NULL);
 }
 
 record_view_argv: view_member {
-  scan->view_member[scan->view_member_i++] = $view_member;
-  $$ = 1;
+  $$ = node_attach(NULL, $view_member), node_stream(&$$->as_node)->n = 1;
 
-} | record_view_argv ',' view_member {
-  scan->view_member[scan->view_member_i++] = $view_member;
-  $$ = $1 + 1;
+} | record_view_argv[argv] ',' view_member {
+  $$ = node_attach($argv, $view_member);
+  if (rare(++node_stream(&$$->as_node)->n == 0))
+    YYNOMEM;
 }
 
 variable_view: name {
