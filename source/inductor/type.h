@@ -18,21 +18,28 @@
     __VA_ARGS__ = _object;
 
 typedef struct {
-  /// @internal The type to return to, or @c NULL if this is the root type
-  MuonType *anterior;
-
-  size_t i : sizeof(size_t) * CHAR_BIT - 2;
-
-  /// @internal Used to decide which cursor to return to in the @a anterior type
-  size_t charge : 1;
-
-  /// @internal Used to mark if the type is accessible
-  size_t access : 1;
-} TypeCursor;
-
-typedef struct {
   MuonType *next;
-  TypeCursor cursor[2];
+
+  union {
+    /// @internal Used to traverse a type tree
+    struct TypeCursor {
+      MuonType *type;
+      size_t i : sizeof(size_t) * CHAR_BIT - 2;
+
+      /// @internal Used to decide which cursor to return to in the @a anterior type
+      size_t charge : 1;
+
+      /// @internal Used to mark if the type is accessible
+      size_t access : 1;
+    } cursor[2];
+
+    /// @internal Used to assemble a type list
+    struct TypeSeries {
+      MuonType *next; size_t n; //-
+    } series[2];
+
+    static_assert(sizeof(struct TypeCursor) == sizeof(struct TypeSeries));
+  };
 
   // TODO
   union {
@@ -47,23 +54,36 @@ typedef struct {
 #define MUON_EMIT(Title, lower, U) Muon##Title lower;
     MUON_EACH_TYPE(MUON_EMIT)
 #undef MUON_EMIT
-  }) char data[];
+  }) struct MuonType type[];
 } TypeHeader;
 
 /// Return the header of the @a type
 MUON_HINT(const, nonnull, returns_nonnull)
 static inline TypeHeader *type_header(MuonType *type) {
+  const size_t offset = offsetof(TypeHeader, type);
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-align"
 #pragma GCC diagnostic ignored "-Wcast-qual"
-  return (TypeHeader *) ((char *) type - offsetof(TypeHeader, data));
+  return (TypeHeader *) ((char *) type - offset);
 #pragma GCC diagnostic pop
 }
 
-/// Return the cursor attached to the @a type
+/// Return the @a charge cursor of the @a type
 MUON_HINT(const, nonnull, returns_nonnull)
-static inline TypeCursor *type_cursor(MuonType *type, _Bool charge) {
+static inline struct TypeCursor *type_cursor(MuonType *type, _Bool charge) {
   return &type_header(type)->cursor[charge];
+}
+
+/// Return the @a charge series of the @a type
+MUON_HINT(const, nonnull, returns_nonnull)
+static inline struct TypeSeries *type_series(MuonType *type, _Bool charge) {
+  const size_t offset = offsetof(TypeHeader, type);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-align"
+#pragma GCC diagnostic ignored "-Wcast-qual"
+  TypeHeader *header = (TypeHeader *) ((char *) type - offset);
+#pragma GCC diagnostic pop
+  return &header->series[charge];
 }
 
 static _Thread_local _Bool charge;
@@ -71,27 +91,27 @@ static _Thread_local _Bool charge;
 /// Continue into the type
 static inline MuonType *type_continue(
     MuonType *type, MuonType *next, _Bool next_charge) {
-  TypeCursor *cursor = type_cursor(next, next_charge);
-  assert(cursor->anterior == NULL && cursor->i == 0);
+  struct TypeCursor *cursor = type_cursor(next, next_charge);
+  assert(cursor->type == NULL && cursor->i == 0);
   cursor->charge = charge;
   charge = next_charge;
-  cursor->anterior = type;
+  cursor->type = type;
   return next;
 }
 
 /// Return from the type
 MUON_HINT(nonnull)
 static inline MuonType *type_return(MuonType *type) {
-  TypeCursor *cursor = type_cursor(type, charge);
+  struct TypeCursor *cursor = type_cursor(type, charge);
   charge = cursor->charge;
-  MuonType *anterior = cursor->anterior;
-  *cursor = (TypeCursor) {0};
+  MuonType *anterior = cursor->type;
+  *cursor = (struct TypeCursor) {0};
   return anterior;
 }
 
 /// Return the <em>i</em>th type in the abstract @a type
 static inline MuonType *type_next(MuonType *type, _Bool *next_charge) {
-  TypeCursor *cursor = type_cursor(type, charge);
+  struct TypeCursor *cursor = type_cursor(type, charge);
   *next_charge = charge;
 
   switch ON_ABSTRACT_OBJECT(type) {

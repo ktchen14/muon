@@ -14,7 +14,7 @@
 /// @internal Allocate a type of size @a size in the @a inductor
 MUON_HINT(malloc, nonnull)
 static inline void *type_allocate(mu_inductor_t *inductor, size_t size) {
-  if (rare((size = struct_size(TypeHeader, data, size)) == 0))
+  if (rare((size = struct_size(TypeHeader, type, size)) == 0))
     return errno = ENOMEM, NULL;
 
   TypeHeader *header;
@@ -22,7 +22,7 @@ static inline void *type_allocate(mu_inductor_t *inductor, size_t size) {
     return NULL;
   *header = (TypeHeader) {0};
 
-  return header->data;
+  return header->type;
 }
 
 /// @internal Assign the abstract @a type to the @a inductor
