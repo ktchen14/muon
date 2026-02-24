@@ -89,6 +89,15 @@ MUON_HINT(const) static inline size_t extant_size(
     sizeof((struct) {0}.member[0]), /* NOLINT(bugprone-sizeof-expression) */ \
     (length))
 
+/// Return @a offset into the @a object, or @c NULL on a @c NULL @a object
+MUON_HINT(const)
+static inline const void *object_member(const void *object, size_t offset) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-align"
+  return object != NULL ? ((const char *) object + offset) : NULL;
+#pragma GCC diagnostic pop
+}
+
 // TODO: better documentation
 
 MUON_HINT(unused) static _Thread_local const void *_object;

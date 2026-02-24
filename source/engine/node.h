@@ -23,9 +23,9 @@ typedef struct {
     } cursor;
 
     /// @internal Used to assemble a node list
-    struct NodeStream {
+    struct NodeSeries {
       MuonNode *next; size_t n; //-
-    } stream;
+    } series;
   };
 
   _Alignas(union {
@@ -47,16 +47,16 @@ static inline struct NodeCursor *node_cursor(MuonNode *node) {
   return &header->cursor;
 }
 
-/// Return the stream of the @a node
+/// Return the series of the @a node
 MUON_HINT(const, nonnull, returns_nonnull)
-static inline struct NodeStream *node_stream(MuonNode *node) {
+static inline struct NodeSeries *node_series(MuonNode *node) {
   const size_t offset = offsetof(NodeHeader, node);
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-align"
 #pragma GCC diagnostic ignored "-Wcast-qual"
   NodeHeader *header = (NodeHeader *) ((char *) node - offset);
 #pragma GCC diagnostic pop
-  return &header->stream;
+  return &header->series;
 }
 
 /// Continue into the node
@@ -79,32 +79,29 @@ static inline MuonNode *node_return(MuonNode *node) {
 MUON_HINT(nonnull(2), returns_nonnull)
 static inline MuonNode *node_attach(
     MuonNode *restrict node, MuonNode *restrict next) {
-  struct NodeStream *stream = node_stream(next);
-  assert(stream->next == NULL && stream->n == 0);
+  struct NodeSeries *series = node_series(next);
+  assert(series->next == NULL && series->n == 0);
 
   if (node == NULL)
-    return stream->next = next;
+    return series->next = next;
 
-  stream = node_stream(node);
-  assert(stream->next != NULL);
-  *node_stream(next) = *stream;
-  return stream->next = next;
+  series = node_series(node);
+  assert(series->next != NULL);
+  *node_series(next) = *series;
+  return series->next = next;
 }
 
-#define node_attach(node, next) __extension__ ({ \
-  /* Ensure that node is assignable to typeof(next) */ \
-  typeof(next) _node = (node); \
-  auto _argv = _node != NULL ? &_node->as_node : NULL; \
-  (typeof(next)) node_attach(_argv, &(next)->as_node); \
-})
+#define node_attach(node, next) ((typeof(next)) node_attach( \
+  object_member((typeof(next)) {node}, offsetof(typeof(*(next)), as_node)), \
+  &(next)->as_node))
 
 __attribute__((nonnull))
 static inline MuonNode *node_detach(MuonNode *node) {
-  MuonNode *next = node_stream(node)->next;
+  MuonNode *next = node_series(node)->next;
   assert(next != NULL);
-  struct NodeStream *stream = node_stream(next);
-  node_stream(node)->next = stream->next;
-  return *stream = (struct NodeStream) {}, next;
+  struct NodeSeries *series = node_series(next);
+  node_series(node)->next = series->next;
+  return *series = (struct NodeSeries) {}, next;
 }
 
 #define node_detach(node) ((typeof(node)) node_detach(&(node)->as_node))

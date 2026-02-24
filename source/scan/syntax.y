@@ -125,7 +125,7 @@ static void yyerror(YYLTYPE *yylloc, Scan *scan, char const *s);
 %%
 
 script: script_argv[argv] { // {{{1
-  size_t argc = node_stream(&$argv->as_node)->n;
+  size_t argc = node_series(&$argv->as_node)->n;
   struct MuonScript *result;
   if ((result = script_allocate(scan->engine, argc)) == NULL)
     YYNOMEM;
@@ -139,7 +139,7 @@ script_argv: {
 
 } | script_argv[argv] stmt {
   $$ = node_attach($argv, $stmt);
-  if (rare(++node_stream(&$$->as_node)->n == 0))
+  if (rare(++node_series(&$$->as_node)->n == 0))
     YYNOMEM;
 }
 
@@ -193,7 +193,7 @@ name_expr: name {
 }
 
 record_expr: '(' record_expr_argv[argv] ')' { // {{{2
-  size_t argc = node_stream(&$argv->as_node)->n;
+  size_t argc = node_series(&$argv->as_node)->n;
   struct MuonRecordExpr *result;
   if ((result = record_expr_allocate(scan->engine, argc)) == NULL)
     YYNOMEM;
@@ -206,11 +206,11 @@ record_expr: '(' record_expr_argv[argv] ')' { // {{{2
 }
 
 record_expr_argv: expr_member {
-  $$ = node_attach(NULL, $expr_member), node_stream(&$$->as_node)->n = 1;
+  $$ = node_attach(NULL, $expr_member), node_series(&$$->as_node)->n = 1;
 
 } | record_expr_argv[argv] ',' expr_member {
   $$ = node_attach($argv, $expr_member);
-  if (rare(++node_stream(&$$->as_node)->n == 0))
+  if (rare(++node_series(&$$->as_node)->n == 0))
     YYNOMEM;
 }
 
@@ -219,7 +219,7 @@ expr_member: name ':' expr {
 }
 
 switch_expr: "switch" _ '(' switch_expr_argv[argv] ')' { // {{{2
-  size_t argc = node_stream(&$argv->as_node)->n;
+  size_t argc = node_series(&$argv->as_node)->n;
   struct MuonSwitchExpr *result;
   if ((result = switch_expr_allocate(scan->engine, argc)) == NULL)
     YYNOMEM;
@@ -229,11 +229,11 @@ switch_expr: "switch" _ '(' switch_expr_argv[argv] ')' { // {{{2
 }
 
 switch_expr_argv: switch_case {
-  $$ = node_attach(NULL, $switch_case), node_stream(&$$->as_node)->n = 1;
+  $$ = node_attach(NULL, $switch_case), node_series(&$$->as_node)->n = 1;
 
 } | switch_expr_argv[argv] ',' switch_case {
   $$ = node_attach($argv, $switch_case);
-  if (rare(++node_stream(&$$->as_node)->n == 0))
+  if (rare(++node_series(&$$->as_node)->n == 0))
     YYNOMEM;
 }
 
@@ -242,7 +242,7 @@ switch_case: "case" _ name '=' expr {
 }
 
 vector_expr: '[' vector_expr_argv[argv] ']' { // {{{2
-  size_t argc = node_stream(&$argv->as_node)->n;
+  size_t argc = node_series(&$argv->as_node)->n;
   struct MuonVectorExpr *result;
   if ((result = vector_expr_allocate(scan->engine, argc)) == NULL)
     YYNOMEM;
@@ -255,11 +255,11 @@ vector_expr: '[' vector_expr_argv[argv] ']' { // {{{2
 }
 
 vector_expr_argv: expr {
-  $$ = node_attach(NULL, $expr), node_stream(&$$->as_node)->n = 1;
+  $$ = node_attach(NULL, $expr), node_series(&$$->as_node)->n = 1;
 
 } | vector_expr_argv[argv] ',' expr {
   $$ = node_attach($argv, $expr);
-  if (rare(++node_stream(&$$->as_node)->n == 0))
+  if (rare(++node_series(&$$->as_node)->n == 0))
     YYNOMEM;
 }
 
@@ -290,14 +290,13 @@ vector_sign: '[' sign ']' {
   $$ = muon_vector_sign(scan->engine, $sign);
 }
 
-
 stmt: // {{{1
   coercion_stmt { $$ = &$coercion_stmt->as_stmt; } |
   datatype_stmt { $$ = &$datatype_stmt->as_stmt; } |
   define_stmt   { $$ = &$define_stmt->as_stmt; }
 
 datatype_stmt: "datatype" _ name '=' datatype_stmt_argv[argv] '\n' {
-  size_t argc = node_stream(&$argv->as_node)->n;
+  size_t argc = node_series(&$argv->as_node)->n;
   struct MuonDatatypeStmt *result;
   if ((result = datatype_stmt_allocate(scan->engine, argc)) == NULL)
     YYNOMEM;
@@ -307,11 +306,11 @@ datatype_stmt: "datatype" _ name '=' datatype_stmt_argv[argv] '\n' {
 }
 
 datatype_stmt_argv: datatype_option {
-  $$ = node_attach(NULL, $datatype_option), node_stream(&$$->as_node)->n = 1;
+  $$ = node_attach(NULL, $datatype_option), node_series(&$$->as_node)->n = 1;
 
 } | datatype_stmt_argv[argv] '|' datatype_option {
   $$ = node_attach($argv, $datatype_option);
-  if (rare(++node_stream(&$$->as_node)->n == 0))
+  if (rare(++node_series(&$$->as_node)->n == 0))
     YYNOMEM;
 }
 
@@ -327,7 +326,6 @@ define_stmt: "define" _ name '=' expr '\n' {
   $$ = muon_define_stmt(scan->engine, $name, $expr);
 }
 
-
 view: '(' view[matter] ')' { $$ = $matter; } // {{{1
   | record_view   { $$ = &$record_view->as_view; }
   | variable_view { $$ = &$variable_view->as_view; }
@@ -341,7 +339,7 @@ view_member: name ':' view {
 }
 
 record_view: '(' record_view_argv[argv] ')' {
-  size_t argc = node_stream(&$argv->as_node)->n;
+  size_t argc = node_series(&$argv->as_node)->n;
   struct MuonRecordView *result;
   if ((result = record_view_allocate(scan->engine, argc)) == NULL)
     YYNOMEM;
@@ -354,11 +352,11 @@ record_view: '(' record_view_argv[argv] ')' {
 }
 
 record_view_argv: view_member {
-  $$ = node_attach(NULL, $view_member), node_stream(&$$->as_node)->n = 1;
+  $$ = node_attach(NULL, $view_member), node_series(&$$->as_node)->n = 1;
 
 } | record_view_argv[argv] ',' view_member {
   $$ = node_attach($argv, $view_member);
-  if (rare(++node_stream(&$$->as_node)->n == 0))
+  if (rare(++node_series(&$$->as_node)->n == 0))
     YYNOMEM;
 }
 
