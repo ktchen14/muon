@@ -225,11 +225,9 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
     Rule *rule;
     if (cursor.charge == 0) {
       rule = rule_insert(inductor, origin, result);
-      rule->tag = INDIRECT_RULE;
       rule->instance_id = instance_id;
     } else {
       rule = rule_insert(inductor, result, origin);
-      rule->tag = INDIRECT_RULE;
       rule->instance_id = instance_id;
     }
   } while (!attitude_eq(cursor, series));
