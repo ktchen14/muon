@@ -171,19 +171,23 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
 
     for (size_t j = 0; j < rule_length; j++) {
       Rule *edge = &inductor->edge[j];
-      if (edge->instance_id != 0)
+
+      if (edge->vertex[!cursor.charge] != origin)
         continue;
 
-      if (edge->source != origin && edge->target != origin)
+      // if (edge->instance_id != 0)
+      //   continue;
+
+      MuonType *source = map_of(edge->source, cursor.charge);
+      MuonType *target = map_of(edge->target, cursor.charge);
+      if (rule_search(inductor, source, target) != NULL)
         continue;
 
-      MuonType *new_source = map_of(edge->source, 0);
-      MuonType *new_target = map_of(edge->target, 1);
-
-      if (rule_search(inductor, new_source, new_target) != NULL)
-        continue;
-      if (rule_insert(inductor, new_source, new_target) == NULL)
+      Rule *rule;
+      if ((rule = rule_insert(inductor, source, target)) == NULL)
         return NULL;
+      rule->tag = edge->tag;
+      // rule->instance_id = edge->instance_id;
     }
   } while (!attitude_eq(cursor, series));
 
@@ -192,12 +196,8 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
     cursor = type_next1(cursor);
 
     MuonType *origin = cursor.type;
-
-    struct MuonType *result = equation[type_series(cursor)->n];
+    MuonType *result = equation[type_series(cursor)->n];
     assert(result != NULL);
-
-    if (origin == result)
-      continue;
 
     if (!is_variable_type(origin))
       continue;
@@ -210,6 +210,29 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
       rule = rule_insert(inductor, result, origin);
       rule->instance_id = instance_id;
     }
+  } while (!attitude_eq(cursor, series));
+
+  do {
+    cursor = type_next1(cursor);
+
+    if (cursor.charge != 0)
+      continue;
+
+    if (type_series(attitude_invert(cursor))->n == 0)
+      continue;
+
+    MuonType *origin = cursor.type;
+    if (!is_variable_type(origin))
+      continue;
+
+    MuonType *result = equation[type_series(cursor)->n];
+    assert(result != NULL);
+    MuonType *other = equation[type_series(attitude_invert(cursor))->n];
+    assert(other != NULL);
+
+    Rule *rule;
+    rule = rule_insert(inductor, other, result);
+    rule->tag = INDIRECT_RULE;
   } while (!attitude_eq(cursor, series));
 
   MuonType *result = map_of(scheme->matter, 0);

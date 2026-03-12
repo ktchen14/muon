@@ -98,7 +98,7 @@ void (inductor_debug)( //-
       if (!show_indirect)
         continue;
 
-      debug("  Type%zu -> Type%zu [color=gray];\n", edge.source->id, edge.target->id);
+      debug("  Type%zu -> Type%zu [constraint=false,color=gray];\n", edge.source->id, edge.target->id);
       continue;
     }
 
