@@ -8,7 +8,10 @@
 #include <stdlib.h>
 
 MuonInductor *muon_induce_initialize(
-    MuonInductor *inductor, MuonEngine *engine, const detect_t *detect) {
+    MuonInductor *inductor,
+    MuonEngine *engine,
+    const detect_t *detect,
+    const MuonModule *module) {
   assert(detect_result(detect)->engine == engine);
 
   size_t node_length = as_engine(engine)->node_number;
@@ -39,6 +42,7 @@ MuonInductor *muon_induce_initialize(
   *inductor = (MuonInductor) {
     .engine = engine,
     .detect = detect_result(detect),
+    .module = module,
     .node_length = node_length,
     .node = node,
     .type_length = 1000,

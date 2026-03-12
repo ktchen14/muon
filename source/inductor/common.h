@@ -46,6 +46,7 @@ typedef struct {
 struct Inductor {
   MuonEngine *engine;
   const detect_result_t *detect;
+  const MuonModule *module;
 
   size_t node_length;
   struct NodeType {

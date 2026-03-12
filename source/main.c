@@ -57,6 +57,10 @@ int main(int argc, char *argv[/* argc */]) {
     assert(0);
   mu_status_t status = {0};
 
+  MuonModule *module = muon_standard_module(engine);
+  if (module == NULL)
+    assert(0);
+
   MuonScript *script;
 
   if ((script = muon_scan(engine, &status, buffer)) == NULL) {
@@ -65,14 +69,14 @@ int main(int argc, char *argv[/* argc */]) {
   }
 
   detect_t detect;
-  if (detect_initialize(&detect, engine, &status) == NULL)
+  if (detect_initialize(&detect, engine, &status, module) == NULL)
     assert(0);
 
   if (detect_node(&detect, &script->as_node) == NULL)
     assert(0);
 
   MuonInductor inductor;
-  if (muon_induce_initialize(&inductor, engine, &detect) == NULL)
+  if (muon_induce_initialize(&inductor, engine, &detect, module) == NULL)
     assert(0);
 
   if (induce_node(&inductor, &script->as_node) == NULL)

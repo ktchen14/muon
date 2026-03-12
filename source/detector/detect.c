@@ -24,7 +24,10 @@ struct roster_t {
 };
 
 detect_t *detect_initialize(
-    detect_t *detect, const MuonEngine *engine, mu_status_t *status) {
+    detect_t *detect,
+    const MuonEngine *engine,
+    mu_status_t *status,
+    const MuonModule *module) {
   size_t length = as_engine(engine)->node_number;
 
   size_t size;
@@ -38,7 +41,7 @@ detect_t *detect_initialize(
   for (size_t i = 0; i < length; result->data[i++] = NULL)
     ;
 
-  *detect = (detect_t) {.status = status, .result = result};
+  *detect = (detect_t) {.status = status, .result = result, .module = module};
   return detect;
 }
 
@@ -65,6 +68,18 @@ static MuonNode *roster_search(roster_t *roster, MuonName *name) {
     }
   } while ((roster = roster->parent) != NULL);
 
+  return NULL;
+}
+
+static const MuonExport *module_search(
+    const MuonModule *module, MuonName *name) {
+  if (module == NULL)
+    return NULL;
+
+  for (size_t i = 0; i < module->argc; i++) {
+    if (module->argv[i]->name == name)
+      return module->argv[i];
+  }
   return NULL;
 }
 
@@ -216,8 +231,13 @@ detect_t *detect_node(detect_t *detect, MuonNode *root) {
     switch ON_ABSTRACT_OBJECT(node) {
       case IS_CONCRETE_NODE(MuonNameExpr *name_expr) {
         MuonNode *target = roster_search(roster, name_expr->name);
-        assert(target != NULL);
-        detect->result->data[name_expr->as_node.id] = target;
+        if (target != NULL) {
+          detect->result->data[name_expr->as_node.id] = target;
+          break;
+        }
+
+        if (module_search(detect->module, name_expr->name) == NULL)
+          assert(target != NULL);
         break;
       }
 

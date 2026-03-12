@@ -10,7 +10,10 @@
 
 /// Initialize the @a inductor to handle nodes and types in the @a engine
 MuonInductor *muon_induce_initialize(
-    MuonInductor *induce, MuonEngine *engine, const detect_t *detect)
+    MuonInductor *induce,
+    MuonEngine *engine,
+    const detect_t *detect,
+    const MuonModule *module)
   MUON_HINT_SUFFIX(nonnull);
 
 void inductor_debug(

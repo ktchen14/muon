@@ -1,6 +1,10 @@
 # define id = lambda x = x.foo
 
-define test_number = (lambda x = x)
+define a = unkno
+
+define test_number = (lambda x = x) :: Integer -> Integer
+
+define apply = (lambda f = (lambda x = f x))
 
 # define main = lambda () = [[(foo: (bar: 5)).foo.bar, 7], [9]]
 
@@ -23,9 +27,7 @@ define test_number = (lambda x = x)
 # define x = 1
 # define y = x
 # define z = [x, y, 3, 4, 5]
-define h = (foo: 1).foo
-define j = test_number h
-define k = [1 :: $, 2 :: $, true :: $ :: $, [3, 4]]
+define k = [(apply test_number) (1 :: $), 2 :: $, true :: $ :: $, [3, 4]]
 # define result = handle_list [1, 2, 3]
 
 # define idi = lambda x = x :: Integer -> Integer

@@ -153,9 +153,21 @@ MUON_HINT(nonnull) static MuonType *lambda_expr_return(
 
 MUON_HINT(nonnull) static MuonType *name_expr_return(
     Inductor *inductor, MuonNameExpr *expr) {
-  MuonNode *target = detect_evince(inductor->detect, &expr->as_node);
+  MuonNode *target = detect_evince_loose(inductor->detect, &expr->as_node);
+  if (target != NULL) {
+    return node_type(inductor, target);
+  }
+
+  if (inductor->module != NULL) {
+    for (size_t i = 0; i < inductor->module->argc; i++) {
+      if (inductor->module->argv[i]->name == expr->name) {
+        return inductor->module->argv[i]->type;
+      }
+    }
+  }
+
   assert(target != NULL);
-  return node_type(inductor, target);
+  return NULL;
 }
 
 MUON_HINT(nonnull) static MuonType *native_expr_return(
