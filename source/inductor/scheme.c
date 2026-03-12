@@ -44,12 +44,16 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
   do {
     Attitude next;
     while (!attitude_null(next = type_scan3(inductor, cursor))) {
+      _Bool found = 0;
       for (MuonSchemeType *s = next.type->scheme; s != NULL;
           s = s->as_type.scheme) {
-        if (s == scheme)
+        if (s == scheme) {
+          found = 1;
           break;
-        goto next;
+        }
       }
+      if (!found)
+        goto next;
 
       if (type_cursor(next)->type != NULL || type_cursor(next)->i != 0)
         continue;
@@ -199,7 +203,7 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
     }
   } while (!attitude_eq(cursor, series));
 
-  while (!attitude_null(series = type_detach(series)))
+  while (!attitude_null(type_detach(series)))
     ;
 
   MuonType *result = map_of(scheme->matter);
