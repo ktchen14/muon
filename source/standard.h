@@ -1,12 +1,8 @@
-#ifndef MU_STANDARD_I
-#define MU_STANDARD_I
+#ifndef MUON_STANDARD_I
+#define MUON_STANDARD_I
 
-#include "author.h"
 #include "engine.h"
 
-#include <llvm-c/Types.h>
+MuonModule *muon_standard_module(MuonEngine *engine);
 
-LLVMValueRef standard_native_expr_emit(author_t *author, MuonNativeExpr *expr)
-  MUON_HINT_SUFFIX(nonnull);
-
-#endif /* MU_STANDARD_I */
+#endif /* MUON_STANDARD_I */

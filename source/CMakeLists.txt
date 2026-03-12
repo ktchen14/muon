@@ -22,6 +22,6 @@ target_sources(muon PRIVATE
   # reductor/reduce.c
 
   # runner.c
-  # standard.c
+  standard.c standard.h
   status.c
 )
