@@ -93,8 +93,14 @@ void (inductor_debug)( //-
       // debug(" [color=blue];\n");
     }
 
-    if (edge.tag == INDIRECT_RULE)
+    _Bool show_indirect = 1;
+    if (edge.tag == INDIRECT_RULE) {
+      if (!show_indirect)
+        continue;
+
+      debug("  Type%zu -> Type%zu [color=gray];\n", edge.source->id, edge.target->id);
       continue;
+    }
 
     debug("  Type%zu -> Type%zu", edge.source->id, edge.target->id);
 

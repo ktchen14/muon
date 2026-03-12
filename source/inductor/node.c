@@ -69,6 +69,20 @@ except:
   return NULL;
 }
 
+void *induce_script(MuonInductor *inductor, MuonScript *script) {
+  if (induce_node(inductor, &script->as_node) == NULL)
+    return NULL;
+
+  for (size_t i = 0; i < inductor->rule_length; i++) {
+    Rule *rule = &inductor->edge[i];
+    if (rule->tag != INDIRECT_RULE)
+      continue;
+    *rule = inductor->edge[--inductor->rule_length];
+    i--;
+  }
+  return inductor;
+}
+
 MUON_HINT(nonnull) static MuonType *access_expr_return(
     Inductor *inductor, MuonAccessExpr *expr) {
   MuonEngine *engine = inductor->engine;

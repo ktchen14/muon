@@ -79,7 +79,7 @@ int main(int argc, char *argv[/* argc */]) {
   if (muon_induce_initialize(&inductor, engine, &detect, module) == NULL)
     assert(0);
 
-  if (induce_node(&inductor, &script->as_node) == NULL)
+  if (induce_script(&inductor, script) == NULL)
     assert(0);
 
   // if (reduce_node(&inductor, &script->as_node) == NULL)

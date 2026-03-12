@@ -44,6 +44,9 @@
 MuonType *induce_node(MuonInductor *inductor, MuonNode *node)
   MUON_HINT_SUFFIX(nonnull);
 
+void *induce_script(MuonInductor *inductor, MuonScript *script)
+  MUON_HINT_SUFFIX(nonnull);
+
 Rule *type_restrain(
     Inductor *inductor, MuonType *source, MuonType *target, MuonNode *reason)
   MUON_HINT_SUFFIX(nonnull(1, 2, 3));
