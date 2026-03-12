@@ -93,16 +93,13 @@ void (inductor_debug)( //-
       // debug(" [color=blue];\n");
     }
 
+    if (edge.tag == INDIRECT_RULE)
+      continue;
+
     debug("  Type%zu -> Type%zu", edge.source->id, edge.target->id);
 
     if (edge.instance_id != 0) {
       debug(" [label=\"%zu\",color=green]", edge.instance_id);
-    } else if (edge.tag == INDIRECT_RULE && edge.center != NULL) {
-      debug(" [style=dashed,constraint=false,label=\"");
-      muon_type_debug(edge.center);
-      debug("\",color=gray]");
-    } else if (edge.tag == INDIRECT_RULE) {
-      debug(" [style=dashed,constraint=false,color=yellow]");
     } else if (edge.tag == ID_RULE) {
       debug(" [color=blue]");
     } else if (edge.tag == IMPOSSIBLE_RULE) {
