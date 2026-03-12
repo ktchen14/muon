@@ -219,6 +219,9 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
     if (origin == result)
       continue;
 
+    if (!is_variable_type(origin))
+      continue;
+
     Rule *rule;
     if (cursor.charge == 0) {
       rule = rule_insert(inductor, origin, result);
