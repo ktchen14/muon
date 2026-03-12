@@ -80,8 +80,10 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
     type_series(cursor)->n = n;
   } while (!attitude_eq(cursor, series));
 
-  struct MuonType *equation[length + 1];
-  for (size_t i = 0; i < length + 1; i++)
+  ++length;
+
+  struct MuonType *equation[length];
+  for (size_t i = 0; i < length; i++)
     equation[i] = NULL;
 
   // Allocate new types
@@ -203,14 +205,12 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
     }
   } while (!attitude_eq(cursor, series));
 
-  while (!attitude_null(type_detach(series)))
-    ;
-
   MuonType *result = map_of(scheme->matter);
   assert(result != NULL);
 
 #undef map_of
 
+  while (!attitude_null(type_detach(series))) {}
   return result;
 }
 
