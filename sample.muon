@@ -1,6 +1,9 @@
 # define id = lambda x = x.foo
 
-define a = unkno
+define id = lambda x = x
+
+define a = id 1
+define b = id true
 
 define test_number = (lambda x = x) :: Integer -> Integer
 
