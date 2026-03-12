@@ -51,6 +51,9 @@ Rule *type_restrain(
     // maintain the target-side transitive closure of τ
     it = rule_iterator(inductor, source, 0);
     for (const Rule *rule; (rule = rule_next(&it)) != NULL;) {
+      if (rule->instance_id != 0)
+        continue;
+
       MuonType *t;
       if (!is_variable_type(t = rule->source))
         continue;
@@ -85,6 +88,9 @@ Rule *type_restrain(
     // maintain the source-side transitive closure of τ
     it = rule_iterator(inductor, target, 1);
     for (const Rule *rule; (rule = rule_next(&it)) != NULL;) {
+      if (rule->instance_id != 0)
+        continue;
+
       MuonType *t;
       if (!is_variable_type(t = rule->target))
         continue;
@@ -129,6 +135,9 @@ Rule *type_restrain(
     // transitive closure of α
     it = rule_iterator(inductor, source, 0);
     for (const Rule *rule; (rule = rule_next(&it)) != NULL;) {
+      if (rule->instance_id != 0)
+        continue;
+
       MuonType *a = rule->source;
 
       Rule *next;
@@ -146,6 +155,9 @@ Rule *type_restrain(
     // transitive closure of β
     jt = rule_iterator(inductor, target, 1);
     for (const Rule *rule; (rule = rule_next(&jt)) != NULL;) {
+      if (rule->instance_id != 0)
+        continue;
+
       MuonType *b = rule->target;
 
       Rule *next;
@@ -188,11 +200,12 @@ Rule *type_restrain(
     if ((instance = scheme_instance(inductor, scheme_type)) == NULL)
       return NULL;
 
-    Rule *rule;
-    if ((rule = rule_insert(inductor, source, instance)) == NULL)
-      return NULL;
-    rule->tag = INDIRECT_RULE;
-    rule->reason = reason;
+    // Rule *rule;
+    // if ((rule = rule_insert(inductor, source, instance)) == NULL)
+    //   return NULL;
+    // rule->tag = INDIRECT_RULE;
+    // rule->instance_id = inductor->instance_id - 1;
+    // rule->reason = reason;
 
     if (type_restrain(inductor, instance, target, reason) == NULL)
       return NULL;

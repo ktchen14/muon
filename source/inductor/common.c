@@ -95,11 +95,14 @@ void (inductor_debug)( //-
 
     debug("  Type%zu -> Type%zu", edge.source->id, edge.target->id);
 
-    if (edge.tag == INDIRECT_RULE) {
+    if (edge.tag == INDIRECT_RULE && edge.center != NULL) {
       debug(" [style=dashed,constraint=false,label=\"");
-      if (edge.center != NULL)
-        (muon_type_debug)(edge.center, args);
-      debug("\"]");
+      muon_type_debug(edge.center);
+      debug("\",color=gray]");
+    } else if (edge.tag == INDIRECT_RULE && edge.instance_id != 0) {
+      debug(" [style=dashed,label=\"%zu\",color=green]", edge.instance_id);
+    } else if (edge.tag == INDIRECT_RULE) {
+      debug(" [style=dashed,constraint=false,color=yellow]");
     } else if (edge.tag == ID_RULE) {
       debug(" [color=blue]");
     } else if (edge.tag == IMPOSSIBLE_RULE) {

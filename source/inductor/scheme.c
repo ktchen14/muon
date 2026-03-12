@@ -192,6 +192,9 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
 
     for (size_t j = 0; j < universe_snapshot; j++) {
       Rule *edge = &inductor->edge[j];
+      if (edge->instance_id != 0)
+        continue;
+
       if (edge->source != origin && edge->target != origin)
         continue;
 
@@ -202,6 +205,29 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
         continue;
       if (rule_insert(inductor, new_source, new_target) == NULL)
         return NULL;
+    }
+  } while (!attitude_eq(cursor, series));
+
+  do {
+    cursor = type_next1(cursor);
+
+    MuonType *origin = cursor.type;
+
+    struct MuonType *result = equation[type_series(cursor)->n];
+    assert(result != NULL);
+
+    if (origin == result)
+      continue;
+
+    Rule *rule;
+    if (cursor.charge == 0) {
+      rule = rule_insert(inductor, origin, result);
+      rule->tag = INDIRECT_RULE;
+      rule->instance_id = instance_id;
+    } else {
+      rule = rule_insert(inductor, result, origin);
+      rule->tag = INDIRECT_RULE;
+      rule->instance_id = instance_id;
     }
   } while (!attitude_eq(cursor, series));
 
