@@ -19,15 +19,21 @@ MuonModule *muon_standard_module(MuonEngine *engine) {
     return NULL;
 
   MuonName *name;
-  if ((name = muon_name(engine, strlen("is_nonzero"), "is_nonzero")) == NULL)
+  if ((name = muon_name(engine, strlen("is_integer"), "is_integer")) == NULL)
     return NULL;
 
-  MuonExport *is_nonzero;
-  if ((is_nonzero = muon_export(engine, name, &lambda_type->as_type)) == NULL)
+  MuonExport *is_integer;
+  if ((is_integer = muon_export(engine, name, &lambda_type->as_type)) == NULL)
     return NULL;
+
+  MuonExport *is_boolean;
+  is_boolean = muon_export(
+      engine,
+      muon_name(engine, strlen("is_boolean"), "is_boolean"),
+      &muon_lambda_type(engine, &boolean_type->as_type, &boolean_type->as_type)->as_type);
 
   MuonModule *result;
-  if ((result = muon_module(engine, 1, (MuonExport *[]) {is_nonzero})) == NULL)
+  if ((result = muon_module(engine, 2, (MuonExport *[]) {is_integer, is_boolean})) == NULL)
     return NULL;
   return result;
 }

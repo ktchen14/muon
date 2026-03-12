@@ -43,9 +43,12 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
   do {
     Attitude next;
     while (!attitude_null(next = type_scan3(inductor, cursor))) {
+      // Skip the type if it's been accessed
       if (type_cursor(next)->type != NULL || type_cursor(next)->i != 0)
         continue;
 
+      // Skip the type unless the scheme is, or is an ancestor of, the type's
+      // scheme
       MuonSchemeType *next_scheme = next.type->scheme;
       do {
         if (next_scheme == scheme)
@@ -80,6 +83,7 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
 #define map_of(type, charge) __extension__ ({ \
   MuonType *_type = (type); \
   size_t _n = type_series((Attitude){_type, charge})->n; \
+  assert(_n < length); \
   if (_n < length && equation[_n] != NULL) \
     _type = equation[_n]; \
   _type; \
