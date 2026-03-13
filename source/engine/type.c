@@ -401,7 +401,7 @@ void (muon_type_debug)(MuonType *type, struct MuonTypeDebugArgs args) { //-
       break;
 
     case IS_CONCRETE_TYPE(MuonSchemeType *scheme_type)
-      debug("[%zu] ", scheme_type->as_type.id);
+      debug("§%zu ", scheme_type->as_type.id);
       debug("(");
       next_args.strength = 0;
       (muon_type_debug)(scheme_type->matter, next_args);
