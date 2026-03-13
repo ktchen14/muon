@@ -41,7 +41,7 @@ TypeEquation *type_equate(
     size_t unit = sizeof(struct TypeCouple[2]);
 
     size_t size = equation->volume;
-    if (rare((struct_size_overflow)(nought, offset, unit, &size)))
+    if (rare((struct_size_overflow)(nought, offset, unit, &size))) //-
       return errno = ENOMEM, NULL;
 
     TypeEquation *resize;
@@ -56,7 +56,8 @@ TypeEquation *type_equate(
   return equation;
 }
 
-struct MuonType *type_allocation(const TypeEquation *equation, MuonType *origin) {
+struct MuonType *type_allocation(
+    const TypeEquation *equation, MuonType *origin) {
   for (size_t i = 0; i < equation->length; i++) {
     if (equation->data[i].origin == origin)
       return equation->data[i].allocation;
@@ -119,7 +120,9 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
       if (!found)
         goto next;
 
-      if (type_cursor(next)->type != NULL || type_cursor(next)->i != 0)
+      struct TypeCursor *next_cursor = type_cursor(next);
+      Attitude next_attitude = attitude_decode(next_cursor->attitude);
+      if (!attitude_isnull(next_attitude) || next_cursor->i != 0)
         continue;
 
       cursor = type_continue(cursor, next);
@@ -136,7 +139,7 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
 
   cursor = series;
   do {
-    cursor = type_next1(cursor);
+    cursor = type_next(cursor);
 
     size_t n;
     if ((n = type_series(attitude_invert(cursor))->n) == 0)
@@ -152,7 +155,7 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
 
   // Allocate new types
   do {
-    cursor = type_next1(cursor);
+    cursor = type_next(cursor);
 
     if (equation[type_series(cursor)->n] != NULL)
       continue;
@@ -174,7 +177,7 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
 })
 
   do {
-    cursor = type_next1(cursor);
+    cursor = type_next(cursor);
 
     MuonType *origin = cursor.type;
 
@@ -248,7 +251,7 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
 
   size_t universe_snapshot = inductor->rule_length;
   do {
-    cursor = type_next1(cursor);
+    cursor = type_next(cursor);
 
     if (cursor.type->tag != MUON_VARIABLE_TYPE)
       continue;
@@ -283,7 +286,7 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
   } while (!attitude_eq(cursor, series));
 
   do {
-    cursor = type_next1(cursor);
+    cursor = type_next(cursor);
 
     if (!is_variable_type(cursor.type))
       continue;

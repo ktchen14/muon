@@ -18,7 +18,7 @@ typedef struct {
 typedef uintptr_t AttitudeCode;
 
 [[gnu::const]] static inline AttitudeCode attitude_encode(Attitude attitude) {
-  assert((AttitudeCode) attitude.type & 1 == 0);
+  assert(((AttitudeCode) attitude.type & 1) == 0);
   return (AttitudeCode) attitude.type | attitude.charge;
 }
 
@@ -75,28 +75,28 @@ static inline TypeHeader *type_header(MuonType *type) {
 #pragma GCC diagnostic pop
 }
 
-/// Return the @a charge cursor of the @a type
+/// Return the cursor of the @a attitude
 [[gnu::const, gnu::returns_nonnull]]
 static inline struct TypeCursor *type_cursor(Attitude attitude) {
   return &type_header(attitude.type)->cursor[attitude.charge];
 }
 
-/// Continue into the type
+/// Continue into the @a attitude
 static inline Attitude type_continue(Attitude origin, Attitude next) {
   struct TypeCursor *cursor = type_cursor(next);
-  assert(cursor->type == NULL && cursor->charge == 0 && cursor->i == 0);
-  cursor->charge = origin.charge;
-  return cursor->type = origin.type, next;
+  Attitude attitude = attitude_decode(cursor->attitude);
+  assert(attitude_isnull(attitude) && cursor->i == 0);
+  return cursor->attitude = attitude_encode(origin), next;
 }
 
-/// Return from the type
+/// Return from the @a attitude
 static inline Attitude type_return(Attitude origin) {
   struct TypeCursor *cursor = type_cursor(origin);
-  origin = (Attitude) {cursor->type, cursor->charge};
+  origin = attitude_decode(cursor->attitude);
   return *cursor = (struct TypeCursor) {}, origin;
 }
 
-/// Return the @a charge series of the @a type
+/// Return the series of the @a attitude
 MUON_HINT(const, returns_nonnull)
 static inline struct TypeSeries *type_series(Attitude attitude) {
   return &type_header(attitude.type)->series[attitude.charge];
@@ -104,37 +104,30 @@ static inline struct TypeSeries *type_series(Attitude attitude) {
 
 static inline Attitude type_attach(Attitude origin, Attitude next) {
   struct TypeSeries *series = type_series(next);
-  assert(series->next == NULL && series->charge == 0 && series->n == 0);
+  Attitude attitude = attitude_decode(series->attitude);
+  assert(attitude_isnull(attitude) && series->n == 0);
 
-  if (attitude_isnull(origin)) {
-    series->charge = next.charge;
-    series->next = next.type;
-    return next;
-  }
+  if (attitude_isnull(origin))
+    return series->attitude = attitude_encode(next), next;
 
   series = type_series(origin);
-  assert(series->next != NULL);
-  type_series(next)->next = series->next;
-  type_series(next)->charge = series->charge;
-  series->charge = next.charge;
-  series->next = next.type;
-  return next;
+  assert(!attitude_isnull(attitude_decode(series->attitude)));
+  type_series(next)->attitude = series->attitude;
+  return series->attitude = attitude_encode(next), next;
 }
 
 static inline Attitude type_detach(Attitude origin) {
   struct TypeSeries *series = type_series(origin);
-  Attitude next;
-  if (attitude_isnull(next = (Attitude) {series->next, series->charge}))
+  Attitude next = attitude_decode(series->attitude);
+  if (attitude_isnull(next))
     return next;
   series = type_series(next);
-  type_series(origin)->next = series->next;
-  type_series(origin)->charge = series->charge;
+  type_series(origin)->attitude = series->attitude;
   return *series = (struct TypeSeries) {}, next;
 }
 
-static inline Attitude type_next1(Attitude origin) {
-  struct TypeSeries *series = type_series(origin);
-  return (Attitude) {series->next, series->charge};
+static inline Attitude type_next(Attitude origin) {
+  return attitude_decode(type_series(origin)->attitude);
 }
 
 /// Return whether the @a type is a variable type
