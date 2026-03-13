@@ -415,7 +415,8 @@ void (muon_type_debug)(MuonType *type, struct MuonTypeDebugArgs args) { //-
       break;
 
     case IS_CONCRETE_TYPE(MuonVariableType *variable_type) {
-      debug_variable_type_name(variable_type);
+      debug("V%zu", variable_type->as_type.id);
+      // debug_variable_type_name(variable_type);
 
       MuonSchemeType *scheme_type;
       if ((scheme_type = variable_type->as_type.scheme) != NULL)

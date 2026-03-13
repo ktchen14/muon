@@ -203,8 +203,11 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
 
       if (rule_search(inductor, new_source, new_target) != NULL)
         continue;
-      if (rule_insert(inductor, new_source, new_target) == NULL)
+
+      Rule *rule;
+      if ((rule = rule_insert(inductor, new_source, new_target)) == NULL)
         return NULL;
+      rule->tag = edge->tag;
     }
   } while (!attitude_eq(cursor, series));
 
