@@ -20,8 +20,7 @@
 }
 
 [[gnu::nonnull]] static inline RuleIterator rule_iterator(
-    const Inductor *inductor, MuonType *type, _Bool charge) {
-  Attitude attitude = {type, charge};
+    const Inductor *inductor, Attitude attitude) {
   return (RuleIterator) {.inductor = inductor, .attitude = attitude};
 }
 
@@ -90,7 +89,8 @@ static Rule *rule_insert(
 
 /// Return the type of the @a node in the @a inductor
 MUON_HINT(nonnull, pure, returns_nonnull)
-static inline MuonType *node_source_type(const Inductor *inductor, MuonNode *node) {
+static inline MuonType *node_source_type(
+    const Inductor *inductor, MuonNode *node) {
   assert(node->engine == inductor->engine);
   MuonType *result = inductor->node[node->id].source;
   return assert(result != NULL), result;
@@ -98,7 +98,8 @@ static inline MuonType *node_source_type(const Inductor *inductor, MuonNode *nod
 
 /// Return the type of the @a node in the @a inductor
 MUON_HINT(nonnull, pure)
-static inline MuonType *node_target_type(const Inductor *inductor, MuonNode *node) {
+static inline MuonType *node_target_type(
+    const Inductor *inductor, MuonNode *node) {
   assert(node->engine == inductor->engine);
   return inductor->node[node->id].target;
 }

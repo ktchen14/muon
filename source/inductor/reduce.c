@@ -1,7 +1,7 @@
+#include "reduce.h"
 #include "../engine.h"
 #include "common.h"
 #include "induce.h"
-#include "reduce.h"
 
 #include <assert.h>
 #include <errno.h>
@@ -34,7 +34,7 @@ MuonType *reduce_type(Inductor *inductor, Attitude attitude);
  */
 void *redirect_source(Inductor *inductor, Rule *origin, MuonType *center) {
   MuonType *source = origin->source;
-  RuleIterator it = rule_iterator(inductor, origin->target, 1);
+  RuleIterator it = rule_iterator(inductor, (Attitude) {origin->target, 1});
 
   // Jump into the loop with τ = v
   Rule *next = origin;
@@ -74,14 +74,15 @@ MuonType *reduce_type_to_join(Inductor *inductor, MuonVariableType *target) {
   RuleIterator it;
 
   // Reduce each type that's a source to this type
-  it = rule_iterator(inductor, &target->as_type, 0);
+  it = rule_iterator(inductor, (Attitude) {&target->as_type, 0});
   for (Rule *rule; (rule = rule_next(&it)) != NULL;) {
     if (rule->tag == INDIRECT_RULE)
       continue;
 
     // Otherwise, reduce it. Then add its join length to length.
     MuonType *solution;
-    if ((solution = reduce_type(inductor, (Attitude) {rule->source, 0})) == NULL)
+    if ((solution = reduce_type(inductor, (Attitude) {rule->source, 0}))
+        == NULL)
       return NULL;
 
     MuonJoinType *join_type;
@@ -105,7 +106,7 @@ MuonType *reduce_type_to_join(Inductor *inductor, MuonVariableType *target) {
   Rule *single_edge;
   MuonType *single_a;
   argc = 0;
-  it = rule_iterator(inductor, &target->as_type, 0);
+  it = rule_iterator(inductor, (Attitude) {&target->as_type, 0});
   for (Rule *a_edge; (a_edge = rule_next(&it)) != NULL;) {
     if (a_edge->tag == INDIRECT_RULE)
       continue;
@@ -182,7 +183,7 @@ MuonType *reduce_type_to_join(Inductor *inductor, MuonVariableType *target) {
     return NULL;
   argc = 0;
 
-  it = rule_iterator(inductor, &target->as_type, 0);
+  it = rule_iterator(inductor, (Attitude) {&target->as_type, 0});
   for (Rule *edge; (edge = rule_next(&it)) != NULL;) {
     if (edge->tag == INDIRECT_RULE)
       continue;
@@ -193,8 +194,7 @@ MuonType *reduce_type_to_join(Inductor *inductor, MuonVariableType *target) {
     allocation->argv[argc] = source;
 
     Rule *rule;
-    if ((rule = edge_define(inductor, source, &allocation->as_type))
-        == NULL)
+    if ((rule = edge_define(inductor, source, &allocation->as_type)) == NULL)
       return NULL;
     rule->tag = JOIN_RULE;
     rule->i = argc++;
@@ -285,7 +285,7 @@ Aspect *varaspect0(Inductor *inductor, MuonVariableType *variable_type) {
   //
   // Determine the length of the join to allocate as the number of remaining
   // types that aren't variable types and are sources to the variable type.
-  it = rule_iterator(inductor, &variable_type->as_type, 0);
+  it = rule_iterator(inductor, (Attitude) {&variable_type->as_type, 0});
   for (Rule *a_edge; (a_edge = rule_next(&it)) != NULL;) {
     if (a_edge->tag == INDIRECT_RULE)
       continue;
@@ -343,7 +343,7 @@ Aspect *varaspect0(Inductor *inductor, MuonVariableType *variable_type) {
 
   argc = 0;
 
-  it = rule_iterator(inductor, &variable_type->as_type, 0);
+  it = rule_iterator(inductor, (Attitude) {&variable_type->as_type, 0});
   for (Rule *edge; (edge = rule_next(&it)) != NULL;) {
     if (edge->tag == INDIRECT_RULE)
       continue;
@@ -355,7 +355,8 @@ Aspect *varaspect0(Inductor *inductor, MuonVariableType *variable_type) {
 
   return allocation;
 
-  // return assign_solution(inductor, &variable_type->as_type, &join_type->as_type);
+  // return assign_solution(inductor, &variable_type->as_type,
+  // &join_type->as_type);
 }
 
 MuonType *reduce_node(Inductor *inductor, MuonNode *root) {
