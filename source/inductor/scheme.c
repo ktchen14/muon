@@ -107,7 +107,7 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
   Attitude cursor = {scheme->matter, 0};
   do {
     Attitude next;
-    while (!attitude_null(next = type_scan3(inductor, cursor))) {
+    while (!attitude_isnull(next = type_scan3(inductor, cursor))) {
       _Bool found = 0;
       for (MuonSchemeType *s = next.type->scheme; s != NULL;
           s = s->as_type.scheme) {
@@ -128,7 +128,7 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
 
     cursor = type_return(next = cursor);
     series = type_attach(series, next);
-  } while (!attitude_null(cursor));
+  } while (!attitude_isnull(cursor));
 
   // Assign a new offset to each type to duplicate. Calculate the total length
   // we need.
@@ -307,7 +307,7 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
 
 #undef map_of
 
-  while (!attitude_null(type_detach(series))) {}
+  while (!attitude_isnull(type_detach(series))) {}
   return result;
 }
 

@@ -8,38 +8,50 @@
 #include <assert.h>
 #include <limits.h>
 #include <stddef.h>
+#include <stdint.h>
 
-/// Emit a case within a switch ON_ABSTRACT_OBJECT()
-#define IS_CONCRETE_TYPE(...) \
-  MUON_TYPE_TAG(typeof(&(union { __VA_ARGS__, _; }) {}._)): \
-    __VA_ARGS__ = abstract_object;
+/// A type and charge
+typedef struct {
+  MuonType *type; _Bool charge; //-
+} Attitude;
+
+typedef uintptr_t AttitudeCode;
+
+[[gnu::const]] static inline AttitudeCode attitude_encode(Attitude attitude) {
+  assert((AttitudeCode) attitude.type & 1 == 0);
+  return (AttitudeCode) attitude.type | attitude.charge;
+}
+
+[[gnu::const]] static inline Attitude attitude_decode(AttitudeCode attitude) {
+  return (Attitude) {(MuonType *) (attitude & ~(uintptr_t) 1), attitude & 1};
+}
+
+/// Return whether attitude @a a is equivalent to attitude @a b
+[[gnu::const]] static inline _Bool attitude_eq(Attitude a, Attitude b) {
+  return a.type == b.type && a.charge == b.charge;
+}
+
+/// Return whether the @a attitude is null
+[[gnu::const]] static inline _Bool attitude_isnull(Attitude attitude) {
+  return attitude_eq(attitude, (Attitude) {});
+}
+
+/// Return @a attitude with the same type and opposite charge
+[[gnu::const]] static inline Attitude attitude_invert(Attitude attitude) {
+  return (Attitude) {attitude.type, !attitude.charge};
+}
 
 typedef struct {
   union {
     /// @internal Used to traverse a type tree
     struct TypeCursor {
-      /// Type to return to
-      MuonType *type;
-
-      /// Charge of the anterior @c type
-      size_t charge : 1;
-
-      /// Used to record the iteration index to return to
-      size_t i : sizeof(size_t) * CHAR_BIT - 1;
+      AttitudeCode attitude; size_t i; //-
     } cursor[2];
 
     /// @internal Used to assemble a type list
     struct TypeSeries {
-      /// Next type in the series
-      MuonType *next;
-
-      /// Charge of the @a next type
-      size_t charge : 1;
-
-      size_t n : sizeof(size_t) * CHAR_BIT - 1;
+      AttitudeCode attitude; size_t n; //-
     } series[2];
-
-    static_assert(sizeof(struct TypeCursor) == sizeof(struct TypeSeries));
   };
 
   _Alignas(union {
@@ -49,21 +61,10 @@ typedef struct {
   }) struct MuonType type[];
 } TypeHeader;
 
-typedef struct {
-  MuonType *type; _Bool charge; //-
-} Attitude;
-
-[[gnu::const]] static inline _Bool attitude_eq(Attitude a, Attitude b) {
-  return a.type == b.type && a.charge == b.charge;
-}
-
-[[gnu::const]] static inline _Bool attitude_null(Attitude attitude) {
-  return attitude_eq(attitude, (Attitude) {});
-}
-
-[[gnu::const]] static inline Attitude attitude_invert(Attitude attitude) {
-  return (Attitude) {attitude.type, !attitude.charge};
-}
+/// Emit a case within a switch ON_ABSTRACT_OBJECT()
+#define IS_CONCRETE_TYPE(...) \
+  MUON_TYPE_TAG(typeof(&(union { __VA_ARGS__, _; }) {}._)): \
+    __VA_ARGS__ = abstract_object;
 
 [[gnu::const, gnu::nonnull, gnu::returns_nonnull]]
 static inline TypeHeader *type_header(MuonType *type) {
@@ -105,7 +106,7 @@ static inline Attitude type_attach(Attitude origin, Attitude next) {
   struct TypeSeries *series = type_series(next);
   assert(series->next == NULL && series->charge == 0 && series->n == 0);
 
-  if (attitude_null(origin)) {
+  if (attitude_isnull(origin)) {
     series->charge = next.charge;
     series->next = next.type;
     return next;
@@ -123,7 +124,7 @@ static inline Attitude type_attach(Attitude origin, Attitude next) {
 static inline Attitude type_detach(Attitude origin) {
   struct TypeSeries *series = type_series(origin);
   Attitude next;
-  if (attitude_null(next = (Attitude) {series->next, series->charge}))
+  if (attitude_isnull(next = (Attitude) {series->next, series->charge}))
     return next;
   series = type_series(next);
   type_series(origin)->next = series->next;
