@@ -82,8 +82,14 @@ static inline Attitude type_next2_i(
 
   for (size_t i; (i = (*ip)++) < inductor->rule_length;) {
     const Rule *edge = &inductor->edge[i];
-    if (edge->vertex[!origin.charge] == origin.type)
-      return (Attitude) {edge->vertex[origin.charge], origin.charge};
+    Attitude source = attitude_decode(edge->source);
+    Attitude target = attitude_decode(edge->target);
+
+    if (source.type == origin.type && source.charge == origin.charge)
+      return target;
+
+    if (target.type == origin.type && target.charge == origin.charge)
+      return source;
   }
 
   return (Attitude) {};
@@ -258,18 +264,25 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
 
     for (size_t i = 0; i < universe_snapshot; i++) {
       Rule *edge = &inductor->edge[i];
+      Attitude edge_source = attitude_decode(edge->source);
+      Attitude edge_target = attitude_decode(edge->target);
 
       if (edge->instance_scheme == scheme)
         continue;
 
-      if (edge->vertex[!cursor.charge] != cursor.type)
+      if (edge_source.type != cursor.type && edge_target.type != cursor.type)
         continue;
 
-      if (edge->charge[!cursor.charge] != cursor.charge)
+      if (edge_source.type == cursor.type
+          && edge_source.charge != cursor.charge)
         continue;
 
-      MuonType *source = map_of(edge->source);
-      MuonType *target = map_of(edge->target);
+      if (edge_target.type == cursor.type
+          && edge_target.charge != cursor.charge)
+        continue;
+
+      MuonType *source = map_of(edge_source.type);
+      MuonType *target = map_of(edge_target.type);
 
       if (rule_search(inductor, source, target) != NULL)
         continue;
@@ -278,8 +291,8 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
       if ((rule = rule_insert(inductor, source, target)) == NULL)
         return NULL;
       rule->tag = edge->tag;
-      rule->source_charge = edge->source_charge;
-      rule->target_charge = edge->target_charge;
+      rule->source = attitude_encode((Attitude) {source, edge_source.charge});
+      rule->target = attitude_encode((Attitude) {target, edge_target.charge});
       rule->instance_scheme = edge->instance_scheme;
       rule->instance_id = edge->instance_id;
     }
@@ -301,8 +314,10 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
 
     rule->instance_scheme = scheme;
     rule->instance_id = instance_id;
-    rule->source_charge = !cursor.charge;
-    rule->target_charge = !cursor.charge;
+    rule->source = attitude_encode(
+        (Attitude) {attitude_decode(rule->source).type, !cursor.charge});
+    rule->target = attitude_encode(
+        (Attitude) {attitude_decode(rule->target).type, !cursor.charge});
   } while (!attitude_eq(cursor, series));
 
   MuonType *result = map_of(scheme->matter);

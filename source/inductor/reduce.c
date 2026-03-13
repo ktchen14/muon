@@ -33,8 +33,9 @@ MuonType *reduce_type(Inductor *inductor, Attitude attitude);
  * should be α ⇝ β.
  */
 void *redirect_source(Inductor *inductor, Rule *origin, MuonType *center) {
-  MuonType *source = origin->source;
-  RuleIterator it = rule_iterator(inductor, (Attitude) {origin->target, 1});
+  MuonType *source = attitude_decode(origin->source).type;
+  MuonType *target = attitude_decode(origin->target).type;
+  RuleIterator it = rule_iterator(inductor, (Attitude) {target, 1});
 
   // Jump into the loop with τ = v
   Rule *next = origin;
@@ -42,11 +43,12 @@ void *redirect_source(Inductor *inductor, Rule *origin, MuonType *center) {
 
   // ∀⟨v ⇒ τ⟩ | τ is a variable type
   for (Rule *direct; (next = rule_next(&it)) != NULL;) {
-    if (next->target->tag != MUON_VARIABLE_TYPE)
+    MuonType *next_target = attitude_decode(next->target).type;
+    if (next_target->tag != MUON_VARIABLE_TYPE)
       continue;
 
     // Locate ⟨α ⇒ τ⟩
-    origin = rule_search(inductor, source, next->target);
+    origin = rule_search(inductor, source, next_target);
     assert(origin != NULL);
 
   entrance:
@@ -54,7 +56,7 @@ void *redirect_source(Inductor *inductor, Rule *origin, MuonType *center) {
       continue;
 
     // Locate ⟨β ⇒ τ⟩
-    direct = rule_search(inductor, center, next->target);
+    direct = rule_search(inductor, center, next_target);
     assert(direct != NULL);
 
     origin->tag = INDIRECT_RULE;
@@ -81,7 +83,8 @@ MuonType *reduce_type_to_join(Inductor *inductor, MuonVariableType *target) {
 
     // Otherwise, reduce it. Then add its join length to length.
     MuonType *solution;
-    if ((solution = reduce_type(inductor, (Attitude) {rule->source, 0}))
+    if ((solution = reduce_type(
+             inductor, (Attitude) {attitude_decode(rule->source).type, 0}))
         == NULL)
       return NULL;
 
@@ -110,14 +113,15 @@ MuonType *reduce_type_to_join(Inductor *inductor, MuonVariableType *target) {
   for (Rule *a_edge; (a_edge = rule_next(&it)) != NULL;) {
     if (a_edge->tag == INDIRECT_RULE)
       continue;
-    MuonType *a = type_solution(inductor, a_edge->source);
+    MuonType *a = type_solution(inductor, attitude_decode(a_edge->source).type);
     assert(a != NULL);
 
     RuleIterator jt = it;
     for (Rule *b_edge; (b_edge = rule_next(&jt)) != NULL;) {
       if (b_edge->tag == INDIRECT_RULE)
         continue;
-      MuonType *b = type_solution(inductor, b_edge->source);
+      MuonType *b = type_solution(
+          inductor, attitude_decode(b_edge->source).type);
       assert(b != NULL);
 
       // If we have b ⇝ a, then assign b ⇝ a ⇝ v to ⟨b ⇒ v⟩ and skip this b
@@ -188,7 +192,8 @@ MuonType *reduce_type_to_join(Inductor *inductor, MuonVariableType *target) {
     if (edge->tag == INDIRECT_RULE)
       continue;
 
-    MuonType *source = type_solution(inductor, edge->source);
+    MuonType *source = type_solution(
+        inductor, attitude_decode(edge->source).type);
     assert(source != NULL);
 
     allocation->argv[argc] = source;
@@ -273,7 +278,6 @@ MuonType *reduce_type(Inductor *inductor, Attitude attitude) {
 }
 
 Aspect *varaspect0(Inductor *inductor, MuonVariableType *variable_type) {
-  Attitude attitude = {&variable_type->as_type, 0};
   RuleIterator it;
 
   size_t argc = 0;
@@ -291,7 +295,7 @@ Aspect *varaspect0(Inductor *inductor, MuonVariableType *variable_type) {
       continue;
     if (a_edge->instance_id != 0)
       continue;
-    MuonType *a = type_solution(inductor, a_edge->source);
+    MuonType *a = type_solution(inductor, attitude_decode(a_edge->source).type);
     assert(a != NULL);
 
     RuleIterator jt = it;
@@ -300,7 +304,8 @@ Aspect *varaspect0(Inductor *inductor, MuonVariableType *variable_type) {
         continue;
       if (b_edge->instance_id != 0)
         continue;
-      MuonType *b = type_solution(inductor, b_edge->source);
+      MuonType *b = type_solution(
+          inductor, attitude_decode(b_edge->source).type);
       assert(b != NULL);
 
       // If we have b ⇝ a, then assign b ⇝ a ⇝ v to ⟨b ⇒ v⟩ and skip this b
@@ -349,7 +354,7 @@ Aspect *varaspect0(Inductor *inductor, MuonVariableType *variable_type) {
       continue;
     if (edge->tag == IMPOSSIBLE_RULE)
       continue;
-    allocation->argv[argc++] = edge->target;
+    allocation->argv[argc++] = attitude_decode(edge->target).type;
   }
   assert(argc <= allocation->argc);
 

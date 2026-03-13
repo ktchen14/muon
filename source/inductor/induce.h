@@ -13,7 +13,8 @@
     const Inductor *inductor, MuonType *source, MuonType *target) {
   for (size_t i = 0; i < inductor->rule_length; i++) {
     Rule *edge = &inductor->edge[i];
-    if (edge->source == source && edge->target == target)
+    if (attitude_decode(edge->source).type == source
+        && attitude_decode(edge->target).type == target)
       return edge;
   }
   return NULL;
@@ -27,7 +28,8 @@
 [[gnu::nonnull]] static inline Rule *rule_next(RuleIterator *it) {
   for (size_t i; (i = it->i++) < it->inductor->rule_length;) {
     Rule *edge = &it->inductor->edge[i];
-    if (edge->vertex[!it->attitude.charge] == it->attitude.type)
+    if (attitude_decode(edge->endpoint[!it->attitude.charge]).type
+        == it->attitude.type)
       return edge;
   }
 
@@ -73,9 +75,10 @@ static Rule *rule_insert(
   }
 
   Rule *result = &inductor->edge[inductor->rule_length++];
-  *result = (Rule) {.source = source, .target = target};
-  result->target_charge = 0;
-  result->source_charge = 1;
+  *result = (Rule) {
+    .source = attitude_encode((Attitude) {source, 1}),
+    .target = attitude_encode((Attitude) {target, 0}),
+  };
   return result;
 }
 

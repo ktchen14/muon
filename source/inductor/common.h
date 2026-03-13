@@ -24,19 +24,11 @@ typedef enum {
 typedef struct {
   union {
     MUON_HINT(packed) struct {
-      MuonType *source;
-      MuonType *target;
+      AttitudeCode source;
+      AttitudeCode target;
     };
 
-    MuonType *vertex[2];
-  };
-
-  union {
-    MUON_HINT(packed) struct {
-      _Bool source_charge;
-      _Bool target_charge;
-    };
-    _Bool charge[2];
+    AttitudeCode endpoint[2];
   };
 
   RuleTag tag;

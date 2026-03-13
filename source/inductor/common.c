@@ -64,13 +64,15 @@ void (inductor_debug)( //-
 
   for (size_t i = 0; i < inductor->rule_length; i++) {
     Rule edge = inductor->edge[i];
+    Attitude source = attitude_decode(edge.source);
+    Attitude target = attitude_decode(edge.target);
 
-    debug("  Type%zu [label=\"", edge.source->id);
-    (muon_type_debug)(edge.source, args);
+    debug("  Type%zu [label=\"", source.type->id);
+    (muon_type_debug)(source.type, args);
     debug("\"];\n");
 
-    debug("  Type%zu [label=\"", edge.target->id);
-    (muon_type_debug)(edge.target, args);
+    debug("  Type%zu [label=\"", target.type->id);
+    (muon_type_debug)(target.type, args);
     debug("\"];\n");
 
     _Bool show_indirect = 1;
@@ -79,27 +81,30 @@ void (inductor_debug)( //-
         continue;
 
       // MuonCoreType *c;
-      // if ((c = muon_type_cast(edge.target, c)) == NULL)
+      // if ((c = muon_type_cast(target.type, c)) == NULL)
       //   continue;
       // if (c->core != as_engine(c->as_stator.engine)->boolean_core)
       //   continue;
 
-      debug("  Type%zu -> Type%zu [constraint=false,color=gray];\n", edge.source->id, edge.target->id);
+      debug(
+          "  Type%zu -> Type%zu [constraint=false,color=gray];\n",
+          source.type->id,
+          target.type->id);
       continue;
     }
 
-    debug("  Type%zu -> Type%zu", edge.source->id, edge.target->id);
+    debug("  Type%zu -> Type%zu", source.type->id, target.type->id);
 
     // With rankdir=BT, Graphviz flips the digraph so s refers to the top of a
     // node while n refers to the bottom of a node.
     const char *attr;
-    if (edge.source_charge == 1 && edge.target_charge == 0)
+    if (source.charge == 1 && target.charge == 0)
       attr = "tailport=s,headport=n";
-    else if (edge.source_charge == 0 && edge.target_charge == 1)
+    else if (source.charge == 0 && target.charge == 1)
       attr = "tailport=n,headport=s";
-    else if (edge.source_charge == 1 && edge.target_charge == 1)
+    else if (source.charge == 1 && target.charge == 1)
       attr = "tailport=s,headport=s";
-    else if (edge.source_charge == 0 && edge.target_charge == 0)
+    else if (source.charge == 0 && target.charge == 0)
       attr = "tailport=n,headport=n";
 
     if (edge.instance_id != 0) {
@@ -107,12 +112,12 @@ void (inductor_debug)( //-
 
       debug("  {\n");
       debug("    rank=same;\n");
-      debug("    Type%zu [label=\"", edge.source->id);
-      (muon_type_debug)(edge.source, args);
+      debug("    Type%zu [label=\"", source.type->id);
+      (muon_type_debug)(source.type, args);
       debug("\"];\n");
 
-      debug("    Type%zu [label=\"", edge.target->id);
-      (muon_type_debug)(edge.target, args);
+      debug("    Type%zu [label=\"", target.type->id);
+      (muon_type_debug)(target.type, args);
       debug("\"];\n");
       debug("  }\n");
       continue;
