@@ -415,13 +415,6 @@ void (muon_type_debug)(MuonType *type, struct MuonTypeDebugArgs args) { //-
       MuonSchemeType *scheme_type;
       if ((scheme_type = variable_type->as_type.scheme) != NULL)
         debug(":%zu", scheme_type->as_type.id);
-
-      if (!args.origin || variable_type->origin == NULL)
-        break;
-
-      debug(" ← ");
-      next_args.origin = 0;
-      (muon_type_debug)(variable_type->origin, next_args);
     }
   }
 }

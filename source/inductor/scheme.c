@@ -175,8 +175,6 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
         struct MuonVariableType *allocation =
             (struct MuonVariableType *) result;
 
-        allocation->origin = origin;
-
         if (variable_type_activate(allocation) == NULL)
           return NULL;
         break;

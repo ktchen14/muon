@@ -71,8 +71,6 @@ typedef const struct MuonSchemeType {
 
 typedef const struct MuonVariableType {
   MUON_TYPE_HEADER;
-
-  MuonType *origin;
 } MuonVariableType;
 
 /// @internal Used to emit each branch in MUON_TYPE_TAG()
@@ -135,8 +133,6 @@ MuonVariableType *muon_variable_type(MuonEngine *engine)
 /// Optional arguments to muon_type_debug()
 struct MuonTypeDebugArgs {
   _Bool id; ///< Whether to emit the id of each type
-
-  _Bool origin; ///< Whether to emit the origin of each variable type
 
   /// How strongly this position binds to the parent operator; print parentheses
   /// if this expression is weaker than strength.

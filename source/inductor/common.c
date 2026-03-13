@@ -73,26 +73,6 @@ void (inductor_debug)( //-
     (muon_type_debug)(edge.target, args);
     debug("\"];\n");
 
-    // MuonType *source_solution = type_solution(inductor, edge.source);
-    // if (source_solution != NULL) {
-    //   debug("  Type%zu [label=\"", source_solution->id);
-    //   (muon_type_debug)(source_solution, args);
-    //   debug("\"];\n");
-    //
-    //   // debug("  Type%zu -> Type%zu", edge.source->id, source_solution->id);
-    //   // debug(" [color=blue];\n");
-    // }
-    //
-    // MuonType *target_solution = type_solution(inductor, edge.target);
-    // if (target_solution != NULL) {
-    //   debug("  Type%zu [label=\"", target_solution->id);
-    //   (muon_type_debug)(target_solution, args);
-    //   debug("\"];\n");
-    //
-    //   // debug("  Type%zu -> Type%zu", edge.target->id, target_solution->id);
-    //   // debug(" [color=blue];\n");
-    // }
-
     _Bool show_indirect = 0;
     if (edge.tag == INDIRECT_RULE) {
       if (!show_indirect)
