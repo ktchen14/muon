@@ -5,8 +5,72 @@
 #include "induce.h"
 
 #include <assert.h>
+#include <errno.h>
 #include <stddef.h>
 #include <stdlib.h>
+
+typedef struct {
+  size_t volume;
+  size_t length;
+  struct TypeCouple {
+    MuonType *origin;
+    union {
+      struct MuonType *allocation;
+      MuonType *result;
+    };
+  } data[] MUON_HINT(counted_by(length));
+} TypeEquation;
+
+TypeEquation *type_equation(size_t volume) {
+  size_t size = volume;
+  if (struct_size_overflow(TypeEquation, data, &size))
+    return errno = ENOMEM, NULL;
+
+  TypeEquation *result;
+  if ((result = malloc(size)) == NULL)
+    return NULL;
+  *result = (TypeEquation) {.volume = volume};
+  return result;
+}
+
+TypeEquation *type_equate(
+    TypeEquation *equation, MuonType *origin, struct MuonType *allocation) {
+  if (equation->length >= equation->volume) {
+    size_t nought = sizeof(TypeEquation);
+    size_t offset = offsetof(TypeEquation, data);
+    size_t unit = sizeof(struct TypeCouple[2]);
+
+    size_t size = equation->volume;
+    if (rare((struct_size_overflow)(nought, offset, unit, &size)))
+      return errno = ENOMEM, NULL;
+
+    TypeEquation *resize;
+    if ((resize = realloc(equation, size)) == NULL)
+      return free(equation), NULL;
+    resize->volume *= 2;
+    equation = resize;
+  }
+
+  struct TypeCouple couple = {origin, {allocation}};
+  equation->data[equation->length++] = couple;
+  return equation;
+}
+
+struct MuonType *type_allocation(const TypeEquation *equation, MuonType *origin) {
+  for (size_t i = 0; i < equation->length; i++) {
+    if (equation->data[i].origin == origin)
+      return equation->data[i].allocation;
+  }
+  return NULL;
+}
+
+MuonType *type_result(const TypeEquation *equation, MuonType *origin) {
+  for (size_t i = 0; i < equation->length; i++) {
+    if (equation->data[i].origin == origin)
+      return equation->data[i].result;
+  }
+  return NULL;
+}
 
 /// Like type_next2, but takes an explicit index instead of using cursor->i.
 /// Safe to call while the type's header union is being used for series walking.
