@@ -73,9 +73,6 @@ static Rule *rule_insert(
     inductor->rule_volume = volume;
   }
 
-  // if (source->id == 8 && target->id == 26)
-  //   abort();
-
   Rule *result = &inductor->edge[inductor->rule_length++];
   *result = (Rule) {.source = source, .target = target};
   result->target_charge = 0;

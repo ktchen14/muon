@@ -191,62 +191,29 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
     if (cursor.type->tag != MUON_VARIABLE_TYPE)
       continue;
 
-    if (cursor.charge == 0) {
-      for (size_t j = 0; j < universe_snapshot; j++) {
-        Rule *edge = &inductor->edge[j];
+    for (size_t i = 0; i < universe_snapshot; i++) {
+      Rule *edge = &inductor->edge[i];
 
-        if (edge->instance_scheme == scheme)
-          continue;
+      if (edge->instance_scheme == scheme)
+        continue;
 
-        // if (edge->instance_id != 0)
-        //   continue;
+      if (edge->vertex[!cursor.charge] != cursor.type)
+        continue;
 
-        if (edge->target != cursor.type)
-          continue;
+      MuonType *source = map_of(edge->source);
+      MuonType *target = map_of(edge->target);
 
-        MuonType *source = map_of(edge->source);
-        MuonType *target = map_of(edge->target);
+      if (rule_search(inductor, source, target) != NULL)
+        continue;
 
-        if (rule_search(inductor, source, target) != NULL)
-          continue;
-
-        Rule *rule;
-        if ((rule = rule_insert(inductor, source, target)) == NULL)
-          return NULL;
-        rule->tag = edge->tag;
-        rule->source_charge = edge->source_charge;
-        rule->target_charge = edge->target_charge;
-        rule->instance_scheme = edge->instance_scheme;
-        rule->instance_id = edge->instance_id;
-      }
-    } else {
-      for (size_t j = 0; j < universe_snapshot; j++) {
-        Rule *edge = &inductor->edge[j];
-
-        if (edge->instance_scheme == scheme)
-          continue;
-
-        // if (edge->instance_id != 0)
-        //   continue;
-
-        if (edge->source != cursor.type)
-          continue;
-
-        MuonType *source = map_of(edge->source);
-        MuonType *target = map_of(edge->target);
-
-        if (rule_search(inductor, source, target) != NULL)
-          continue;
-
-        Rule *rule;
-        if ((rule = rule_insert(inductor, source, target)) == NULL)
-          return NULL;
-        rule->tag = edge->tag;
-        rule->source_charge = edge->source_charge;
-        rule->target_charge = edge->target_charge;
-        rule->instance_scheme = edge->instance_scheme;
-        rule->instance_id = edge->instance_id;
-      }
+      Rule *rule;
+      if ((rule = rule_insert(inductor, source, target)) == NULL)
+        return NULL;
+      rule->tag = edge->tag;
+      rule->source_charge = edge->source_charge;
+      rule->target_charge = edge->target_charge;
+      rule->instance_scheme = edge->instance_scheme;
+      rule->instance_id = edge->instance_id;
     }
   } while (!attitude_eq(cursor, series));
 
@@ -263,14 +230,14 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
       rule = rule_insert(inductor, cursor.type, result);
       rule->instance_scheme = scheme;
       rule->instance_id = instance_id;
-      rule->source_charge = 0;
-      rule->target_charge = 0;
+      rule->source_charge = 1;
+      rule->target_charge = 1;
     } else {
       rule = rule_insert(inductor, result, cursor.type);
       rule->instance_scheme = scheme;
       rule->instance_id = instance_id;
-      rule->source_charge = 1;
-      rule->target_charge = 1;
+      rule->source_charge = 0;
+      rule->target_charge = 0;
     }
   } while (!attitude_eq(cursor, series));
 

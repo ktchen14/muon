@@ -104,18 +104,20 @@ void (inductor_debug)( //-
 
     debug("  Type%zu -> Type%zu", edge.source->id, edge.target->id);
 
+    // With rankdir=BT, Graphviz flips the digraph so s refers to the top of a
+    // node while n refers to the bottom of a node.
     const char *attr;
     if (edge.source_charge == 1 && edge.target_charge == 0)
-      attr = "headport=s,tailport=n";
+      attr = "tailport=s,headport=n";
     else if (edge.source_charge == 0 && edge.target_charge == 1)
-      attr = "headport=n,tailport=s";
+      attr = "tailport=n,headport=s";
     else if (edge.source_charge == 1 && edge.target_charge == 1)
-      attr = "headport=n,tailport=n";
+      attr = "tailport=s,headport=s";
     else if (edge.source_charge == 0 && edge.target_charge == 0)
-      attr = "headport=s,tailport=s";
+      attr = "tailport=n,headport=n";
 
     if (edge.instance_id != 0) {
-      debug(" [%s,label=\"%zu\",color=green,constraint=false];\n", attr, edge.instance_id);
+      debug(" [%s,label=\"%zu\",color=green];\n", attr, edge.instance_id);
 
       debug("  {\n");
       debug("    rank=same;\n");
