@@ -104,12 +104,14 @@ void (inductor_debug)( //-
 
     debug("  Type%zu -> Type%zu", edge.source->id, edge.target->id);
 
+    const char *attr = "headport=s,tailport=n";
+
     if (edge.instance_id != 0) {
-      debug(" [label=\"%zu\",color=green]", edge.instance_id);
+      debug(" [%s,label=\"%zu\",color=green]", attr, edge.instance_id);
     } else if (edge.tag == ID_RULE) {
-      debug(" [color=blue]");
+      debug(" [%s,color=blue]", attr);
     } else if (edge.tag == IMPOSSIBLE_RULE) {
-      debug(" [color=red,constraint=false]");
+      debug(" [%s,color=red,constraint=false]", attr);
     }
 
     debug(";\n");
