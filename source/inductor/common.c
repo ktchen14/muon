@@ -58,7 +58,7 @@ MuonInductor *muon_induce_initialize(
 
 void (inductor_debug)( //-
     const MuonInductor *inductor, struct MuonTypeDebugArgs args) {
-  debug("strict digraph muon {\n");
+  debug("digraph muon {\n");
   debug("  rankdir=\"BT\";\n");
   debug("  dpi=192;\n");
 
@@ -73,25 +73,25 @@ void (inductor_debug)( //-
     (muon_type_debug)(edge.target, args);
     debug("\"];\n");
 
-    MuonType *source_solution = type_solution(inductor, edge.source);
-    if (source_solution != NULL) {
-      debug("  Type%zu [label=\"", source_solution->id);
-      (muon_type_debug)(source_solution, args);
-      debug("\"];\n");
-
-      // debug("  Type%zu -> Type%zu", edge.source->id, source_solution->id);
-      // debug(" [color=blue];\n");
-    }
-
-    MuonType *target_solution = type_solution(inductor, edge.target);
-    if (target_solution != NULL) {
-      debug("  Type%zu [label=\"", target_solution->id);
-      (muon_type_debug)(target_solution, args);
-      debug("\"];\n");
-
-      // debug("  Type%zu -> Type%zu", edge.target->id, target_solution->id);
-      // debug(" [color=blue];\n");
-    }
+    // MuonType *source_solution = type_solution(inductor, edge.source);
+    // if (source_solution != NULL) {
+    //   debug("  Type%zu [label=\"", source_solution->id);
+    //   (muon_type_debug)(source_solution, args);
+    //   debug("\"];\n");
+    //
+    //   // debug("  Type%zu -> Type%zu", edge.source->id, source_solution->id);
+    //   // debug(" [color=blue];\n");
+    // }
+    //
+    // MuonType *target_solution = type_solution(inductor, edge.target);
+    // if (target_solution != NULL) {
+    //   debug("  Type%zu [label=\"", target_solution->id);
+    //   (muon_type_debug)(target_solution, args);
+    //   debug("\"];\n");
+    //
+    //   // debug("  Type%zu -> Type%zu", edge.target->id, target_solution->id);
+    //   // debug(" [color=blue];\n");
+    // }
 
     _Bool show_indirect = 0;
     if (edge.tag == INDIRECT_RULE) {
@@ -115,7 +115,19 @@ void (inductor_debug)( //-
       attr = "headport=s,tailport=s";
 
     if (edge.instance_id != 0) {
-      debug(" [%s,label=\"%zu\",color=green]", attr, edge.instance_id);
+      debug(" [%s,label=\"%zu\",color=green,constraint=false];\n", attr, edge.instance_id);
+
+      debug("  {\n");
+      debug("    rank=same;\n");
+      debug("    Type%zu [label=\"", edge.source->id);
+      (muon_type_debug)(edge.source, args);
+      debug("\"];\n");
+
+      debug("    Type%zu [label=\"", edge.target->id);
+      (muon_type_debug)(edge.target, args);
+      debug("\"];\n");
+      debug("  }\n");
+      continue;
     } else if (edge.tag == ID_RULE) {
       debug(" [%s,color=blue]", attr);
     } else if (edge.tag == IMPOSSIBLE_RULE) {
