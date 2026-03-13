@@ -75,7 +75,7 @@ void (inductor_debug)( //-
     (muon_type_debug)(target.type, args);
     debug("\"];\n");
 
-    _Bool show_indirect = 1;
+    _Bool show_indirect = 0;
     if (edge.tag == INDIRECT_RULE) {
       if (!show_indirect)
         continue;

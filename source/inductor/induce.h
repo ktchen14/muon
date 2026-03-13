@@ -28,8 +28,8 @@
 [[gnu::nonnull]] static inline Rule *rule_next(RuleIterator *it) {
   for (size_t i; (i = it->i++) < it->inductor->rule_length;) {
     Rule *edge = &it->inductor->edge[i];
-    if (attitude_decode(edge->endpoint[!it->attitude.charge]).type
-        == it->attitude.type)
+    Attitude vertex = attitude_decode(edge->vertex[!it->attitude.charge]);
+    if (attitude_eq(vertex, it->attitude))
       return edge;
   }
 

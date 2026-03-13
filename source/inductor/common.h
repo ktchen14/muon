@@ -28,7 +28,7 @@ typedef struct {
       AttitudeCode target;
     };
 
-    AttitudeCode endpoint[2];
+    AttitudeCode vertex[2];
   };
 
   RuleTag tag;

@@ -39,8 +39,8 @@ Rule *type_restrain(
     // ∀(τ) | ∃⟨τ ⇒ source⟩ and τ isn't a variable type, restrain τ ⇒ target
     RuleIterator it = rule_iterator(inductor, (Attitude) {source, 0});
     for (const Rule *rule; (rule = rule_next(&it)) != NULL;) {
-      MuonType *t;
-      if (is_variable_type((t = attitude_decode(rule->source).type)))
+      MuonType *t = attitude_decode(rule->source).type;
+      if (is_variable_type(t))
         continue;
 
       if (type_restrain(inductor, t, target, reason) == NULL)
@@ -51,8 +51,8 @@ Rule *type_restrain(
     // maintain the target-side transitive closure of τ
     it = rule_iterator(inductor, (Attitude) {source, 0});
     for (const Rule *rule; (rule = rule_next(&it)) != NULL;) {
-      MuonType *t;
-      if (!is_variable_type(t = attitude_decode(rule->source).type))
+      MuonType *t = attitude_decode(rule->source).type;
+      if (!is_variable_type(t))
         continue;
 
       Rule *next;
@@ -73,8 +73,8 @@ Rule *type_restrain(
     // ∀(τ) | ∃⟨target ⇒ τ⟩ and τ isn't a variable type, restrain source ⇒ τ
     RuleIterator it = rule_iterator(inductor, (Attitude) {target, 1});
     for (const Rule *rule; (rule = rule_next(&it)) != NULL;) {
-      MuonType *t;
-      if (is_variable_type(t = attitude_decode(rule->target).type))
+      MuonType *t = attitude_decode(rule->target).type;
+      if (is_variable_type(t))
         continue;
 
       if (type_restrain(inductor, source, t, reason) == NULL)
@@ -85,8 +85,8 @@ Rule *type_restrain(
     // maintain the source-side transitive closure of τ
     it = rule_iterator(inductor, (Attitude) {target, 1});
     for (const Rule *rule; (rule = rule_next(&it)) != NULL;) {
-      MuonType *t;
-      if (!is_variable_type(t = attitude_decode(rule->target).type))
+      MuonType *t = attitude_decode(rule->target).type;
+      if (!is_variable_type(t))
         continue;
 
       Rule *next;
@@ -110,14 +110,14 @@ Rule *type_restrain(
     // types, restrain α ⇒ β
     it = rule_iterator(inductor, (Attitude) {source, 0});
     for (const Rule *a_rule; (a_rule = rule_next(&it)) != NULL;) {
-      MuonType *a;
-      if (is_variable_type(a = attitude_decode(a_rule->source).type))
+      MuonType *a = attitude_decode(a_rule->source).type;
+      if (is_variable_type(a))
         continue;
 
       RuleIterator jt = rule_iterator(inductor, (Attitude) {target, 1});
       for (const Rule *b_rule; (b_rule = rule_next(&jt)) != NULL;) {
-        MuonType *b;
-        if (is_variable_type(b = attitude_decode(b_rule->target).type))
+        MuonType *b = attitude_decode(b_rule->target).type;
+        if (is_variable_type(b))
           continue;
 
         if (type_restrain(inductor, a, b, reason) == NULL)
