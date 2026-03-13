@@ -227,19 +227,15 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
     MuonType *result = map_of(cursor.type);
 
     Rule *rule;
-    if (cursor.charge == 0) {
+    if (cursor.charge == 0)
       rule = rule_insert(inductor, cursor.type, result);
-      rule->instance_scheme = scheme;
-      rule->instance_id = instance_id;
-      rule->source_charge = 1;
-      rule->target_charge = 1;
-    } else {
+    else
       rule = rule_insert(inductor, result, cursor.type);
-      rule->instance_scheme = scheme;
-      rule->instance_id = instance_id;
-      rule->source_charge = 0;
-      rule->target_charge = 0;
-    }
+
+    rule->instance_scheme = scheme;
+    rule->instance_id = instance_id;
+    rule->source_charge = !cursor.charge;
+    rule->target_charge = !cursor.charge;
   } while (!attitude_eq(cursor, series));
 
   MuonType *result = map_of(scheme->matter);

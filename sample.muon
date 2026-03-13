@@ -10,7 +10,7 @@ define id2 = lambda x = (foo: id x)
 
 define c = is_integer (id2 1).foo
 # define d = ((id2 true).foo)
-define d = id2 true
+# define d = id2 true
 
 # define apply = (lambda f = (lambda x = f x))
 
