@@ -21,7 +21,7 @@ MuonModule *muon_standard_module(MuonEngine *engine) {
 
   MuonExport *is_boolean = muon_export(
       engine,
-      muon_nominate(engine, "is_integer"),
+      muon_nominate(engine, "is_boolean"),
       &muon_lambda_type(
         engine,
         &muon_boolean_type(engine)->as_type,
