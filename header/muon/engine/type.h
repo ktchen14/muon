@@ -136,6 +136,8 @@ MuonVariableType *muon_variable_type(MuonEngine *engine)
 struct MuonTypeDebugArgs {
   _Bool id; ///< Whether to emit the id of each type
 
+  _Bool origin; ///< Whether to emit the origin of each variable type
+
   /// How strongly this position binds to the parent operator; print parentheses
   /// if this expression is weaker than strength.
   unsigned int strength;

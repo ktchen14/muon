@@ -75,6 +75,8 @@ static Rule *rule_insert(
 
   Rule *result = &inductor->edge[inductor->rule_length++];
   *result = (Rule) {.source = source, .target = target};
+  result->target_charge = 0;
+  result->source_charge = 1;
   return result;
 }
 

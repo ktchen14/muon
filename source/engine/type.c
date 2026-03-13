@@ -301,12 +301,6 @@ static void debug_variable_type_name(MuonVariableType *type) {
   debug("%s", name);
 }
 
-/**
- * @brief Debug the type
- *
- * @param strength how strongly this position binds to the parent operator;
- *   print parentheses if this expression is weaker than strength.
- */
 // NOLINTNEXTLINE(misc-no-recursion)
 void (muon_type_debug)(MuonType *type, struct MuonTypeDebugArgs args) { //-
   struct MuonTypeDebugArgs next_args = args;
@@ -415,17 +409,19 @@ void (muon_type_debug)(MuonType *type, struct MuonTypeDebugArgs args) { //-
       break;
 
     case IS_CONCRETE_TYPE(MuonVariableType *variable_type) {
-      debug("V%zu", variable_type->as_type.id);
+      debug("v%zu", variable_type->as_type.id);
       // debug_variable_type_name(variable_type);
 
       MuonSchemeType *scheme_type;
       if ((scheme_type = variable_type->as_type.scheme) != NULL)
         debug(":%zu", scheme_type->as_type.id);
 
-      if (variable_type->origin != NULL) {
-        debug(" ← ");
-        (muon_type_debug)(variable_type->origin, args);
-      }
+      if (!args.origin || variable_type->origin == NULL)
+        break;
+
+      debug(" ← ");
+      next_args.origin = 0;
+      (muon_type_debug)(variable_type->origin, next_args);
     }
   }
 }

@@ -104,7 +104,15 @@ void (inductor_debug)( //-
 
     debug("  Type%zu -> Type%zu", edge.source->id, edge.target->id);
 
-    const char *attr = "headport=s,tailport=n";
+    const char *attr;
+    if (edge.source_charge == 1 && edge.target_charge == 0)
+      attr = "headport=s,tailport=n";
+    else if (edge.source_charge == 0 && edge.target_charge == 1)
+      attr = "headport=n,tailport=s";
+    else if (edge.source_charge == 1 && edge.target_charge == 1)
+      attr = "headport=n,tailport=n";
+    else if (edge.source_charge == 0 && edge.target_charge == 0)
+      attr = "headport=s,tailport=s";
 
     if (edge.instance_id != 0) {
       debug(" [%s,label=\"%zu\",color=green]", attr, edge.instance_id);

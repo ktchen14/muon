@@ -31,6 +31,14 @@ typedef struct {
     MuonType *vertex[2];
   };
 
+  union {
+    MUON_HINT(packed) struct {
+      _Bool source_charge;
+      _Bool target_charge;
+    };
+    _Bool *charge[2];
+  };
+
   RuleTag tag;
 
   MuonSchemeType *instance_scheme;

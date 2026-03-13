@@ -95,7 +95,7 @@ int main(int argc, char *argv[/* argc */]) {
     muon_debug_stream = output;
     mu_debug_colorize = 0;
 
-    inductor_debug(&inductor);
+    inductor_debug(&inductor, .origin = 1);
 
     fclose(output);
     muon_debug_stream = stderr;
