@@ -4,13 +4,14 @@
 
 define id = lambda x = x
 define id2 = lambda x = (foo: id x)
+# define id3 = lambda x = id2 x
 
 # define a = id 1
 # define b = id true
 
 define c = is_integer (id2 1).foo
 # define d = ((id2 true).foo)
-# define d = id2 true
+define d = is_boolean (id2 true).foo
 
 # define apply = (lambda f = (lambda x = f x))
 

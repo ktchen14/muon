@@ -73,10 +73,16 @@ void (inductor_debug)( //-
     (muon_type_debug)(edge.target, args);
     debug("\"];\n");
 
-    _Bool show_indirect = 0;
+    _Bool show_indirect = 1;
     if (edge.tag == INDIRECT_RULE) {
       if (!show_indirect)
         continue;
+
+      // MuonCoreType *c;
+      // if ((c = muon_type_cast(edge.target, c)) == NULL)
+      //   continue;
+      // if (c->core != as_engine(c->as_stator.engine)->boolean_core)
+      //   continue;
 
       debug("  Type%zu -> Type%zu [constraint=false,color=gray];\n", edge.source->id, edge.target->id);
       continue;
