@@ -200,6 +200,9 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
       if (edge->vertex[!cursor.charge] != cursor.type)
         continue;
 
+      if (edge->charge[!cursor.charge] != cursor.charge)
+        continue;
+
       MuonType *source = map_of(edge->source);
       MuonType *target = map_of(edge->target);
 

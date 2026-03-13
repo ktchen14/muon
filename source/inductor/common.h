@@ -36,7 +36,7 @@ typedef struct {
       _Bool source_charge;
       _Bool target_charge;
     };
-    _Bool *charge[2];
+    _Bool charge[2];
   };
 
   RuleTag tag;
