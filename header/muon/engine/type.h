@@ -71,6 +71,8 @@ typedef const struct MuonSchemeType {
 
 typedef const struct MuonVariableType {
   MUON_TYPE_HEADER;
+
+  MuonType *origin;
 } MuonVariableType;
 
 /// @internal Used to emit each branch in MUON_TYPE_TAG()

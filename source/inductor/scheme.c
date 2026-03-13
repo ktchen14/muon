@@ -175,6 +175,8 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
         struct MuonVariableType *allocation =
             (struct MuonVariableType *) result;
 
+        allocation->origin = origin;
+
         if (variable_type_activate(allocation) == NULL)
           return NULL;
         break;
@@ -186,16 +188,16 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
   do {
     cursor = type_next1(cursor);
 
-    MuonType *origin = cursor.type;
-    if (origin->tag != MUON_VARIABLE_TYPE)
+    if (cursor.type->tag != MUON_VARIABLE_TYPE)
       continue;
 
     for (size_t j = 0; j < universe_snapshot; j++) {
       Rule *edge = &inductor->edge[j];
-      if (edge->instance_id != 0)
+
+      if (edge->instance_scheme == scheme)
         continue;
 
-      if (edge->source != origin && edge->target != origin)
+      if (edge->vertex[!cursor.charge] != cursor.type)
         continue;
 
       MuonType *new_source = map_of(edge->source);
@@ -208,29 +210,27 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
       if ((rule = rule_insert(inductor, new_source, new_target)) == NULL)
         return NULL;
       rule->tag = edge->tag;
+      rule->instance_scheme = edge->instance_scheme;
+      rule->instance_id = edge->instance_id;
     }
   } while (!attitude_eq(cursor, series));
 
   do {
     cursor = type_next1(cursor);
 
-    MuonType *origin = cursor.type;
-
-    struct MuonType *result = equation[type_series(cursor)->n];
-    assert(result != NULL);
-
-    if (origin == result)
+    if (!is_variable_type(cursor.type))
       continue;
 
-    if (!is_variable_type(origin))
-      continue;
+    MuonType *result = map_of(cursor.type);
 
     Rule *rule;
     if (cursor.charge == 0) {
-      rule = rule_insert(inductor, origin, result);
+      rule = rule_insert(inductor, cursor.type, result);
+      rule->instance_scheme = scheme;
       rule->instance_id = instance_id;
     } else {
-      rule = rule_insert(inductor, result, origin);
+      rule = rule_insert(inductor, result, cursor.type);
+      rule->instance_scheme = scheme;
       rule->instance_id = instance_id;
     }
   } while (!attitude_eq(cursor, series));

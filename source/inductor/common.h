@@ -33,6 +33,7 @@ typedef struct {
 
   RuleTag tag;
 
+  MuonSchemeType *instance_scheme;
   size_t instance_id;
 
   MuonNode *reason; // optional
