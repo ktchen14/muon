@@ -188,16 +188,8 @@ Rule *type_restrain(
     if ((instance = scheme_instance(inductor, scheme_type)) == NULL)
       return NULL;
 
-    // Rule *rule;
-    // if ((rule = rule_insert(inductor, source, instance)) == NULL)
-    //   return NULL;
-    // rule->tag = INDIRECT_RULE;
-    // rule->instance_id = inductor->instance_id - 1;
-    // rule->reason = reason;
-
     if (type_restrain(inductor, instance, target, reason) == NULL)
       return NULL;
-
     return result;
   }
 
