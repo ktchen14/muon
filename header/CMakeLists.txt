@@ -10,7 +10,6 @@ target_sources(muon-common INTERFACE FILE_SET HEADERS FILES
   muon/engine/stator.h
   muon/engine/type.h
 
-  muon/inductor/common.h
   muon/inductor/coercion.h
   muon/inductor.h
 

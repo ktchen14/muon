@@ -1,6 +1,4 @@
-#ifndef MU_INDUCTOR_H
-#define MU_INDUCTOR_H
+#ifndef MUON_INDUCTOR_H
+#define MUON_INDUCTOR_H
 
-#include "inductor/common.h"   // IWYU pragma: export
-
-#endif /* MU_INDUCTOR_H */
+#endif /* MUON_INDUCTOR_H */
