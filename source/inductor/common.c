@@ -2,6 +2,7 @@
 
 #include "../detector/detect.h"
 #include "../engine.h"
+#include "../inductor.h"
 #include "reduce.h"
 
 #include <assert.h>
@@ -57,81 +58,81 @@ MuonInductor *muon_induce_initialize(
 }
 
 void (inductor_debug)( //-
-    const MuonInductor *inductor, struct MuonTypeDebugArgs args) {
+    const MuonInductor *inductor, struct InductorDebugArgs args) {
   debug("digraph muon {\n");
   debug("  rankdir=\"BT\";\n");
   debug("  dpi=192;\n");
 
+  MuonType *roster[inductor->type_length] = {};
+
   for (size_t i = 0; i < inductor->rule_length; i++) {
     Rule edge = inductor->edge[i];
+
     Attitude source = attitude_decode(edge.source);
     Attitude target = attitude_decode(edge.target);
 
-    debug("  Type%zu [label=\"", source.type->id);
-    (muon_type_debug)(source.type, args);
-    debug("\"];\n");
-
-    debug("  Type%zu [label=\"", target.type->id);
-    (muon_type_debug)(target.type, args);
-    debug("\"];\n");
-
-    _Bool show_impossible = 0;
-    if (!show_impossible && edge.tag == IMPOSSIBLE_RULE)
+    if (args.hide & 1 << edge.tag)
       continue;
 
-    _Bool show_indirect = 1;
-    if (edge.tag == INDIRECT_RULE) {
-      if (!show_indirect)
-        continue;
-
-      // MuonCoreType *c;
-      // if ((c = muon_type_cast(target.type, c)) == NULL)
-      //   continue;
-      // if (c->core != as_engine(c->as_stator.engine)->boolean_core)
-      //   continue;
-
-      debug(
-          "  Type%zu -> Type%zu [constraint=false,color=gray];\n",
-          source.type->id,
-          target.type->id);
-      continue;
+    if (roster[source.type->id] == NULL) {
+      debug("  Type%zu [label=\"", source.type->id);
+      (muon_type_debug)(source.type, args.type);
+      debug("\"];\n");
+      roster[source.type->id] = source.type;
     }
 
-    debug("  Type%zu -> Type%zu", source.type->id, target.type->id);
+    if (roster[target.type->id] == NULL) {
+      debug("  Type%zu [label=\"", target.type->id);
+      (muon_type_debug)(target.type, args.type);
+      debug("\"];\n");
+      roster[target.type->id] = target.type;
+    }
 
-    // With rankdir=BT, Graphviz flips the digraph so s refers to the top of a
-    // node while n refers to the bottom of a node.
-    const char *attr;
-    if (source.charge == 1 && target.charge == 0)
-      attr = "tailport=s,headport=n";
-    else if (source.charge == 0 && target.charge == 1)
-      attr = "tailport=n,taillabel=0,headport=s,headlabel=1";
-    else if (source.charge == 1 && target.charge == 1)
-      attr = "tailport=s,taillabel=1,headport=s,headlabel=1";
-    else if (source.charge == 0 && target.charge == 0)
-      attr = "tailport=n,taillabel=0,headport=n,headlabel=0";
+    debug("  Type%zu -> Type%zu [", source.type->id, target.type->id);
+
+    if (source.charge == 0)
+      debug("dir=both,arrowtail=odot,");
+
+    if (target.charge == 1)
+      debug("arrowhead=odotnormal,");
+
+    switch (edge.tag) {
+      case NORMAL_RULE:
+      case JOIN_RULE:
+        break;
+
+      case INDIRECT_RULE:
+        debug("color=gray,");
+        break;
+
+      case ID_RULE:
+        debug("color=blue,");
+        break;
+
+      case IMPOSSIBLE_RULE:
+        debug("color=red,constraint=false,");
+        break;
+
+      case INSTANCE_RULE:
+        debug("color=green,fontcolor=green,label=\"%zu\",",
+            edge.instance_id);
+        break;
+    }
+
+    debug("];\n");
 
     if (edge.instance_id != 0) {
-      debug(" [%s,label=\"%zu\",color=green];\n", attr, edge.instance_id);
-
       debug("  {\n");
       debug("    rank=same;\n");
       debug("    Type%zu [label=\"", source.type->id);
-      (muon_type_debug)(source.type, args);
+      (muon_type_debug)(source.type, args.type);
       debug("\"];\n");
 
       debug("    Type%zu [label=\"", target.type->id);
-      (muon_type_debug)(target.type, args);
+      (muon_type_debug)(target.type, args.type);
       debug("\"];\n");
       debug("  }\n");
-      continue;
-    } else if (edge.tag == ID_RULE) {
-      debug(" [%s,color=blue]", attr);
-    } else if (edge.tag == IMPOSSIBLE_RULE) {
-      debug(" [%s,color=red,constraint=false]", attr);
     }
-
-    debug(";\n");
   }
 
   debug("}\n");

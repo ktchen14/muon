@@ -312,6 +312,7 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
     else
       rule = rule_insert(inductor, result, cursor.type);
 
+    rule->tag = INSTANCE_RULE;
     rule->instance_scheme = scheme;
     rule->instance_id = instance_id;
     rule->source = attitude_encode(

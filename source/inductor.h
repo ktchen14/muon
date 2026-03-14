@@ -16,10 +16,18 @@ MuonInductor *muon_induce_initialize(
     const MuonModule *module)
   MUON_HINT_SUFFIX(nonnull);
 
+/// Optional arguments to inductor_debug()
+struct InductorDebugArgs {
+  /// Optional arguments to muon_type_debug()
+  struct MuonTypeDebugArgs type;
+
+  unsigned int hide;
+};
+
 void inductor_debug(
-    const MuonInductor *inductor, struct MuonTypeDebugArgs args);
+    const MuonInductor *inductor, struct InductorDebugArgs args);
 
 #define inductor_debug(type, ...) \
-  inductor_debug((type), (struct MuonTypeDebugArgs) {__VA_ARGS__})
+  inductor_debug((type), (struct InductorDebugArgs) {__VA_ARGS__})
 
 #endif /* MUON_INDUCTOR_I */

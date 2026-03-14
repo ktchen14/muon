@@ -82,8 +82,8 @@ int main(int argc, char *argv[/* argc */]) {
   if (induce_script(&inductor, script) == NULL)
     assert(0);
 
-  // if (reduce_node(&inductor, &script->as_node) == NULL)
-  //   assert(0);
+  if (reduce_node(&inductor, &script->as_node) == NULL)
+    assert(0);
 
   extern _Thread_local _Bool mu_debug_colorize;
   mu_debug_colorize = 1;
@@ -95,7 +95,7 @@ int main(int argc, char *argv[/* argc */]) {
     muon_debug_stream = output;
     mu_debug_colorize = 0;
 
-    inductor_debug(&inductor);
+    inductor_debug(&inductor, .hide = 1 << IMPOSSIBLE_RULE);
 
     fclose(output);
     muon_debug_stream = stderr;
