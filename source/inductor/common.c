@@ -75,6 +75,10 @@ void (inductor_debug)( //-
     (muon_type_debug)(target.type, args);
     debug("\"];\n");
 
+    _Bool show_impossible = 0;
+    if (!show_impossible && edge.tag == IMPOSSIBLE_RULE)
+      continue;
+
     _Bool show_indirect = 1;
     if (edge.tag == INDIRECT_RULE) {
       if (!show_indirect)
@@ -101,11 +105,11 @@ void (inductor_debug)( //-
     if (source.charge == 1 && target.charge == 0)
       attr = "tailport=s,headport=n";
     else if (source.charge == 0 && target.charge == 1)
-      attr = "tailport=n,headport=s";
+      attr = "tailport=n,taillabel=0,headport=s,headlabel=1";
     else if (source.charge == 1 && target.charge == 1)
-      attr = "tailport=s,headport=s";
+      attr = "tailport=s,taillabel=1,headport=s,headlabel=1";
     else if (source.charge == 0 && target.charge == 0)
-      attr = "tailport=n,headport=n";
+      attr = "tailport=n,taillabel=0,headport=n,headlabel=0";
 
     if (edge.instance_id != 0) {
       debug(" [%s,label=\"%zu\",color=green];\n", attr, edge.instance_id);
