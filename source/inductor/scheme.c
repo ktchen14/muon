@@ -9,70 +9,6 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-typedef struct {
-  size_t volume;
-  size_t length;
-  struct TypeCouple {
-    MuonType *origin;
-    union {
-      struct MuonType *allocation;
-      MuonType *result;
-    };
-  } data[] MUON_HINT(counted_by(length));
-} TypeEquation;
-
-TypeEquation *type_equation(size_t volume) {
-  size_t size = volume;
-  if (struct_size_overflow(TypeEquation, data, &size))
-    return errno = ENOMEM, NULL;
-
-  TypeEquation *result;
-  if ((result = malloc(size)) == NULL)
-    return NULL;
-  *result = (TypeEquation) {.volume = volume};
-  return result;
-}
-
-TypeEquation *type_equate(
-    TypeEquation *equation, MuonType *origin, struct MuonType *allocation) {
-  if (equation->length >= equation->volume) {
-    size_t nought = sizeof(TypeEquation);
-    size_t offset = offsetof(TypeEquation, data);
-    size_t unit = sizeof(struct TypeCouple[2]);
-
-    size_t size = equation->volume;
-    if (rare((struct_size_overflow)(nought, offset, unit, &size))) //-
-      return errno = ENOMEM, NULL;
-
-    TypeEquation *resize;
-    if ((resize = realloc(equation, size)) == NULL)
-      return free(equation), NULL;
-    resize->volume *= 2;
-    equation = resize;
-  }
-
-  struct TypeCouple couple = {origin, {allocation}};
-  equation->data[equation->length++] = couple;
-  return equation;
-}
-
-struct MuonType *type_allocation(
-    const TypeEquation *equation, MuonType *origin) {
-  for (size_t i = 0; i < equation->length; i++) {
-    if (equation->data[i].origin == origin)
-      return equation->data[i].allocation;
-  }
-  return NULL;
-}
-
-MuonType *type_result(const TypeEquation *equation, MuonType *origin) {
-  for (size_t i = 0; i < equation->length; i++) {
-    if (equation->data[i].origin == origin)
-      return equation->data[i].result;
-  }
-  return NULL;
-}
-
 /// Like type_next2, but takes an explicit index instead of using cursor->i.
 /// Safe to call while the type's header union is being used for series walking.
 static inline Attitude type_next2_i(
@@ -96,277 +32,219 @@ static inline Attitude type_next2_i(
 }
 
 static inline Attitude type_scan3(const Inductor *inductor, Attitude origin) {
-  struct TypeCursor *cursor = type_cursor(origin);
-  size_t i = cursor->i;
-  Attitude result = type_next2_i(inductor, origin, &i);
-  cursor->i = i;
-  return result;
+  return type_next2_i(inductor, origin, &type_cursor(origin)->i);
 }
 
-static struct MuonType *type_allocate(MuonEngine *engine, MuonType *origin)
-  MUON_HINT_SUFFIX(malloc, nonnull);
-
 MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
-  [[maybe_unused]] size_t instance_id = inductor->instance_id++;
+  MuonEngine *engine = inductor->engine;
+  size_t instance_id = inductor->instance_id++;
+
+  union {
+    struct MuonType *allocation;
+    MuonType *result;
+  } equation[inductor->type_length] = {};
 
   Attitude series = {};
+  series = type_attach(series, (Attitude) {&scheme->as_type, 0});
 
   Attitude cursor = {scheme->matter, 0};
+  goto entrance;
   do {
     Attitude next;
     while (!attitude_isnull(next = type_scan3(inductor, cursor))) {
-      _Bool found = 0;
-      for (MuonSchemeType *s = next.type->scheme; s != NULL;
-          s = s->as_type.scheme) {
-        if (s == scheme) {
-          found = 1;
-          break;
-        }
-      }
-      if (!found)
-        goto next;
-
       struct TypeCursor *next_cursor = type_cursor(next);
-      Attitude next_attitude = attitude_decode(next_cursor->attitude);
-      if (!attitude_isnull(next_attitude) || next_cursor->i != 0)
+      if (!attitude_isnull(attitude_decode(next_cursor->attitude)))
+        continue;
+      if (next_cursor->i != 0)
+        continue;
+
+      if (next.type->scheme != scheme && equation[next.type->scheme->as_type.id].allocation == NULL)
         continue;
 
       cursor = type_continue(cursor, next);
-    next:
+
+      if (equation[cursor.type->id].allocation != NULL)
+        continue;
+
+    entrance:
+      switch ON_ABSTRACT_OBJECT(cursor.type) {
+        case IS_CONCRETE_TYPE(MuonCoreType *core_type) {
+          MuonCore *core = core_type->core;
+
+          struct MuonCoreType *allocation;
+          if ((allocation = core_type_allocate(engine, core)) == NULL)
+            goto except;
+          equation[cursor.type->id].allocation = &allocation->as_type;
+          break;
+        }
+
+        case IS_CONCRETE_TYPE(MuonJoinType *join_type) {
+          struct MuonJoinType *allocation;
+          size_t argc = join_type->argc;
+          if ((allocation = join_type_allocate(engine, argc)) == NULL)
+            goto except;
+          equation[cursor.type->id].allocation = &allocation->as_type;
+          break;
+        }
+
+        case IS_CONCRETE_TYPE(MuonMeetType *meet_type) {
+          struct MuonMeetType *allocation;
+          size_t argc = meet_type->argc;
+          if ((allocation = meet_type_allocate(engine, argc)) == NULL)
+            goto except;
+          equation[cursor.type->id].allocation = &allocation->as_type;
+          break;
+        }
+
+        case MUON_SCHEME_TYPE: {
+          struct MuonSchemeType *allocation;
+          if ((allocation = scheme_type_allocate(engine)) == NULL)
+            goto except;
+          equation[cursor.type->id].allocation = &allocation->as_type;
+          break;
+        }
+
+        case MUON_VARIABLE_TYPE: {
+          MuonVariableType *result;
+          if ((result = muon_variable_type(engine)) == NULL)
+            goto except;
+          equation[cursor.type->id].result = &result->as_type;
+          break;
+        }
+      }
+    }
+
+    switch ON_ABSTRACT_OBJECT(cursor.type) {
+      case IS_CONCRETE_TYPE(MuonCoreType *core_type) {
+        struct MuonCoreType *allocation =
+            (struct MuonCoreType *) equation[cursor.type->id].allocation;
+
+        MuonCore *core = core_type->core;
+
+        for (size_t i = 0; i < core->argc; i++) {
+          MuonCoreMember member = core->argv[i];
+          MuonType *argument = core_type->argv[member.i];
+          if (equation[argument->id].result != NULL)
+            argument = equation[argument->id].result;
+          allocation->argv[i] = argument;
+        }
+
+        MuonCoreType *result;
+        if ((result = core_type_activate(allocation)) == NULL)
+          goto except;
+        equation[cursor.type->id].result = &result->as_type;
+        break;
+      }
+
+      case IS_CONCRETE_TYPE(MuonJoinType *join_type) {
+        struct MuonJoinType *allocation =
+            (struct MuonJoinType *) equation[cursor.type->id].allocation;
+
+        for (size_t i = 0; i < join_type->argc; i++) {
+          MuonType *argument = join_type->argv[i];
+          if (equation[argument->id].result != NULL)
+            argument = equation[argument->id].result;
+          allocation->argv[i] = argument;
+        }
+
+        MuonJoinType *result;
+        if ((result = join_type_activate(allocation)) == NULL)
+          goto except;
+        equation[cursor.type->id].result = &result->as_type;
+        break;
+      }
+
+      case IS_CONCRETE_TYPE(MuonMeetType *meet_type) {
+        struct MuonMeetType *allocation =
+            (struct MuonMeetType *) equation[cursor.type->id].allocation;
+
+        for (size_t i = 0; i < meet_type->argc; i++) {
+          MuonType *argument = join_type->argv[i];
+          if (equation[argument->id].result != NULL)
+            argument = equation[argument->id].result;
+          allocation->argv[i] = argument;
+        }
+
+        MuonMeetType *result;
+        if ((result = meet_type_activate(allocation)) == NULL)
+          goto except;
+        equation[cursor.type->id].result = &result->as_type;
+        break;
+      }
+
+      case IS_CONCRETE_TYPE(MuonSchemeType *scheme_type) {
+        struct MuonSchemeType *allocation =
+            (struct MuonSchemeType *) equation[cursor.type->id].allocation;
+
+        MuonType *matter = scheme_type->matter;
+        if (equation[matter->id].result != NULL)
+          matter = equation[matter->id].result;
+
+        MuonSchemeType *result;
+        if ((result = scheme_type_activate(allocation, matter)) == NULL)
+          goto except;
+        equation[cursor.type->id].result = &result->as_type;
+        break;
+      }
+
+      case MUON_VARIABLE_TYPE:
+        RuleIterator it = rule_iterator(inductor, cursor);
+        for (const Rule *rule; (rule = rule_next(&it)) != NULL;) {
+          if (rule->instance_scheme == scheme)
+            continue;
+
+          Attitude source = attitude_decode(rule->source);
+          if (equation[source.type->id].result != NULL)
+            source.type = equation[source.type->id].result;
+
+          Attitude target = attitude_decode(rule->target);
+          if (equation[target.type->id].result != NULL)
+            target.type = equation[target.type->id].result;
+
+          if (rule_search(inductor, source.type, target.type) != NULL)
+            continue;
+
+          Rule *next;
+          if ((next = rule_insert(inductor, source.type, target.type)) == NULL)
+            goto except;
+          next->tag = rule->tag;
+          next->source = attitude_encode(source);
+          next->target = attitude_encode(target);
+          next->instance_scheme = rule->instance_scheme;
+          next->instance_id = rule->instance_id;
+        }
+
+        MuonType *result = equation[cursor.type->id].result;
+
+        Attitude source = {
+          (MuonType *[]) {cursor.type, result}[cursor.charge], !cursor.charge
+        };
+        Attitude target = {
+          (MuonType *[]) {result, cursor.type}[cursor.charge], !cursor.charge
+        };
+
+        Rule *rule;
+        if ((rule = rule_insert(inductor, source.type, target.type)) == NULL)
+          goto except;
+        rule->tag = INSTANCE_RULE;
+        rule->source = attitude_encode(source);
+        rule->target = attitude_encode(target);
+        rule->instance_scheme = scheme;
+        rule->instance_id = instance_id;
+        break;
     }
 
     cursor = type_return(next = cursor);
     series = type_attach(series, next);
   } while (!attitude_isnull(cursor));
 
-  // Assign a new offset to each type to duplicate. Calculate the total length
-  // we need.
-  size_t length = 0;
-
-  cursor = series;
-  do {
-    cursor = type_next(cursor);
-
-    size_t n;
-    if ((n = type_series(attitude_invert(cursor))->n) == 0)
-      n = ++length;
-    type_series(cursor)->n = n;
-  } while (!attitude_eq(cursor, series));
-
-  ++length;
-
-  struct MuonType *equation[length];
-  for (size_t i = 0; i < length; i++)
-    equation[i] = NULL;
-
-  // Allocate new types
-  do {
-    cursor = type_next(cursor);
-
-    if (equation[type_series(cursor)->n] != NULL)
-      continue;
-
-    struct MuonType *result;
-    if ((result = type_allocate(inductor->engine, cursor.type)) == NULL)
-      return NULL;
-    equation[type_series(cursor)->n] = result;
-  } while (!attitude_eq(cursor, series));
-
-#define map_of(type) __extension__ ({ \
-  MuonType *_type = (type); \
-  size_t _n = type_series((Attitude){_type, 0})->n; \
-  if (_n == 0) \
-    _n = type_series((Attitude){_type, 1})->n; \
-  if (_n < length && equation[_n] != NULL) \
-    _type = equation[_n]; \
-  _type; \
-})
-
-  do {
-    cursor = type_next(cursor);
-
-    MuonType *origin = cursor.type;
-
-    struct MuonType *result = equation[type_series(cursor)->n];
-    assert(result != NULL);
-
-    MuonSchemeType *map_scheme = (MuonSchemeType *) map_of(
-        &result->scheme->as_type);
-    result->scheme = map_scheme;
-
-    switch ON_ABSTRACT_OBJECT(origin) {
-      case IS_CONCRETE_TYPE(MuonCoreType *core_type) {
-        assert(result->tag == MUON_CORE_TYPE);
-        struct MuonCoreType *allocation = (struct MuonCoreType *) result;
-
-        for (size_t j = 0; j < core_type->core->argc; j++)
-          allocation->argv[j] = map_of(core_type->argv[j]);
-
-        if (core_type_activate(allocation) == NULL)
-          return NULL;
-        break;
-      }
-
-      case IS_CONCRETE_TYPE(MuonSchemeType *scheme_type) {
-        assert(result->tag == MUON_SCHEME_TYPE);
-        struct MuonSchemeType *allocation = (struct MuonSchemeType *) result;
-
-        MuonType *matter = map_of(scheme_type->matter);
-
-        if (scheme_type_activate(allocation, matter) == NULL)
-          return NULL;
-
-        break;
-      }
-
-      case IS_CONCRETE_TYPE(MuonJoinType *join_type) {
-        assert(result->tag == MUON_JOIN_TYPE);
-        struct MuonJoinType *allocation = (struct MuonJoinType *) result;
-
-        for (size_t j = 0; j < join_type->argc; j++)
-          allocation->argv[j] = map_of(join_type->argv[j]);
-
-        if (join_type_activate(allocation) == NULL)
-          return NULL;
-        break;
-      }
-
-      case IS_CONCRETE_TYPE(MuonMeetType *meet_type) {
-        assert(result->tag == MUON_MEET_TYPE);
-        struct MuonMeetType *allocation = (struct MuonMeetType *) result;
-
-        for (size_t j = 0; j < meet_type->argc; j++)
-          allocation->argv[j] = map_of(meet_type->argv[j]);
-
-        if (meet_type_activate(allocation) == NULL)
-          return NULL;
-        break;
-      }
-
-      case MUON_VARIABLE_TYPE: {
-        assert(result->tag == MUON_VARIABLE_TYPE);
-        struct MuonVariableType *allocation =
-            (struct MuonVariableType *) result;
-
-        if (variable_type_activate(allocation) == NULL)
-          return NULL;
-        break;
-      }
-    }
-  } while (!attitude_eq(cursor, series));
-
-  size_t universe_snapshot = inductor->rule_length;
-  do {
-    cursor = type_next(cursor);
-
-    if (cursor.type->tag != MUON_VARIABLE_TYPE)
-      continue;
-
-    for (size_t i = 0; i < universe_snapshot; i++) {
-      Rule *edge = &inductor->edge[i];
-      Attitude edge_source = attitude_decode(edge->source);
-      Attitude edge_target = attitude_decode(edge->target);
-
-      if (edge->instance_scheme == scheme)
-        continue;
-
-      if (edge_source.type != cursor.type && edge_target.type != cursor.type)
-        continue;
-
-      if (edge_source.type == cursor.type
-          && edge_source.charge != cursor.charge)
-        continue;
-
-      if (edge_target.type == cursor.type
-          && edge_target.charge != cursor.charge)
-        continue;
-
-      MuonType *source = map_of(edge_source.type);
-      MuonType *target = map_of(edge_target.type);
-
-      if (rule_search(inductor, source, target) != NULL)
-        continue;
-
-      Rule *rule;
-      if ((rule = rule_insert(inductor, source, target)) == NULL)
-        return NULL;
-      rule->tag = edge->tag;
-      rule->source = attitude_encode((Attitude) {source, edge_source.charge});
-      rule->target = attitude_encode((Attitude) {target, edge_target.charge});
-      rule->instance_scheme = edge->instance_scheme;
-      rule->instance_id = edge->instance_id;
-    }
-  } while (!attitude_eq(cursor, series));
-
-  do {
-    cursor = type_next(cursor);
-
-    if (!is_variable_type(cursor.type))
-      continue;
-
-    MuonType *result = map_of(cursor.type);
-
-    Rule *rule;
-    if (cursor.charge == 0)
-      rule = rule_insert(inductor, cursor.type, result);
-    else
-      rule = rule_insert(inductor, result, cursor.type);
-
-    rule->tag = INSTANCE_RULE;
-    rule->instance_scheme = scheme;
-    rule->instance_id = instance_id;
-    rule->source = attitude_encode(
-        (Attitude) {attitude_decode(rule->source).type, !cursor.charge});
-    rule->target = attitude_encode(
-        (Attitude) {attitude_decode(rule->target).type, !cursor.charge});
-  } while (!attitude_eq(cursor, series));
-
-  MuonType *result = map_of(scheme->matter);
-  assert(result != NULL);
-
-#undef map_of
-
   while (!attitude_isnull(type_detach(series))) {}
-  return result;
-}
 
-static struct MuonType *type_allocate(MuonEngine *engine, MuonType *origin) {
-  switch ON_ABSTRACT_OBJECT(origin) {
-    case IS_CONCRETE_TYPE(MuonCoreType *core_type) {
-      MuonCore *core = core_type->core;
+  MuonType *result = equation[scheme->matter->id].result;
+  return assert(result != NULL), result;
 
-      struct MuonCoreType *allocation;
-      if ((allocation = core_type_allocate(engine, core)) == NULL)
-        return NULL;
-      return &allocation->as_type;
-    }
-
-    case IS_CONCRETE_TYPE(MuonJoinType *join_type) {
-      struct MuonJoinType *allocation;
-      if ((allocation = join_type_allocate(engine, join_type->argc)) == NULL)
-        return NULL;
-      return &allocation->as_type;
-    }
-
-    case IS_CONCRETE_TYPE(MuonMeetType *meet_type) {
-      struct MuonMeetType *allocation;
-      if ((allocation = meet_type_allocate(engine, meet_type->argc)) == NULL)
-        return NULL;
-      return &allocation->as_type;
-    }
-
-    case MUON_SCHEME_TYPE: {
-      struct MuonSchemeType *allocation;
-      if ((allocation = scheme_type_allocate(engine)) == NULL)
-        return NULL;
-      return &allocation->as_type;
-    }
-
-    case MUON_VARIABLE_TYPE: {
-      struct MuonVariableType *allocation;
-      if ((allocation = variable_type_allocate(engine)) == NULL)
-        return NULL;
-      return &allocation->as_type;
-    }
-  }
+except:
+  while (!attitude_isnull(type_detach(series))) {}
+  while (!attitude_isnull(cursor = type_return(cursor))) {}
+  return NULL;
 }
