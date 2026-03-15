@@ -14,6 +14,7 @@ typedef struct {
   size_t node_number;
   size_t core_length;
   size_t type_number;
+  size_t instance_number;
 
   MuonName *boolean_name;
   MuonName *integer_name;

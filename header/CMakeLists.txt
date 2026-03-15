@@ -4,6 +4,7 @@ target_sources(muon-common INTERFACE FILE_SET HEADERS FILES
   muon/engine.h
   muon/engine/common.h
   muon/engine/core.h
+  muon/engine/instance.h
   muon/engine/module.h
   muon/engine/name.h
   muon/engine/node.h

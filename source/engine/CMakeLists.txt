@@ -13,6 +13,7 @@ add_library(muon-engine OBJECT
   "${PROJECT_BINARY_DIR}/header/muon/engine/object.h"
   common.h common.c
   core.c core.h
+  instance.c instance.h
   module.c module.h
   name.c name.h
   node.c node.h
