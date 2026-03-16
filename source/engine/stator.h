@@ -8,10 +8,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
-/// Return the hash code of the @a data with size @a size, when it follows some
-/// data with hash code @a hash.
-[[gnu::nonnull, gnu::pure]] static inline size_t hash_continue(
-    size_t hash, const void *data, size_t size) {
+typedef size_t Hash;
+
+/// Extend @a hash with the hash code of the @a data with size @a size
+[[gnu::nonnull, gnu::pure]] static inline Hash hash_continue(
+    Hash hash, const void *data, size_t size) {
   // TODO: make this work on 32-bit systems
   for (size_t i = 0; i < size; i++)
     hash = (hash ^ ((const char *) {data})[i]) * UINT64_C(1099511628211);
@@ -19,7 +20,7 @@
 }
 
 /// Return the hash code of the @a data with size @a size
-[[gnu::nonnull, gnu::pure]] static inline size_t hash_string(
+[[gnu::nonnull, gnu::pure]] static inline Hash hash_string(
     const void *data, size_t size) {
   return hash_continue(UINT64_C(14695981039346656037), data, size);
 }
@@ -28,7 +29,7 @@
 #define hash_object(object) hash_string(&(object), sizeof(object))
 
 /// Return hash code @a b joined to hash code @a a
-[[gnu::const]] static inline size_t hash_join(size_t a, size_t b) {
+[[gnu::const]] static inline Hash hash_join(Hash a, Hash b) {
   return b + UINT64_C(0x9e3779b97f4a7c15) + (a << 12) + (a >> 4);
 }
 
