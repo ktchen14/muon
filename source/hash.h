@@ -1,0 +1,85 @@
+#ifndef MUON_HASH_I
+#define MUON_HASH_I
+
+#include <muon/engine/stator.h>
+
+#include "common.h"
+
+#include <stddef.h>
+#include <stdint.h>
+
+typedef size_t Hash;
+
+typedef struct {
+  size_t length;
+  size_t volume;
+
+  struct HashItem {
+    Hash hash;
+    const void *data;
+  } item[];
+} HashArea;
+
+/// Extend @a hash with the @a data with size @a size
+[[gnu::nonnull, gnu::pure]] static inline Hash hash_continue(
+    Hash hash, const void *data, size_t size) {
+  const char *string = data;
+  // TODO: make this work on 32-bit systems
+  for (size_t i = 0; i < size; i++)
+    hash = (hash ^ string[i]) * UINT64_C(1099511628211);
+  return hash;
+}
+
+/// Return the hash code of the @a object
+#define hash_object(object) hash_continue( \
+    UINT64_C(14695981039346656037), &(object), sizeof(object))
+
+[[gnu::nonnull, gnu::pure]]
+static inline size_t hash_slot(const HashArea *area, Hash hash, size_t i) {
+  size_t offset = i - hash & area->volume - 1;
+  for (struct HashItem next;; offset++) {
+    size_t i = hash + offset & area->volume - 1;
+
+    if ((next = area->item[i]).data == NULL)
+      return i;
+
+    if ((i - next.hash & area->volume - 1) < offset)
+      return i;
+  }
+}
+
+[[gnu::nonnull]] static inline const void *hash_next(
+    const HashArea *area, Hash hash, size_t *offset) {
+  for (struct HashItem next;; (*offset)++) {
+    size_t i = hash + *offset & area->volume - 1;
+
+    if ((next = area->item[i]).data == NULL)
+      return NULL;
+
+    if ((i - next.hash & area->volume - 1) < *offset)
+      return NULL;
+
+    if (next.hash == hash)
+      return next.data;
+  }
+}
+
+/// Insert the @a stator into the @a engine at the @a offset
+[[gnu::nonnull]] static inline const void *hash_insert(
+    HashArea *area, Hash hash, const void *data, size_t offset) {
+  HashArea *rehash(HashArea *area, Hash hash, const void *data, size_t *i) //-
+    MUON_HINT_SUFFIX(nonnull);
+
+  size_t i;
+  if (area->length < area->volume / 8 * 7)
+    i = hash + offset & area->volume - 1;
+  else if (rehash(area, hash, data, &i) == NULL)
+    return NULL;
+
+  struct HashItem next = {.hash = hash, .data = data};
+  while ((next = MOVE(area->item[i], next)).data != NULL)
+    i = hash_slot(area, next.hash, i + 1);
+  return area->length++, data;
+}
+
+#endif /* MUON_HASH_I */
