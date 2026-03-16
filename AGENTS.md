@@ -13,9 +13,7 @@ Standards: C11 for the public API (`muon` library), C23 for main executable and 
 ## Build Commands
 
 - **Build**: `cmake --build build`
-- **Test**: `cd build && ctest --output-on-failure`
-- **Run file**: `build/test/muon <source_file>`
-- **Build test binary only**: `cmake --build build --target main-test`
+- **Test**: `DOT= ./build/muon sample.muon`
 - **Clean build**: `rm -rf build && mkdir build && cmake -B build`
 
 ## Code Style Guidelines
@@ -107,31 +105,6 @@ Use X-macro style for code generation:
 ### Debugging
 
 Debug flags: `muon_debug_stream`, `mu_debug_colorize`, `debug_indent`, `debug_negate`, `debug_shortcore`, `debug_dot`, `debug_scan`. Use the `debug()` macro for output.
-
-## Testing
-
-- **Test runner**: `test/run_tests.sh`
-- **Test definitions**: `test/basic_tests.txt`
-- **Test structure**:
-  ```
-  Test: Test Name
-    [source code]
-
-    Expected Stdout:
-    [expected stdout output]
-
-    Expected Stderr:
-    [expected stderr output including tokens and AST]
-  ```
-- Strips 2-space indentation from test content (preserves internal indentation)
-- Compares expected vs actual stdout/stderr using diff
-- Whitespace handling is critical for test passing
-
-To run a single test manually:
-```bash
-echo 'define x = 42' > /tmp/test.muon
-build/test/muon /tmp/test.muon
-```
 
 ## Language Features
 

@@ -19,11 +19,11 @@
 
 static MuonType *node_type(MuonNode *node, const void *data) {
   const MuonInductor *inductor = data;
-  if (node->id >= inductor->node_number)
+  if (node->id >= inductor->node_number[node->tag])
     return NULL;
 
   MuonType *type;
-  if ((type = inductor->node[node->id].source) == NULL)
+  if ((type = node_source_type(inductor, node)) == NULL)
     return type;
 
   MuonType *solution;

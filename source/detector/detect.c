@@ -247,7 +247,9 @@ detect_t *detect_node(detect_t *detect, MuonNode *root) {
       case IS_CONCRETE_NODE(MuonNameExpr *name_expr) {
         MuonNode *target = roster_search(roster, name_expr->name);
         if (target != NULL) {
-          detect->result->data[name_expr->as_node.id] = target;
+          size_t offset = detect_node_offset(
+              detect->result, &name_expr->as_node);
+          detect->result->data[offset] = target;
           break;
         }
 
@@ -259,14 +261,17 @@ detect_t *detect_node(detect_t *detect, MuonNode *root) {
       case IS_CONCRETE_NODE(MuonSwitchCase *switch_case) {
         MuonNode *target = roster_search(roster, switch_case->name);
         assert(target != NULL);
-        detect->result->data[switch_case->as_node.id] = target;
+        size_t offset = detect_node_offset(
+            detect->result, &switch_case->as_node);
+        detect->result->data[offset] = target;
         break;
       }
 
       case IS_CONCRETE_NODE(MuonNameSign *name_sign) {
         MuonNode *target = roster_search(roster, name_sign->name);
         assert(target != NULL);
-        detect->result->data[name_sign->as_node.id] = target;
+        size_t offset = detect_node_offset(detect->result, &name_sign->as_node);
+        detect->result->data[offset] = target;
         break;
       }
 
