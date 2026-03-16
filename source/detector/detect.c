@@ -28,17 +28,32 @@ detect_t *detect_initialize(
     const MuonEngine *engine,
     mu_status_t *status,
     const MuonModule *module) {
-  size_t length = as_engine(engine)->node_number;
+  const Engine *internal = as_engine(engine);
+
+  size_t offset = 0;
+  for (size_t i = 0; i < MUON_NODE_NUMBER; i++) {
+    size_t j = i - MUON_MINORANT_NODE;
+    offset += internal->node_number[j];
+  }
 
   size_t size;
-  if (rare((size = struct_size(detect_result_t, data, length)) == 0))
+  if (rare((size = struct_size(detect_result_t, data, offset)) == 0))
     return errno = ENOMEM, NULL;
 
   detect_result_t *result;
   if ((result = malloc(size)) == NULL)
     return NULL;
-  *result = (detect_result_t) {.engine = engine, .length = length};
-  for (size_t i = 0; i < length; result->data[i++] = NULL)
+
+  offset = 0;
+  for (size_t i = 0; i < MUON_NODE_NUMBER; i++) {
+    size_t j = i - MUON_MINORANT_NODE;
+    result->node_offset[j] = offset;
+    result->node_number[j] = internal->node_number[j];
+    offset += internal->node_number[j];
+  }
+
+  result->engine = engine;
+  for (size_t i = 0; i < offset; result->data[i++] = NULL)
     ;
 
   *detect = (detect_t) {.status = status, .result = result, .module = module};

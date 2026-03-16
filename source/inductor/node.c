@@ -68,8 +68,8 @@ MuonType *induce_node(Inductor *inductor, MuonNode *root) {
     if ((type = on_return(inductor, node)) == NULL)
       goto except;
 
-    size_t offset = inductor->node_offset[node->tag];
-    inductor->node[offset + node->id].source = type;
+    size_t offset = node_offset(inductor, node);
+    inductor->node[offset].source = type;
   } while ((node = node_return(node)) != NULL);
 
   return node_type(inductor, root);

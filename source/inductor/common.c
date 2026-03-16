@@ -59,6 +59,7 @@ MuonInductor *muon_induce_initialize(
     return NULL;
   for (size_t i = 0; i < offset; i++)
     node[i] = (struct NodeType) {};
+  inductor->node = node;
 
   return inductor;
 }

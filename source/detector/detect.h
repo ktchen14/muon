@@ -9,8 +9,9 @@
 
 typedef struct {
   const MuonEngine *engine;
-  size_t length;
-  MuonNode *data[/* length */];
+  size_t node_number[MUON_NODE_NUMBER];
+  size_t node_offset[MUON_NODE_NUMBER];
+  MuonNode *data[/* total */];
 } detect_result_t;
 
 typedef struct {
@@ -20,10 +21,17 @@ typedef struct {
 } detect_t;
 
 MUON_HINT(nonnull, pure)
+static inline size_t detect_node_offset(
+    const detect_result_t *detect, MuonNode *node) {
+  assert(node->id < detect->node_number[node->tag]);
+  return detect->node_offset[node->tag] + node->id;
+}
+
+MUON_HINT(nonnull, pure)
 static inline MuonNode *detect_evince(
     const detect_result_t *detect, MuonNode *node) {
-  assert(node->id < detect->length);
-  MuonNode *result = detect->data[node->id];
+  size_t offset = detect_node_offset(detect, node);
+  MuonNode *result = detect->data[offset];
   assert(result != NULL);
   return result;
 }
@@ -31,8 +39,8 @@ static inline MuonNode *detect_evince(
 MUON_HINT(nonnull, pure)
 static inline MuonNode *detect_evince_loose(
     const detect_result_t *detect, MuonNode *node) {
-  assert(node->id < detect->length);
-  return detect->data[node->id];
+  size_t offset = detect_node_offset(detect, node);
+  return detect->data[offset];
 }
 
 MUON_HINT(nonnull, pure)
