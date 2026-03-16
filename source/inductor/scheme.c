@@ -9,30 +9,20 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-/// Like type_next2, but takes an explicit index instead of using cursor->i.
-/// Safe to call while the type's header union is being used for series walking.
-static inline Attitude type_next2_i(
-    const Inductor *inductor, Attitude origin, size_t *ip) {
+static inline Attitude type_next(const Inductor *inductor, Attitude origin) {
   if (origin.type->tag != MUON_VARIABLE_TYPE)
-    return type_at(origin, (*ip)++);
+    return type_at(origin, type_cursor(origin)->i++);
 
-  for (size_t i; (i = (*ip)++) < inductor->rule_length;) {
+  size_t i;
+  while ((i = type_cursor(origin)->i++) < inductor->rule_length) {
     const Rule *edge = &inductor->edge[i];
-    Attitude source = attitude_decode(edge->source);
-    Attitude target = attitude_decode(edge->target);
 
-    if (source.type == origin.type && source.charge == origin.charge)
-      return target;
-
-    if (target.type == origin.type && target.charge == origin.charge)
-      return source;
+    Attitude vertex = attitude_decode(edge->vertex[!origin.charge]);
+    if (attitude_eq(vertex, origin))
+      return attitude_decode(edge->vertex[origin.charge]);
   }
 
   return (Attitude) {};
-}
-
-static inline Attitude type_scan3(const Inductor *inductor, Attitude origin) {
-  return type_next2_i(inductor, origin, &type_cursor(origin)->i);
 }
 
 MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
@@ -51,7 +41,7 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
   goto entrance;
   do {
     Attitude next;
-    while (!attitude_isnull(next = type_scan3(inductor, cursor))) {
+    while (!attitude_isnull(next = type_next(inductor, cursor))) {
       struct TypeCursor *next_cursor = type_cursor(next);
       if (!attitude_isnull(attitude_decode(next_cursor->anterior)))
         continue;
