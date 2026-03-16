@@ -48,9 +48,15 @@
   emit(VariableView, variable_view, VARIABLE_VIEW __VA_OPT__(,) __VA_ARGS__)
 
 /// Expands to emit(Title, lower, UPPER, ...) for each concrete subtype of
+/// MuonImport
+#define MUON_EACH_IMPORT_STEM(emit, ...) \
+  emit(ExprImport, expr_import, EXPR_IMPORT __VA_OPT__(,) __VA_ARGS__)
+
+/// Expands to emit(Title, lower, UPPER, ...) for each concrete subtype of
 /// MuonNode
 #define MUON_EACH_NODE_STEM(emit, ...) \
   MUON_EACH_EXPR_STEM(emit __VA_OPT__(,) __VA_ARGS__) \
+  MUON_EACH_IMPORT_STEM(emit __VA_OPT__(,) __VA_ARGS__) \
   MUON_EACH_SIGN_STEM(emit __VA_OPT__(,) __VA_ARGS__) \
   MUON_EACH_STMT_STEM(emit __VA_OPT__(,) __VA_ARGS__) \
   MUON_EACH_VIEW_STEM(emit __VA_OPT__(,) __VA_ARGS__) \
@@ -127,6 +133,18 @@ typedef enum {
       MUON_TAKE, MUON_EACH_VIEW_STEM(MUON_NODE_TAG_EMIT)),
 } MuonViewTag;
 
+/// An enumeration over each concrete subtype of MuonImport, e.g.
+/// @c MUON_EXPR_IMPORT
+typedef enum {
+#define MUON_EMIT(T, l, UPPER) MUON_##UPPER = MUON_##UPPER##_NODE,
+  MUON_EACH_IMPORT_STEM(MUON_EMIT)
+#undef MUON_EMIT
+
+  /// Equivalent to the minimum enumerator in MuonImportTag
+  MUON_MINORANT_IMPORT = MUON_INDIRECT(
+      MUON_TAKE, MUON_EACH_IMPORT_STEM(MUON_NODE_TAG_EMIT)),
+} MuonImportTag;
+
 #undef MUON_NODE_TAG_EMIT
 
 enum {
@@ -145,6 +163,9 @@ enum {
 
   /// Number of distinct concrete subtypes of MuonView
   MUON_VIEW_NUMBER = MUON_EACH_VIEW_STEM(MUON_EMIT),
+
+  /// Number of distinct concrete subtypes of MuonImport
+  MUON_IMPORT_NUMBER = MUON_EACH_IMPORT_STEM(MUON_EMIT),
 #undef MUON_EMIT
 };
 
@@ -221,6 +242,21 @@ typedef const struct MuonView {
 /// The header that each MuonView subtype must have
 #define MUON_VIEW_HEADER union { \
   struct MuonView as_view; MUON_NODE_HEADER; \
+}
+
+/**
+ * @brief An abstract import
+ *
+ * Note that a MuonImport is a constant object; the mutable equivalent is a
+ * <tt>struct MuonImport</tt>.
+ */
+typedef const struct MuonImport {
+  union { MUON_NODE_HEADER; MuonImportTag tag; }; //-
+} MuonImport;
+
+/// The header that each MuonImport subtype must have
+#define MUON_IMPORT_HEADER union { \
+  struct MuonImport as_import; MUON_NODE_HEADER; \
 }
 
 typedef const struct MuonAccessExpr {
@@ -398,6 +434,11 @@ typedef const struct MuonScript {
   MuonStmt *argv[] MUON_HINT(counted_by(argc));
 } MuonScript;
 
+typedef const struct MuonExprImport {
+  MUON_IMPORT_HEADER;
+  MuonName *name;
+} MuonExprImport;
+
 /// @internal Used to emit each branch in MUON_NODE_TAG()
 #define MUON_NODE_TAG_EMIT(Title, l, UPPER) , Muon##Title *: MUON_##UPPER##_NODE
 
@@ -543,6 +584,9 @@ MuonVariableView *muon_variable_view(MuonEngine *engine, MuonName *name)
 
 MuonScript *muon_script(
     MuonEngine *engine, size_t argc, MuonStmt *argv[/* argc */])
+  MUON_HINT_SUFFIX(malloc, nonnull);
+
+MuonExprImport *muon_expr_import(MuonEngine *engine, MuonName *name)
   MUON_HINT_SUFFIX(malloc, nonnull);
 
 /// Optional arguments to muon_node_debug()

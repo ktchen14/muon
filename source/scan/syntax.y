@@ -37,6 +37,7 @@ typedef struct {
   MuonName *name;
 
   MuonExpr *expr;
+  MuonImport *import;
   MuonSign *sign;
   MuonStmt *stmt;
   MuonView *view;

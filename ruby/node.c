@@ -15,6 +15,7 @@ EACH_ABSTRACT_NODE_STEM(EMIT)
 enum {
   MUON_NODE = MUON_MINORANT_NODE + MUON_NODE_NUMBER,
   MUON_EXPR,
+  MUON_IMPORT,
   MUON_SIGN,
   MUON_STMT,
   MUON_VIEW,
@@ -31,14 +32,13 @@ static const struct {
   EACH_ABSTRACT_NODE_STEM(EMIT)
 #undef EMIT
 
-  [MUON_NODE] = { &rb_cObject, NULL },
+      [MUON_NODE] = {&rb_cObject, NULL},
 
 #define EMIT(Title, lower, UPPER, Super, super) \
     [MUON_##UPPER] = { &c##Super, &super##_type },
-  MUON_EACH_EXPR_STEM(EMIT, Expr, expr)
-  MUON_EACH_SIGN_STEM(EMIT, Sign, sign)
-  MUON_EACH_STMT_STEM(EMIT, Stmt, stmt)
-  MUON_EACH_VIEW_STEM(EMIT, View, view)
+  MUON_EACH_EXPR_STEM(EMIT, Expr, expr) MUON_EACH_SIGN_STEM(EMIT, Sign, sign)
+      MUON_EACH_STMT_STEM(EMIT, Stmt, stmt) MUON_EACH_VIEW_STEM(
+          EMIT, View, view) MUON_EACH_IMPORT_STEM(EMIT, Import, import)
 #undef EMIT
 
 #pragma GCC diagnostic pop
@@ -100,8 +100,8 @@ static VALUE boolean_expr_new(VALUE klass, VALUE rb_engine, VALUE rb_data) {
 }
 
 // CastExpr.new(engine, sign, matter)
-static VALUE cast_expr_new(VALUE klass, VALUE rb_engine, VALUE rb_sign,
-                           VALUE rb_matter) {
+static VALUE cast_expr_new(
+    VALUE klass, VALUE rb_engine, VALUE rb_sign, VALUE rb_matter) {
   MuonEngine *engine = as_muon_engine(rb_engine);
   MuonSign *sign = as_muon_sign(rb_sign);
   MuonExpr *matter = as_muon_expr(rb_matter);
@@ -122,8 +122,8 @@ static VALUE integer_expr_new(VALUE klass, VALUE rb_engine, VALUE rb_data) {
 }
 
 // InvokeExpr.new(engine, operator, argument)
-static VALUE invoke_expr_new(VALUE klass, VALUE rb_engine, VALUE rb_operator,
-                             VALUE rb_argument) {
+static VALUE invoke_expr_new(
+    VALUE klass, VALUE rb_engine, VALUE rb_operator, VALUE rb_argument) {
   MuonEngine *engine = as_muon_engine(rb_engine);
   MuonExpr *operator = as_muon_expr(rb_operator);
   MuonExpr *argument = as_muon_expr(rb_argument);
@@ -134,8 +134,8 @@ static VALUE invoke_expr_new(VALUE klass, VALUE rb_engine, VALUE rb_operator,
 }
 
 // LambdaExpr.new(engine, argument, matter)
-static VALUE lambda_expr_new(VALUE klass, VALUE rb_engine, VALUE rb_argument,
-                             VALUE rb_matter) {
+static VALUE lambda_expr_new(
+    VALUE klass, VALUE rb_engine, VALUE rb_argument, VALUE rb_matter) {
   MuonEngine *engine = as_muon_engine(rb_engine);
   MuonView *argument = as_muon_view(rb_argument);
   MuonExpr *matter = as_muon_expr(rb_matter);
@@ -260,8 +260,8 @@ static VALUE integer_sign_new(VALUE klass, VALUE rb_engine) {
 }
 
 // LambdaSign.new(engine, argument, output)
-static VALUE lambda_sign_new(VALUE klass, VALUE rb_engine, VALUE rb_argument,
-                             VALUE rb_output) {
+static VALUE lambda_sign_new(
+    VALUE klass, VALUE rb_engine, VALUE rb_argument, VALUE rb_output) {
   MuonEngine *engine = as_muon_engine(rb_engine);
   MuonSign *argument = as_muon_sign(rb_argument);
   MuonSign *output = as_muon_sign(rb_output);
@@ -298,7 +298,7 @@ static VALUE record_sign_new(int va_argc, VALUE *va_argv, VALUE klass) {
     VALUE rb_sign = rb_ary_entry(pair, 1);
     MuonName *name = NIL_P(rb_name) ? NULL : as_muon_name(engine, rb_name);
     MuonSign *sign = as_muon_sign(rb_sign);
-    argv[i] = (MuonSignMember){ .name = name, .sign = sign };
+    argv[i] = (MuonSignMember) {.name = name, .sign = sign};
   }
 
   MuonRecordSign *node;
@@ -319,8 +319,12 @@ static VALUE vector_sign_new(VALUE klass, VALUE rb_engine, VALUE rb_matter) {
 }
 
 // CoercionStmt.new(engine, source, target, expr)
-static VALUE coercion_stmt_new(VALUE klass, VALUE rb_engine, VALUE rb_source,
-                               VALUE rb_target, VALUE rb_expr) {
+static VALUE coercion_stmt_new(
+    VALUE klass,
+    VALUE rb_engine,
+    VALUE rb_source,
+    VALUE rb_target,
+    VALUE rb_expr) {
   MuonEngine *engine = as_muon_engine(rb_engine);
   MuonSign *source = as_muon_sign(rb_source);
   MuonSign *target = as_muon_sign(rb_target);
@@ -328,7 +332,8 @@ static VALUE coercion_stmt_new(VALUE klass, VALUE rb_engine, VALUE rb_source,
   MuonCoercionStmt *node;
   if ((node = muon_coercion_stmt(engine, source, target, expr)) == NULL)
     rb_raise(rb_eNoMemError, "Failed to allocate MuonCoercionStmt");
-  return initialize(as_coercion_stmt(node), rb_engine, rb_source, rb_target, rb_expr);
+  return initialize(
+      as_coercion_stmt(node), rb_engine, rb_source, rb_target, rb_expr);
 }
 
 // DatatypeStmt.new(engine, name, *argv)
@@ -352,8 +357,8 @@ static VALUE datatype_stmt_new(int va_argc, VALUE *va_argv, VALUE klass) {
 }
 
 // DefineStmt.new(engine, name, expr)
-static VALUE define_stmt_new(VALUE klass, VALUE rb_engine, VALUE rb_name,
-                             VALUE rb_expr) {
+static VALUE define_stmt_new(
+    VALUE klass, VALUE rb_engine, VALUE rb_name, VALUE rb_expr) {
   MuonEngine *engine = as_muon_engine(rb_engine);
   MuonName *name = as_muon_name(engine, rb_name);
   MuonExpr *expr = as_muon_expr(rb_expr);
@@ -393,8 +398,8 @@ static VALUE variable_view_new(VALUE klass, VALUE rb_engine, VALUE rb_name) {
 }
 
 // ExprMember.new(engine, name, expr) — name may be nil
-static VALUE expr_member_new(VALUE klass, VALUE rb_engine, VALUE rb_name,
-                             VALUE rb_expr) {
+static VALUE expr_member_new(
+    VALUE klass, VALUE rb_engine, VALUE rb_name, VALUE rb_expr) {
   MuonEngine *engine = as_muon_engine(rb_engine);
   MuonName *name = NIL_P(rb_name) ? NULL : as_muon_name(engine, rb_name);
   MuonExpr *expr = as_muon_expr(rb_expr);
@@ -405,8 +410,8 @@ static VALUE expr_member_new(VALUE klass, VALUE rb_engine, VALUE rb_name,
 }
 
 // SwitchCase.new(engine, name, expr)
-static VALUE switch_case_new(VALUE klass, VALUE rb_engine, VALUE rb_name,
-                             VALUE rb_expr) {
+static VALUE switch_case_new(
+    VALUE klass, VALUE rb_engine, VALUE rb_name, VALUE rb_expr) {
   MuonEngine *engine = as_muon_engine(rb_engine);
   MuonName *name = as_muon_name(engine, rb_name);
   MuonExpr *expr = as_muon_expr(rb_expr);
@@ -427,8 +432,8 @@ static VALUE datatype_option_new(VALUE klass, VALUE rb_engine, VALUE rb_name) {
 }
 
 // ViewMember.new(engine, name, view)
-static VALUE view_member_new(VALUE klass, VALUE rb_engine, VALUE rb_name,
-                             VALUE rb_view) {
+static VALUE view_member_new(
+    VALUE klass, VALUE rb_engine, VALUE rb_name, VALUE rb_view) {
   MuonEngine *engine = as_muon_engine(rb_engine);
   MuonName *name = as_muon_name(engine, rb_name);
   MuonView *view = as_muon_view(rb_view);
@@ -436,6 +441,16 @@ static VALUE view_member_new(VALUE klass, VALUE rb_engine, VALUE rb_name,
   if ((node = muon_view_member(engine, name, view)) == NULL)
     rb_raise(rb_eNoMemError, "Failed to allocate MuonViewMember");
   return initialize(as_view_member(node), rb_engine, rb_name, rb_view);
+}
+
+// ExprImport.new(engine, name)
+static VALUE expr_import_new(VALUE klass, VALUE rb_engine, VALUE rb_name) {
+  MuonEngine *engine = as_muon_engine(rb_engine);
+  MuonName *name = as_muon_name(engine, rb_name);
+  MuonExprImport *node;
+  if ((node = muon_expr_import(engine, name)) == NULL)
+    rb_raise(rb_eNoMemError, "Failed to allocate MuonExprImport");
+  return initialize(as_expr_import(node), rb_engine, rb_name);
 }
 
 // Script.new(engine, *argv)
@@ -647,6 +662,12 @@ static VALUE script_argv(VALUE self) {
   return rb_ary_freeze(ary);
 }
 
+// -- Import readers --
+
+static VALUE expr_import_name(VALUE self) {
+  return as_symbol(as_muon_expr_import(self)->name);
+}
+
 void Init_muon_node(VALUE mMuon) {
 #define EMIT(Title, l, UPPER) \
     c##Title = rb_define_class_under(mMuon, #Title, *super[MUON_##UPPER].klass);
@@ -662,6 +683,7 @@ void Init_muon_node(VALUE mMuon) {
   rb_undef_method(rb_singleton_class(cSign), "new");
   rb_undef_method(rb_singleton_class(cStmt), "new");
   rb_undef_method(rb_singleton_class(cView), "new");
+  rb_undef_method(rb_singleton_class(cImport), "new");
 
   rb_define_singleton_method(cAccessExpr, "new", access_expr_new, 2);
   rb_define_method(cAccessExpr, "name", access_expr_name, 0);
@@ -731,4 +753,7 @@ void Init_muon_node(VALUE mMuon) {
   rb_define_method(cViewMember, "view", view_member_view, 0);
   rb_define_singleton_method(cScript, "new", script_new, -1);
   rb_define_method(cScript, "argv", script_argv, 0);
+
+  rb_define_singleton_method(cExprImport, "new", expr_import_new, 2);
+  rb_define_method(cExprImport, "name", expr_import_name, 0);
 }

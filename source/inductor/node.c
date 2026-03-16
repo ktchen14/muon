@@ -280,6 +280,14 @@ MUON_HINT(nonnull) static MuonType *vector_expr_return(
   return &result->as_type;
 }
 
+MUON_HINT(nonnull) static MuonType *expr_import_return(
+    Inductor *inductor, MuonExprImport *import) {
+  MuonVariableType *result;
+  if ((result = muon_variable_type(inductor->engine)) == NULL)
+    return NULL;
+  return &result->as_type;
+}
+
 MUON_HINT(nonnull) static MuonType *boolean_sign_return(
     Inductor *inductor, MuonBooleanSign *sign) {
   MuonCoreType *result;

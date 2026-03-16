@@ -7,6 +7,7 @@
 #define EACH_ABSTRACT_NODE_STEM(emit, ...) \
   emit(Node, node, NODE) \
   emit(Expr, expr, EXPR __VA_OPT__(,) __VA_ARGS__) \
+  emit(Import, import, IMPORT __VA_OPT__(,) __VA_ARGS__) \
   emit(Sign, sign, SIGN __VA_OPT__(,) __VA_ARGS__) \
   emit(Stmt, stmt, STMT __VA_OPT__(,) __VA_ARGS__) \
   emit(View, view, VIEW __VA_OPT__(,) __VA_ARGS__) \
@@ -49,6 +50,10 @@ MUON_EACH_NODE_STEM(EMIT)
 
 [[gnu::nonnull]] static inline VALUE as_expr(MuonExpr *node) {
   switch (node->tag) { MUON_EACH_EXPR_STEM(EMIT) }
+}
+
+[[gnu::nonnull]] static inline VALUE as_import(MuonImport *node) {
+  switch (node->tag) { MUON_EACH_IMPORT_STEM(EMIT) }
 }
 
 [[gnu::nonnull]] static inline VALUE as_sign(MuonSign *node) {

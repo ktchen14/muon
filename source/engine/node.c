@@ -303,6 +303,16 @@ MuonSequenceExpr *sequence_expr_activate(struct MuonSequenceExpr *expr) {
   return assign_node(engine, &expr->as_node), expr;
 }
 
+MuonExprImport *muon_expr_import(MuonEngine *engine, MuonName *name) {
+  assert(name->engine == engine);
+
+  struct MuonExprImport *result;
+  if ((result = node_allocate(engine, sizeof(MuonExprImport))) == NULL)
+    return NULL;
+  *result = (MuonExprImport) {.as_import.tag = MUON_EXPR_IMPORT, .name = name};
+  return assign_node(engine, &result->as_node), result;
+}
+
 MuonBooleanSign *muon_boolean_sign(MuonEngine *engine) {
   struct MuonBooleanSign *result;
   if ((result = node_allocate(engine, sizeof(MuonBooleanSign))) == NULL)
@@ -625,6 +635,10 @@ void (muon_node_debug)(MuonNode *node, struct MuonNodeDebugArgs args) { //-
     case IS_CONCRETE_NODE(MuonExprMember *expr_member)
       if (expr_member->name != NULL)
         debug("(name = " PRIsNAME ")", DEBUG_NAME(expr_member->name));
+      break;
+
+    case IS_CONCRETE_NODE(MuonExprImport *expr_import)
+      debug("(name = " PRIsNAME ")", DEBUG_NAME(expr_import->name));
       break;
 
     case IS_CONCRETE_NODE(MuonSwitchCase *switch_case)
