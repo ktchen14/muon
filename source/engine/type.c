@@ -183,7 +183,7 @@ MuonCoreType *core_type_activate(struct MuonCoreType *type) {
         goto next;
     }
 
-    // return free(type_header(&type->as_type)), next;
+    return free(type_header(&type->as_type)), next;
   next:
   }
   type->as_stator.hash = hash;
