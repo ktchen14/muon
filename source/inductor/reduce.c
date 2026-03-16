@@ -365,7 +365,7 @@ Aspect *varaspect0(Inductor *inductor, MuonVariableType *variable_type) {
 }
 
 MuonType *reduce_node(Inductor *inductor, MuonNode *root) {
-  assert(root->id < inductor->node_length);
+  assert(root->id < inductor->node_number);
 
   MuonNode *node = root;
   do {

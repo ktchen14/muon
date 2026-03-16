@@ -37,7 +37,7 @@ static inline MuonNode *assign_node(MuonEngine *engine, struct MuonNode *node) {
   Engine *internal = as_engine(engine);
 
   node->engine = engine;
-  node->id = internal->node_number++;
+  node->id = internal->node_number[node->tag]++;
   return node;
 }
 

@@ -11,7 +11,7 @@
 #include <stdlib.h>
 
 typedef struct {
-  size_t node_number;
+  size_t node_number[MUON_NODE_NUMBER];
   size_t core_length;
   size_t type_number;
   size_t instance_number;

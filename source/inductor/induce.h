@@ -95,7 +95,10 @@ MUON_HINT(nonnull, pure, returns_nonnull)
 static inline MuonType *node_source_type(
     const Inductor *inductor, MuonNode *node) {
   assert(node->engine == inductor->engine);
-  MuonType *result = inductor->node[node->id].source;
+  assert(node->id < inductor->node_number[node->tag]);
+
+  size_t offset = inductor->node_offset[node->tag];
+  MuonType *result = inductor->node[offset + node->id].source;
   return assert(result != NULL), result;
 }
 
@@ -104,7 +107,10 @@ MUON_HINT(nonnull, pure)
 static inline MuonType *node_target_type(
     const Inductor *inductor, MuonNode *node) {
   assert(node->engine == inductor->engine);
-  return inductor->node[node->id].target;
+  assert(node->id < inductor->node_number[node->tag]);
+
+  size_t offset = inductor->node_offset[node->tag];
+  return inductor->node[offset + node->id].target;
 }
 
 #endif /* MU_INDUCTOR_INDUCE_I */

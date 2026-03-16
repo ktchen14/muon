@@ -49,7 +49,8 @@ struct Inductor {
   const detect_result_t *detect;
   const MuonModule *module;
 
-  size_t node_length;
+  size_t node_number[MUON_NODE_NUMBER];
+  size_t node_offset[MUON_NODE_NUMBER];
   struct NodeType {
     MuonType *source;
     MuonType *target;

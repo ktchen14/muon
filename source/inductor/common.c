@@ -10,18 +10,10 @@
 
 MuonInductor *muon_induce_initialize(
     MuonInductor *inductor,
-    MuonEngine *engine,
+    MuonEngine *opaque,
     const detect_t *detect,
     const MuonModule *module) {
-  assert(detect_result(detect)->engine == engine);
-
-  size_t node_length = as_engine(engine)->node_number;
-
-  struct NodeType *node;
-  if ((node = malloc(sizeof(struct NodeType[node_length]))) == NULL)
-    return NULL;
-  for (size_t i = 0; i < node_length; i++)
-    node[i] = (struct NodeType) {};
+  assert(detect_result(detect)->engine == opaque);
 
   MuonType **solution;
   if ((solution = malloc(sizeof(MuonType *[1000]))) == NULL)
@@ -41,11 +33,9 @@ MuonInductor *muon_induce_initialize(
     return NULL;
 
   *inductor = (MuonInductor) {
-    .engine = engine,
+    .engine = opaque,
     .detect = detect_result(detect),
     .module = module,
-    .node_length = node_length,
-    .node = node,
     .type_length = 1000,
     .solution = solution,
     .frontier = frontier,
@@ -53,6 +43,22 @@ MuonInductor *muon_induce_initialize(
     .edge = universe_data,
     .instance_id = 1,
   };
+
+  Engine *engine = as_engine(opaque);
+
+  size_t offset = 0;
+  for (size_t i = 0; i < MUON_NODE_NUMBER; i++) {
+    size_t j = i - MUON_MINORANT_NODE;
+    inductor->node_offset[j] = offset;
+    inductor->node_number[j] = engine->node_number[j];
+    offset += engine->node_number[j];
+  }
+
+  struct NodeType *node;
+  if ((node = malloc(sizeof(struct NodeType[offset]))) == NULL)
+    return NULL;
+  for (size_t i = 0; i < offset; i++)
+    node[i] = (struct NodeType) {};
 
   return inductor;
 }

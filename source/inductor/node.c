@@ -8,11 +8,19 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-/// Return the type of the @a node in the @a inductor
+/// Return the offset to the <em>node</em>'s NodeType in the @a inductor
+MUON_HINT(nonnull, pure)
+static inline size_t node_offset(const Inductor *inductor, MuonNode *node) {
+  assert(node->engine == inductor->engine);
+  assert(node->id < inductor->node_number[node->tag]);
+  return inductor->node_offset[node->tag] + node->id;
+}
+
+/// Return the source type of the @a node in the @a inductor
 MUON_HINT(nonnull, pure, returns_nonnull)
 static inline MuonType *node_type(const Inductor *inductor, MuonNode *node) {
-  assert(node->engine == inductor->engine);
-  MuonType *result = inductor->node[node->id].source;
+  size_t offset = node_offset(inductor, node);
+  MuonType *result = inductor->node[offset].source;
   return assert(result != NULL), result;
 }
 
@@ -44,7 +52,7 @@ static MuonType *on_return(Inductor *inductor, MuonNode *node)
   MUON_HINT_SUFFIX(nonnull);
 
 MuonType *induce_node(Inductor *inductor, MuonNode *root) {
-  assert(root->id < inductor->node_length);
+  assert(root->id < inductor->node_number[root->tag]);
 
   MuonNode *node = root;
   do {
@@ -59,7 +67,9 @@ MuonType *induce_node(Inductor *inductor, MuonNode *root) {
     MuonType *type;
     if ((type = on_return(inductor, node)) == NULL)
       goto except;
-    inductor->node[node->id].source = type;
+
+    size_t offset = inductor->node_offset[node->tag];
+    inductor->node[offset + node->id].source = type;
   } while ((node = node_return(node)) != NULL);
 
   return node_type(inductor, root);
