@@ -13,7 +13,7 @@
 static inline MuonEngine *unlock_engine(struct MuonType *type) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-qual"
-  return (MuonEngine *) type->as_stator.engine;
+  return (MuonEngine *) type->engine;
 #pragma GCC diagnostic pop
 }
 
@@ -34,7 +34,7 @@ static inline void *type_allocate(MuonEngine *engine, size_t size) {
 /// @internal Assign the abstract @a type to the @a engine
 MUON_HINT(nonnull, returns_nonnull)
 static inline MuonType *assign_type(MuonEngine *engine, struct MuonType *type) {
-  type->as_stator.engine = engine;
+  type->engine = engine;
   type->id = as_engine(engine)->type_number++;
   return type;
 }
@@ -44,7 +44,7 @@ MUON_HINT(nonnull) static inline MuonType *new_assign_type(
     Engine *engine, struct MuonType *type, size_t i) {
   if (stator_insert(engine, &type->as_stator, i) == NULL)
     return NULL;
-  type->as_stator.engine = as_engine(engine);
+  type->engine = as_engine(engine);
   type->id = engine->type_number++;
   return type;
 }
@@ -104,18 +104,18 @@ MuonMeetType *muon_meet_type(
   return meet_type_activate(result);
 }
 
-MuonVariableType *muon_variable_type(MuonEngine *engine) {
+MuonVariableType *muon_variable_type(MuonEngine *opaque) {
+  Engine *engine = as_engine(opaque);
+
   struct MuonVariableType *result;
-  if ((result = type_allocate(engine, sizeof(MuonVariableType))) == NULL)
+  if ((result = type_allocate(opaque, sizeof(MuonVariableType))) == NULL)
     return NULL;
   *result = (MuonVariableType) {
     .as_type = {
-      .as_stator = {.engine = engine, .tag = MUON_VARIABLE_TYPE_STATOR},
-      .scheme = as_engine(engine)->scheme,
-    },
+      .tag = MUON_VARIABLE_TYPE, .engine = opaque, .scheme = engine->scheme
+    }
   };
-
-  return assign_type(engine, &result->as_type), result;
+  return assign_type(opaque, &result->as_type), result;
 }
 
 MuonSchemeType *muon_scheme_type(MuonEngine *engine, MuonType *matter) {
@@ -126,7 +126,7 @@ MuonSchemeType *muon_scheme_type(MuonEngine *engine, MuonType *matter) {
 }
 
 struct MuonCoreType *core_type_allocate(MuonEngine *opaque, MuonCore *core) {
-  assert(core->as_stator.engine == opaque);
+  assert(core->engine == opaque);
 
   Engine *engine = as_engine(opaque);
 
@@ -139,10 +139,7 @@ struct MuonCoreType *core_type_allocate(MuonEngine *opaque, MuonCore *core) {
     return NULL;
   *result = (MuonCoreType) {
     .as_type =
-        {
-          .as_stator = {.tag = MUON_CORE_TYPE_STATOR, .engine = opaque},
-          .scheme = engine->scheme,
-        },
+        {.tag = MUON_CORE_TYPE, .engine = opaque, .scheme = engine->scheme},
     .core = core,
   };
   return result;
@@ -156,7 +153,7 @@ MuonCoreType *core_type_activate(struct MuonCoreType *type) {
   for (size_t i = 0; i < core->argc; i++) {
     MuonCoreMember member = core->argv[i];
     assert(type->argv[member.i] != NULL);
-    assert(type->argv[member.i]->as_stator.engine == opaque);
+    assert(type->argv[member.i]->engine == opaque);
   }
 
   MuonHash hash = hash_join(
@@ -202,7 +199,8 @@ struct MuonJoinType *join_type_allocate(MuonEngine *engine, size_t argc) {
   *result = (MuonJoinType) {
     .as_type =
         {
-          .as_stator = {.engine = engine, .tag = MUON_JOIN_TYPE_STATOR},
+          .tag = MUON_JOIN_TYPE,
+          .engine = engine,
           .scheme = as_engine(engine)->scheme,
         },
     .argc = argc,
@@ -215,7 +213,7 @@ MuonJoinType *join_type_activate(struct MuonJoinType *type) {
 
   for (size_t i = 0; i < type->argc; i++) {
     assert(type->argv[i] != NULL);
-    assert(type->argv[i]->as_stator.engine == engine);
+    assert(type->argv[i]->engine == engine);
   }
   return assign_type(engine, &type->as_type), type;
 }
@@ -231,7 +229,8 @@ struct MuonMeetType *meet_type_allocate(MuonEngine *engine, size_t argc) {
   *result = (MuonMeetType) {
     .as_type =
         {
-          .as_stator = {.engine = engine, .tag = MUON_MEET_TYPE_STATOR},
+          .tag = MUON_MEET_TYPE,
+          .engine = engine,
           .scheme = as_engine(engine)->scheme,
         },
     .argc = argc,
@@ -244,7 +243,7 @@ MuonMeetType *meet_type_activate(struct MuonMeetType *type) {
 
   for (size_t i = 0; i < type->argc; i++) {
     assert(type->argv[i] != NULL);
-    assert(type->argv[i]->as_stator.engine == engine);
+    assert(type->argv[i]->engine == engine);
   }
   return assign_type(engine, &type->as_type), type;
 }
@@ -255,7 +254,8 @@ struct MuonSchemeType *scheme_type_allocate(MuonEngine *engine) {
     return NULL;
   *result = (MuonSchemeType) {
     .as_type = {
-      .as_stator = {.engine = engine, .tag = MUON_SCHEME_TYPE_STATOR},
+      .tag = MUON_SCHEME_TYPE,
+      .engine = engine,
       .scheme = as_engine(engine)->scheme,
     },
   };
@@ -265,7 +265,7 @@ struct MuonSchemeType *scheme_type_allocate(MuonEngine *engine) {
 MuonSchemeType *scheme_type_activate(
     struct MuonSchemeType *type, MuonType *matter) {
   MuonEngine *engine = unlock_engine(&type->as_type);
-  assert(matter->as_stator.engine == engine);
+  assert(matter->engine == engine);
   type->matter = matter;
   return assign_type(engine, &type->as_type), type;
 }

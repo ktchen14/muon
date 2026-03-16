@@ -15,8 +15,8 @@ static inline MuonEngine *unlock_engine(struct MuonModule *module) {
 }
 
 MuonExport *muon_export(MuonEngine *engine, MuonName *name, MuonType *type) {
-  assert(name->as_stator.engine == engine);
-  assert(type->as_stator.engine == engine);
+  assert(name->engine == engine);
+  assert(type->engine == engine);
 
   struct MuonExport *result;
   if ((result = engine_allocate(engine, sizeof(MuonExport))) == NULL)

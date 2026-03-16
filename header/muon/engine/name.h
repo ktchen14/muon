@@ -14,6 +14,7 @@
  */
 typedef const struct MuonName {
   MUON_STATOR_HEADER;
+  const MuonEngine *engine;
 
   /// The length of the name (not counting the null terminator)
   size_t length;

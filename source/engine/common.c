@@ -31,9 +31,11 @@ MuonEngine *muon_engine_initialize(MuonEngine *opaque) {
     return NULL;
   *boolean_core = (MuonCore) {
     .as_stator =
-        {.tag = MUON_BOOLEAN_CORE_STATOR,
+        {
+          .tag = MUON_BOOLEAN_CORE_STATOR,
           .hash = hash_object((MuonCoreTag) {MUON_BOOLEAN_CORE}),
-          .engine = opaque},
+        },
+    .engine = opaque,
     .name = boolean_name
   };
   engine->boolean_core = boolean_core;
@@ -47,8 +49,7 @@ MuonEngine *muon_engine_initialize(MuonEngine *opaque) {
   if ((integer_core = engine_allocate(opaque, sizeof(MuonCore))) == NULL)
     return NULL;
   *integer_core = (MuonCore) {
-    .as_stator = {.tag = MUON_INTEGER_CORE_STATOR, .engine = opaque},
-    .name = integer_name
+    .tag = MUON_INTEGER_CORE, .engine = opaque, .name = integer_name
   };
   engine->integer_core = integer_core;
 
@@ -62,9 +63,7 @@ MuonEngine *muon_engine_initialize(MuonEngine *opaque) {
   if ((lambda_core = engine_allocate(opaque, size)) == NULL)
     return NULL;
   *lambda_core = (MuonCore) {
-    .as_stator = {.tag = MUON_LAMBDA_CORE_STATOR, .engine = opaque},
-    .name = lambda_name,
-    .argc = 2
+    .tag = MUON_LAMBDA_CORE, .engine = opaque, .name = lambda_name, .argc = 2
   };
   lambda_core->argv[0] = (MuonCoreMember) {.i = 0, .variance = 1};
   lambda_core->argv[1] = (MuonCoreMember) {.i = 1};
@@ -75,7 +74,7 @@ MuonEngine *muon_engine_initialize(MuonEngine *opaque) {
   if ((vector_core = engine_allocate(opaque, size)) == NULL)
     return NULL;
   *vector_core = (MuonCore) {
-    .as_stator = {.tag = MUON_VECTOR_CORE_STATOR, .engine = opaque}, .argc = 1
+    .tag = MUON_VECTOR_CORE, .engine = opaque, .argc = 1
   };
   vector_core->argv[0] = (MuonCoreMember) {};
   engine->vector_core = vector_core;
@@ -94,8 +93,6 @@ MuonEngine *muon_engine_initialize(MuonEngine *opaque) {
 }
 
 Engine *stator_rehash(Engine *engine, MuonStator *stator, size_t *i) {
-  assert(as_engine(stator->engine) == engine);
-
   size_t size;
   if (ckd_mul(&size, engine->stator_volume, sizeof(MuonStator *) * 2))
     return errno = ENOMEM, NULL;

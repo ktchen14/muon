@@ -23,6 +23,7 @@ typedef struct {
 
 typedef const struct MuonCore {
   union { MUON_STATOR_HEADER; MuonCoreTag tag : 8; }; //-
+  const MuonEngine *engine;
 
   MuonName *name;
   size_t argc;

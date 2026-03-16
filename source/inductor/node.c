@@ -35,7 +35,7 @@ static inline MuonType *node_type(const Inductor *inductor, MuonNode *node) {
  */
 MuonType *node_restrain(Inductor *inductor, MuonNode *node, MuonType *type) {
   assert(node->engine == inductor->engine);
-  assert(type->as_stator.engine == inductor->engine);
+  assert(type->engine == inductor->engine);
 
   MuonType *source = node_type(inductor, node);
   if (type_restrain(inductor, source, type, node) == NULL)

@@ -31,7 +31,7 @@ MuonInstance *instance_activate(
     struct MuonInstance *instance, MuonSchemeType *scheme) {
   MuonEngine *engine = unlock_engine(instance);
 
-  assert(scheme->as_stator.engine == engine);
+  assert(scheme->as_type.engine == engine);
 
   instance->id = as_engine(engine)->instance_number++;
   instance->scheme = scheme;

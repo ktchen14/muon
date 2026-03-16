@@ -12,7 +12,7 @@
 static inline MuonEngine *unlock_engine(struct MuonCore *core) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-qual"
-  return (MuonEngine *) core->as_stator.engine;
+  return (MuonEngine *) core->engine;
 #pragma GCC diagnostic pop
 }
 
@@ -20,10 +20,7 @@ MuonCore *mu_simple_core(MuonEngine *engine, MuonName *name) {
   struct MuonCore *core;
   if ((core = malloc(sizeof(MuonCore))) == NULL)
     return NULL;
-  *core = (MuonCore) {
-    .as_stator = {.tag = MUON_CUSTOM_CORE_STATOR, .engine = engine},
-    .name = name
-  };
+  *core = (MuonCore) {.tag = MUON_CUSTOM_CORE, .engine = engine, .name = name};
   return core;
 }
 
@@ -46,8 +43,7 @@ struct MuonCore *record_core_allocate(MuonEngine *engine, size_t argc) {
   if ((allocation = engine_allocate(engine, size)) == NULL)
     return NULL;
   *allocation = (MuonCore) {
-    .as_stator = {.tag = MUON_RECORD_CORE_STATOR, .engine = engine},
-    .argc = argc
+    .tag = MUON_RECORD_CORE, .engine = engine, .argc = argc
   };
   return allocation;
 }
@@ -58,7 +54,7 @@ MuonCore *record_core_activate(struct MuonCore *allocation) {
   MuonEngine *opaque = unlock_engine(allocation);
   for (size_t i = 0; i < allocation->argc; i++) {
     MuonName *name = allocation->argv[i].name;
-    assert(name != NULL && name->as_stator.engine == opaque);
+    assert(name != NULL && name->engine == opaque);
     assert(allocation->argv[i].i == i);
     assert(allocation->argv[i].variance == 0);
   }
