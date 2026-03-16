@@ -635,9 +635,6 @@ void (muon_node_debug)(MuonNode *node, struct MuonNodeDebugArgs args) { //-
       debug("(name = " PRIsNAME ")", DEBUG_NAME(name_sign->name));
       break;
 
-    case IS_CONCRETE_NODE(MuonVariableSign *variable_sign)
-      break;
-
     case IS_CONCRETE_NODE(MuonDatatypeOption *datatype_option)
       debug("(name = " PRIsNAME ")", DEBUG_NAME(datatype_option->name));
       break;
