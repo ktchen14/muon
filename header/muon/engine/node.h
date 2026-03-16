@@ -18,7 +18,6 @@
   emit(InvokeExpr, invoke_expr, INVOKE_EXPR __VA_OPT__(,) __VA_ARGS__) \
   emit(LambdaExpr, lambda_expr, LAMBDA_EXPR __VA_OPT__(,) __VA_ARGS__) \
   emit(NameExpr, name_expr, NAME_EXPR __VA_OPT__(,) __VA_ARGS__) \
-  emit(NativeExpr, native_expr, NATIVE_EXPR __VA_OPT__(,) __VA_ARGS__) \
   emit(RecordExpr, record_expr, RECORD_EXPR __VA_OPT__(,) __VA_ARGS__) \
   emit(SequenceExpr, sequence_expr, SEQUENCE_EXPR __VA_OPT__(,) __VA_ARGS__) \
   emit(SwitchExpr, switch_expr, SWITCH_EXPR __VA_OPT__(,) __VA_ARGS__) \
@@ -464,9 +463,6 @@ MuonLambdaExpr *muon_lambda_expr(
   MUON_HINT_SUFFIX(malloc, nonnull);
 
 MuonNameExpr *muon_name_expr(MuonEngine *engine, MuonName *name)
-  MUON_HINT_SUFFIX(malloc, nonnull);
-
-MuonNativeExpr *muon_native_expr(MuonEngine *engine, MuonName *name)
   MUON_HINT_SUFFIX(malloc, nonnull);
 
 MuonExprMember *muon_expr_member(

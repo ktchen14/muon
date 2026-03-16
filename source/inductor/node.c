@@ -184,26 +184,6 @@ MUON_HINT(nonnull) static MuonType *name_expr_return(
   return NULL;
 }
 
-MUON_HINT(nonnull) static MuonType *native_expr_return(
-    Inductor *inductor, MuonNativeExpr *expr) {
-  MuonCoreType *integer_type;
-  if ((integer_type = muon_integer_type(inductor->engine)) == NULL)
-    return NULL;
-
-  MuonCoreType *vector_type;
-  if ((vector_type = muon_vector_type(inductor->engine, &integer_type->as_type))
-      == NULL)
-    return NULL;
-
-  MuonType *argument_type = &vector_type->as_type;
-  MuonType *output_type = &integer_type->as_type;
-  MuonCoreType *result;
-  if ((result = muon_lambda_type(inductor->engine, argument_type, output_type))
-      == NULL)
-    return NULL;
-  return &result->as_type;
-}
-
 MUON_HINT(nonnull) static MuonType *record_expr_return(
     Inductor *inductor, MuonRecordExpr *expr) {
   MuonEngine *engine = inductor->engine;

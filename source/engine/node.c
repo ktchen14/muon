@@ -116,16 +116,6 @@ MuonNameExpr *muon_name_expr(MuonEngine *engine, MuonName *name) {
   return assign_node(engine, &result->as_node), result;
 }
 
-MuonNativeExpr *muon_native_expr(MuonEngine *engine, MuonName *name) {
-  assert(name->as_stator.engine == engine);
-
-  struct MuonNativeExpr *result;
-  if ((result = node_allocate(engine, sizeof(MuonNativeExpr))) == NULL)
-    return NULL;
-  *result = (MuonNativeExpr) {.as_expr.tag = MUON_NATIVE_EXPR, .name = name};
-  return assign_node(engine, &result->as_node), result;
-}
-
 MuonExprMember *muon_expr_member(
     MuonEngine *engine, MuonName *name, MuonExpr *expr) {
   assert(name == NULL || name->as_stator.engine == engine);
@@ -630,10 +620,6 @@ void (muon_node_debug)(MuonNode *node, struct MuonNodeDebugArgs args) { //-
 
     case IS_CONCRETE_NODE(MuonNameExpr *name_expr)
       debug("(name = " PRIsNAME ")", DEBUG_NAME(name_expr->name));
-      break;
-
-    case IS_CONCRETE_NODE(MuonNativeExpr *native_expr)
-      debug("(name = " PRIsNAME ")", DEBUG_NAME(native_expr->name));
       break;
 
     case IS_CONCRETE_NODE(MuonExprMember *expr_member)
