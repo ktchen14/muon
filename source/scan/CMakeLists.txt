@@ -18,4 +18,4 @@ set_property(SOURCE "${BISON_SCAN_OUTPUT_SOURCE}" APPEND PROPERTY
   OBJECT_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/scan.c")
 
 add_library(muon-scan OBJECT "${BISON_SCAN_OUTPUT_SOURCE}")
-target_link_libraries(muon-scan PRIVATE muon-common)
+target_link_libraries(muon-scan PRIVATE muon-header)

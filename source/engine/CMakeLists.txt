@@ -1,5 +1,5 @@
 add_executable(muon-engine-generate generate.c)
-target_link_libraries(muon-engine-generate PRIVATE muon-common)
+target_link_libraries(muon-engine-generate PRIVATE muon-header)
 
 file(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/header/muon/engine")
 add_custom_command(
@@ -19,7 +19,7 @@ add_library(muon-engine OBJECT
   node.c node.h
   type.c type.h
 )
-target_link_libraries(muon-engine PRIVATE muon-common)
+target_link_libraries(muon-engine PRIVATE muon-header)
 target_sources(muon-engine INTERFACE FILE_SET HEADERS
   BASE_DIRS "${PROJECT_BINARY_DIR}/header"
   FILES "${PROJECT_BINARY_DIR}/header/muon/engine/object.h"

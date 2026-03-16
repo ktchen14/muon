@@ -1,4 +1,4 @@
-target_sources(muon-common INTERFACE FILE_SET HEADERS FILES
+target_sources(muon-header INTERFACE FILE_SET HEADERS FILES
   muon/common.h
 
   muon/engine.h

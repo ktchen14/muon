@@ -4,7 +4,7 @@ add_library(muon-author OBJECT
   node.c
   type.c
 )
-target_link_libraries(muon-author PRIVATE muon-common)
+target_link_libraries(muon-author PRIVATE muon-header)
 
 target_compile_definitions(muon-author PRIVATE ${LLVM_DEFINITIONS_LIST})
 target_include_directories(muon-author PRIVATE ${LLVM_INCLUDE_DIRS})

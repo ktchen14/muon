@@ -24,13 +24,13 @@ add_compile_options(
   -Wno-unused-parameter
 )
 
-add_library(muon-common INTERFACE)
-target_compile_features(muon-common INTERFACE c_std_23)
+add_library(muon-header INTERFACE)
+target_compile_features(muon-header INTERFACE c_std_23)
 
 add_subdirectory(header)
 
 add_library(muon SHARED)
-target_link_libraries(muon PUBLIC muon-common)
+target_link_libraries(muon PUBLIC muon-header)
 set_property(TARGET muon PROPERTY VERSION "${Muon_VERSION}")
 
 add_executable(muon-main source/main.c)
