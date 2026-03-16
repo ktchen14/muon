@@ -51,10 +51,8 @@ static MuonNode *on_continue(Inductor *inductor, MuonNode *node, MuonNode *next)
 static MuonType *on_return(Inductor *inductor, MuonNode *node)
   MUON_HINT_SUFFIX(nonnull);
 
-MuonType *induce_node(Inductor *inductor, MuonNode *root) {
-  assert(root->id < inductor->node_number[root->tag]);
-
-  MuonNode *node = root;
+void *induce_script(MuonInductor *inductor, MuonScript *script) {
+  MuonNode *node = &script->as_node;
   do {
     MuonNode *next;
     while ((next = node_at(node, node_cursor(node)->i++)) != NULL) {
@@ -72,17 +70,6 @@ MuonType *induce_node(Inductor *inductor, MuonNode *root) {
     inductor->node[offset].source = type;
   } while ((node = node_return(node)) != NULL);
 
-  return node_type(inductor, root);
-
-except:
-  while ((node = node_return(node)) != NULL) {}
-  return NULL;
-}
-
-void *induce_script(MuonInductor *inductor, MuonScript *script) {
-  if (induce_node(inductor, &script->as_node) == NULL)
-    return NULL;
-
   for (size_t i = 0; i < inductor->rule_length; i++) {
     Rule *rule = &inductor->edge[i];
     if (rule->tag != INDIRECT_RULE)
@@ -91,6 +78,10 @@ void *induce_script(MuonInductor *inductor, MuonScript *script) {
     i--;
   }
   return inductor;
+
+except:
+  while ((node = node_return(node)) != NULL) {}
+  return NULL;
 }
 
 MUON_HINT(nonnull) static MuonType *access_expr_return(

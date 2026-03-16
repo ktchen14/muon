@@ -36,15 +36,6 @@
   return NULL;
 }
 
-/**
- * @brief Return the type of the @a node
- *
- * This will traverse each node reachable from the @a node and will add all
- * constraints to the @a inductor.
- */
-MuonType *induce_node(MuonInductor *inductor, MuonNode *node)
-  MUON_HINT_SUFFIX(nonnull);
-
 void *induce_script(MuonInductor *inductor, MuonScript *script)
   MUON_HINT_SUFFIX(nonnull);
 
