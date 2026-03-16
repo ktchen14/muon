@@ -60,18 +60,4 @@ typedef const struct MuonStator {
 #define MUON_STATOR_TAG(stator) _Generic( \
   (stator) {} MUON_EACH_TYPE(MUON_STATOR_TAG_EMIT), MuonName *: MUON_NAME_STATOR)
 
-/// @internal Used to decide the cast result in muon_stator_cast()
-MUON_HINT(nonnull, pure)
-static inline MuonStator *muon_stator_cast(
-    MuonStator *stator, MuonStatorTag tag) {
-  return stator->tag == tag ? stator : NULL;
-}
-
-/**
- * @brief Downcast the @a abstract stator to the <tt>typeof(concrete)</tt>
- */
-#define muon_stator_cast(stator, concrete) ( \
-  (typeof(concrete)) muon_stator_cast((stator), MUON_STATOR_TAG(typeof(concrete))) \
-)
-
 #endif /* MUON_ENGINE_STATOR_H */
