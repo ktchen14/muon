@@ -32,13 +32,11 @@ MuonName *muon_name(
   struct MuonName *allocation;
   if ((allocation = engine_allocate2(engine, size)) == NULL)
     return NULL;
-  *allocation = (MuonName) {
-    .as_stator.tag = MUON_NAME_STATOR, .engine = opaque, .length = length
-  };
+  *allocation = (MuonName) {.engine = opaque, .length = length};
   memcpy(allocation->text, text, length);
   allocation->text[length] = '\0';
 
-  if (stator_insert(engine, &allocation->as_stator, hash, i) == NULL)
+  if (stator_insert(engine, allocation, MUON_NAME_STATOR, hash, i) == NULL)
     return NULL;
   return allocation;
 }

@@ -36,14 +36,14 @@ typedef const struct MuonSchemeType MuonSchemeType;
  * <tt>struct MuonType</tt>.
  */
 typedef const struct MuonType {
-  union { MUON_STATOR_HEADER; MuonTypeTag tag; }; //-
+  MuonTypeTag tag;
   const MuonEngine *engine;
   size_t id;
   MuonSchemeType *scheme;
 } MuonType;
 
 /// The header that each MuonType subtype must have
-#define MUON_TYPE_HEADER union { struct MuonType as_type; MUON_STATOR_HEADER; }
+#define MUON_TYPE_HEADER struct MuonType as_type
 
 typedef const struct MuonCoreType {
   MUON_TYPE_HEADER;

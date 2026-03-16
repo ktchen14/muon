@@ -39,19 +39,6 @@ typedef enum {
 #undef MUON_EMIT
 } MuonStatorTag;
 
-/**
- * @brief An abstract stator
- *
- * Note that a MuonStator is a constant object; the mutable equivalent is a
- * <tt>struct MuonStator</tt>.
- */
-typedef const struct MuonStator {
-  MuonStatorTag tag;
-} MuonStator;
-
-/// The header that each MuonStator subtype must have
-#define MUON_STATOR_HEADER struct MuonStator as_stator
-
 /// @internal Used to emit each branch in MUON_STATOR_TAG()
 #define MUON_STATOR_TAG_EMIT(Title, l, UPPER) \
   , Muon##Title *: MUON_##UPPER##_STATOR

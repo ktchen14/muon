@@ -40,7 +40,7 @@ typedef struct {
   struct HashStator {
     MuonStatorTag tag : 8;
     Hash hash : sizeof(Hash) * CHAR_BIT - 8;
-    MuonStator *stator;
+    const void *stator;
   } *stator;
 } Engine;
 

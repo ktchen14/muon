@@ -22,7 +22,7 @@ typedef struct {
 } MuonCoreMember;
 
 typedef const struct MuonCore {
-  union { MUON_STATOR_HEADER; MuonCoreTag tag; }; //-
+  MuonCoreTag tag;
   const MuonEngine *engine;
 
   MuonName *name;

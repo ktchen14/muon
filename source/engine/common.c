@@ -13,7 +13,7 @@ MuonEngine *muon_engine_initialize(MuonEngine *opaque) {
 
   size_t stator_volume = 16;
   struct HashStator *stator;
-  if ((stator = malloc(sizeof(struct HashStator [stator_volume]))) == NULL)
+  if ((stator = malloc(sizeof(struct HashStator[stator_volume]))) == NULL)
     return NULL;
 
   for (size_t i = 0; i < stator_volume; i++)
@@ -86,7 +86,8 @@ MuonEngine *muon_engine_initialize(MuonEngine *opaque) {
   return opaque;
 }
 
-Engine *stator_rehash(Engine *engine, MuonStator *stator, Hash hash, size_t *i) {
+Engine *stator_rehash(
+    Engine *engine, const void *stator, Hash hash, size_t *i) {
   size_t size;
   if (ckd_mul(&size, engine->stator_volume, sizeof(struct HashStator) * 2))
     return errno = ENOMEM, NULL;

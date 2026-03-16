@@ -42,7 +42,7 @@ static inline MuonType *assign_type(MuonEngine *engine, struct MuonType *type) {
 /// @internal Assign the abstract @a type to the @a engine
 MUON_HINT(nonnull) static inline MuonType *new_assign_type(
     Engine *engine, struct MuonType *type, Hash hash, size_t i) {
-  if (stator_insert(engine, &type->as_stator, hash, i) == NULL)
+  if (stator_insert(engine, type, (MuonStatorTag) type->tag, hash, i) == NULL)
     return NULL;
   type->engine = as_engine(engine);
   type->id = engine->type_number++;
@@ -157,8 +157,7 @@ MuonCoreType *core_type_activate(struct MuonCoreType *type) {
   }
 
   Hash hash = hash_join(
-      hash_object((MuonTypeTag) {MUON_CORE_TYPE}),
-      hash_object(core));
+      hash_object((MuonTypeTag) {MUON_CORE_TYPE}), hash_object(core));
   for (size_t i = 0; i < core->argc; i++) {
     MuonCoreMember member = core->argv[i];
     hash = hash_join(hash, hash_object(type->argv[member.i]));

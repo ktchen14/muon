@@ -45,7 +45,7 @@
   }
 }
 
-[[gnu::nonnull]] static inline MuonStator *stator_next(
+[[gnu::nonnull]] static inline const void *stator_next(
     const Engine *engine, MuonStatorTag tag, Hash hash, size_t *offset) {
   struct HashStator stator = {.tag = tag, .hash = hash};
   for (struct HashStator next;; (*offset)++) {
@@ -63,20 +63,16 @@
 }
 
 /// Return the next stator assignable to @a stator in the iterator @a it
-#define stator_next(engine, stator, hash, offset) ( \
-  _Pragma("GCC diagnostic push") \
-  _Pragma("GCC diagnostic ignored \"-Wcast-align\"") \
-  (typeof(stator)) \
-    stator_next((engine), MUON_STATOR_TAG(typeof(stator)), (hash), (offset)) \
-  _Pragma("GCC diagnostic pop") \
-)
+#define stator_next(engine, stator, hash, offset) ((typeof(stator)) { \
+  stator_next((engine), MUON_STATOR_TAG(typeof(stator)), (hash), (offset)) \
+})
 
 /// Insert the @a stator into the @a engine at the @a offset
-[[gnu::nonnull]] static inline MuonStator *stator_insert(
-    Engine *engine, MuonStator *stator, Hash hash, size_t offset) {
+[[gnu::nonnull]] static inline const void *stator_insert(
+    Engine *engine, const void *stator, MuonStatorTag tag, Hash hash, size_t offset) {
 
   Engine *stator_rehash(
-      Engine *engine, MuonStator *stator, Hash hash, size_t *i)
+      Engine *engine, const void *stator, Hash hash, size_t *i) //-
     MUON_HINT_SUFFIX(nonnull);
 
   size_t i;
@@ -85,7 +81,7 @@
   else if (stator_rehash(engine, stator, hash, &i) == NULL)
     return NULL;
 
-  struct HashStator next = {.tag = stator->tag, .hash = hash, .stator = stator};
+  struct HashStator next = {.tag = tag, .hash = hash, .stator = stator};
   while ((next = MOVE(engine->stator[i], next)).stator != NULL)
     i = stator_slot(engine, next.hash, i + 1);
   return engine->stator_length++, stator;
