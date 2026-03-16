@@ -114,8 +114,7 @@ void (inductor_debug)( //-
         break;
 
       case INSTANCE_RULE:
-        debug("color=green,fontcolor=green,label=\"%zu\",",
-            edge.instance_id);
+        debug("color=green,fontcolor=green,label=\"%zu\",", edge.instance_id);
         break;
     }
 

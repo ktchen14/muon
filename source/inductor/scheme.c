@@ -58,7 +58,8 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
       if (next_cursor->i != 0)
         continue;
 
-      if (next.type->scheme != scheme && equation[next.type->scheme->as_type.id].allocation == NULL)
+      if (next.type->scheme != scheme
+          && equation[next.type->scheme->as_type.id].allocation == NULL)
         continue;
 
       cursor = type_continue(cursor, next);

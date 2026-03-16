@@ -116,16 +116,12 @@ extern _Thread_local _Bool debug_scan;
 /// Literal printf specifier for a kind
 #define PRIsKIND "%s%s%s"
 
-/// Used with PRIsKIND to emit the @a text as a node kind
-#define DEBUG_NODE_KIND(text) \
-  mu_debug_colorize ? "\x1b[0;33m" : "", (text), mu_debug_colorize ? "\x1b[0m" : ""
-
 /// Used with PRIsKIND to emit the @a text as a core kind
 #define DEBUG_CORE_KIND(text) "", (text), ""
 
 /// Used with PRIsKIND to emit the @a text as a coercion kind
 #define DEBUG_COERCION_KIND(text) \
-  mu_debug_colorize ? "\x1b[0;34m" : "", (text), mu_debug_colorize ? "\x1b[0m" : ""
+  muon_debug_colorize ? "\x1b[0;34m" : "", (text), muon_debug_colorize ? "\x1b[0m" : ""
 
 /// Literal printf specifier for a name
 #define PRIsNAME "%s"

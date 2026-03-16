@@ -13,24 +13,24 @@ MuonModule *muon_standard_module(MuonEngine *engine) {
       engine,
       muon_nominate(engine, "is_integer"),
       &muon_lambda_type(
-        engine,
-        &muon_integer_type(engine)->as_type,
-        &muon_boolean_type(engine)->as_type
-      )->as_type
-    );
+          engine,
+          &muon_integer_type(engine)->as_type,
+          &muon_boolean_type(engine)->as_type)
+          ->as_type);
 
   MuonExport *is_boolean = muon_export(
       engine,
       muon_nominate(engine, "is_boolean"),
       &muon_lambda_type(
-        engine,
-        &muon_boolean_type(engine)->as_type,
-        &muon_boolean_type(engine)->as_type
-      )->as_type
-    );
+          engine,
+          &muon_boolean_type(engine)->as_type,
+          &muon_boolean_type(engine)->as_type)
+          ->as_type);
 
   MuonModule *result;
-  if ((result = muon_module(engine, 2, (MuonExport *[]) {is_integer, is_boolean})) == NULL)
+  if ((result = muon_module(
+           engine, 2, (MuonExport *[]) {is_integer, is_boolean}))
+      == NULL)
     return NULL;
   return result;
 }

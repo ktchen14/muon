@@ -85,15 +85,14 @@ int main(int argc, char *argv[/* argc */]) {
   if (reduce_node(&inductor, &script->as_node) == NULL)
     assert(0);
 
-  extern _Thread_local _Bool mu_debug_colorize;
-  mu_debug_colorize = 1;
+  muon_debug_colorize = 1;
 
   muon_node_debug(&script->as_node, .type = node_type, .type_data = &inductor);
 
   if (getenv("DOT") != NULL) {
     FILE *output = fopen("out.dot", "w");
     muon_debug_stream = output;
-    mu_debug_colorize = 0;
+    muon_debug_colorize = 0;
 
     inductor_debug(&inductor, .hide = 1 << IMPOSSIBLE_RULE);
 

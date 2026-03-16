@@ -609,7 +609,11 @@ void (muon_node_debug)(MuonNode *node, struct MuonNodeDebugArgs args) { //-
   };
 
   debug("%*s", args.indent, "");
-  debug(PRIsKIND, DEBUG_NODE_KIND(TAG_TEXT[node->tag]));
+  debug(
+      "%s%s%s",
+      muon_debug_colorize ? "\x1b[0;33m" : "",
+      TAG_TEXT[node->tag],
+      muon_debug_colorize ? "\x1b[0m" : "");
 
   switch ON_ABSTRACT_OBJECT(node) {
     case IS_CONCRETE_NODE(MuonAccessExpr *access_expr)

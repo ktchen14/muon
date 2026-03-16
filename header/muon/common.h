@@ -20,7 +20,7 @@
 extern _Thread_local FILE *muon_debug_stream;
 
 /// Whether to colorize the debug output
-extern _Thread_local _Bool mu_debug_colorize;
+extern _Thread_local _Bool muon_debug_colorize;
 
 typedef size_t MuonHash;
 
