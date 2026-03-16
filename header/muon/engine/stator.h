@@ -46,7 +46,7 @@ typedef enum {
  * <tt>struct MuonStator</tt>.
  */
 typedef const struct MuonStator {
-  MuonStatorTag tag : 8;
+  MuonStatorTag tag;
 } MuonStator;
 
 /// The header that each MuonStator subtype must have
