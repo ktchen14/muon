@@ -42,17 +42,11 @@ typedef uintptr_t AttitudeCode;
 }
 
 typedef struct {
-  union {
-    /// @internal Used to traverse a type tree
-    struct TypeCursor {
-      AttitudeCode attitude; size_t i; //-
-    } cursor[2];
-
-    /// @internal Used to assemble a type list
-    struct TypeSeries {
-      AttitudeCode attitude; size_t n; //-
-    } series[2];
-  };
+  /// @internal Used to traverse a type tree
+  struct TypeCursor {
+    AttitudeCode anterior;
+    size_t i;
+  } cursor[2];
 
   _Alignas(union {
 #define MUON_EMIT(Title, lower, U) Muon##Title lower;
@@ -84,50 +78,16 @@ static inline struct TypeCursor *type_cursor(Attitude attitude) {
 /// Continue into the @a attitude
 static inline Attitude type_continue(Attitude origin, Attitude next) {
   struct TypeCursor *cursor = type_cursor(next);
-  Attitude attitude = attitude_decode(cursor->attitude);
+  Attitude attitude = attitude_decode(cursor->anterior);
   assert(attitude_isnull(attitude) && cursor->i == 0);
-  return cursor->attitude = attitude_encode(origin), next;
+  return cursor->anterior = attitude_encode(origin), next;
 }
 
 /// Return from the @a attitude
 static inline Attitude type_return(Attitude origin) {
   struct TypeCursor *cursor = type_cursor(origin);
-  origin = attitude_decode(cursor->attitude);
+  origin = attitude_decode(cursor->anterior);
   return *cursor = (struct TypeCursor) {}, origin;
-}
-
-/// Return the series of the @a attitude
-MUON_HINT(const, returns_nonnull)
-static inline struct TypeSeries *type_series(Attitude attitude) {
-  return &type_header(attitude.type)->series[attitude.charge];
-}
-
-static inline Attitude type_attach(Attitude origin, Attitude next) {
-  struct TypeSeries *series = type_series(next);
-  Attitude attitude = attitude_decode(series->attitude);
-  assert(attitude_isnull(attitude) && series->n == 0);
-
-  if (attitude_isnull(origin))
-    return series->attitude = attitude_encode(next), next;
-
-  series = type_series(origin);
-  assert(!attitude_isnull(attitude_decode(series->attitude)));
-  type_series(next)->attitude = series->attitude;
-  return series->attitude = attitude_encode(next), next;
-}
-
-static inline Attitude type_detach(Attitude origin) {
-  struct TypeSeries *series = type_series(origin);
-  Attitude next = attitude_decode(series->attitude);
-  if (attitude_isnull(next))
-    return next;
-  series = type_series(next);
-  type_series(origin)->attitude = series->attitude;
-  return *series = (struct TypeSeries) {}, next;
-}
-
-static inline Attitude type_next(Attitude origin) {
-  return attitude_decode(type_series(origin)->attitude);
 }
 
 /// Return whether the @a type is a variable type

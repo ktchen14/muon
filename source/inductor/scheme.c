@@ -53,7 +53,7 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
     Attitude next;
     while (!attitude_isnull(next = type_scan3(inductor, cursor))) {
       struct TypeCursor *next_cursor = type_cursor(next);
-      if (!attitude_isnull(attitude_decode(next_cursor->attitude)))
+      if (!attitude_isnull(attitude_decode(next_cursor->anterior)))
         continue;
       if (next_cursor->i != 0)
         continue;
