@@ -41,16 +41,16 @@ static inline MuonType *assign_type(MuonEngine *engine, struct MuonType *type) {
 
 /// @internal Assign the abstract @a type to the @a engine
 MUON_HINT(nonnull) static inline MuonType *new_assign_type(
-    Engine *engine, struct MuonType *type, size_t i) {
-  if (stator_insert(engine, &type->as_stator, i) == NULL)
+    Engine *engine, struct MuonType *type, Hash hash, size_t i) {
+  if (stator_insert(engine, &type->as_stator, hash, i) == NULL)
     return NULL;
   type->engine = as_engine(engine);
   type->id = engine->type_number++;
   return type;
 }
 
-#define new_assign_type(opaque, type, i) ( \
-  (const typeof(*(type)) *) new_assign_type((opaque), &(type)->as_type, (i)) \
+#define new_assign_type(opaque, type, hash, i) ( \
+  (const typeof(*(type)) *) new_assign_type((opaque), &(type)->as_type, (hash), (i)) \
 )
 
 MuonCoreType *muon_core_type(
@@ -157,7 +157,8 @@ MuonCoreType *core_type_activate(struct MuonCoreType *type) {
   }
 
   MuonHash hash = hash_join(
-      hash_object((MuonTypeTag) {MUON_CORE_TYPE}), core->as_stator.hash);
+      hash_object((MuonTypeTag) {MUON_CORE_TYPE}),
+      hash_object(core));
   for (size_t i = 0; i < core->argc; i++) {
     MuonCoreMember member = core->argv[i];
     hash = hash_join(hash, hash_object(type->argv[member.i]));
@@ -183,9 +184,7 @@ MuonCoreType *core_type_activate(struct MuonCoreType *type) {
     return free(type_header(&type->as_type)), next;
   next:
   }
-  type->as_stator.hash = hash;
-
-  return new_assign_type(engine, type, i);
+  return new_assign_type(engine, type, hash, i);
 }
 
 struct MuonJoinType *join_type_allocate(MuonEngine *engine, size_t argc) {

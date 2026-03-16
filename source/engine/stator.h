@@ -8,8 +8,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-typedef size_t Hash;
-
 /// Extend @a hash with the hash code of the @a data with size @a size
 [[gnu::nonnull, gnu::pure]] static inline Hash hash_continue(
     Hash hash, const void *data, size_t size) {
@@ -34,33 +32,33 @@ typedef size_t Hash;
 }
 
 [[gnu::nonnull, gnu::pure]] static inline size_t stator_slot(
-    const Engine *engine, MuonStator *stator, size_t i) {
-  size_t offset = i - stator->hash & engine->stator_volume - 1;
-  for (MuonStator *next;; offset++) {
-    i = stator->hash + offset & engine->stator_volume - 1;
+    const Engine *engine, Hash hash, size_t i) {
+  size_t offset = i - hash & engine->stator_volume - 1;
+  for (struct HashStator next;; offset++) {
+    i = hash + offset & engine->stator_volume - 1;
 
-    if ((next = engine->stator[i]) == NULL)
+    if ((next = engine->stator[i]).stator == NULL)
       return i;
 
-    if ((i - next->hash & engine->stator_volume - 1) < offset)
+    if ((i - next.hash & engine->stator_volume - 1) < offset)
       return i;
   }
 }
 
 [[gnu::nonnull]] static inline MuonStator *stator_next(
-    const Engine *engine, MuonStatorTag tag, size_t hash, size_t *offset) {
-  MuonStator stator = {.tag = tag, .hash = hash};
-  for (MuonStator *next;; (*offset)++) {
+    const Engine *engine, MuonStatorTag tag, Hash hash, size_t *offset) {
+  struct HashStator stator = {.tag = tag, .hash = hash};
+  for (struct HashStator next;; (*offset)++) {
     size_t i = stator.hash + *offset & engine->stator_volume - 1;
 
-    if ((next = engine->stator[i]) == NULL)
+    if ((next = engine->stator[i]).stator == NULL)
       return NULL;
 
-    if ((i - next->hash & engine->stator_volume - 1) < *offset)
+    if ((i - next.hash & engine->stator_volume - 1) < *offset)
       return NULL;
 
-    if (next->tag == stator.tag && next->hash == stator.hash)
-      return next;
+    if (next.tag == stator.tag && next.hash == stator.hash)
+      return next.stator;
   }
 }
 
@@ -71,19 +69,21 @@ typedef size_t Hash;
 
 /// Insert the @a stator into the @a engine at the @a offset
 [[gnu::nonnull]] static inline MuonStator *stator_insert(
-    Engine *engine, MuonStator *stator, size_t offset) {
-  Engine *stator_rehash(Engine *engine, MuonStator *stator, size_t *i) //-
+    Engine *engine, MuonStator *stator, Hash hash, size_t offset) {
+
+  Engine *stator_rehash(
+      Engine *engine, MuonStator *stator, Hash hash, size_t *i)
     MUON_HINT_SUFFIX(nonnull);
 
   size_t i;
   if (engine->stator_length < engine->stator_volume / 8 * 7)
-    i = stator->hash + offset & engine->stator_volume - 1;
-  else if (stator_rehash(engine, stator, &i) == NULL)
+    i = hash + offset & engine->stator_volume - 1;
+  else if (stator_rehash(engine, stator, hash, &i) == NULL)
     return NULL;
 
-  MuonStator *next = stator;
-  while ((next = MOVE(engine->stator[i], next)) != NULL)
-    i = stator_slot(engine, next, i + 1);
+  struct HashStator next = {.tag = stator->tag, .hash = hash, .stator = stator};
+  while ((next = MOVE(engine->stator[i], next)).stator != NULL)
+    i = stator_slot(engine, next.hash, i + 1);
   return engine->stator_length++, stator;
 }
 

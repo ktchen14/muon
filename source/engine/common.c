@@ -12,12 +12,12 @@ MuonEngine *muon_engine_initialize(MuonEngine *opaque) {
   Engine *engine = as_engine(opaque);
 
   size_t stator_volume = 16;
-  MuonStator **stator;
-  if ((stator = malloc(sizeof(MuonStator *[stator_volume]))) == NULL)
+  struct HashStator *stator;
+  if ((stator = malloc(sizeof(struct HashStator [stator_volume]))) == NULL)
     return NULL;
 
   for (size_t i = 0; i < stator_volume; i++)
-    stator[i] = NULL;
+    stator[i] = (struct HashStator) {};
 
   *engine = (Engine) {.stator_volume = stator_volume, .stator = stator};
 
@@ -30,13 +30,7 @@ MuonEngine *muon_engine_initialize(MuonEngine *opaque) {
   if ((boolean_core = engine_allocate(opaque, sizeof(MuonCore))) == NULL)
     return NULL;
   *boolean_core = (MuonCore) {
-    .as_stator =
-        {
-          .tag = MUON_BOOLEAN_CORE_STATOR,
-          .hash = hash_object((MuonCoreTag) {MUON_BOOLEAN_CORE}),
-        },
-    .engine = opaque,
-    .name = boolean_name
+    .tag = MUON_BOOLEAN_CORE, .engine = opaque, .name = boolean_name
   };
   engine->boolean_core = boolean_core;
 
@@ -92,31 +86,31 @@ MuonEngine *muon_engine_initialize(MuonEngine *opaque) {
   return opaque;
 }
 
-Engine *stator_rehash(Engine *engine, MuonStator *stator, size_t *i) {
+Engine *stator_rehash(Engine *engine, MuonStator *stator, Hash hash, size_t *i) {
   size_t size;
-  if (ckd_mul(&size, engine->stator_volume, sizeof(MuonStator *) * 2))
+  if (ckd_mul(&size, engine->stator_volume, sizeof(struct HashStator) * 2))
     return errno = ENOMEM, NULL;
   size_t volume = engine->stator_volume * 2;
 
-  MuonStator **area;
+  struct HashStator *area;
   if ((area = malloc(size)) == NULL)
     return NULL;
   for (size_t i = 0; i < volume; i++)
-    area[i] = NULL;
+    area[i] = (struct HashStator) {};
 
   volume = MOVE(engine->stator_volume, volume);
   area = MOVE(engine->stator, area);
 
   for (size_t j = 0, i; j < volume; j++) {
-    MuonStator *next;
-    if ((next = area[j]) == NULL)
+    struct HashStator next;
+    if ((next = area[j]).stator == NULL)
       continue;
 
-    i = stator_slot(engine, next, next->hash);
-    while ((next = MOVE(engine->stator[i], next)) != NULL)
-      i = stator_slot(engine, next, i + 1);
+    i = stator_slot(engine, next.hash, next.hash);
+    while ((next = MOVE(engine->stator[i], next)).stator != NULL)
+      i = stator_slot(engine, next.hash, i + 1);
   }
 
-  *i = stator_slot(engine, stator, stator->hash);
+  *i = stator_slot(engine, hash, hash);
   return engine;
 }

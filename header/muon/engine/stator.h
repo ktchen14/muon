@@ -47,7 +47,6 @@ typedef enum {
  */
 typedef const struct MuonStator {
   MuonStatorTag tag : 8;
-  MuonHash hash : sizeof(MuonHash) * CHAR_BIT - 8;
 } MuonStator;
 
 /// The header that each MuonStator subtype must have

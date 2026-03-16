@@ -6,9 +6,12 @@
 #include "../common.h" // IWYU pragma: export
 
 #include <assert.h>
+#include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
+
+typedef size_t Hash;
 
 typedef struct {
   size_t node_number[MUON_NODE_NUMBER];
@@ -34,7 +37,11 @@ typedef struct {
 
   size_t stator_length;
   size_t stator_volume;
-  MuonStator **stator;
+  struct HashStator {
+    MuonStatorTag tag : 8;
+    Hash hash : sizeof(MuonHash) * CHAR_BIT - 8;
+    MuonStator *stator;
+  } *stator;
 } Engine;
 
 /// Return @a engine as an <tt>Engine *</tt> or <tt>const Engine *</tt>
