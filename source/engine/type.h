@@ -6,7 +6,6 @@
 #include "common.h"
 
 #include <assert.h>
-#include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -150,12 +149,6 @@ struct MuonSchemeType *scheme_type_allocate(MuonEngine *engine)
 
 MuonSchemeType *scheme_type_activate(
     struct MuonSchemeType *type, MuonType *matter)
-  MUON_HINT_SUFFIX(nonnull);
-
-struct MuonVariableType *variable_type_allocate(MuonEngine *engine)
-  MUON_HINT_SUFFIX(malloc, nonnull);
-
-MuonVariableType *variable_type_activate(struct MuonVariableType *type)
   MUON_HINT_SUFFIX(nonnull);
 
 #endif /* MUON_ENGINE_TYPE_I */
