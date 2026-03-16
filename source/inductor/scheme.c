@@ -44,8 +44,8 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
     MuonType *result;
   } equation[inductor->type_length] = {};
 
-  Attitude series = {};
-  series = type_attach(series, (Attitude) {&scheme->as_type, 0});
+  // Used to mark each returned attitude as accessible
+  Attitude series = {(TypeHeader) {}.type, 0};
 
   Attitude cursor = {scheme->matter, 0};
   goto entrance;
@@ -236,16 +236,16 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
     }
 
     cursor = type_return(next = cursor);
-    series = type_attach(series, next);
+    series = type_continue(series, next);
   } while (!attitude_isnull(cursor));
 
-  while (!attitude_isnull(type_detach(series))) {}
+  while (!attitude_isnull(series = type_return(series))) {}
 
   MuonType *result = equation[scheme->matter->id].result;
   return assert(result != NULL), result;
 
 except:
-  while (!attitude_isnull(type_detach(series))) {}
+  while (!attitude_isnull(series = type_return(series))) {}
   while (!attitude_isnull(cursor = type_return(cursor))) {}
   return NULL;
 }
