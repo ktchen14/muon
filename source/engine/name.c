@@ -14,7 +14,7 @@ MuonName *muon_name(
     const char text[restrict static length]) {
   Engine *engine = as_engine(opaque);
 
-  MuonHash hash = hash_join(
+  Hash hash = hash_join(
       hash_object((MuonStatorTag) {MUON_NAME_STATOR}),
       hash_string(text, length));
 

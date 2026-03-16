@@ -39,7 +39,7 @@ typedef struct {
   size_t stator_volume;
   struct HashStator {
     MuonStatorTag tag : 8;
-    Hash hash : sizeof(MuonHash) * CHAR_BIT - 8;
+    Hash hash : sizeof(Hash) * CHAR_BIT - 8;
     MuonStator *stator;
   } *stator;
 } Engine;

@@ -156,7 +156,7 @@ MuonCoreType *core_type_activate(struct MuonCoreType *type) {
     assert(type->argv[member.i]->engine == opaque);
   }
 
-  MuonHash hash = hash_join(
+  Hash hash = hash_join(
       hash_object((MuonTypeTag) {MUON_CORE_TYPE}),
       hash_object(core));
   for (size_t i = 0; i < core->argc; i++) {
