@@ -63,8 +63,12 @@
 }
 
 /// Return the next stator assignable to @a stator in the iterator @a it
-#define stator_next(engine, stator, hash, offset) ((typeof(stator)) \
-  stator_next((engine), MUON_STATOR_TAG(typeof(stator)), (hash), (offset)) \
+#define stator_next(engine, stator, hash, offset) ( \
+  _Pragma("GCC diagnostic push") \
+  _Pragma("GCC diagnostic ignored \"-Wcast-align\"") \
+  (typeof(stator)) \
+    stator_next((engine), MUON_STATOR_TAG(typeof(stator)), (hash), (offset)) \
+  _Pragma("GCC diagnostic pop") \
 )
 
 /// Insert the @a stator into the @a engine at the @a offset
