@@ -48,7 +48,7 @@ static inline size_t hash_slot(const HashArea *area, Hash hash, size_t i) {
   }
 }
 
-[[gnu::nonnull]] static inline const void *hash_next(
+[[gnu::nonnull]] static inline const void *hash_search(
     const HashArea *area, Hash hash, size_t *offset) {
   for (struct HashItem next;; (*offset)++) {
     size_t i = hash + *offset & area->volume - 1;
@@ -67,13 +67,13 @@ static inline size_t hash_slot(const HashArea *area, Hash hash, size_t i) {
 /// Insert the @a stator into the @a engine at the @a offset
 [[gnu::nonnull]] static inline const void *hash_insert(
     HashArea *area, Hash hash, const void *data, size_t offset) {
-  HashArea *rehash(HashArea *area, Hash hash, const void *data, size_t *i) //-
+  HashArea *rehash(HashArea *area, Hash hash, size_t *i) //-
     MUON_HINT_SUFFIX(nonnull);
 
   size_t i;
   if (area->length < area->volume / 8 * 7)
     i = hash + offset & area->volume - 1;
-  else if (rehash(area, hash, data, &i) == NULL)
+  else if (rehash(area, hash, &i) == NULL)
     return NULL;
 
   struct HashItem next = {.hash = hash, .data = data};

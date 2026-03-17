@@ -6,7 +6,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-HashArea *rehash(HashArea *area, Hash hash, const void *data, size_t *i) {
+HashArea *rehash(HashArea *area, Hash hash, size_t *i) {
   size_t size;
   if (ckd_mul(&size, area->volume, sizeof(struct HashItem) * 2))
     return errno = ENOMEM, NULL;
