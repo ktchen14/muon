@@ -30,18 +30,17 @@
 })
 
 MUON_HINT(const) static inline _Bool struct_size_overflow(
-    size_t nought, size_t offset, size_t size, size_t *length) {
-  if (rare(*length > (SIZE_MAX - offset) / size))
+    size_t nought, size_t offset, size_t member, size_t *size) {
+  if (rare(*size > (SIZE_MAX - offset) / member))
     return 1;
-  *length = maximum(offset + size * *length, nought);
+  *size = maximum(offset + member * *size, nought);
   return 0;
 }
 
-#define struct_size_overflow(struct, member, length) rare(struct_size_overflow( \
-    sizeof(struct), \
-    offsetof(struct, member), \
-    sizeof((struct) {0}.member[0]), /* NOLINT(bugprone-sizeof-expression) */ \
-    (length)))
+#define struct_size_overflow(T, member, size) \
+  rare(struct_size_overflow( \
+    sizeof(T), offsetof(T, member), sizeof((T) {}.member[0]), (size) \
+  ))
 
 /**
  * @brief Return size to allocate to hold a struct with a flexible array member

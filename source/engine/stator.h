@@ -9,11 +9,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-/// Return hash code @a b joined to hash code @a a
-[[gnu::const]] static inline Hash hash_join(Hash a, Hash b) {
-  return b + UINT64_C(0x9e3779b97f4a7c15) + (a << 12) + (a >> 4);
-}
-
 [[gnu::nonnull]] static inline const void *stator_next(
     const Engine *engine, MuonStatorTag tag, Hash hash, size_t *offset) {
   return hash_search(engine->stator, hash << 8 | tag, offset);
@@ -34,5 +29,10 @@
 
   return stator;
 }
+
+#define stator_insert(engine, stator, hash, offset) ( \
+  (const typeof_unqual(*(stator)) *) { \
+    stator_insert((engine), (stator), MUON_STATOR_TAG(typeof(stator)), (hash), (offset)) \
+  })
 
 #endif /* MUON_ENGINE_STATOR_I */

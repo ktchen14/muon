@@ -4,15 +4,13 @@
 #include <muon/engine.h> // IWYU pragma: export
 
 #include "../common.h" // IWYU pragma: export
-#include "../hash.h"
+#include "../hash.h"   // IWYU pragma: export
 
 #include <assert.h>
 #include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
-
-typedef size_t Hash;
 
 typedef struct {
   size_t node_number[MUON_NODE_NUMBER];
