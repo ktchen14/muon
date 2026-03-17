@@ -1,6 +1,8 @@
 #include "common.h"
 #include "stator.h"
 
+#include "../hash.h"
+
 #include <assert.h>
 #include <errno.h>
 #include <stdckdint.h>
@@ -11,15 +13,16 @@
 MuonEngine *muon_engine_initialize(MuonEngine *opaque) {
   Engine *engine = as_engine(opaque);
 
-  size_t stator_volume = 16;
-  struct HashStator *stator;
-  if ((stator = malloc(sizeof(struct HashStator[stator_volume]))) == NULL)
+  size_t area_size = 16;
+  HashArea *hash_area;
+  struct_size_overflow(HashArea, item, &area_size);
+  if ((hash_area = malloc(area_size)) == NULL)
     return NULL;
+  *hash_area = (HashArea) {.volume = 16};
+  for (size_t i = 0; i < 16; i++)
+    hash_area->item[i] = (struct HashItem) {};
 
-  for (size_t i = 0; i < stator_volume; i++)
-    stator[i] = (struct HashStator) {};
-
-  *engine = (Engine) {.stator_volume = stator_volume, .stator = stator};
+  *engine = (Engine) {.stator = hash_area};
 
   MuonName *boolean_name;
   if ((boolean_name = muon_name(opaque, strlen("Boolean"), "Boolean")) == NULL)
@@ -84,34 +87,4 @@ MuonEngine *muon_engine_initialize(MuonEngine *opaque) {
   engine->object_type = object_type;
 
   return opaque;
-}
-
-Engine *stator_rehash(
-    Engine *engine, const void *stator, Hash hash, size_t *i) {
-  size_t size;
-  if (ckd_mul(&size, engine->stator_volume, sizeof(struct HashStator) * 2))
-    return errno = ENOMEM, NULL;
-  size_t volume = engine->stator_volume * 2;
-
-  struct HashStator *area;
-  if ((area = malloc(size)) == NULL)
-    return NULL;
-  for (size_t i = 0; i < volume; i++)
-    area[i] = (struct HashStator) {};
-
-  volume = MOVE(engine->stator_volume, volume);
-  area = MOVE(engine->stator, area);
-
-  for (size_t j = 0, i; j < volume; j++) {
-    struct HashStator next;
-    if ((next = area[j]).stator == NULL)
-      continue;
-
-    i = stator_slot(engine, next.hash, next.hash);
-    while ((next = MOVE(engine->stator[i], next)).stator != NULL)
-      i = stator_slot(engine, next.hash, i + 1);
-  }
-
-  *i = stator_slot(engine, hash, hash);
-  return engine;
 }

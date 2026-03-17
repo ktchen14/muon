@@ -15,7 +15,7 @@ HashArea *rehash(HashArea *area, Hash hash, size_t *i) {
 
   HashArea *result;
   if ((result = malloc(size)) == NULL)
-    return free(area), NULL;
+    return NULL;
   *result = (HashArea) {area->volume * 2, area->length};
   for (size_t i = 0; i < result->volume; i++)
     result->item[i] = (struct HashItem) {};
@@ -31,5 +31,5 @@ HashArea *rehash(HashArea *area, Hash hash, size_t *i) {
   }
   free(area);
 
-  return *i = hash_slot(area, hash, hash), result;
+  return *i = hash_slot(result, hash, hash), result;
 }

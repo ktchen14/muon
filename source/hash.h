@@ -20,7 +20,7 @@ typedef struct {
   } item[];
 } HashArea;
 
-/// Extend @a hash with the @a data with size @a size
+/// Extend the @a hash with the @a data with size @a size
 [[gnu::nonnull, gnu::pure]] static inline Hash hash_continue(
     Hash hash, const void *data, size_t size) {
   const char *string = data;
@@ -30,9 +30,14 @@ typedef struct {
   return hash;
 }
 
+/// Return the hash code of the @a data with size @a size
+[[gnu::nonnull, gnu::pure]] static inline Hash hash_string(
+    const void *data, size_t size) {
+  return hash_continue(UINT64_C(14695981039346656037), data, size);
+}
+
 /// Return the hash code of the @a object
-#define hash_object(object) hash_continue( \
-    UINT64_C(14695981039346656037), &(object), sizeof(object))
+#define hash_object(object) hash_string(&(object), sizeof(object))
 
 [[gnu::nonnull]] static inline const void *hash_search(
     const HashArea *area, Hash hash, size_t *offset) {

@@ -4,6 +4,7 @@
 #include <muon/engine.h> // IWYU pragma: export
 
 #include "../common.h" // IWYU pragma: export
+#include "../hash.h"
 
 #include <assert.h>
 #include <limits.h>
@@ -35,13 +36,7 @@ typedef struct {
 
   MuonCore *core[200];
 
-  size_t stator_length;
-  size_t stator_volume;
-  struct HashStator {
-    MuonStatorTag tag : 8;
-    Hash hash : sizeof(Hash) * CHAR_BIT - 8;
-    const void *stator;
-  } *stator;
+  HashArea *stator;
 } Engine;
 
 /// Return @a engine as an <tt>Engine *</tt> or <tt>const Engine *</tt>
