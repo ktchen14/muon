@@ -131,15 +131,14 @@ struct MuonCoreType *core_type_allocate(MuonEngine *opaque, MuonCore *core) {
 }
 
 MuonCoreType *core_type_activate(struct MuonCoreType *type) {
-  MuonEngine *opaque = unlock_engine(&type->as_type);
-  Engine *engine = as_engine(opaque);
+  MuonEngine *engine = unlock_engine(&type->as_type);
 
   MuonCore *core = type->core;
 
   for (size_t i = 0; i < core->argc; i++) {
     MuonCoreMember member = core->argv[i];
     assert(type->argv[member.i] != NULL);
-    assert(type->argv[member.i]->engine == opaque);
+    assert(type->argv[member.i]->engine == engine);
   }
 
   Hash hash = hash_object(core);
@@ -156,8 +155,8 @@ MuonCoreType *core_type_activate(struct MuonCoreType *type) {
     if (next->as_type.scheme != type->as_type.scheme)
       continue;
 
-    for (size_t j = 0; j < core->argc; j++) {
-      MuonCoreMember member = core->argv[j];
+    for (size_t i = 0; i < core->argc; i++) {
+      MuonCoreMember member = core->argv[i];
       if (next->argv[member.i] != type->argv[member.i])
         goto next;
     }
@@ -166,8 +165,8 @@ MuonCoreType *core_type_activate(struct MuonCoreType *type) {
   next:
   }
 
-  type->as_type.engine = opaque;
-  type->as_type.id = engine->type_number++;
+  type->as_type.engine = engine;
+  type->as_type.id = as_engine(engine)->type_number++;
 
   return stator_insert(engine, type, hash, i);
 }
@@ -177,16 +176,13 @@ struct MuonJoinType *join_type_allocate(MuonEngine *engine, size_t argc) {
   if (rare((size = struct_size(MuonJoinType, argv, argc)) == 0))
     return errno = ENOMEM, NULL;
 
+  MuonSchemeType *scheme = as_engine(engine)->scheme;
+
   struct MuonJoinType *result;
   if ((result = type_allocate(engine, size)) == NULL)
     return NULL;
   *result = (MuonJoinType) {
-    .as_type =
-        {
-          .tag = MUON_JOIN_TYPE,
-          .engine = engine,
-          .scheme = as_engine(engine)->scheme,
-        },
+    .as_type = {.tag = MUON_JOIN_TYPE, .engine = engine, .scheme = scheme},
     .argc = argc,
   };
   return result;
@@ -199,7 +195,32 @@ MuonJoinType *join_type_activate(struct MuonJoinType *type) {
     assert(type->argv[i] != NULL);
     assert(type->argv[i]->engine == engine);
   }
-  return assign_type(engine, &type->as_type), type;
+
+  Hash hash = hash_object(type->as_type.scheme);
+  for (size_t i = 0; i < type->argc; i++)
+    hash = hash_extend(hash, type->argv[i]);
+
+  MuonJoinType *next;
+  size_t i = 0;
+  for (; (next = stator_next(engine, next, hash, &i)) != NULL; i++) {
+    if (next->as_type.scheme != type->as_type.scheme)
+      continue;
+
+    if (next->argc != type->argc)
+      continue;
+
+    for (size_t j = 0; j < type->argc; j++) {
+      if (next->argv[i] != type->argv[i])
+        goto next;
+    }
+
+    return free(type_header(&type->as_type)), next;
+  next:
+  }
+
+  type->as_type.engine = engine;
+  type->as_type.id = as_engine(engine)->type_number++;
+  return stator_insert(engine, type, hash, i);
 }
 
 struct MuonMeetType *meet_type_allocate(MuonEngine *engine, size_t argc) {

@@ -9,11 +9,9 @@
 #include <string.h>
 
 MuonName *muon_name(
-    MuonEngine *restrict opaque,
+    MuonEngine *restrict engine,
     size_t length,
     const char text[restrict static length]) {
-  Engine *engine = as_engine(opaque);
-
   Hash hash = hash_string(text, length);
 
   MuonName *next;
@@ -28,9 +26,9 @@ MuonName *muon_name(
     return errno = ENOMEM, NULL;
 
   struct MuonName *name;
-  if ((name = engine_allocate2(engine, size)) == NULL)
+  if ((name = engine_allocate(engine, size)) == NULL)
     return NULL;
-  *name = (MuonName) {.engine = opaque, .length = length};
+  *name = (MuonName) {.engine = engine, .length = length};
   memcpy(name->text, text, length);
   name->text[length] = '\0';
 

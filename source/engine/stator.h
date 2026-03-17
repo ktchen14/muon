@@ -3,14 +3,15 @@
 
 #include <muon/engine/stator.h>
 
-#include "common.h"
 #include "../hash.h"
+#include "common.h"
 
 #include <stddef.h>
 #include <stdint.h>
 
 [[gnu::nonnull]] static inline const void *stator_next(
-    const Engine *engine, MuonStatorTag tag, Hash hash, size_t *offset) {
+    const MuonEngine *opaque, MuonStatorTag tag, Hash hash, size_t *offset) {
+  const Engine *engine = as_engine(opaque);
   return hash_search(engine->stator, hash << 8 | tag, offset);
 }
 
@@ -21,7 +22,13 @@
 
 /// Insert the @a stator into the @a engine at the @a offset
 [[gnu::nonnull]] static inline const void *stator_insert(
-    Engine *engine, const void *stator, MuonStatorTag tag, Hash hash, size_t offset) {
+    MuonEngine *opaque,
+    const void *stator,
+    MuonStatorTag tag,
+    Hash hash,
+    size_t offset) {
+  Engine *engine = as_engine(opaque);
+
   HashArea *area = engine->stator;
   if ((area = hash_insert(area, hash << 8 | tag, stator, offset)) == NULL)
     return NULL;

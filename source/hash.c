@@ -10,7 +10,7 @@ HashArea *rehash(HashArea *area, Hash hash, size_t *i) {
   size_t offset = offsetof(HashArea, item);
   size_t item = sizeof(struct HashItem[2]);
   size_t size = area->volume;
-  if ((struct_size_overflow)(sizeof(HashArea), offset, item, &size))
+  if ((struct_size_overflow) (sizeof(HashArea), offset, item, &size))
     return errno = ENOMEM, NULL;
 
   HashArea *result;
