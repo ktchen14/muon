@@ -90,7 +90,7 @@ static inline Attitude type_return(Attitude origin) {
 }
 
 /// Return whether the @a type is a variable type
-MUON_HINT(nonnull, pure)
+[[gnu::nonnull, gnu::pure]]
 static inline _Bool is_variable_type(MuonType *type) {
   return type->tag == MUON_VARIABLE_TYPE;
 }

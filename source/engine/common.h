@@ -39,8 +39,7 @@ typedef struct {
 
 /// Return @a engine as an <tt>Engine *</tt> or <tt>const Engine *</tt>
 #define as_engine(engine) ((typeof(_Generic((engine), \
-  MuonEngine *: (Engine *) {}, const MuonEngine *: (const Engine *) {}, \
-  Engine *: (MuonEngine *) {}, const Engine *: (const MuonEngine *) {} \
+  MuonEngine *: (Engine *) {}, const MuonEngine *: (const Engine *) {} \
 ))) (engine))
 
 /// @internal Allocate an object of the @a size in the @a engine
