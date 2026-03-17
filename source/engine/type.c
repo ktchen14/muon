@@ -34,24 +34,9 @@ static inline void *type_allocate(MuonEngine *engine, size_t size) {
 /// @internal Assign the abstract @a type to the @a engine
 MUON_HINT(nonnull, returns_nonnull)
 static inline MuonType *assign_type(MuonEngine *engine, struct MuonType *type) {
-  type->engine = engine;
   type->id = as_engine(engine)->type_number++;
   return type;
 }
-
-/// @internal Assign the abstract @a type to the @a engine
-MUON_HINT(nonnull) static inline MuonType *new_assign_type(
-    Engine *engine, struct MuonType *type, Hash hash, size_t i) {
-  if ((stator_insert)(engine, type, (MuonStatorTag) type->tag, hash, i) == NULL)
-    return NULL;
-  type->engine = as_engine(engine);
-  type->id = engine->type_number++;
-  return type;
-}
-
-#define new_assign_type(opaque, type, hash, i) ( \
-  (const typeof(*(type)) *) new_assign_type((opaque), &(type)->as_type, (hash), (i)) \
-)
 
 MuonCoreType *muon_core_type(
     MuonEngine *engine,
