@@ -11,12 +11,12 @@
 typedef size_t Hash;
 
 typedef struct {
-  size_t length;
   size_t volume;
+  size_t length;
 
   struct HashItem {
     Hash hash;
-    const void *data;
+    const void *object;
   } item[];
 } HashArea;
 
@@ -34,13 +34,29 @@ typedef struct {
 #define hash_object(object) hash_continue( \
     UINT64_C(14695981039346656037), &(object), sizeof(object))
 
-[[gnu::nonnull, gnu::pure]]
-static inline size_t hash_slot(const HashArea *area, Hash hash, size_t i) {
+[[gnu::nonnull]] static inline const void *hash_search(
+    const HashArea *area, Hash hash, size_t *offset) {
+  for (struct HashItem next;; (*offset)++) {
+    size_t i = hash + *offset & area->volume - 1;
+
+    if ((next = area->item[i]).object == NULL)
+      return NULL;
+
+    if ((i - next.hash & area->volume - 1) < *offset)
+      return NULL;
+
+    if (next.hash == hash)
+      return next.object;
+  }
+}
+
+[[gnu::nonnull, gnu::pure]] static inline size_t hash_slot(
+    const HashArea *area, Hash hash, size_t i) {
   size_t offset = i - hash & area->volume - 1;
   for (struct HashItem next;; offset++) {
     size_t i = hash + offset & area->volume - 1;
 
-    if ((next = area->item[i]).data == NULL)
+    if ((next = area->item[i]).object == NULL)
       return i;
 
     if ((i - next.hash & area->volume - 1) < offset)
@@ -48,24 +64,8 @@ static inline size_t hash_slot(const HashArea *area, Hash hash, size_t i) {
   }
 }
 
-[[gnu::nonnull]] static inline const void *hash_search(
-    const HashArea *area, Hash hash, size_t *offset) {
-  for (struct HashItem next;; (*offset)++) {
-    size_t i = hash + *offset & area->volume - 1;
-
-    if ((next = area->item[i]).data == NULL)
-      return NULL;
-
-    if ((i - next.hash & area->volume - 1) < *offset)
-      return NULL;
-
-    if (next.hash == hash)
-      return next.data;
-  }
-}
-
 /// Insert the @a stator into the @a engine at the @a offset
-[[gnu::nonnull]] static inline const void *hash_insert(
+[[gnu::nonnull]] static inline HashArea *hash_insert(
     HashArea *area, Hash hash, const void *data, size_t offset) {
   HashArea *rehash(HashArea *area, Hash hash, size_t *i) //-
     MUON_HINT_SUFFIX(nonnull);
@@ -73,13 +73,13 @@ static inline size_t hash_slot(const HashArea *area, Hash hash, size_t i) {
   size_t i;
   if (area->length < area->volume / 8 * 7)
     i = hash + offset & area->volume - 1;
-  else if (rehash(area, hash, &i) == NULL)
+  else if ((area = rehash(area, hash, &i)) == NULL)
     return NULL;
 
-  struct HashItem next = {.hash = hash, .data = data};
-  while ((next = MOVE(area->item[i], next)).data != NULL)
+  struct HashItem next = {hash, data};
+  while ((next = MOVE(area->item[i], next)).object != NULL)
     i = hash_slot(area, next.hash, i + 1);
-  return area->length++, data;
+  return area->length++, area;
 }
 
 #endif /* MUON_HASH_I */

@@ -9,6 +9,7 @@ target_link_libraries(muon PUBLIC muon-scan)
 
 target_sources(muon PRIVATE
   common.c
+  hash.c hash.h
 
   inductor/common.c
   inductor/induce.c

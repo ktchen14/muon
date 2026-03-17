@@ -7,29 +7,29 @@
 #include <stdlib.h>
 
 HashArea *rehash(HashArea *area, Hash hash, size_t *i) {
-  size_t size;
-  if (ckd_mul(&size, area->volume, sizeof(struct HashItem) * 2))
+  size_t offset = offsetof(HashArea, item);
+  size_t item = sizeof(struct HashItem[2]);
+  size_t size = area->volume;
+  if ((struct_size_overflow)(sizeof(HashArea), offset, item, &size))
     return errno = ENOMEM, NULL;
-  size_t volume = area->volume * 2;
 
-  HashArea *allocation;
-  if ((allocation = malloc(size)) == NULL)
-    return NULL;
-  for (size_t i = 0; i < volume; i++)
-    allocation->item[i] = (struct HashItem) {};
+  HashArea *result;
+  if ((result = malloc(size)) == NULL)
+    return free(area), NULL;
+  *result = (HashArea) {area->volume * 2, area->length};
+  for (size_t i = 0; i < result->volume; i++)
+    result->item[i] = (struct HashItem) {};
 
-  volume = MOVE(allocation->volume, volume);
-
-  for (size_t j = 0, i; j < volume; j++) {
+  for (size_t j = 0, i; j < area->volume; j++) {
     struct HashItem next;
-    if ((next = allocation->item[j]).data == NULL)
+    if ((next = area->item[j]).object == NULL)
       continue;
 
-    i = hash_slot(area, next.hash, next.hash);
-    while ((next = MOVE(engine->stator[i], next)).stator != NULL)
-      i = hash_slot(area, next.hash, i + 1);
+    i = hash_slot(result, next.hash, next.hash);
+    while ((next = MOVE(result->item[i], next)).object != NULL)
+      i = hash_slot(result, next.hash, i + 1);
   }
+  free(area);
 
-  *i = hash_slot(area, hash, hash);
-  return area;
+  return *i = hash_slot(area, hash, hash), result;
 }
