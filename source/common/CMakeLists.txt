@@ -1,5 +1,5 @@
 add_library(muon-common OBJECT
-  common.c common.h
+  common.h
   debug.c debug.h
   hash.c hash.h
 )
