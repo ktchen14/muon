@@ -21,11 +21,11 @@ MuonInductor *muon_induce_initialize(
   for (size_t i = 0; i < 1000; i++)
     solution[i] = NULL;
 
-  struct Frontier *frontier;
-  if ((frontier = malloc(sizeof(struct Frontier[1000]))) == NULL)
+  AttitudeSolution **attitude_solution;
+  if ((attitude_solution = malloc(sizeof(AttitudeSolution *[2000]))) == NULL)
     return NULL;
-  for (size_t i = 0; i < 1000; i++)
-    frontier[i] = (struct Frontier) {};
+  for (size_t i = 0; i < 2000; i++)
+    attitude_solution[i] = NULL;
 
   size_t universe_volume = 1000;
   Rule *universe_data;
@@ -38,7 +38,7 @@ MuonInductor *muon_induce_initialize(
     .module = module,
     .type_length = 1000,
     .solution = solution,
-    .frontier = frontier,
+    .attitude_solution = attitude_solution,
     .rule_volume = universe_volume,
     .edge = universe_data,
   };
