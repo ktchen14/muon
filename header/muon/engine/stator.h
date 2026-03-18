@@ -1,7 +1,6 @@
 #ifndef MUON_ENGINE_STATOR_H
 #define MUON_ENGINE_STATOR_H
 
-#include <limits.h>
 #include <stddef.h>
 
 /// Expands to emit(Title, lower, UPPER, ...) for each concrete subtype of
