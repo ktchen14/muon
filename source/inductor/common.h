@@ -5,7 +5,7 @@
 
 #include "../common.h" // IWYU pragma: export
 #include "../detector/detect.h"
-#include "../engine.h"
+#include "../engine.h" // IWYU pragma: export
 
 #include <errno.h>
 #include <stddef.h>

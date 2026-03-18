@@ -4,7 +4,6 @@
 #include "induce.h"
 
 #include "../detector/detect.h"
-#include "../engine.h"
 
 #include <assert.h>
 #include <stddef.h>

@@ -1,8 +1,6 @@
 #include "scheme.h"
 
-#include "../engine.h"
 #include "common.h"
-#include "induce.h"
 
 #include <assert.h>
 #include <errno.h>

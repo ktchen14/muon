@@ -3,8 +3,6 @@
 #include "common.h"
 #include "scheme.h"
 
-#include "../engine.h"
-
 #include <assert.h>
 #include <errno.h>
 #include <stdio.h>

@@ -3,8 +3,6 @@
 
 #include "common.h"
 
-#include "../engine.h"
-
 MuonType *scheme_instance(MuonInductor *induce, MuonSchemeType *scheme)
   MUON_HINT_SUFFIX(nonnull);
 
