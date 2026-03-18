@@ -21,8 +21,7 @@ MuonCustomCore *mu_simple_core(MuonEngine *engine, MuonName *name) {
   if ((result = malloc(sizeof(MuonCustomCore))) == NULL)
     return NULL;
   *result = (MuonCustomCore) {
-    .as_core = {.tag = MUON_CUSTOM_CORE, .engine = engine},
-    .name = name
+    .as_core = {.tag = MUON_CUSTOM_CORE, .engine = engine}, .name = name
   };
   return result;
 }

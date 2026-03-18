@@ -448,7 +448,8 @@ MUON_HINT(nonnull) static MuonType *record_view_return(
     return NULL;
 
   struct MuonCoreType *type_allocation;
-  if ((type_allocation = core_type_allocate(inductor->engine, &core->as_core)) == NULL)
+  if ((type_allocation = core_type_allocate(inductor->engine, &core->as_core))
+      == NULL)
     return NULL;
 
   for (size_t i = 0; i < view->argc; i++)
