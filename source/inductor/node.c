@@ -1,26 +1,19 @@
+#include "node.h"
+
 #include "common.h"
+#include "induce.h"
 
 #include "../detector/detect.h"
 #include "../engine.h"
-#include "induce.h"
 
 #include <assert.h>
 #include <stddef.h>
 #include <stdlib.h>
 
-/// Return the offset to the <em>node</em>'s NodeType in the @a inductor
-MUON_HINT(nonnull, pure)
-static inline size_t node_offset(const Inductor *inductor, MuonNode *node) {
-  assert(node->engine == inductor->engine);
-  assert(node->id < inductor->node_number[node->tag]);
-  return inductor->node_offset[node->tag] + node->id;
-}
-
 /// Return the source type of the @a node in the @a inductor
-MUON_HINT(nonnull, pure, returns_nonnull)
+[[gnu::nonnull, gnu::pure, gnu::returns_nonnull]]
 static inline MuonType *node_type(const Inductor *inductor, MuonNode *node) {
-  size_t offset = node_offset(inductor, node);
-  MuonType *result = inductor->node[offset].source;
+  MuonType *result = node_source_type(inductor, node);
   return assert(result != NULL), result;
 }
 
@@ -66,8 +59,11 @@ void *induce_script(MuonInductor *inductor, MuonScript *script) {
     if ((type = on_return(inductor, node)) == NULL)
       goto except;
 
-    size_t offset = node_offset(inductor, node);
-    inductor->node[offset].source = type;
+    size_t i = node->tag - MUON_MINORANT_NODE;
+    const size_t *offset = &inductor->node_offset[i];
+    assert(*offset + node->id < offset[1]);
+
+    inductor->node[*offset + node->id].source = type;
   } while ((node = node_return(node)) != NULL);
 
   for (size_t i = 0; i < inductor->rule_length; i++) {

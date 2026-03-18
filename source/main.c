@@ -19,8 +19,6 @@
 
 static MuonType *node_type(MuonNode *node, const void *data) {
   const MuonInductor *inductor = data;
-  if (node->id >= inductor->node_number[node->tag])
-    return NULL;
 
   MuonType *type;
   if ((type = node_source_type(inductor, node)) == NULL)

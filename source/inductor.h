@@ -3,6 +3,7 @@
 
 #include "inductor/common.h" // IWYU pragma: export
 #include "inductor/induce.h" // IWYU pragma: export
+#include "inductor/node.h"   // IWYU pragma: export
 #include "inductor/reduce.h" // IWYU pragma: export
 
 #include "detector/detect.h"

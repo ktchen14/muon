@@ -47,11 +47,10 @@ MuonInductor *muon_induce_initialize(
 
   size_t offset = 0;
   for (size_t i = 0; i < MUON_NODE_NUMBER; i++) {
-    size_t j = i - MUON_MINORANT_NODE;
-    inductor->node_offset[j] = offset;
-    inductor->node_number[j] = engine->node_number[j];
-    offset += engine->node_number[j];
+    inductor->node_offset[i] = offset;
+    offset += engine->node_number[i];
   }
+  inductor->node_offset[MUON_NODE_NUMBER] = offset;
 
   struct NodeType *node;
   if ((node = malloc(sizeof(struct NodeType[offset]))) == NULL)

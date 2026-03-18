@@ -2,6 +2,7 @@
 #include "../engine.h"
 #include "common.h"
 #include "induce.h"
+#include "node.h"
 
 #include <assert.h>
 #include <errno.h>
@@ -365,7 +366,7 @@ Aspect *varaspect0(Inductor *inductor, MuonVariableType *variable_type) {
 }
 
 MuonType *reduce_node(Inductor *inductor, MuonNode *root) {
-  assert(root->id < inductor->node_number);
+  // assert(root->id < inductor->node_number);
 
   MuonNode *node = root;
   do {
