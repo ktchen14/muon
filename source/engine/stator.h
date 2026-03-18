@@ -34,7 +34,7 @@ static inline Hash stator_hash(MuonStatorTag tag, Hash hash) {
 
   hash = stator_hash(tag, hash);
 
-  HashArea *area = engine->stator;
+  HashVector *area = engine->stator;
   if ((area = hash_insert(area, hash, stator, offset)) == NULL)
     return NULL;
   return engine->stator = area, stator;

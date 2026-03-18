@@ -22,7 +22,7 @@ typedef struct {
 
   struct MuonSchemeType *scheme;
 
-  HashArea *stator;
+  HashVector *stator;
 } Engine;
 
 /// Return @a engine as an <tt>Engine *</tt> or <tt>const Engine *</tt>

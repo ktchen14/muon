@@ -48,10 +48,12 @@ typedef struct {
     Hash hash;
     const void *object;
   } item[];
-} HashArea;
+} HashVector;
+
+[[gnu::malloc]] HashVector *hash_vector(size_t volume);
 
 [[gnu::nonnull]] static inline const void *hash_search(
-    const HashArea *area, Hash hash, size_t *offset) {
+    const HashVector *area, Hash hash, size_t *offset) {
   for (struct HashItem next;; (*offset)++) {
     size_t i = hash + *offset & area->volume - 1;
 
@@ -67,7 +69,7 @@ typedef struct {
 }
 
 [[gnu::nonnull, gnu::pure]] static inline size_t hash_slot(
-    const HashArea *area, Hash hash, size_t i) {
+    const HashVector *area, Hash hash, size_t i) {
   size_t offset = i - hash & area->volume - 1;
   for (struct HashItem next;; offset++) {
     size_t i = hash + offset & area->volume - 1;
@@ -81,9 +83,9 @@ typedef struct {
 }
 
 /// Insert the @a stator into the @a engine at the @a offset
-[[gnu::nonnull]] static inline HashArea *hash_insert(
-    HashArea *area, Hash hash, const void *data, size_t offset) {
-  HashArea *rehash(HashArea *area, Hash hash, size_t *i) //-
+[[gnu::nonnull]] static inline HashVector *hash_insert(
+    HashVector *area, Hash hash, const void *object, size_t offset) {
+  HashVector *rehash(HashVector *area, Hash hash, size_t *i) //-
     MUON_HINT_SUFFIX(nonnull);
 
   size_t i;
@@ -92,7 +94,7 @@ typedef struct {
   else if ((area = rehash(area, hash, &i)) == NULL)
     return NULL;
 
-  struct HashItem next = {hash, data};
+  struct HashItem next = {hash, object};
   while ((next = MOVE(area->item[i], next)).object != NULL)
     i = hash_slot(area, next.hash, i + 1);
   return area->length++, area;
