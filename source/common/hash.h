@@ -8,6 +8,38 @@
 
 typedef size_t Hash;
 
+#if SIZE_MAX > UINT32_C(4294967295)
+#define HASH_ZERO UINT64_C(14695981039346656037)
+#else
+#define HASH_ZERO UINT32_C(2166136261)
+#endif
+
+/// Extend the @a hash code with the @a data of size @a size
+[[gnu::nonnull, gnu::pure]] static inline Hash hash_continue(
+    Hash hash, const void *data, size_t size) {
+#if SIZE_MAX > UINT32_C(4294967295)
+  static const Hash offset = UINT64_C(1099511628211);
+#else
+  static const Hash offset = UINT32_C(16777619);
+#endif
+  for (size_t i = 0; i < size; i++)
+    hash = (hash ^ (const char *) {data}[i]) * offset;
+  return hash;
+}
+
+/// Extend the @a hash code with the @a object
+#define hash_extend(hash, object) \
+  hash_continue((hash), &(object), sizeof(object))
+
+/// Return the hash code of the @a data of size @a size
+[[gnu::nonnull, gnu::pure]] static inline Hash hash_string(
+    const void *data, size_t size) {
+  return hash_continue(HASH_ZERO, data, size);
+}
+
+/// Return the hash code of the @a object
+#define hash_object(object) hash_string(&(object), sizeof(object))
+
 typedef struct {
   size_t volume;
   size_t length;
@@ -17,31 +49,6 @@ typedef struct {
     const void *object;
   } item[];
 } HashArea;
-
-/// Extend the @a hash code with the @a data of size @a size
-[[gnu::nonnull, gnu::pure]] static inline Hash hash_continue(
-    Hash hash, const void *data, size_t size) {
-  const char *string = data;
-  // TODO: make this work on 32-bit systems
-  for (size_t i = 0; i < size; i++)
-    hash = (hash ^ string[i]) * UINT64_C(1099511628211);
-  return hash;
-}
-
-/// Extend the @a hash code with the @a object
-#define hash_extend(hash, object) \
-  hash_continue((hash), &(object), sizeof(object))
-
-#define HASH_ZERO UINT64_C(14695981039346656037)
-
-/// Return the hash code of the @a data of size @a size
-[[gnu::nonnull, gnu::pure]] static inline Hash hash_string(
-    const void *data, size_t size) {
-  return hash_continue(UINT64_C(14695981039346656037), data, size);
-}
-
-/// Return the hash code of the @a object
-#define hash_object(object) hash_string(&(object), sizeof(object))
 
 [[gnu::nonnull]] static inline const void *hash_search(
     const HashArea *area, Hash hash, size_t *offset) {
