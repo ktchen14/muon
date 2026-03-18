@@ -7,22 +7,6 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-static inline Attitude type_next(const Inductor *inductor, Attitude origin) {
-  if (origin.type->tag != MUON_VARIABLE_TYPE)
-    return type_at(origin, type_cursor(origin)->i++);
-
-  size_t i;
-  while ((i = type_cursor(origin)->i++) < inductor->rule_length) {
-    const Rule *edge = &inductor->edge[i];
-
-    Attitude vertex = attitude_decode(edge->vertex[!origin.charge]);
-    if (attitude_eq(vertex, origin))
-      return attitude_decode(edge->vertex[origin.charge]);
-  }
-
-  return (Attitude) {};
-}
-
 MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
   MuonEngine *engine = inductor->engine;
 

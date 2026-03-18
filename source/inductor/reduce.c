@@ -9,26 +9,6 @@
 #include <stdckdint.h>
 #include <stdlib.h>
 
-static inline Attitude type_next(const Inductor *inductor, Attitude origin) {
-  if (origin.type->tag != MUON_VARIABLE_TYPE)
-    return type_at(origin, type_cursor(origin)->i++);
-
-  size_t i;
-  while ((i = type_cursor(origin)->i++) < inductor->rule_length) {
-    const Rule *edge = &inductor->edge[i];
-
-    Attitude vertex = attitude_decode(edge->vertex[!origin.charge]);
-    if (attitude_eq(vertex, origin)) {
-      // The neighbor's type, but at the traversal's charge — not the
-      // charge encoded in the rule.
-      MuonType *neighbor = attitude_decode(edge->vertex[origin.charge]).type;
-      return (Attitude) {neighbor, origin.charge};
-    }
-  }
-
-  return (Attitude) {};
-}
-
 static inline MuonType *assign_solution(
     Inductor *inductor, MuonType *type, MuonType *solution) {
   assert(type->id < inductor->type_length);

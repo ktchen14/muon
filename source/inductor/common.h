@@ -7,6 +7,7 @@
 #include "../detector/detect.h"
 #include "../engine.h" // IWYU pragma: export
 
+#include <assert.h>
 #include <errno.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -157,6 +158,25 @@ static inline void attitude_solution_set(
   assert(attitude.type->id < inductor->type_length);
   inductor->attitude_solution[attitude.type->id * 2 + attitude.charge] =
       solution;
+}
+
+static inline Attitude type_next(const Inductor *inductor, Attitude origin) {
+  if (origin.type->tag != MUON_VARIABLE_TYPE)
+    return type_at(origin, type_cursor(origin)->i++);
+
+  size_t i;
+  while ((i = type_cursor(origin)->i++) < inductor->rule_length) {
+    const Rule *rule = &inductor->edge[i];
+
+    Attitude vertex = attitude_decode(rule->vertex[!origin.charge]);
+    if (!attitude_eq(vertex, origin))
+      continue;
+
+    MuonType *next = attitude_decode(rule->vertex[origin.charge]).type;
+    return (Attitude) {next, origin.charge};
+  }
+
+  return (Attitude) {};
 }
 
 #endif /* MUON_INDUCTOR_COMMON_I */
