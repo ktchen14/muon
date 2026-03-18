@@ -43,7 +43,7 @@ Rule *type_restrain(
     Inductor *inductor, MuonType *source, MuonType *target, MuonNode *reason)
   MUON_HINT_SUFFIX(nonnull(1, 2, 3));
 
-Rule *retrieve_coercion(
+Rule *type_assess(
     Inductor *inductor, MuonType *restrict source, MuonType *restrict target);
 
 static Rule *rule_insert(

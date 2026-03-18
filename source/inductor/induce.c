@@ -227,7 +227,7 @@ Rule *type_restrain(
   return result;
 }
 
-Rule *retrieve_coercion(
+Rule *type_assess(
     Inductor *inductor, MuonType *restrict source, MuonType *restrict target) {
   // If ∃⟨source ⇒ target⟩ then return the coercion on that edge
   Rule *result;
@@ -298,7 +298,7 @@ static Rule *retrieve_core_coercion(
       next_target = t;
     }
 
-    if (retrieve_coercion(inductor, next_source, next_target) == NULL)
+    if (type_assess(inductor, next_source, next_target) == NULL)
       return NULL;
   }
 

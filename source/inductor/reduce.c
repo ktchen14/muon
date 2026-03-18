@@ -126,7 +126,7 @@ MuonType *reduce_type_to_join(Inductor *inductor, MuonVariableType *target) {
 
       // If we have b ⇝ a, then assign b ⇝ a ⇝ v to ⟨b ⇒ v⟩ and skip this b
       const Rule *b_to_a;
-      if ((b_to_a = retrieve_coercion(inductor, b, a)) == NULL)
+      if ((b_to_a = type_assess(inductor, b, a)) == NULL)
         return NULL;
       if (b_to_a->tag != IMPOSSIBLE_RULE) {
         b_edge->tag = INDIRECT_RULE;
@@ -138,7 +138,7 @@ MuonType *reduce_type_to_join(Inductor *inductor, MuonVariableType *target) {
 
       // If we have a ⇝ b, then assign a ⇝ b ⇝ v to ⟨a ⇒ v⟩ and skip this a
       const Rule *a_to_b;
-      if ((a_to_b = retrieve_coercion(inductor, a, b)) == NULL)
+      if ((a_to_b = type_assess(inductor, a, b)) == NULL)
         return NULL;
       if (a_to_b->tag != IMPOSSIBLE_RULE) {
         a_edge->tag = INDIRECT_RULE;
@@ -310,7 +310,7 @@ Aspect *varaspect0(Inductor *inductor, MuonVariableType *variable_type) {
 
       // If we have b ⇝ a, then assign b ⇝ a ⇝ v to ⟨b ⇒ v⟩ and skip this b
       const Rule *b_to_a;
-      if ((b_to_a = retrieve_coercion(inductor, b, a)) == NULL)
+      if ((b_to_a = type_assess(inductor, b, a)) == NULL)
         return NULL;
       if (b_to_a->tag != IMPOSSIBLE_RULE) {
         b_edge->tag = INDIRECT_RULE;
@@ -322,7 +322,7 @@ Aspect *varaspect0(Inductor *inductor, MuonVariableType *variable_type) {
 
       // If we have a ⇝ b, then assign a ⇝ b ⇝ v to ⟨a ⇒ v⟩ and skip this a
       const Rule *a_to_b;
-      if ((a_to_b = retrieve_coercion(inductor, a, b)) == NULL)
+      if ((a_to_b = type_assess(inductor, a, b)) == NULL)
         return NULL;
       if (a_to_b->tag != IMPOSSIBLE_RULE) {
         a_edge->tag = INDIRECT_RULE;
