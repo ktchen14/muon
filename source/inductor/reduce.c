@@ -320,8 +320,19 @@ MuonType *reduce_type(Inductor *inductor, Attitude attitude) {
       }
 
       case IS_CONCRETE_TYPE(MuonMeetType *meet_type) {
-        (void) meet_type;
-        assign_solution(inductor, cursor.type, cursor.type);
+        struct MuonMeetType *allocation;
+        if ((allocation = meet_type_allocate(engine, meet_type->argc)) == NULL)
+          return NULL;
+        for (size_t i = 0; i < meet_type->argc; i++) {
+          MuonType *argument = meet_type->argv[i];
+          argument = type_solution(inductor, argument);
+          assert(argument != NULL);
+          allocation->argv[i] = argument;
+        }
+        MuonMeetType *result;
+        if ((result = meet_type_activate(allocation)) == NULL)
+          return NULL;
+        assign_solution(inductor, cursor.type, &result->as_type);
         break;
       }
 
