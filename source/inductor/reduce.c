@@ -293,7 +293,7 @@ Aspect *varaspect0(Inductor *inductor, MuonVariableType *variable_type) {
   for (Rule *a_edge; (a_edge = rule_next(&it)) != NULL;) {
     if (a_edge->tag == INDIRECT_RULE)
       continue;
-    if (a_edge->instance_id != 0)
+    if (a_edge->instance != NULL)
       continue;
     MuonType *a = type_solution(inductor, attitude_decode(a_edge->source).type);
     assert(a != NULL);
@@ -302,7 +302,7 @@ Aspect *varaspect0(Inductor *inductor, MuonVariableType *variable_type) {
     for (Rule *b_edge; (b_edge = rule_next(&jt)) != NULL;) {
       if (b_edge->tag == INDIRECT_RULE)
         continue;
-      if (b_edge->instance_id != 0)
+      if (b_edge->instance != NULL)
         continue;
       MuonType *b = type_solution(
           inductor, attitude_decode(b_edge->source).type);

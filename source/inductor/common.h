@@ -33,8 +33,7 @@ typedef struct {
 
   RuleTag tag;
 
-  MuonSchemeType *instance_scheme;
-  size_t instance_id;
+  MuonInstance *instance; // optional
 
   MuonNode *reason; // optional
 
@@ -61,9 +60,6 @@ struct Inductor {
   struct Frontier {
     MuonType *data[2];
   } *frontier;
-
-  /// Incremented by 1 on each instantiation of a MuonSchemeType
-  size_t instance_id;
 
   size_t rule_length;
   size_t rule_volume;

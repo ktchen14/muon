@@ -27,7 +27,10 @@ static inline Attitude type_next(const Inductor *inductor, Attitude origin) {
 
 MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
   MuonEngine *engine = inductor->engine;
-  size_t instance_id = inductor->instance_id++;
+
+  MuonInstance *instance;
+  if ((instance = muon_instance(engine, scheme)) == NULL)
+    return NULL;
 
   union {
     struct MuonType *allocation;
@@ -181,7 +184,7 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
       case MUON_VARIABLE_TYPE:
         RuleIterator it = rule_iterator(inductor, cursor);
         for (const Rule *rule; (rule = rule_next(&it)) != NULL;) {
-          if (rule->instance_scheme == scheme)
+          if (rule->instance != NULL && rule->instance->scheme == scheme)
             continue;
 
           Attitude source = attitude_decode(rule->source);
@@ -201,8 +204,7 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
           next->tag = rule->tag;
           next->source = attitude_encode(source);
           next->target = attitude_encode(target);
-          next->instance_scheme = rule->instance_scheme;
-          next->instance_id = rule->instance_id;
+          next->instance = rule->instance;
         }
 
         MuonType *result = equation[cursor.type->id].result;
@@ -220,8 +222,7 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
         rule->tag = INSTANCE_RULE;
         rule->source = attitude_encode(source);
         rule->target = attitude_encode(target);
-        rule->instance_scheme = scheme;
-        rule->instance_id = instance_id;
+        rule->instance = instance;
         break;
     }
 

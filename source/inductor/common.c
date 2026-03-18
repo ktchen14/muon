@@ -41,7 +41,6 @@ MuonInductor *muon_induce_initialize(
     .frontier = frontier,
     .rule_volume = universe_volume,
     .edge = universe_data,
-    .instance_id = 1,
   };
 
   Engine *engine = as_engine(opaque);
@@ -121,13 +120,14 @@ void (inductor_debug)( //-
         break;
 
       case INSTANCE_RULE:
-        debug("color=green,fontcolor=green,label=\"%zu\",", edge.instance_id);
+        assert(edge.instance != NULL);
+        debug("color=green,fontcolor=green,label=\"%zu\",", edge.instance->id);
         break;
     }
 
     debug("];\n");
 
-    if (edge.instance_id != 0) {
+    if (edge.instance != NULL) {
       debug("  {\n");
       debug("    rank=same;\n");
       debug("    Type%zu [label=\"", source.type->id);
