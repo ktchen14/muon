@@ -37,10 +37,4 @@ static inline void *engine_allocate(MuonEngine *engine, size_t size) {
   return malloc(size);
 }
 
-/// @internal Allocate an object of the @a size in the @a engine
-MUON_HINT(malloc, nonnull)
-static inline void *engine_allocate2(Engine *engine, size_t size) {
-  return malloc(size);
-}
-
 #endif /* MUON_ENGINE_COMMON_I */
