@@ -15,26 +15,6 @@ static inline MuonType *assign_solution(
   return inductor->solution[type->id] = solution;
 }
 
-/// Compute the overall solution for a variable type from its two
-/// attitude-specific solutions.  Kept as a separate function so that the
-/// resolution strategy can be enhanced later.
-static MuonType *resolve_variable(
-    Inductor *inductor, MuonVariableType *variable) {
-  MuonType *solution;
-  if ((solution = type_solution(inductor, &variable->as_type)) != NULL)
-    return solution;
-
-  AttitudeSolution *pos = attitude_solution_get(
-      inductor, (Attitude) {&variable->as_type, 0});
-  AttitudeSolution *neg = attitude_solution_get(
-      inductor, (Attitude) {&variable->as_type, 1});
-  assert(pos != NULL && neg != NULL);
-
-  MuonType *overall = pos->base;
-  assert(overall != NULL);
-  return assign_solution(inductor, &variable->as_type, overall);
-}
-
 /// Look up the solution for a constraint neighbor of a variable at a given
 /// charge.  All neighbors must already have been reduced by the traversal.
 ///
@@ -346,6 +326,13 @@ MuonType *reduce_type(Inductor *inductor, Attitude attitude) {
       case IS_CONCRETE_TYPE(MuonVariableType *variable_type) {
         if (reduce_variable_attitude(inductor, variable_type, cursor.charge) == NULL)
           return NULL;
+
+        AttitudeSolution *pos = attitude_solution_get(inductor, (Attitude) {&variable_type->as_type, 0});
+        AttitudeSolution *neg = attitude_solution_get(inductor, (Attitude) {&variable_type->as_type, 1});
+        if (pos != NULL && neg != NULL) {
+          MuonType *overall = pos->base;
+          assign_solution(inductor, &variable_type->as_type, overall);
+        }
         break;
       }
     }
@@ -359,17 +346,12 @@ MuonType *reduce_type(Inductor *inductor, Attitude attitude) {
     if (cursor.type != NULL && is_variable_type(cursor.type))
       continue;
 
-    MuonVariableType *variable_type;
-    if ((variable_type = muon_type_cast(next.type, variable_type)) == NULL)
+    if (!is_variable_type(next.type))
       continue;
 
-    next = attitude_invert(next);
-    if (attitude_solution_get(inductor, next) == NULL) {
-      cursor = type_continue(cursor, next);
+    if (attitude_solution_get(inductor, next = attitude_invert(next)) != NULL)
       continue;
-    }
-
-    resolve_variable(inductor, variable_type);
+    cursor = type_continue(cursor, next);
   } while (!attitude_isnull(cursor));
 
   return type_solution(inductor, attitude.type);
