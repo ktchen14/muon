@@ -27,6 +27,9 @@ PenaltyReturnTypeOnItsOwnLine: 1000
 Macros:
 - MUON_HINT(x)=[[muon::hint(x)]]
 - ON_ABSTRACT_OBJECT(x)=(x)
+- ON_ABSTRACT_CORE(x)=(x)
+- ON_ABSTRACT_NODE(x)=(x)
+- ON_ABSTRACT_TYPE(x)=(x)
 - "IS_CONCRETE_CORE(x)=({ x = NULL; }):"
 - "IS_CONCRETE_NODE(x)=({ x = NULL; }):"
 - "IS_CONCRETE_TYPE(x)=({ x = NULL; }):"
