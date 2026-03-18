@@ -201,11 +201,11 @@ static MuonType *reduce_variable_attitude(
     }
   }
 
+  size_t size = instance_argc;
+  if (struct_size_overflow(AttitudeSolution, argv, &size))
+    return errno = ENOMEM, NULL;
   AttitudeSolution *att_sol;
-  if ((att_sol = malloc(
-           sizeof(AttitudeSolution)
-           + instance_argc * sizeof(struct AttitudeSolutionItem)))
-      == NULL)
+  if ((att_sol = malloc(size)) == NULL)
     return NULL;
 
   att_sol->base = join_result;
