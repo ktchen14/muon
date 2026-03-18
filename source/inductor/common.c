@@ -81,14 +81,30 @@ void (inductor_debug)( //-
 
     if (roster[source.type->id] == NULL) {
       debug("  Type%zu [label=\"", source.type->id);
+
       (muon_type_debug)(source.type, args.type);
+      AttitudeSolution *solution;
+      if ((solution = attitude_solution_get(inductor, (Attitude) {source.type, 0})) != NULL) {
+        debug(" [");
+        (muon_type_debug)(solution->base, args.type);
+        debug("]");
+      }
+
       debug("\"];\n");
       roster[source.type->id] = source.type;
     }
 
     if (roster[target.type->id] == NULL) {
       debug("  Type%zu [label=\"", target.type->id);
+
       (muon_type_debug)(target.type, args.type);
+      AttitudeSolution *solution;
+      if ((solution = attitude_solution_get(inductor, (Attitude) {source.type, 0})) != NULL) {
+        debug(" [");
+        (muon_type_debug)(solution->base, args.type);
+        debug("]");
+      }
+
       debug("\"];\n");
       roster[target.type->id] = target.type;
     }

@@ -166,12 +166,6 @@ static MuonType *reduce_variable_attitude(
   MuonType *join_result;
 
   if (argc == 1) {
-    single_edge->tag = INDIRECT_RULE;
-    single_edge->center = &target->as_type;
-
-    Rule *e = edge_define(inductor, &target->as_type, single_a);
-    e->tag = ID_RULE;
-
     join_result = single_a;
   } else if (argc == 0) {
     join_result = &as_engine(inductor->engine)->bottom_type->as_type;
@@ -203,9 +197,6 @@ static MuonType *reduce_variable_attitude(
     MuonJoinType *join_type;
     if ((join_type = join_type_activate(allocation)) == NULL)
       return NULL;
-
-    Rule *e = edge_define(inductor, &target->as_type, &join_type->as_type);
-    e->tag = ID_RULE;
 
     join_result = &join_type->as_type;
   }
@@ -287,6 +278,8 @@ MuonType *reduce_type(Inductor *inductor, Attitude attitude) {
   if ((solution = type_solution(inductor, attitude.type)) != NULL)
     return solution;
 
+  MuonEngine *engine = inductor->engine;
+
   Attitude cursor = attitude;
   goto entrance;
   do {
@@ -306,32 +299,21 @@ MuonType *reduce_type(Inductor *inductor, Attitude attitude) {
     entrance:
     }
 
-    // Return phase: compute the solution for this type.
-    // Nonvariable type: resolve variable children, then reconstruct.
+    // On return, create the solution of the returned type. If the type is a
+    // variable type, then this is a single charge solution. Otherwise, this is
+    // a universal solution.
     switch ON_ABSTRACT_TYPE(cursor.type) {
       case IS_CONCRETE_TYPE(MuonCoreType *core_type) {
         MuonCore *core = core_type->core;
 
-        // Resolve variable children.
-        for (size_t i = 0; i < core_argc(core); i++) {
-          MuonCoreMember member = core_at(core, i);
-          MuonType *child = core_type->argv[member.i];
-          if (child->tag == MUON_VARIABLE_TYPE
-              && type_solution(inductor, child) == NULL) {
-            MuonVariableType *var = muon_type_cast(child, var);
-            resolve_variable(inductor, var);
-          }
-        }
-
-        // Reconstruct.
         struct MuonCoreType *allocation;
-        if ((allocation = core_type_allocate(inductor->engine, core)) == NULL)
+        if ((allocation = core_type_allocate(engine, core)) == NULL)
           return NULL;
         for (size_t i = 0; i < core_argc(core); i++) {
-          MuonCoreMember member = core_at(core, i);
-          MuonType *argument = core_type->argv[member.i];
-          MuonType *arg_sol = type_solution(inductor, argument);
-          allocation->argv[i] = arg_sol != NULL ? arg_sol : argument;
+          MuonType *argument = core_type->argv[core_at(core, i).i];
+          argument = type_solution(inductor, argument);
+          assert(argument != NULL);
+          allocation->argv[i] = argument;
         }
         MuonCoreType *result;
         if ((result = core_type_activate(allocation)) == NULL)
@@ -341,26 +323,14 @@ MuonType *reduce_type(Inductor *inductor, Attitude attitude) {
       }
 
       case IS_CONCRETE_TYPE(MuonJoinType *join_type) {
-        // Resolve variable children.
-        for (size_t i = 0; i < join_type->argc; i++) {
-          MuonType *child = join_type->argv[i];
-          if (child->tag == MUON_VARIABLE_TYPE
-              && type_solution(inductor, child) == NULL) {
-            MuonVariableType *var = muon_type_cast(child, var);
-            resolve_variable(inductor, var);
-          }
-        }
-
-        // Reconstruct.
         struct MuonJoinType *allocation;
-        if ((allocation = join_type_allocate(
-                  inductor->engine, join_type->argc))
-            == NULL)
+        if ((allocation = join_type_allocate(engine, join_type->argc)) == NULL)
           return NULL;
         for (size_t i = 0; i < join_type->argc; i++) {
           MuonType *argument = join_type->argv[i];
-          MuonType *arg_sol = type_solution(inductor, argument);
-          allocation->argv[i] = arg_sol != NULL ? arg_sol : argument;
+          argument = type_solution(inductor, argument);
+          assert(argument != NULL);
+          allocation->argv[i] = argument;
         }
         MuonJoinType *result;
         if ((result = join_type_activate(allocation)) == NULL)
@@ -378,33 +348,26 @@ MuonType *reduce_type(Inductor *inductor, Attitude attitude) {
       case IS_CONCRETE_TYPE(MuonSchemeType *scheme_type) {
         // TODO: Scheme types may need special handling in the future.
         MuonType *matter = scheme_type->matter;
-        if (matter->tag == MUON_VARIABLE_TYPE
-            && type_solution(inductor, matter) == NULL) {
-          MuonVariableType *var = muon_type_cast(matter, var);
-          resolve_variable(inductor, var);
-        }
-        MuonType *matter_sol = type_solution(inductor, matter);
-        assign_solution(
-            inductor, cursor.type, matter_sol != NULL ? matter_sol : matter);
+        matter = type_solution(inductor, matter);
+        assert(matter != NULL);
+        assign_solution(inductor, cursor.type, matter);
         break;
       }
 
-      case MUON_VARIABLE_TYPE:
-        // Variable type: compute attitude-specific solution for this charge.
-        MuonVariableType *var = muon_type_cast(cursor.type, var);
-        if (reduce_variable_attitude(inductor, var, cursor.charge) == NULL)
+      case IS_CONCRETE_TYPE(MuonVariableType *variable_type) {
+        if (reduce_variable_attitude(inductor, variable_type, cursor.charge) == NULL)
           return NULL;
         break;
+      }
     }
 
-    // Pop up to the parent.
     if (attitude_isnull(cursor = type_return(next = cursor)))
       break;
 
-    // Re-entry: if we returned from a variable child to a nonvariable
-    // parent, check whether the variable needs its inverted attitude
-    // solution.  If so, re-enter at the inverted charge.  If both
-    // attitude solutions already exist, resolve the variable now.
+    // If we've returned from a variable type to a nonvariable type, then check
+    // whether the variable needs its inverted attitude solution. If so,
+    // re-enter at the inverted charge. If both attitude solutions already
+    // exist, resolve the variable now.
     if (is_variable_type(cursor.type))
       continue;
 
