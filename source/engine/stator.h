@@ -5,12 +5,13 @@
 
 #include "common.h"
 
+#include <limits.h>
 #include <stddef.h>
 
 [[gnu::nonnull]] static inline const void *stator_next(
-    const MuonEngine *opaque, MuonStatorTag tag, Hash hash, size_t *offset) {
-  const Engine *engine = as_engine(opaque);
-  return hash_search(engine->stator, hash << 8 | tag, offset);
+    const MuonEngine *engine, MuonStatorTag tag, Hash hash, size_t *offset) {
+  hash = hash >> 8 | (Hash) tag << sizeof(Hash) * CHAR_BIT - 8;
+  return hash_search(as_engine(engine)->stator, hash, offset);
 }
 
 /// Return the next stator assignable to @a stator in the iterator @a it
@@ -25,14 +26,13 @@
     MuonStatorTag tag,
     Hash hash,
     size_t offset) {
+  hash = hash >> 8 | (Hash) tag << sizeof(Hash) * CHAR_BIT - 8;
+
   Engine *engine = as_engine(opaque);
-
   HashArea *area = engine->stator;
-  if ((area = hash_insert(area, hash << 8 | tag, stator, offset)) == NULL)
+  if ((area = hash_insert(area, hash, stator, offset)) == NULL)
     return NULL;
-  engine->stator = area;
-
-  return stator;
+  return engine->stator = area, stator;
 }
 
 #define stator_insert(engine, stator, hash, offset) __extension__ ({ \
