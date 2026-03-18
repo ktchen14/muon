@@ -155,16 +155,6 @@ static VALUE name_expr_new(VALUE klass, VALUE rb_engine, VALUE rb_name) {
   return initialize(as_name_expr(node), rb_engine, rb_name);
 }
 
-// NativeExpr.new(engine, name)
-static VALUE native_expr_new(VALUE klass, VALUE rb_engine, VALUE rb_name) {
-  MuonEngine *engine = as_muon_engine(rb_engine);
-  MuonName *name = as_muon_name(engine, rb_name);
-  MuonNativeExpr *node;
-  if ((node = muon_native_expr(engine, name)) == NULL)
-    rb_raise(rb_eNoMemError, "Failed to allocate MuonNativeExpr");
-  return initialize(as_native_expr(node), rb_engine, rb_name);
-}
-
 // RecordExpr.new(engine, *argv)
 static VALUE record_expr_new(int va_argc, VALUE *va_argv, VALUE klass) {
   VALUE rb_engine, rb_rest;
@@ -520,10 +510,6 @@ static VALUE name_expr_name(VALUE self) {
   return as_symbol(as_muon_name_expr(self)->name);
 }
 
-static VALUE native_expr_name(VALUE self) {
-  return as_symbol(as_muon_native_expr(self)->name);
-}
-
 static VALUE record_expr_argv(VALUE self) {
   MuonRecordExpr *node = as_muon_record_expr(self);
   VALUE ary = rb_ary_new_capa((long) node->argc);
@@ -702,8 +688,6 @@ void Init_muon_node(VALUE mMuon) {
   rb_define_method(cLambdaExpr, "matter", lambda_expr_matter, 0);
   rb_define_singleton_method(cNameExpr, "new", name_expr_new, 2);
   rb_define_method(cNameExpr, "name", name_expr_name, 0);
-  rb_define_singleton_method(cNativeExpr, "new", native_expr_new, 2);
-  rb_define_method(cNativeExpr, "name", native_expr_name, 0);
   rb_define_singleton_method(cRecordExpr, "new", record_expr_new, -1);
   rb_define_method(cRecordExpr, "argv", record_expr_argv, 0);
   rb_define_singleton_method(cSequenceExpr, "new", sequence_expr_new, -1);
