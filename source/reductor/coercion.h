@@ -54,4 +54,8 @@ MuonMeetCoercion *meet_coercion_activate(
     struct MuonMeetCoercion *coercion, MuonType *target)
   MUON_HINT_SUFFIX(nonnull);
 
+/// Used with PRIsKIND to emit the @a text as a coercion kind
+#define DEBUG_COERCION_KIND(text) \
+  muon_debug_colorize ? "\x1b[0;34m" : "", (text), muon_debug_colorize ? "\x1b[0m" : ""
+
 #endif /* MU_REDUCTOR_COERCION_I */

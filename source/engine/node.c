@@ -1,6 +1,7 @@
 #include "node.h"
 
 #include "common.h"
+#include "name.h"
 
 #include <assert.h>
 #include <errno.h>

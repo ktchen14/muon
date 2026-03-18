@@ -296,7 +296,7 @@ void (muon_type_debug)(MuonType *type, struct MuonTypeDebugArgs args) { //-
 
   switch ON_ABSTRACT_TYPE(type) {
     case IS_CONCRETE_TYPE(MuonCoreType *core_type)
-      switch (core_type->core->tag) {
+      switch ON_ABSTRACT_CORE(core_type->core) {
         case MUON_BOOLEAN_CORE:
           debug("Boolean");
           break;
@@ -325,9 +325,7 @@ void (muon_type_debug)(MuonType *type, struct MuonTypeDebugArgs args) { //-
             debug(")");
           break;
 
-        case MUON_RECORD_CORE:
-          MuonRecordCore *record_core = (MuonRecordCore *) core_type->core;
-
+        case IS_CONCRETE_CORE(MuonRecordCore *record_core)
           next_args.strength = 0;
 
           debug("(");

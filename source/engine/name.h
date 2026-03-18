@@ -8,6 +8,12 @@
 #include <stddef.h>
 #include <string.h>
 
+/// Literal printf specifier for a name
+#define PRIsNAME "%s"
+
+/// Used with PRIsNAME to emit the text of the @a name
+#define DEBUG_NAME(name) ((name)->text)
+
 /// Compare name @a a to name @a b
 MUON_HINT(nonnull, pure)
 static inline int name_cmp(MuonName *a, MuonName *b) {

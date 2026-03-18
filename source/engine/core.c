@@ -82,6 +82,13 @@ MuonRecordCore *record_core_activate(struct MuonRecordCore *core) {
   return stator_insert(engine, core, hash, i);
 }
 
+// TODO: remove this
+/// Literal printf specifier for a kind
+#define PRIsKIND "%s%s%s"
+
+/// Used with PRIsKIND to emit the @a text as a core kind
+#define DEBUG_CORE_KIND(text) "", (text), ""
+
 void muon_core_debug(MuonCore *core) {
   static const char *const VARIANCE[] = {"+", "-"};
 
