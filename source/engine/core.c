@@ -51,23 +51,23 @@ struct MuonRecordCore *record_core_allocate(MuonEngine *engine, size_t argc) {
 }
 
 MuonRecordCore *record_core_activate(struct MuonRecordCore *core) {
-  MuonEngine *opaque = unlock_engine(&core->as_core);
+  MuonEngine *engine = unlock_engine(&core->as_core);
 
   for (size_t i = 0; i < core->argc; i++) {
     assert(core->argv[i] != NULL);
-    assert(core->argv[i]->engine == opaque);
+    assert(core->argv[i]->engine == engine);
   }
 
   for (size_t i = 1; i < core->argc; i++)
     assert(name_cmp(core->argv[i], core->argv[i - 1]) > 0);
 
-  Engine *engine = as_engine(opaque);
+  Hash hash = HASH_ZERO;
+  for (size_t i = 0; i < core->argc; i++)
+    hash = hash_extend(hash, core->argv[i]);
 
-  for (size_t i = 0; i < engine->core_length; i++) {
-    MuonRecordCore *next;
-    if ((next = muon_core_cast(engine->core[i], next)) == NULL)
-      continue;
-
+  MuonRecordCore *next;
+  size_t i = 0;
+  for (; (next = stator_next(engine, next, hash, &i)) != NULL; i++) {
     if (next->argc != core->argc)
       continue;
 
@@ -80,8 +80,7 @@ MuonRecordCore *record_core_activate(struct MuonRecordCore *core) {
   next:
   }
 
-  engine->core[engine->core_length++] = &core->as_core;
-  return core;
+  return stator_insert(engine, core, hash, i);
 }
 
 void muon_core_debug(MuonCore *core) {

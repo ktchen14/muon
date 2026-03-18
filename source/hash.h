@@ -34,6 +34,8 @@ typedef struct {
 #define hash_extend(hash, object) \
   hash_continue((hash), &(object), sizeof(object))
 
+#define HASH_ZERO UINT64_C(14695981039346656037)
+
 /// Return the hash code of the @a data of size @a size
 [[gnu::nonnull, gnu::pure]] static inline Hash hash_string(
     const void *data, size_t size) {
