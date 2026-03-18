@@ -24,9 +24,10 @@ HashVector *hash_vector(size_t volume) {
   return result;
 }
 
-HashVector *rehash(HashVector *area, Hash hash, size_t *i) {
+HashVector *hash_rehash(HashVector *area, Hash hash, size_t *i) {
   size_t offset = offsetof(HashVector, item);
   size_t item = sizeof(struct HashItem[2]);
+
   size_t size = area->volume;
   if ((struct_size_overflow) (sizeof(HashVector), offset, item, &size))
     return errno = ENOMEM, NULL;

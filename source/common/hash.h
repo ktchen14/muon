@@ -85,13 +85,13 @@ typedef struct {
 /// Insert the @a stator into the @a engine at the @a offset
 [[gnu::nonnull]] static inline HashVector *hash_insert(
     HashVector *area, Hash hash, const void *object, size_t offset) {
-  HashVector *rehash(HashVector *area, Hash hash, size_t *i) //-
+  HashVector *hash_rehash(HashVector *area, Hash hash, size_t *i) //-
     MUON_HINT_SUFFIX(nonnull);
 
   size_t i;
   if (area->length < area->volume / 8 * 7)
     i = hash + offset & area->volume - 1;
-  else if ((area = rehash(area, hash, &i)) == NULL)
+  else if ((area = hash_rehash(area, hash, &i)) == NULL)
     return NULL;
 
   struct HashItem next = {hash, object};
