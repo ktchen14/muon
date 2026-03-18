@@ -3,11 +3,9 @@
 
 #include <muon/engine/stator.h>
 
-#include "../hash.h"
 #include "common.h"
 
 #include <stddef.h>
-#include <stdint.h>
 
 [[gnu::nonnull]] static inline const void *stator_next(
     const MuonEngine *opaque, MuonStatorTag tag, Hash hash, size_t *offset) {

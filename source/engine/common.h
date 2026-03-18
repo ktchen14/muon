@@ -6,15 +6,10 @@
 #include "../common.h" // IWYU pragma: export
 #include "../hash.h"   // IWYU pragma: export
 
-#include <assert.h>
-#include <limits.h>
-#include <stddef.h>
-#include <stdint.h>
 #include <stdlib.h>
 
 typedef struct {
   size_t node_number[MUON_NODE_NUMBER];
-  size_t core_length;
   size_t type_number;
   size_t instance_number;
 
@@ -27,8 +22,6 @@ typedef struct {
   MuonMeetType *object_type;
 
   struct MuonSchemeType *scheme;
-
-  MuonCore *core[200];
 
   HashArea *stator;
 } Engine;

@@ -5,7 +5,6 @@
 #include "stator.h"
 
 #include <assert.h>
-#include <stddef.h>
 #include <stdlib.h>
 
 /// @internal Return the mutable engine of the @a core

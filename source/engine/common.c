@@ -1,14 +1,6 @@
 #include "common.h"
-#include "stator.h"
 
-#include "../hash.h"
-
-#include <assert.h>
-#include <errno.h>
-#include <stdckdint.h>
-#include <stddef.h>
 #include <stdlib.h>
-#include <string.h>
 
 MuonEngine *muon_engine_initialize(MuonEngine *opaque) {
   Engine *engine = as_engine(opaque);

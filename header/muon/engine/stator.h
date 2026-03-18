@@ -1,8 +1,6 @@
 #ifndef MUON_ENGINE_STATOR_H
 #define MUON_ENGINE_STATOR_H
 
-#include "common.h"
-
 #include <limits.h>
 #include <stddef.h>
 
