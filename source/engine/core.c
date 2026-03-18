@@ -16,17 +16,20 @@ static inline MuonEngine *unlock_engine(struct MuonCore *core) {
 #pragma GCC diagnostic pop
 }
 
-MuonCore *mu_simple_core(MuonEngine *engine, MuonName *name) {
-  struct MuonCore *core;
-  if ((core = malloc(sizeof(MuonCore))) == NULL)
+MuonCustomCore *mu_simple_core(MuonEngine *engine, MuonName *name) {
+  struct MuonCustomCore *result;
+  if ((result = malloc(sizeof(MuonCustomCore))) == NULL)
     return NULL;
-  *core = (MuonCore) {.tag = MUON_CUSTOM_CORE, .engine = engine, .name = name};
-  return core;
+  *result = (MuonCustomCore) {
+    .as_core = {.tag = MUON_CUSTOM_CORE, .engine = engine},
+    .name = name
+  };
+  return result;
 }
 
-MuonCore *muon_record_core(
-    MuonEngine *engine, size_t argc, MuonCoreMember argv[const /* argv */]) {
-  struct MuonCore *result;
+MuonRecordCore *muon_record_core(
+    MuonEngine *engine, size_t argc, MuonName *const argv[/* argv */]) {
+  struct MuonRecordCore *result;
   if ((result = record_core_allocate(engine, argc)) == NULL)
     return NULL;
   for (size_t i = 0; i < argc; i++)
@@ -34,85 +37,102 @@ MuonCore *muon_record_core(
   return record_core_activate(result);
 }
 
-struct MuonCore *record_core_allocate(MuonEngine *engine, size_t argc) {
-  size_t size;
-  if (rare((size = struct_size(MuonCore, argv, argc)) == 0))
+struct MuonRecordCore *record_core_allocate(MuonEngine *engine, size_t argc) {
+  size_t size = argc;
+  if (struct_size_overflow(MuonRecordCore, argv, &size))
     return NULL;
 
-  struct MuonCore *allocation;
+  struct MuonRecordCore *allocation;
   if ((allocation = engine_allocate(engine, size)) == NULL)
     return NULL;
-  *allocation = (MuonCore) {
-    .tag = MUON_RECORD_CORE, .engine = engine, .argc = argc
+  *allocation = (MuonRecordCore) {
+    .as_core = {.tag = MUON_RECORD_CORE, .engine = engine}, .argc = argc
   };
   return allocation;
 }
 
-MuonCore *record_core_activate(struct MuonCore *allocation) {
-  assert(allocation->tag == MUON_RECORD_CORE);
+MuonRecordCore *record_core_activate(struct MuonRecordCore *core) {
+  MuonEngine *opaque = unlock_engine(&core->as_core);
 
-  MuonEngine *opaque = unlock_engine(allocation);
-  for (size_t i = 0; i < allocation->argc; i++) {
-    MuonName *name = allocation->argv[i].name;
-    assert(name != NULL && name->engine == opaque);
-    assert(allocation->argv[i].i == i);
-    assert(allocation->argv[i].variance == 0);
+  for (size_t i = 0; i < core->argc; i++) {
+    assert(core->argv[i] != NULL);
+    assert(core->argv[i]->engine == opaque);
   }
 
-  // Ensure that each member is sorted after the previous one
-  for (size_t i = 1; i < allocation->argc; i++)
-    assert(
-        name_cmp(allocation->argv[i].name, allocation->argv[i - 1].name) > 0);
+  for (size_t i = 1; i < core->argc; i++)
+    assert(name_cmp(core->argv[i], core->argv[i - 1]) > 0);
 
   Engine *engine = as_engine(opaque);
 
   for (size_t i = 0; i < engine->core_length; i++) {
-    MuonCore *core = engine->core[i];
-
-    if (core->tag != MUON_RECORD_CORE || core->argc != allocation->argc)
+    MuonRecordCore *next;
+    if ((next = muon_core_cast(engine->core[i], next)) == NULL)
       continue;
 
-    for (size_t j = 0; j < allocation->argc; j++) {
-      if (core->argv[j].name != allocation->argv[j].name)
+    if (next->argc != core->argc)
+      continue;
+
+    for (size_t i = 0; i < core->argc; i++) {
+      if (next->argv[i] != core->argv[i])
         goto next;
     }
 
-    return free(allocation), core;
-
+    return free(core), next;
   next:
   }
 
-  return engine->core[engine->core_length++] = allocation;
+  engine->core[engine->core_length++] = &core->as_core;
+  return core;
 }
 
 void muon_core_debug(MuonCore *core) {
   static const char *const VARIANCE[] = {"+", "-"};
 
-  switch (core->tag) {
+  switch ON_ABSTRACT_OBJECT(core) {
     case MUON_BOOLEAN_CORE:
       debug(PRIsKIND, DEBUG_CORE_KIND("Boolean"));
-      return;
-    case MUON_CUSTOM_CORE:
-      debug(PRIsKIND, DEBUG_CORE_KIND(DEBUG_NAME(core->name)));
       break;
+
+    case IS_CONCRETE_CORE(MuonCustomCore *custom_core)
+      debug(PRIsKIND, DEBUG_CORE_KIND(DEBUG_NAME(custom_core->name)));
+
+      if (custom_core->argc == 0)
+        break;
+
+      debug("(");
+      for (size_t i = 0; i < custom_core->argc; i++) {
+        MuonCoreMember member = custom_core->argv[i];
+        if (i > 0)
+          debug(", ");
+        if (member.name != NULL)
+          debug(PRIsNAME ": ", DEBUG_NAME(member.name));
+        debug("%s", VARIANCE[member.variance]);
+      }
+      debug(")");
+      break;
+
     case MUON_INTEGER_CORE:
       debug(PRIsKIND, DEBUG_CORE_KIND("Integer"));
-      return;
-    case MUON_LAMBDA_CORE:
-      debug(PRIsKIND, DEBUG_CORE_KIND("λ"));
       break;
-    case MUON_RECORD_CORE:
-    case MUON_VECTOR_CORE:
-      break;
-  }
 
-  debug("%c", "(["[core->tag == MUON_VECTOR_CORE]);
-  for (size_t i = 0; i < core->argc; i++) {
-    if (i > 0)
-      debug(", ");
-    if (core->argv[i].name != NULL)
-      debug(PRIsNAME ": ", DEBUG_NAME(core->argv[i].name));
-    debug("%s", VARIANCE[core->argv[i].variance]);
+    case MUON_LAMBDA_CORE:
+      debug(PRIsKIND, DEBUG_CORE_KIND("(→)"));
+      break;
+
+    case IS_CONCRETE_CORE(MuonRecordCore *record_core)
+      debug("(");
+      for (size_t i = 0; i < record_core->argc; i++) {
+        if (i > 0)
+          debug(", ");
+        if (record_core->argv[i] != NULL)
+          debug(PRIsNAME ": ", DEBUG_NAME(record_core->argv[i]));
+        debug("+");
+      }
+      debug(")");
+      break;
+
+    case MUON_VECTOR_CORE:
+      debug(PRIsKIND, DEBUG_CORE_KIND("[]"));
+      break;
   }
-  debug("%c", ")]"[core->tag == MUON_VECTOR_CORE]);
 }

@@ -4,6 +4,7 @@
 #include <muon/engine/type.h>
 
 #include "common.h"
+#include "core.h"
 
 #include <assert.h>
 #include <stddef.h>
@@ -54,11 +55,6 @@ typedef struct {
   }) struct MuonType type[];
 } TypeHeader;
 
-/// Emit a case within a switch ON_ABSTRACT_OBJECT()
-#define IS_CONCRETE_TYPE(...) \
-  MUON_TYPE_TAG(typeof(&(union { __VA_ARGS__, _; }) {}._)): \
-    __VA_ARGS__ = abstract_object;
-
 [[gnu::const, gnu::nonnull, gnu::returns_nonnull]]
 static inline TypeHeader *type_header(MuonType *type) {
 #pragma GCC diagnostic push
@@ -95,14 +91,19 @@ static inline _Bool is_variable_type(MuonType *type) {
   return type->tag == MUON_VARIABLE_TYPE;
 }
 
+/// Emit a case within a switch ON_ABSTRACT_OBJECT()
+#define IS_CONCRETE_TYPE(...) \
+  MUON_TYPE_TAG(typeof(&(union { __VA_ARGS__, _; }) {}._)): \
+    __VA_ARGS__ = abstract_object;
+
 /// Return the <em>i</em>th type in the abstract type @a origin
 static inline Attitude type_at(Attitude origin, size_t i) {
   switch ON_ABSTRACT_OBJECT(origin.type) {
     case IS_CONCRETE_TYPE(MuonCoreType *core_type)
-      if (i < core_type->core->argc) {
-        const MuonCoreMember *member = &core_type->core->argv[i];
-        _Bool charge = origin.charge ^ member->variance;
-        return (Attitude) {core_type->argv[member->i], charge};
+      if (i < core_argc(core_type->core)) {
+        MuonCoreMember member = core_at(core_type->core, i);
+        _Bool charge = origin.charge ^ member.variance;
+        return (Attitude) {core_type->argv[member.i], charge};
       }
       return (Attitude) {};
 

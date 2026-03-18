@@ -77,7 +77,7 @@ typedef const struct MuonVariableType {
 /// @internal Used to emit each branch in MUON_TYPE_TAG()
 #define MUON_TYPE_TAG_EMIT(Title, l, UPPER) , Muon##Title *: MUON_##UPPER
 
-/// Return the enumerator indicative of the concrete @a type
+/// Return the enumerator indicative of the concrete @a type subtype
 #define MUON_TYPE_TAG(type) _Generic( \
   (type) {} MUON_EACH_TYPE(MUON_TYPE_TAG_EMIT))
 
@@ -95,7 +95,7 @@ static inline MuonType *muon_type_cast(MuonType *type, MuonTypeTag tag) {
 )
 
 MuonCoreType *muon_core_type(
-    MuonEngine *engine, MuonCore *core, MuonType *const argv[/* core->argc */])
+    MuonEngine *engine, MuonCore *core, MuonType *const argv[])
   MUON_HINT_SUFFIX(malloc, nonnull(1, 2));
 
 /// Create a boolean type in the @a engine

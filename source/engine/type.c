@@ -1,6 +1,7 @@
 #include "type.h"
 
 #include "common.h"
+#include "core.h"
 #include "stator.h"
 
 #include <assert.h>
@@ -39,13 +40,11 @@ static inline MuonType *assign_type(MuonEngine *engine, struct MuonType *type) {
 }
 
 MuonCoreType *muon_core_type(
-    MuonEngine *engine,
-    MuonCore *core,
-    MuonType *const argv[/* core->argc */]) {
+    MuonEngine *engine, MuonCore *core, MuonType *const argv[]) {
   struct MuonCoreType *result;
   if ((result = core_type_allocate(engine, core)) == NULL)
     return NULL;
-  for (size_t i = 0; i < core->argc; i++)
+  for (size_t i = 0; i < core_argc(core); i++)
     result->argv[i] = argv[i];
   return core_type_activate(result);
 }
@@ -110,22 +109,21 @@ MuonSchemeType *muon_scheme_type(MuonEngine *engine, MuonType *matter) {
   return scheme_type_activate(result, matter);
 }
 
-struct MuonCoreType *core_type_allocate(MuonEngine *opaque, MuonCore *core) {
-  assert(core->engine == opaque);
+struct MuonCoreType *core_type_allocate(MuonEngine *engine, MuonCore *core) {
+  assert(core->engine == engine);
 
-  Engine *engine = as_engine(opaque);
-
-  size_t size;
-  if (rare((size = struct_size(MuonCoreType, argv, core->argc)) == 0))
+  size_t size = core_argc(core);
+  if (struct_size_overflow(MuonCoreType, argv, &size))
     return errno = ENOMEM, NULL;
 
+  MuonSchemeType *scheme = as_engine(engine)->scheme;
+
   struct MuonCoreType *result;
-  if ((result = type_allocate(opaque, size)) == NULL)
+  if ((result = type_allocate(engine, size)) == NULL)
     return NULL;
   *result = (MuonCoreType) {
-    .as_type =
-        {.tag = MUON_CORE_TYPE, .engine = opaque, .scheme = engine->scheme},
-    .core = core,
+    .as_type = {.tag = MUON_CORE_TYPE, .engine = engine, .scheme = scheme},
+    .core = core
   };
   return result;
 }
@@ -133,30 +131,28 @@ struct MuonCoreType *core_type_allocate(MuonEngine *opaque, MuonCore *core) {
 MuonCoreType *core_type_activate(struct MuonCoreType *type) {
   MuonEngine *engine = unlock_engine(&type->as_type);
 
-  MuonCore *core = type->core;
-
-  for (size_t i = 0; i < core->argc; i++) {
-    MuonCoreMember member = core->argv[i];
+  for (size_t i = 0; i < core_argc(type->core); i++) {
+    MuonCoreMember member = core_at(type->core, i);
     assert(type->argv[member.i] != NULL);
     assert(type->argv[member.i]->engine == engine);
   }
 
-  Hash hash = hash_object(core);
+  Hash hash = hash_object(type->core);
   hash = hash_extend(hash, type->as_type.scheme);
-  for (size_t i = 0; i < core->argc; i++)
-    hash = hash_extend(hash, type->argv[core->argv[i].i]);
+  for (size_t i = 0; i < core_argc(type->core); i++)
+    hash = hash_extend(hash, type->argv[core_at(type->core, i).i]);
 
   MuonCoreType *next;
   size_t i = 0;
   for (; (next = stator_next(engine, next, hash, &i)) != NULL; i++) {
-    if (next->core != core)
+    if (next->core != type->core)
       continue;
 
     if (next->as_type.scheme != type->as_type.scheme)
       continue;
 
-    for (size_t i = 0; i < core->argc; i++) {
-      MuonCoreMember member = core->argv[i];
+    for (size_t i = 0; i < core_argc(type->core); i++) {
+      MuonCoreMember member = core_at(type->core, i);
       if (next->argv[member.i] != type->argv[member.i])
         goto next;
     }
@@ -331,13 +327,15 @@ void (muon_type_debug)(MuonType *type, struct MuonTypeDebugArgs args) { //-
           break;
 
         case MUON_RECORD_CORE:
+          MuonRecordCore *record_core = (MuonRecordCore *) core_type->core;
+
           next_args.strength = 0;
 
           debug("(");
-          for (size_t i = 0; i < core_type->core->argc; i++) {
+          for (size_t i = 0; i < record_core->argc; i++) {
             if (i > 0)
               debug(", ");
-            muon_name_debug(core_type->core->argv[i].name);
+            muon_name_debug(record_core->argv[i]);
             debug(": ");
             (muon_type_debug)(core_type->argv[i], next_args);
           }

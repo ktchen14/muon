@@ -18,10 +18,6 @@ typedef struct {
   size_t type_number;
   size_t instance_number;
 
-  MuonName *boolean_name;
-  MuonName *integer_name;
-  MuonName *lambda_name;
-
   MuonCore *boolean_core;
   MuonCore *integer_core;
   MuonCore *lambda_core;

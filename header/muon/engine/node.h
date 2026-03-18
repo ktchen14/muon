@@ -69,8 +69,7 @@
 
 #define MUON_NODE_TAG_EMIT(T, l, UPPER) MUON_##UPPER##_NODE,
 
-/// An enumeration over each concrete subtype of MuonNode, e.g.
-/// @c MUON_ACCESS_EXPR_NODE
+/// An enumeration over each concrete subtype of MuonNode
 typedef enum {
   MUON_EACH_NODE_STEM(MUON_NODE_TAG_EMIT)
 
@@ -85,8 +84,7 @@ typedef enum {
   MUON_SCRIPT = MUON_SCRIPT_NODE,
 } MuonNodeTag;
 
-/// An enumeration over each concrete subtype of MuonExpr, e.g.
-/// @c MUON_ACCESS_EXPR
+/// An enumeration over each concrete subtype of MuonExpr
 typedef enum {
 #define MUON_EMIT(T, l, UPPER) MUON_##UPPER = MUON_##UPPER##_NODE,
   MUON_EACH_EXPR_STEM(MUON_EMIT)
@@ -97,8 +95,18 @@ typedef enum {
       MUON_TAKE, MUON_EACH_EXPR_STEM(MUON_NODE_TAG_EMIT)),
 } MuonExprTag;
 
-/// An enumeration over each concrete subtype of MuonSign, e.g.
-/// @c MUON_BOOLEAN_SIGN
+/// An enumeration over each concrete subtype of MuonImport
+typedef enum {
+#define MUON_EMIT(T, l, UPPER) MUON_##UPPER = MUON_##UPPER##_NODE,
+  MUON_EACH_IMPORT_STEM(MUON_EMIT)
+#undef MUON_EMIT
+
+  /// Equivalent to the minimum enumerator in MuonImportTag
+  MUON_MINORANT_IMPORT = MUON_INDIRECT(
+      MUON_TAKE, MUON_EACH_IMPORT_STEM(MUON_NODE_TAG_EMIT)),
+} MuonImportTag;
+
+/// An enumeration over each concrete subtype of MuonSign
 typedef enum {
 #define MUON_EMIT(T, l, UPPER) MUON_##UPPER = MUON_##UPPER##_NODE,
   MUON_EACH_SIGN_STEM(MUON_EMIT)
@@ -109,8 +117,7 @@ typedef enum {
       MUON_TAKE, MUON_EACH_SIGN_STEM(MUON_NODE_TAG_EMIT)),
 } MuonSignTag;
 
-/// An enumeration over each concrete subtype of MuonStmt, e.g.
-/// @c MUON_COERCION_STMT
+/// An enumeration over each concrete subtype of MuonStmt
 typedef enum {
 #define MUON_EMIT(T, l, UPPER) MUON_##UPPER = MUON_##UPPER##_NODE,
   MUON_EACH_STMT_STEM(MUON_EMIT)
@@ -121,8 +128,7 @@ typedef enum {
       MUON_TAKE, MUON_EACH_STMT_STEM(MUON_NODE_TAG_EMIT)),
 } MuonStmtTag;
 
-/// An enumeration over each concrete subtype of MuonView, e.g.
-/// @c MUON_RECORD_VIEW
+/// An enumeration over each concrete subtype of MuonView
 typedef enum {
 #define MUON_EMIT(T, l, UPPER) MUON_##UPPER = MUON_##UPPER##_NODE,
   MUON_EACH_VIEW_STEM(MUON_EMIT)
@@ -132,18 +138,6 @@ typedef enum {
   MUON_MINORANT_VIEW = MUON_INDIRECT(
       MUON_TAKE, MUON_EACH_VIEW_STEM(MUON_NODE_TAG_EMIT)),
 } MuonViewTag;
-
-/// An enumeration over each concrete subtype of MuonImport, e.g.
-/// @c MUON_EXPR_IMPORT
-typedef enum {
-#define MUON_EMIT(T, l, UPPER) MUON_##UPPER = MUON_##UPPER##_NODE,
-  MUON_EACH_IMPORT_STEM(MUON_EMIT)
-#undef MUON_EMIT
-
-  /// Equivalent to the minimum enumerator in MuonImportTag
-  MUON_MINORANT_IMPORT = MUON_INDIRECT(
-      MUON_TAKE, MUON_EACH_IMPORT_STEM(MUON_NODE_TAG_EMIT)),
-} MuonImportTag;
 
 #undef MUON_NODE_TAG_EMIT
 
@@ -155,6 +149,9 @@ enum {
   /// Number of distinct concrete subtypes of MuonExpr
   MUON_EXPR_NUMBER = MUON_EACH_EXPR_STEM(MUON_EMIT),
 
+  /// Number of distinct concrete subtypes of MuonImport
+  MUON_IMPORT_NUMBER = MUON_EACH_IMPORT_STEM(MUON_EMIT),
+
   /// Number of distinct concrete subtypes of MuonSign
   MUON_SIGN_NUMBER = MUON_EACH_SIGN_STEM(MUON_EMIT),
 
@@ -163,9 +160,6 @@ enum {
 
   /// Number of distinct concrete subtypes of MuonView
   MUON_VIEW_NUMBER = MUON_EACH_VIEW_STEM(MUON_EMIT),
-
-  /// Number of distinct concrete subtypes of MuonImport
-  MUON_IMPORT_NUMBER = MUON_EACH_IMPORT_STEM(MUON_EMIT),
 #undef MUON_EMIT
 };
 
@@ -197,6 +191,21 @@ typedef const struct MuonExpr {
 /// The header that each MuonExpr subtype must have
 #define MUON_EXPR_HEADER union { \
   struct MuonExpr as_expr; MUON_NODE_HEADER; \
+}
+
+/**
+ * @brief An abstract import
+ *
+ * Note that a MuonImport is a constant object; the mutable equivalent is a
+ * <tt>struct MuonImport</tt>.
+ */
+typedef const struct MuonImport {
+  union { MUON_NODE_HEADER; MuonImportTag tag; }; //-
+} MuonImport;
+
+/// The header that each MuonImport subtype must have
+#define MUON_IMPORT_HEADER union { \
+  struct MuonImport as_import; MUON_NODE_HEADER; \
 }
 
 /**
@@ -242,21 +251,6 @@ typedef const struct MuonView {
 /// The header that each MuonView subtype must have
 #define MUON_VIEW_HEADER union { \
   struct MuonView as_view; MUON_NODE_HEADER; \
-}
-
-/**
- * @brief An abstract import
- *
- * Note that a MuonImport is a constant object; the mutable equivalent is a
- * <tt>struct MuonImport</tt>.
- */
-typedef const struct MuonImport {
-  union { MUON_NODE_HEADER; MuonImportTag tag; }; //-
-} MuonImport;
-
-/// The header that each MuonImport subtype must have
-#define MUON_IMPORT_HEADER union { \
-  struct MuonImport as_import; MUON_NODE_HEADER; \
 }
 
 typedef const struct MuonAccessExpr {
@@ -442,7 +436,7 @@ typedef const struct MuonExprImport {
 /// @internal Used to emit each branch in MUON_NODE_TAG()
 #define MUON_NODE_TAG_EMIT(Title, l, UPPER) , Muon##Title *: MUON_##UPPER##_NODE
 
-/// Return the enumerator indicative of the concrete @a node
+/// Return the enumerator indicative of the concrete @a node subtype
 #define MUON_NODE_TAG(node) _Generic( \
   (node) {} MUON_EACH_NODE_STEM(MUON_NODE_TAG_EMIT))
 

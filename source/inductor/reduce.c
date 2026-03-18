@@ -235,8 +235,8 @@ MuonType *reduce_type(Inductor *inductor, Attitude attitude) {
       if ((allocation = core_type_allocate(inductor->engine, core)) == NULL)
         return NULL;
 
-      for (size_t i = 0; i < core->argc; i++) {
-        MuonCoreMember member = core->argv[i];
+      for (size_t i = 0; i < core_argc(core); i++) {
+        MuonCoreMember member = core_at(core, i);
 
         MuonType *argument = core_type->argv[member.i];
         _Bool charge = attitude.charge ^ member.variance;

@@ -9,10 +9,61 @@
 #include <assert.h>
 #include <stddef.h>
 
-struct MuonCore *record_core_allocate(MuonEngine *engine, size_t argc)
+/// Emit a case within a switch ON_ABSTRACT_OBJECT()
+#define IS_CONCRETE_CORE(...) \
+  MUON_CORE_TAG(typeof(&(union { __VA_ARGS__, _; }) {}._)): \
+    __VA_ARGS__ = abstract_object;
+
+[[gnu::nonnull, gnu::pure]] static inline size_t core_argc(MuonCore *core) {
+  switch ON_ABSTRACT_OBJECT(core) {
+    case MUON_BOOLEAN_CORE:
+      return 0;
+
+    case IS_CONCRETE_CORE(MuonCustomCore *custom_core)
+      return custom_core->argc;
+
+    case MUON_INTEGER_CORE:
+      return 0;
+
+    case MUON_LAMBDA_CORE:
+      return 2;
+
+    case IS_CONCRETE_CORE(MuonRecordCore *record_core)
+      return record_core->argc;
+
+    case MUON_VECTOR_CORE:
+      return 1;
+  }
+}
+
+/// Return the <em>i</em>th member in the abstract @a core
+[[gnu::nonnull, gnu::pure]]
+static inline MuonCoreMember core_at(MuonCore *core, size_t i) {
+  switch ON_ABSTRACT_OBJECT(core) {
+    case MUON_BOOLEAN_CORE:
+      unreachable();
+
+    case IS_CONCRETE_CORE(MuonCustomCore *custom_core)
+      return custom_core->argv[i];
+
+    case MUON_INTEGER_CORE:
+      unreachable();
+
+    case MUON_LAMBDA_CORE:
+      return (MuonCoreMember) {.i = i, .variance = !i};
+
+    case IS_CONCRETE_CORE(MuonRecordCore *record_core)
+      return (MuonCoreMember) {.name = record_core->argv[i], .i = i};
+
+    case MUON_VECTOR_CORE:
+      return (MuonCoreMember) {};
+  }
+}
+
+struct MuonRecordCore *record_core_allocate(MuonEngine *engine, size_t argc)
   MUON_HINT_SUFFIX(malloc, nonnull);
 
-MuonCore *record_core_activate(struct MuonCore *core)
+MuonRecordCore *record_core_activate(struct MuonRecordCore *core)
   MUON_HINT_SUFFIX(nonnull);
 
 /// Compare the core member @a a to the core member @a b

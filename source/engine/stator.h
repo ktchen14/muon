@@ -37,9 +37,10 @@
   return stator;
 }
 
-#define stator_insert(engine, stator, hash, offset) ( \
-  (const typeof_unqual(*(stator)) *) { \
-    stator_insert((engine), (stator), MUON_STATOR_TAG(typeof(stator)), (hash), (offset)) \
-  })
+#define stator_insert(engine, stator, hash, offset) __extension__ ({ \
+  const typeof_unqual(*(stator)) *_stator = (stator); \
+  MuonStatorTag _tag = MUON_STATOR_TAG(typeof(_stator)); \
+  (typeof(_stator)) {stator_insert((engine), (stator), _tag, (hash), (offset))}; \
+})
 
 #endif /* MUON_ENGINE_STATOR_I */

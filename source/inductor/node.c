@@ -88,9 +88,8 @@ MUON_HINT(nonnull) static MuonType *access_expr_return(
     Inductor *inductor, MuonAccessExpr *expr) {
   MuonEngine *engine = inductor->engine;
 
-  MuonCoreMember core_argv[] = {{.name = expr->name}};
-  MuonCore *core;
-  if ((core = muon_record_core(engine, 1, core_argv)) == NULL)
+  MuonRecordCore *core;
+  if ((core = muon_record_core(engine, 1, &expr->name)) == NULL)
     return NULL;
 
   MuonVariableType *variable_type;
@@ -99,7 +98,7 @@ MUON_HINT(nonnull) static MuonType *access_expr_return(
 
   MuonType *type_argv[] = {&variable_type->as_type};
   MuonCoreType *record_type;
-  if ((record_type = muon_core_type(engine, core, type_argv)) == NULL)
+  if ((record_type = muon_core_type(engine, &core->as_core, type_argv)) == NULL)
     return NULL;
 
   MuonType *argv[] = {&record_type->as_type, &variable_type->as_type};
@@ -189,26 +188,23 @@ MUON_HINT(nonnull) static MuonType *record_expr_return(
     Inductor *inductor, MuonRecordExpr *expr) {
   MuonEngine *engine = inductor->engine;
 
-  struct MuonCore *core_allocation;
+  struct MuonRecordCore *core_allocation;
   if ((core_allocation = record_core_allocate(engine, expr->argc)) == NULL)
     return NULL;
 
-  for (size_t i = 0; i < expr->argc; i++) {
-    MuonName *name = expr->argv[i]->name;
-    MuonCoreMember member = {.name = name, .i = i};
-    core_allocation->argv[i] = member;
-  }
+  for (size_t i = 0; i < expr->argc; i++)
+    core_allocation->argv[i] = expr->argv[i]->name;
   /* qsort(&core_allocation->argv[j], expr->argc - j, sizeof(mu_expr_member_t),
    */
   /*     type_member_cmp); */
   // TODO: check for duplicates
 
-  MuonCore *core;
+  MuonRecordCore *core;
   if ((core = record_core_activate(core_allocation)) == NULL)
     return NULL;
 
   struct MuonCoreType *type_allocation;
-  if ((type_allocation = core_type_allocate(engine, core)) == NULL)
+  if ((type_allocation = core_type_allocate(engine, &core->as_core)) == NULL)
     return NULL;
 
   for (size_t i = 0; i < expr->argc; i++)
@@ -389,12 +385,10 @@ MUON_HINT(nonnull) static MuonType *datatype_option_return(
 
 MUON_HINT(nonnull) static MuonNode *datatype_stmt_continue(
     Inductor *inductor, MuonNode *node, MuonDatatypeStmt *next) {
-  MuonCore *core;
+  MuonCustomCore *core;
   if ((core = mu_simple_core(inductor->engine, next->name)) == NULL)
     return NULL;
-  Engine *engine = as_engine(inductor->engine);
-  engine->core[engine->core_length++] = core;
-  inductor->datatype_core = core;
+  inductor->datatype_core = &core->as_core;
 
   return node_continue(node, &next->as_node);
 }
@@ -435,28 +429,26 @@ MUON_HINT(nonnull) static MuonType *define_stmt_return(
 
 MUON_HINT(nonnull) static MuonType *record_view_return(
     Inductor *inductor, MuonRecordView *view) {
-  struct MuonCore *core_allocation;
-  if ((core_allocation = record_core_allocate(inductor->engine, view->argc))
-      == NULL)
+  MuonEngine *engine = inductor->engine;
+
+  struct MuonRecordCore *core_allocation;
+  if ((core_allocation = record_core_allocate(engine, view->argc)) == NULL)
     return NULL;
 
-  for (size_t i = 0; i < view->argc; i++) {
-    MuonName *name = view->argv[i]->name;
+  for (size_t i = 0; i < view->argc; i++)
+    core_allocation->argv[i] = view->argv[i]->name;
 
-    MuonCoreMember member = {.name = name, .i = i};
-    core_allocation->argv[i] = member;
-  }
   /* qsort(&core_allocation->argv[j], view->argc - j, sizeof(mu_view_member_t),
    */
   /*     type_member_cmp); */
   // TODO: check for duplicates
 
-  MuonCore *core;
+  MuonRecordCore *core;
   if (rare((core = record_core_activate(core_allocation)) == NULL))
     return NULL;
 
   struct MuonCoreType *type_allocation;
-  if ((type_allocation = core_type_allocate(inductor->engine, core)) == NULL)
+  if ((type_allocation = core_type_allocate(inductor->engine, &core->as_core)) == NULL)
     return NULL;
 
   for (size_t i = 0; i < view->argc; i++)

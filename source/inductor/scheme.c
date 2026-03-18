@@ -112,8 +112,8 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
 
         MuonCore *core = core_type->core;
 
-        for (size_t i = 0; i < core->argc; i++) {
-          MuonCoreMember member = core->argv[i];
+        for (size_t i = 0; i < core_argc(core); i++) {
+          MuonCoreMember member = core_at(core, i);
           MuonType *argument = core_type->argv[member.i];
           if (equation[argument->id].result != NULL)
             argument = equation[argument->id].result;

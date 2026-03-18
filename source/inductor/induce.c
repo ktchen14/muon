@@ -209,11 +209,11 @@ Rule *type_restrain(
   }
 
   MuonCore *core = core_source->core;
-  for (size_t i = 0; i < core->argc; i++) {
+  for (size_t i = 0; i < core_argc(core); i++) {
     MuonType *next_source = core_source->argv[i];
     MuonType *next_target = core_target->argv[i];
 
-    _Bool variance = core->argv[i].variance;
+    _Bool variance = core_at(core, i).variance;
     if (variance) {
       MuonType *t = next_source;
       next_source = next_target;
@@ -285,8 +285,8 @@ static Rule *retrieve_core_coercion(
 
   MuonCore *core = source->core;
 
-  for (size_t i = 0; i < core->argc; i++) {
-    MuonCoreMember member = core->argv[i];
+  for (size_t i = 0; i < core_argc(core); i++) {
+    MuonCoreMember member = core_at(core, i);
 
     MuonType *next_source = source->argv[member.i];
     MuonType *next_target = target->argv[member.i];

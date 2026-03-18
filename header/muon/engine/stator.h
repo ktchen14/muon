@@ -41,11 +41,10 @@ typedef enum {
 
 /// @internal Used to emit each branch in MUON_STATOR_TAG()
 #define MUON_STATOR_TAG_EMIT(Title, l, UPPER) \
-  , Muon##Title *: MUON_##UPPER##_STATOR \
-  , struct Muon##Title *: MUON_##UPPER##_STATOR
+  , Muon##Title *: MUON_##UPPER##_STATOR
 
-/// Return the enumerator indicative of the concrete @a stator
+/// Return the enumerator indicative of the concrete @a stator subtype
 #define MUON_STATOR_TAG(stator) _Generic( \
-  (stator) {} MUON_EACH_TYPE(MUON_STATOR_TAG_EMIT), MuonName *: MUON_NAME_STATOR, struct MuonName *: MUON_NAME_STATOR)
+  (stator) {} MUON_EACH_STATOR(MUON_STATOR_TAG_EMIT))
 
 #endif /* MUON_ENGINE_STATOR_H */
