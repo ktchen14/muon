@@ -145,21 +145,6 @@ static Rule *rule_insert(
   return rule_insert(inductor, source, target);
 }
 
-[[gnu::nonnull, gnu::pure]]
-static inline AttitudeSolution *attitude_solution_get(
-    const Inductor *inductor, Attitude attitude) {
-  assert(attitude.type->id < inductor->type_length);
-  return inductor->attitude_solution[attitude.type->id * 2 + attitude.charge];
-}
-
-[[gnu::nonnull]]
-static inline void attitude_solution_set(
-    Inductor *inductor, Attitude attitude, AttitudeSolution *solution) {
-  assert(attitude.type->id < inductor->type_length);
-  inductor->attitude_solution[attitude.type->id * 2 + attitude.charge] =
-      solution;
-}
-
 static inline Attitude type_next(const Inductor *inductor, Attitude origin) {
   if (origin.type->tag != MUON_VARIABLE_TYPE)
     return type_at(origin, type_cursor(origin)->i++);

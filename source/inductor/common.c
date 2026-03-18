@@ -83,10 +83,10 @@ void (inductor_debug)( //-
       debug("  Type%zu [label=\"", source.type->id);
 
       (muon_type_debug)(source.type, args.type);
-      AttitudeSolution *solution;
-      if ((solution = attitude_solution_get(inductor, (Attitude) {source.type, 0})) != NULL) {
+      MuonType *solution;
+      if ((solution = type_solution(inductor, source.type)) != NULL) {
         debug(" [");
-        (muon_type_debug)(solution->base, args.type);
+        (muon_type_debug)(solution, args.type);
         debug("]");
       }
 
@@ -98,10 +98,10 @@ void (inductor_debug)( //-
       debug("  Type%zu [label=\"", target.type->id);
 
       (muon_type_debug)(target.type, args.type);
-      AttitudeSolution *solution;
-      if ((solution = attitude_solution_get(inductor, (Attitude) {target.type, 0})) != NULL) {
+      MuonType *solution;
+      if ((solution = type_solution(inductor, target.type)) != NULL) {
         debug(" [");
-        (muon_type_debug)(solution->base, args.type);
+        (muon_type_debug)(solution, args.type);
         debug("]");
       }
 
@@ -147,19 +147,19 @@ void (inductor_debug)( //-
       debug("    rank=same;\n");
       debug("    Type%zu [label=\"", source.type->id);
       (muon_type_debug)(source.type, args.type);
-      AttitudeSolution *solution;
-      if ((solution = attitude_solution_get(inductor, (Attitude) {source.type, 0})) != NULL) {
+      MuonType *solution;
+      if ((solution = type_solution(inductor, source.type)) != NULL) {
         debug(" [");
-        (muon_type_debug)(solution->base, args.type);
+        (muon_type_debug)(solution, args.type);
         debug("]");
       }
       debug("\"];\n");
 
       debug("    Type%zu [label=\"", target.type->id);
       (muon_type_debug)(target.type, args.type);
-      if ((solution = attitude_solution_get(inductor, (Attitude) {target.type, 0})) != NULL) {
+      if ((solution = type_solution(inductor, target.type)) != NULL) {
         debug(" [");
-        (muon_type_debug)(solution->base, args.type);
+        (muon_type_debug)(solution, args.type);
         debug("]");
       }
       debug("\"];\n");

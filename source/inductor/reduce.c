@@ -9,6 +9,21 @@
 #include <stdckdint.h>
 #include <stdlib.h>
 
+[[gnu::nonnull, gnu::pure]]
+static inline AttitudeSolution *attitude_solution_get(
+    const Inductor *inductor, Attitude attitude) {
+  assert(attitude.type->id < inductor->type_length);
+  return inductor->attitude_solution[attitude.type->id * 2 + attitude.charge];
+}
+
+[[gnu::nonnull]]
+static inline void attitude_solution_set(
+    Inductor *inductor, Attitude attitude, AttitudeSolution *solution) {
+  assert(attitude.type->id < inductor->type_length);
+  inductor->attitude_solution[attitude.type->id * 2 + attitude.charge] =
+      solution;
+}
+
 static inline MuonType *assign_solution(
     Inductor *inductor, MuonType *type, MuonType *solution) {
   assert(type->id < inductor->type_length);
