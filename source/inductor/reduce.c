@@ -256,7 +256,6 @@ MuonType *reduce_type(Inductor *inductor, Attitude attitude) {
   MuonEngine *engine = inductor->engine;
 
   Attitude cursor = attitude;
-  goto entrance;
   do {
     Attitude next;
     while (!attitude_isnull(next = type_next(inductor, cursor))) {
@@ -270,8 +269,6 @@ MuonType *reduce_type(Inductor *inductor, Attitude attitude) {
         continue;
 
       cursor = type_continue(cursor, next);
-
-    entrance:
     }
 
     // On return, create the solution of the returned type. If the type is a
