@@ -8,9 +8,13 @@
 #include <limits.h>
 #include <stddef.h>
 
+static inline Hash stator_hash(MuonStatorTag tag, Hash hash) {
+  return hash >> 8 | (Hash) tag << sizeof(Hash) * CHAR_BIT - 8;
+}
+
 [[gnu::nonnull]] static inline const void *stator_search(
     const MuonEngine *engine, MuonStatorTag tag, Hash hash, size_t *offset) {
-  hash = hash >> 8 | (Hash) tag << sizeof(Hash) * CHAR_BIT - 8;
+  hash = stator_hash(tag, hash);
   return hash_search(as_engine(engine)->stator, hash, offset);
 }
 
@@ -26,9 +30,10 @@
     MuonStatorTag tag,
     Hash hash,
     size_t offset) {
-  hash = hash >> 8 | (Hash) tag << sizeof(Hash) * CHAR_BIT - 8;
-
   Engine *engine = as_engine(opaque);
+
+  hash = stator_hash(tag, hash);
+
   HashArea *area = engine->stator;
   if ((area = hash_insert(area, hash, stator, offset)) == NULL)
     return NULL;
