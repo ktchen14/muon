@@ -490,7 +490,7 @@ MUON_HINT(nonnull) static MuonType *script_return(
 
 static MuonNode *on_continue(
     Inductor *inductor, MuonNode *node, MuonNode *next) {
-  switch ON_ABSTRACT_OBJECT(next) {
+  switch ON_ABSTRACT_NODE(next) {
     case IS_CONCRETE_NODE(MuonDatatypeStmt *datatype_stmt)
       return datatype_stmt_continue(inductor, node, datatype_stmt);
 
@@ -504,7 +504,7 @@ static MuonNode *on_continue(
 }
 
 static MuonType *on_return(Inductor *inductor, MuonNode *node) {
-  switch ON_ABSTRACT_OBJECT(node) {
+  switch ON_ABSTRACT_TYPE(node) {
 #define MUON_EMIT(Title, lower, UPPER) \
     case MUON_##UPPER##_NODE: \
       return lower##_return(inductor, (Muon##Title *) node);

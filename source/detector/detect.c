@@ -112,7 +112,7 @@ static void view_announce(roster_t *roster, MuonView *root) {
     while ((next = node_at(node, node_cursor(node)->i++)) != NULL)
       node = node_continue(node, next);
 
-    switch ON_ABSTRACT_OBJECT(node) {
+    switch ON_ABSTRACT_NODE(node) {
       case IS_CONCRETE_NODE(MuonVariableView *variable_view)
         announce(roster, variable_view->name, &variable_view->as_node);
         break;
@@ -138,7 +138,7 @@ roster_t *handle_script(roster_t *roster, MuonScript *script) {
   for (size_t i = 0; i < script->argc; i++) {
     MuonStmt *stmt = script->argv[i];
 
-    switch ON_ABSTRACT_OBJECT(stmt) {
+    switch ON_ABSTRACT_NODE(stmt) {
       case IS_CONCRETE_NODE(MuonDatatypeStmt *datatype_stmt)
         announce(roster, datatype_stmt->name, &datatype_stmt->as_node);
         for (size_t j = 0; j < datatype_stmt->argc; j++) {
@@ -175,7 +175,7 @@ roster_t *handle_sequence_expr(
   for (size_t i = 0; i < sequence_expr->argc; i++) {
     MuonStmt *stmt = sequence_expr->argv[i];
 
-    switch ON_ABSTRACT_OBJECT(stmt) {
+    switch ON_ABSTRACT_NODE(stmt) {
       case IS_CONCRETE_NODE(MuonDatatypeStmt *datatype_stmt)
         announce(roster, datatype_stmt->name, &datatype_stmt->as_node);
         for (size_t j = 0; j < datatype_stmt->argc; j++) {
@@ -207,7 +207,7 @@ detect_t *detect_node(detect_t *detect, MuonNode *root) {
   MuonNode *node = root, *next;
   do {
     while ((next = node_at(node, node_cursor(node)->i++)) != NULL) {
-      switch ON_ABSTRACT_OBJECT(node) {
+      switch ON_ABSTRACT_NODE(node) {
         case IS_CONCRETE_NODE(MuonLambdaExpr *lambda_expr) {
           size_t length = node_announce_length(&lambda_expr->argument->as_node);
 
@@ -243,7 +243,7 @@ detect_t *detect_node(detect_t *detect, MuonNode *root) {
       roster = next_roster;
     }
 
-    switch ON_ABSTRACT_OBJECT(node) {
+    switch ON_ABSTRACT_NODE(node) {
       case IS_CONCRETE_NODE(MuonNameExpr *name_expr) {
         MuonNode *target = roster_search(roster, name_expr->name);
         if (target != NULL) {

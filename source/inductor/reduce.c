@@ -227,7 +227,7 @@ MuonType *reduce_type(Inductor *inductor, Attitude attitude) {
   if ((solution = type_solution(inductor, attitude.type)) != NULL)
     return solution;
 
-  switch ON_ABSTRACT_OBJECT(attitude.type) {
+  switch ON_ABSTRACT_TYPE(attitude.type) {
     case IS_CONCRETE_TYPE(MuonCoreType *core_type) {
       MuonCore *core = core_type->core;
 

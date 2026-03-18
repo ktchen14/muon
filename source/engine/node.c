@@ -615,7 +615,7 @@ void (muon_node_debug)(MuonNode *node, struct MuonNodeDebugArgs args) { //-
       TAG_TEXT[node->tag],
       muon_debug_colorize ? "\x1b[0m" : "");
 
-  switch ON_ABSTRACT_OBJECT(node) {
+  switch ON_ABSTRACT_NODE(node) {
     case IS_CONCRETE_NODE(MuonAccessExpr *access_expr)
       debug("(name = " PRIsNAME ")", DEBUG_NAME(access_expr->name));
       break;

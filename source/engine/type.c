@@ -294,7 +294,7 @@ static void debug_variable_type_name(MuonVariableType *type) {
 void (muon_type_debug)(MuonType *type, struct MuonTypeDebugArgs args) { //-
   struct MuonTypeDebugArgs next_args = args;
 
-  switch ON_ABSTRACT_OBJECT(type) {
+  switch ON_ABSTRACT_TYPE(type) {
     case IS_CONCRETE_TYPE(MuonCoreType *core_type)
       switch (core_type->core->tag) {
         case MUON_BOOLEAN_CORE:

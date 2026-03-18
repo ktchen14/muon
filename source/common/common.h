@@ -93,18 +93,4 @@ static inline const void *object_member(const void *object, size_t offset) {
 #pragma GCC diagnostic pop
 }
 
-// TODO: better documentation
-
-MUON_HINT(unused) static _Thread_local const void *abstract_object;
-
-/**
- * @brief Used to switch on the kind of the abstract @a object
- *
- * The @a object must be a pointer to an object with a @c kind member of
- * integer type.
- */
-#define ON_ABSTRACT_OBJECT(object) ( \
-  (abstract_object = (object)), ((typeof((object))) abstract_object)->tag \
-)
-
 #endif /* MUON_COMMON_COMMON_I */

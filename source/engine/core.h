@@ -9,13 +9,19 @@
 #include <assert.h>
 #include <stddef.h>
 
-/// Emit a case within a switch ON_ABSTRACT_OBJECT()
+/// @internal Used in ON_ABSTRACT_CORE()
+static _Thread_local const void *abstract_core;
+
+/// Used with IS_CONCRETE_CORE() to switch on the tag of the abstract @a core
+#define ON_ABSTRACT_CORE(core) ((typeof(core)) {abstract_core = (core)}->tag)
+
+/// Emit a case within a switch ON_ABSTRACT_CORE()
 #define IS_CONCRETE_CORE(...) \
-  MUON_CORE_TAG(typeof(&(union { __VA_ARGS__, _; }) {}._)): \
-    __VA_ARGS__ = abstract_object;
+  MUON_CORE_TAG(typeof((struct { __VA_ARGS__, *_; }) {}._)): \
+    __VA_ARGS__ = abstract_core;
 
 [[gnu::nonnull, gnu::pure]] static inline size_t core_argc(MuonCore *core) {
-  switch ON_ABSTRACT_OBJECT(core) {
+  switch ON_ABSTRACT_CORE(core) {
     case MUON_BOOLEAN_CORE:
       return 0;
 
@@ -39,7 +45,7 @@
 /// Return the <em>i</em>th member in the abstract @a core
 [[gnu::nonnull, gnu::pure]]
 static inline MuonCoreMember core_at(MuonCore *core, size_t i) {
-  switch ON_ABSTRACT_OBJECT(core) {
+  switch ON_ABSTRACT_CORE(core) {
     case MUON_BOOLEAN_CORE:
       unreachable();
 

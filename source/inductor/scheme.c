@@ -58,7 +58,7 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
         continue;
 
     entrance:
-      switch ON_ABSTRACT_OBJECT(cursor.type) {
+      switch ON_ABSTRACT_TYPE(cursor.type) {
         case IS_CONCRETE_TYPE(MuonCoreType *core_type) {
           MuonCore *core = core_type->core;
 
@@ -105,7 +105,7 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
       }
     }
 
-    switch ON_ABSTRACT_OBJECT(cursor.type) {
+    switch ON_ABSTRACT_TYPE(cursor.type) {
       case IS_CONCRETE_TYPE(MuonCoreType *core_type) {
         struct MuonCoreType *allocation =
             (struct MuonCoreType *) equation[cursor.type->id].allocation;

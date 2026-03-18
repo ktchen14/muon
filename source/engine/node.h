@@ -8,12 +8,6 @@
 #include <assert.h>
 #include <stddef.h>
 
-/// Emit a @c case to handle a subtype of MuonNode within a switch
-/// ON_ABSTRACT_OBJECT()
-#define IS_CONCRETE_NODE(...) \
-  MUON_NODE_TAG(typeof(&(union { __VA_ARGS__, _; }) {}._)): \
-    __VA_ARGS__ = abstract_object;
-
 typedef struct {
   union {
     /// @internal Used to traverse a node tree
@@ -104,9 +98,20 @@ MUON_HINT(nonnull) static inline MuonNode *node_detach(MuonNode *node) {
 
 #define node_detach(node) ((typeof(node)) node_detach(&(node)->as_node))
 
+/// @internal Used in ON_ABSTRACT_NODE()
+static _Thread_local const void *abstract_node;
+
+/// Used with IS_CONCRETE_NODE() to switch on the tag of the abstract @a node
+#define ON_ABSTRACT_NODE(node) ((typeof(node)) {abstract_node = (node)}->tag)
+
+/// Emit a case within a switch ON_ABSTRACT_NODE()
+#define IS_CONCRETE_NODE(...) \
+  MUON_NODE_TAG(typeof((struct { __VA_ARGS__, *_; }) {}._)): \
+    __VA_ARGS__ = abstract_node;
+
 /// Return the <em>i</em>th node in the abstract @a node
 static inline MuonNode *node_at(MuonNode *node, size_t i) {
-  switch ON_ABSTRACT_OBJECT(node) {
+  switch ON_ABSTRACT_NODE(node) {
     case MUON_ACCESS_EXPR:
     case MUON_BOOLEAN_EXPR:
     case MUON_INTEGER_EXPR:
@@ -192,7 +197,7 @@ static inline MuonNode *node_at(MuonNode *node, size_t i) {
 
 /// Return the announce length of the abstract @a node
 static inline size_t node_announce_length(MuonNode *node) {
-  switch ON_ABSTRACT_OBJECT(node) {
+  switch ON_ABSTRACT_NODE(node) {
     case IS_CONCRETE_NODE(MuonDatatypeStmt *datatype_stmt)
       return datatype_stmt->argc + 1;
 

@@ -85,7 +85,7 @@ MuonRecordCore *record_core_activate(struct MuonRecordCore *core) {
 void muon_core_debug(MuonCore *core) {
   static const char *const VARIANCE[] = {"+", "-"};
 
-  switch ON_ABSTRACT_OBJECT(core) {
+  switch ON_ABSTRACT_CORE(core) {
     case MUON_BOOLEAN_CORE:
       debug(PRIsKIND, DEBUG_CORE_KIND("Boolean"));
       break;

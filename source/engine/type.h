@@ -91,14 +91,20 @@ static inline _Bool is_variable_type(MuonType *type) {
   return type->tag == MUON_VARIABLE_TYPE;
 }
 
-/// Emit a case within a switch ON_ABSTRACT_OBJECT()
+/// @internal Used in ON_ABSTRACT_TYPE()
+static _Thread_local const void *abstract_type;
+
+/// Used with IS_CONCRETE_TYPE() to switch on the tag of the abstract @a type
+#define ON_ABSTRACT_TYPE(type) ((typeof(type)) {abstract_type = (type)}->tag)
+
+/// Emit a case within a switch ON_ABSTRACT_TYPE()
 #define IS_CONCRETE_TYPE(...) \
-  MUON_TYPE_TAG(typeof(&(union { __VA_ARGS__, _; }) {}._)): \
-    __VA_ARGS__ = abstract_object;
+  MUON_TYPE_TAG(typeof((struct { __VA_ARGS__, *_; }) {}._)): \
+    __VA_ARGS__ = abstract_type;
 
 /// Return the <em>i</em>th type in the abstract type @a origin
 static inline Attitude type_at(Attitude origin, size_t i) {
-  switch ON_ABSTRACT_OBJECT(origin.type) {
+  switch ON_ABSTRACT_TYPE(origin.type) {
     case IS_CONCRETE_TYPE(MuonCoreType *core_type)
       if (i < core_argc(core_type->core)) {
         MuonCoreMember member = core_at(core_type->core, i);
