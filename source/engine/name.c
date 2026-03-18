@@ -15,7 +15,7 @@ MuonName *muon_name(
 
   MuonName *next;
   size_t i = 0;
-  for (; (next = stator_next(engine, next, hash, &i)) != NULL; i++) {
+  for (; (next = stator_search(engine, next, hash, &i)) != NULL; i++) {
     if (next->length == length && memcmp(next->text, text, length) == 0)
       return next;
   }

@@ -8,15 +8,15 @@
 #include <limits.h>
 #include <stddef.h>
 
-[[gnu::nonnull]] static inline const void *stator_next(
+[[gnu::nonnull]] static inline const void *stator_search(
     const MuonEngine *engine, MuonStatorTag tag, Hash hash, size_t *offset) {
   hash = hash >> 8 | (Hash) tag << sizeof(Hash) * CHAR_BIT - 8;
   return hash_search(as_engine(engine)->stator, hash, offset);
 }
 
 /// Return the next stator assignable to @a stator in the iterator @a it
-#define stator_next(engine, stator, hash, offset) ((typeof(stator)) { \
-  stator_next((engine), MUON_STATOR_TAG(typeof(stator)), (hash), (offset)) \
+#define stator_search(engine, stator, hash, offset) ((typeof(stator)) { \
+  stator_search((engine), MUON_STATOR_TAG(typeof(stator)), (hash), (offset)) \
 })
 
 /// Insert the @a stator into the @a engine at the @a offset

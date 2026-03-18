@@ -143,7 +143,7 @@ MuonCoreType *core_type_activate(struct MuonCoreType *type) {
 
   MuonCoreType *next;
   size_t i = 0;
-  for (; (next = stator_next(engine, next, hash, &i)) != NULL; i++) {
+  for (; (next = stator_search(engine, next, hash, &i)) != NULL; i++) {
     if (next->core != type->core)
       continue;
 
@@ -197,7 +197,7 @@ MuonJoinType *join_type_activate(struct MuonJoinType *type) {
 
   MuonJoinType *next;
   size_t i = 0;
-  for (; (next = stator_next(engine, next, hash, &i)) != NULL; i++) {
+  for (; (next = stator_search(engine, next, hash, &i)) != NULL; i++) {
     if (next->as_type.scheme != type->as_type.scheme)
       continue;
 

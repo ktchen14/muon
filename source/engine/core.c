@@ -66,7 +66,7 @@ MuonRecordCore *record_core_activate(struct MuonRecordCore *core) {
 
   MuonRecordCore *next;
   size_t i = 0;
-  for (; (next = stator_next(engine, next, hash, &i)) != NULL; i++) {
+  for (; (next = stator_search(engine, next, hash, &i)) != NULL; i++) {
     if (next->argc != core->argc)
       continue;
 
