@@ -7,7 +7,6 @@
 #include <assert.h>
 #include <errno.h>
 #include <stdckdint.h>
-#include <stdio.h>
 #include <stdlib.h>
 
 static inline Attitude type_next(const Inductor *inductor, Attitude origin) {
@@ -19,8 +18,12 @@ static inline Attitude type_next(const Inductor *inductor, Attitude origin) {
     const Rule *edge = &inductor->edge[i];
 
     Attitude vertex = attitude_decode(edge->vertex[!origin.charge]);
-    if (attitude_eq(vertex, origin))
-      return attitude_decode(edge->vertex[origin.charge]);
+    if (attitude_eq(vertex, origin)) {
+      // The neighbor's type, but at the traversal's charge — not the
+      // charge encoded in the rule.
+      MuonType *neighbor = attitude_decode(edge->vertex[origin.charge]).type;
+      return (Attitude) {neighbor, origin.charge};
+    }
   }
 
   return (Attitude) {};
@@ -32,67 +35,108 @@ static inline MuonType *assign_solution(
   return inductor->solution[type->id] = solution;
 }
 
-MuonType *reduce_type(Inductor *inductor, Attitude attitude);
-
-MuonType *reduce_type_to_join(Inductor *inductor, MuonVariableType *target) {
+/// Compute the overall solution for a variable type from its two
+/// attitude-specific solutions.  Kept as a separate function so that the
+/// resolution strategy can be enhanced later.
+static MuonType *resolve_variable(
+    Inductor *inductor, MuonVariableType *variable) {
   MuonType *solution;
-  if ((solution = type_solution(inductor, &target->as_type)) != NULL)
+  if ((solution = type_solution(inductor, &variable->as_type)) != NULL)
     return solution;
 
-  size_t argc = 0;
+  AttitudeSolution *pos = attitude_solution_get(
+      inductor, (Attitude) {&variable->as_type, 0});
+  AttitudeSolution *neg = attitude_solution_get(
+      inductor, (Attitude) {&variable->as_type, 1});
+  assert(pos != NULL && neg != NULL);
 
+  MuonType *overall = pos->base;
+  assert(overall != NULL);
+  return assign_solution(inductor, &variable->as_type, overall);
+}
+
+/// Look up the solution for a constraint neighbor of a variable at a given
+/// charge.  All neighbors must already have been reduced by the traversal.
+///
+/// For nonvariable neighbors: returns the full (overall) solution.
+/// For variable neighbors: returns the attitude-specific base at the same
+/// charge, or the full solution if already resolved.
+static inline MuonType *neighbor_solution(
+    const Inductor *inductor, MuonType *neighbor, _Bool charge) {
+  MuonType *sol = type_solution(inductor, neighbor);
+  if (sol != NULL)
+    return sol;
+
+  if (neighbor->tag == MUON_VARIABLE_TYPE) {
+    AttitudeSolution *att = attitude_solution_get(
+        inductor, (Attitude) {neighbor, charge});
+    assert(att != NULL);
+    return att->base;
+  }
+
+  // Nonvariable neighbor must have a full solution by now.
+  assert(0 && "nonvariable neighbor has no solution");
+  return NULL;
+}
+
+/// Compute the attitude-specific solution for a variable type at a given
+/// charge direction.
+///
+/// All constraint neighbors must already have been reduced by the traversal.
+/// This function only reads pre-computed solutions — it does not trigger any
+/// further reductions.
+static MuonType *reduce_variable_attitude(
+    Inductor *inductor, MuonVariableType *target, _Bool charge) {
+  AttitudeSolution *existing = attitude_solution_get(
+      inductor, (Attitude) {&target->as_type, charge});
+  if (existing != NULL)
+    return existing->base;
+
+  Attitude target_attitude = {&target->as_type, charge};
+
+  // Phase 1 — count the join length from non-instance neighbor solutions.
+  size_t argc = 0;
   RuleIterator it;
 
-  // Reduce each type that's a source to this type
-  it = rule_iterator(inductor, (Attitude) {&target->as_type, 0});
+  it = rule_iterator(inductor, target_attitude);
   for (Rule *rule; (rule = rule_next(&it)) != NULL;) {
-    if (rule->tag == INDIRECT_RULE)
+    if (rule->tag == INDIRECT_RULE || rule->tag == INSTANCE_RULE)
       continue;
 
-    // Otherwise, reduce it. Then add its join length to length.
-    MuonType *solution;
-    if ((solution = reduce_type(
-             inductor, (Attitude) {attitude_decode(rule->source).type, 0}))
-        == NULL)
-      return NULL;
+    Attitude source_att = attitude_decode(rule->vertex[charge]);
+    MuonType *sol = neighbor_solution(inductor, source_att.type, charge);
+    assert(sol != NULL);
 
-    MuonJoinType *join_type;
-    if ((join_type = muon_type_cast(solution, join_type)) != NULL) {
-      if (rare(ckd_add(&argc, argc, join_type->argc)))
+    MuonJoinType *jt;
+    if ((jt = muon_type_cast(sol, jt)) != NULL) {
+      if (rare(ckd_add(&argc, argc, jt->argc)))
         return errno = ENOMEM, NULL;
     } else {
       if (rare(ckd_add(&argc, argc, 1)))
         return errno = ENOMEM, NULL;
     }
-    /* assert(next_variable->solution != NULL); */
   }
 
-  // For each type pair α and β, where α ≠ β, both are sources to the variable
-  // type, and neither is itself a variable type, attempt the coercion α ⇝ β. If
-  // no such coercion exists, then attempt the coercion β ⇝ α. If we have either
-  // coercion, then make one type indirect.
-  //
-  // Determine the length of the join to allocate as the number of remaining
-  // types that aren't variable types and are sources to the variable type.
+  // Phase 2 — pairwise coercion elimination.
   Rule *single_edge;
   MuonType *single_a;
   argc = 0;
-  it = rule_iterator(inductor, (Attitude) {&target->as_type, 0});
+  it = rule_iterator(inductor, target_attitude);
   for (Rule *a_edge; (a_edge = rule_next(&it)) != NULL;) {
-    if (a_edge->tag == INDIRECT_RULE)
+    if (a_edge->tag == INDIRECT_RULE || a_edge->tag == INSTANCE_RULE)
       continue;
-    MuonType *a = type_solution(inductor, attitude_decode(a_edge->source).type);
+    Attitude a_att = attitude_decode(a_edge->vertex[charge]);
+    MuonType *a = neighbor_solution(inductor, a_att.type, charge);
     assert(a != NULL);
 
     RuleIterator jt = it;
     for (Rule *b_edge; (b_edge = rule_next(&jt)) != NULL;) {
-      if (b_edge->tag == INDIRECT_RULE)
+      if (b_edge->tag == INDIRECT_RULE || b_edge->tag == INSTANCE_RULE)
         continue;
-      MuonType *b = type_solution(
-          inductor, attitude_decode(b_edge->source).type);
+      Attitude b_att = attitude_decode(b_edge->vertex[charge]);
+      MuonType *b = neighbor_solution(inductor, b_att.type, charge);
       assert(b != NULL);
 
-      // If we have b ⇝ a, then assign b ⇝ a ⇝ v to ⟨b ⇒ v⟩ and skip this b
       const Rule *b_to_a;
       if ((b_to_a = type_assess(inductor, b, a)) == NULL)
         return NULL;
@@ -102,7 +146,6 @@ MuonType *reduce_type_to_join(Inductor *inductor, MuonVariableType *target) {
         continue;
       }
 
-      // If we have a ⇝ b, then assign a ⇝ b ⇝ v to ⟨a ⇒ v⟩ and skip this a
       const Rule *a_to_b;
       if ((a_to_b = type_assess(inductor, a, b)) == NULL)
         return NULL;
@@ -113,157 +156,290 @@ MuonType *reduce_type_to_join(Inductor *inductor, MuonVariableType *target) {
       }
     }
 
-    // Record a and a_edge in case we don't need a join and a is the solution
     single_a = a;
     single_edge = a_edge;
     argc++;
   continue_a:;
   }
 
-  // If we're left with a single direct edge ⟨α ⇒ target⟩, then we don't have to
-  // assign a join type to target at all.
+  // Phase 3 — produce the join result (the attitude-specific solution).
+  MuonType *join_result;
+
   if (argc == 1) {
-    // Assign the id coercion to ⟨α ⇒ target⟩
     single_edge->tag = INDIRECT_RULE;
     single_edge->center = &target->as_type;
 
-    // Mark each ⟨target ⇒ β⟩ as indirect through solution
-    MuonType *solution = single_a;
-    // single_edge->tag = INDIRECT_RULE;
-    // single_edge->center = solution;
-    // it = rule_iterator(inductor, &target->as_type, 1);
-    // for (Rule *edge; (edge = rule_next(&it)) != NULL;) {
-    //   edge->tag = INDIRECT_RULE;
-    //   edge->center = solution;
-    // }
-
-    // Define ⟨target ⇒ α⟩ as an identity rule
     Rule *e = edge_define(inductor, &target->as_type, single_a);
     e->tag = ID_RULE;
 
-    // Then, assign α as the solution to target and return it.
-    return assign_solution(inductor, &target->as_type, solution);
-  }
-
-  // Allocate a join
-  struct MuonJoinType *allocation;
-  if ((allocation = join_type_allocate(inductor->engine, argc)) == NULL)
-    return NULL;
-  argc = 0;
-
-  it = rule_iterator(inductor, (Attitude) {&target->as_type, 0});
-  for (Rule *edge; (edge = rule_next(&it)) != NULL;) {
-    if (edge->tag == INDIRECT_RULE)
-      continue;
-
-    MuonType *source = type_solution(
-        inductor, attitude_decode(edge->source).type);
-    assert(source != NULL);
-
-    allocation->argv[argc] = source;
-
-    Rule *rule;
-    if ((rule = edge_define(inductor, source, &allocation->as_type)) == NULL)
+    join_result = single_a;
+  } else if (argc == 0) {
+    join_result = &as_engine(inductor->engine)->bottom_type->as_type;
+  } else {
+    struct MuonJoinType *allocation;
+    if ((allocation = join_type_allocate(inductor->engine, argc)) == NULL)
       return NULL;
-    rule->tag = JOIN_RULE;
-    rule->i = argc++;
+    argc = 0;
 
-    // edge->tag = INDIRECT_RULE;
-    // edge->center = &allocation->as_type;
+    it = rule_iterator(inductor, target_attitude);
+    for (Rule *edge; (edge = rule_next(&it)) != NULL;) {
+      if (edge->tag == INDIRECT_RULE || edge->tag == INSTANCE_RULE)
+        continue;
+
+      Attitude source_att = attitude_decode(edge->vertex[charge]);
+      MuonType *source = neighbor_solution(inductor, source_att.type, charge);
+      assert(source != NULL);
+
+      allocation->argv[argc] = source;
+
+      Rule *rule;
+      if ((rule = edge_define(inductor, source, &allocation->as_type)) == NULL)
+        return NULL;
+      rule->tag = JOIN_RULE;
+      rule->i = argc++;
+    }
+    assert(argc == allocation->argc);
+
+    MuonJoinType *join_type;
+    if ((join_type = join_type_activate(allocation)) == NULL)
+      return NULL;
+
+    Rule *e = edge_define(inductor, &target->as_type, &join_type->as_type);
+    e->tag = ID_RULE;
+
+    join_result = &join_type->as_type;
   }
-  assert(argc == allocation->argc);
 
-  MuonJoinType *join_type;
-  if ((join_type = join_type_activate(allocation)) == NULL)
+  // Phase 4 — build the AttitudeSolution.
+  size_t instance_argc = 0;
+  it = rule_iterator(inductor, target_attitude);
+  for (Rule *rule; (rule = rule_next(&it)) != NULL;) {
+    if (rule->tag == INDIRECT_RULE)
+      continue;
+    if (rule->instance != NULL) {
+      Attitude nbr = attitude_decode(rule->vertex[charge]);
+      MuonType *nbr_sol = type_solution(inductor, nbr.type);
+      if (nbr_sol == NULL) {
+        AttitudeSolution *nbr_att = attitude_solution_get(
+            inductor, (Attitude) {nbr.type, charge});
+        if (nbr_att != NULL)
+          nbr_sol = nbr_att->base;
+      }
+      if (nbr_sol != NULL)
+        instance_argc++;
+    }
+  }
+
+  AttitudeSolution *att_sol;
+  if ((att_sol = malloc(
+           sizeof(AttitudeSolution)
+           + instance_argc * sizeof(struct AttitudeSolutionItem)))
+      == NULL)
     return NULL;
 
-  Rule *e;
-  e = edge_define(inductor, &target->as_type, &join_type->as_type);
-  e->tag = ID_RULE;
-  // e = edge_define(inductor, &join_type->as_type, &target->as_type);
-  // e->tag = ID_RULE;
+  att_sol->base = join_result;
+  att_sol->argc = instance_argc;
 
-  return assign_solution(inductor, &target->as_type, &join_type->as_type);
+  size_t j = 0;
+  it = rule_iterator(inductor, target_attitude);
+  for (Rule *rule; (rule = rule_next(&it)) != NULL;) {
+    if (rule->tag == INDIRECT_RULE)
+      continue;
+    if (rule->instance != NULL) {
+      Attitude nbr = attitude_decode(rule->vertex[charge]);
+      MuonType *nbr_sol = type_solution(inductor, nbr.type);
+      if (nbr_sol == NULL) {
+        AttitudeSolution *nbr_att = attitude_solution_get(
+            inductor, (Attitude) {nbr.type, charge});
+        if (nbr_att != NULL)
+          nbr_sol = nbr_att->base;
+      }
+      if (nbr_sol != NULL) {
+        att_sol->argv[j].instance = rule->instance;
+        att_sol->argv[j].type = nbr_sol;
+        j++;
+      }
+    }
+  }
+  assert(j == instance_argc);
+
+  attitude_solution_set(inductor, target_attitude, att_sol);
+  return join_result;
 }
 
+/// Reduce a type to its solution.
+///
+/// Performs an iterative depth-first traversal of the type tree using
+/// type_next / type_continue / type_return.  On return from each type:
+///
+///   - Variable types: compute the attitude-specific solution for the
+///     current charge direction via reduce_variable_attitude.
+///
+///   - Nonvariable types: resolve structural variable children that now
+///     have both attitude solutions, then reconstruct the type.
+///
+/// When returning from a variable child to a nonvariable parent, if the
+/// variable child does not yet have an AttitudeSolution at the inverted
+/// charge, re-enter the variable at the inverted charge.  When it does,
+/// resolve the variable's overall solution immediately.
 MuonType *reduce_type(Inductor *inductor, Attitude attitude) {
   MuonType *solution;
   if ((solution = type_solution(inductor, attitude.type)) != NULL)
     return solution;
 
-  switch ON_ABSTRACT_TYPE(attitude.type) {
-    case IS_CONCRETE_TYPE(MuonCoreType *core_type) {
-      MuonCore *core = core_type->core;
+  Attitude cursor = attitude;
+  goto entrance;
+  do {
+    Attitude next;
+    while (!attitude_isnull(next = type_next(inductor, cursor))) {
+      struct TypeCursor *next_cursor = type_cursor(next);
+      if (!attitude_isnull(attitude_decode(next_cursor->anterior)))
+        continue;
+      if (next_cursor->i != 0)
+        continue;
 
-      struct MuonCoreType *allocation;
-      if ((allocation = core_type_allocate(inductor->engine, core)) == NULL)
-        return NULL;
+      if (type_solution(inductor, next.type) != NULL)
+        continue;
 
-      for (size_t i = 0; i < core_argc(core); i++) {
-        MuonCoreMember member = core_at(core, i);
+      cursor = type_continue(cursor, next);
 
-        MuonType *argument = core_type->argv[member.i];
-        _Bool charge = attitude.charge ^ member.variance;
-        Attitude next = {argument, charge};
+    entrance:
+    }
 
-        if ((argument = reduce_type(inductor, next)) == NULL)
+    // Return phase: compute the solution for this type.
+    // Nonvariable type: resolve variable children, then reconstruct.
+    switch ON_ABSTRACT_TYPE(cursor.type) {
+      case IS_CONCRETE_TYPE(MuonCoreType *core_type) {
+        MuonCore *core = core_type->core;
+
+        // Resolve variable children.
+        for (size_t i = 0; i < core_argc(core); i++) {
+          MuonCoreMember member = core_at(core, i);
+          MuonType *child = core_type->argv[member.i];
+          if (child->tag == MUON_VARIABLE_TYPE
+              && type_solution(inductor, child) == NULL) {
+            MuonVariableType *var = muon_type_cast(child, var);
+            resolve_variable(inductor, var);
+          }
+        }
+
+        // Reconstruct.
+        struct MuonCoreType *allocation;
+        if ((allocation = core_type_allocate(inductor->engine, core)) == NULL)
           return NULL;
-        allocation->argv[member.i] = argument;
+        for (size_t i = 0; i < core_argc(core); i++) {
+          MuonCoreMember member = core_at(core, i);
+          MuonType *argument = core_type->argv[member.i];
+          MuonType *arg_sol = type_solution(inductor, argument);
+          allocation->argv[i] = arg_sol != NULL ? arg_sol : argument;
+        }
+        MuonCoreType *result;
+        if ((result = core_type_activate(allocation)) == NULL)
+          return NULL;
+        assign_solution(inductor, cursor.type, &result->as_type);
+        break;
       }
 
-      MuonCoreType *result;
-      if ((result = core_type_activate(allocation)) == NULL)
-        return NULL;
-      solution = &result->as_type;
-      break;
+      case IS_CONCRETE_TYPE(MuonJoinType *join_type) {
+        // Resolve variable children.
+        for (size_t i = 0; i < join_type->argc; i++) {
+          MuonType *child = join_type->argv[i];
+          if (child->tag == MUON_VARIABLE_TYPE
+              && type_solution(inductor, child) == NULL) {
+            MuonVariableType *var = muon_type_cast(child, var);
+            resolve_variable(inductor, var);
+          }
+        }
+
+        // Reconstruct.
+        struct MuonJoinType *allocation;
+        if ((allocation = join_type_allocate(
+                  inductor->engine, join_type->argc))
+            == NULL)
+          return NULL;
+        for (size_t i = 0; i < join_type->argc; i++) {
+          MuonType *argument = join_type->argv[i];
+          MuonType *arg_sol = type_solution(inductor, argument);
+          allocation->argv[i] = arg_sol != NULL ? arg_sol : argument;
+        }
+        MuonJoinType *result;
+        if ((result = join_type_activate(allocation)) == NULL)
+          return NULL;
+        assign_solution(inductor, cursor.type, &result->as_type);
+        break;
+      }
+
+      case IS_CONCRETE_TYPE(MuonMeetType *meet_type) {
+        (void) meet_type;
+        assign_solution(inductor, cursor.type, cursor.type);
+        break;
+      }
+
+      case IS_CONCRETE_TYPE(MuonSchemeType *scheme_type) {
+        // TODO: Scheme types may need special handling in the future.
+        MuonType *matter = scheme_type->matter;
+        if (matter->tag == MUON_VARIABLE_TYPE
+            && type_solution(inductor, matter) == NULL) {
+          MuonVariableType *var = muon_type_cast(matter, var);
+          resolve_variable(inductor, var);
+        }
+        MuonType *matter_sol = type_solution(inductor, matter);
+        assign_solution(
+            inductor, cursor.type, matter_sol != NULL ? matter_sol : matter);
+        break;
+      }
+
+      case MUON_VARIABLE_TYPE:
+        // Variable type: compute attitude-specific solution for this charge.
+        MuonVariableType *var = muon_type_cast(cursor.type, var);
+        if (reduce_variable_attitude(inductor, var, cursor.charge) == NULL)
+          return NULL;
+        break;
     }
 
-    case IS_CONCRETE_TYPE(MuonVariableType *variable_type) {
-      solution = reduce_type_to_join(inductor, variable_type);
+    // Pop up to the parent.
+    if (attitude_isnull(cursor = type_return(next = cursor)))
       break;
+
+    // Re-entry: if we returned from a variable child to a nonvariable
+    // parent, check whether the variable needs its inverted attitude
+    // solution.  If so, re-enter at the inverted charge.  If both
+    // attitude solutions already exist, resolve the variable now.
+    if (is_variable_type(cursor.type))
+      continue;
+
+    MuonVariableType *variable_type;
+    if ((variable_type = muon_type_cast(next.type, variable_type)) == NULL)
+      continue;
+
+    next = attitude_invert(next);
+    if (attitude_solution_get(inductor, next) == NULL) {
+      cursor = type_continue(cursor, next);
+      continue;
     }
 
-    case MUON_JOIN_TYPE:
-      solution = attitude.type;
-      break;
+    resolve_variable(inductor, variable_type);
+  } while (1);
 
-    case MUON_MEET_TYPE:
-      abort();
-
-    case IS_CONCRETE_TYPE(MuonSchemeType *scheme_type) {
-      Attitude next = {scheme_type->matter, attitude.charge};
-      if ((solution = reduce_type(inductor, next)) == NULL)
-        return NULL;
-      break;
-    }
-  }
-
-  return assign_solution(inductor, attitude.type, solution);
+  return type_solution(inductor, attitude.type);
 }
 
 MuonType *reduce_node(Inductor *inductor, MuonNode *root) {
-  // assert(root->id < inductor->node_number);
-
   MuonNode *node = root;
   do {
     MuonNode *next;
     while ((next = node_at(node, node_cursor(node)->i++)) != NULL)
       node = node_continue(node, next);
 
+    // 1. Reduce the source type
     MuonType *source_type = node_source_type(inductor, node);
     reduce_type(inductor, (Attitude) {source_type, 0});
 
-    MuonType *solution = type_solution(inductor, source_type);
-    assign_solution(inductor, source_type, solution);
+    // 2. If the node has a target type, reduce it too
+    MuonType *target_type = node_target_type(inductor, node);
+    if (target_type != NULL)
+      reduce_type(inductor, (Attitude) {target_type, 0});
 
-    // debug("Solving ");
-    // muon_type_debug(source_type);
-    // debug(" to ");
-    // if (solution != NULL)
-    //   muon_type_debug(solution);
-    // else
-    //   debug("NULL");
-    // debug("\n");
   } while ((node = node_return(node)) != NULL);
 
   return node_source_type(inductor, root);
