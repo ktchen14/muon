@@ -52,7 +52,7 @@ typedef struct {
 #define MUON_EMIT(Title, lower, U) Muon##Title lower;
     MUON_EACH_TYPE(MUON_EMIT)
 #undef MUON_EMIT
-  }) struct MuonType type[];
+  }) char type[];
 } TypeHeader;
 
 [[gnu::const, gnu::nonnull, gnu::returns_nonnull]]

@@ -38,7 +38,7 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
   } equation[inductor->type_length] = {};
 
   // Used to mark each returned attitude as accessible
-  Attitude series = {(TypeHeader) {}.type, 0};
+  Attitude series = {(MuonType *) &(TypeHeader) {}.type, 0};
 
   Attitude cursor = {scheme->matter, 0};
   goto entrance;

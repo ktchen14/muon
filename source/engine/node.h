@@ -25,7 +25,7 @@ typedef struct {
 #define MUON_EMIT(Title, lower, U) Muon##Title lower;
     MUON_EACH_NODE_STEM(MUON_EMIT)
 #undef MUON_EMIT
-  }) struct MuonNode node[];
+  }) char node[];
 } NodeHeader;
 
 /// Return the cursor of the @a node
