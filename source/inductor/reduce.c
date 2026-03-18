@@ -290,8 +290,8 @@ MuonType *reduce_type(Inductor *inductor, Attitude attitude) {
         if ((allocation = core_type_allocate(engine, core)) == NULL)
           return NULL;
         for (size_t i = 0; i < core_argc(core); i++) {
-          MuonType *argument = core_type->argv[core_at(core, i).i];
-          argument = type_solution(inductor, argument);
+          size_t j = core_at(core, i).i;
+          MuonType *argument = type_solution(inductor, core_type->argv[j]);
           assert(argument != NULL);
           allocation->argv[i] = argument;
         }
@@ -307,8 +307,7 @@ MuonType *reduce_type(Inductor *inductor, Attitude attitude) {
         if ((allocation = join_type_allocate(engine, join_type->argc)) == NULL)
           return NULL;
         for (size_t i = 0; i < join_type->argc; i++) {
-          MuonType *argument = join_type->argv[i];
-          argument = type_solution(inductor, argument);
+          MuonType *argument = type_solution(inductor, join_type->argv[i]);
           assert(argument != NULL);
           allocation->argv[i] = argument;
         }
@@ -324,8 +323,7 @@ MuonType *reduce_type(Inductor *inductor, Attitude attitude) {
         if ((allocation = meet_type_allocate(engine, meet_type->argc)) == NULL)
           return NULL;
         for (size_t i = 0; i < meet_type->argc; i++) {
-          MuonType *argument = meet_type->argv[i];
-          argument = type_solution(inductor, argument);
+          MuonType *argument = type_solution(inductor, meet_type->argv[i]);
           assert(argument != NULL);
           allocation->argv[i] = argument;
         }
@@ -352,14 +350,13 @@ MuonType *reduce_type(Inductor *inductor, Attitude attitude) {
       }
     }
 
-    if (attitude_isnull(cursor = type_return(next = cursor)))
-      break;
+    cursor = type_return(next = cursor);
 
     // If we've returned from a variable type to a nonvariable type, then check
     // whether the variable needs its inverted attitude solution. If so,
     // re-enter at the inverted charge. If both attitude solutions already
     // exist, resolve the variable now.
-    if (is_variable_type(cursor.type))
+    if (cursor.type != NULL && is_variable_type(cursor.type))
       continue;
 
     MuonVariableType *variable_type;
@@ -373,7 +370,7 @@ MuonType *reduce_type(Inductor *inductor, Attitude attitude) {
     }
 
     resolve_variable(inductor, variable_type);
-  } while (1);
+  } while (!attitude_isnull(cursor));
 
   return type_solution(inductor, attitude.type);
 }
