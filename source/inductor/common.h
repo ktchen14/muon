@@ -45,6 +45,14 @@ typedef struct {
   };
 } Rule;
 
+typedef struct {
+  size_t argc;
+  struct AttitudeSolutionItem {
+    MuonInstance *instance;
+    MuonType *type;
+  } argv[];
+} AttitudeSolution;
+
 struct Inductor {
   MuonEngine *engine;
   const detect_result_t *detect;
@@ -58,9 +66,7 @@ struct Inductor {
 
   size_t type_length;
   MuonType **solution;
-  struct Frontier {
-    MuonType *data[2];
-  } *frontier;
+  AttitudeSolution *attitude_solution;
 
   size_t rule_length;
   size_t rule_volume;

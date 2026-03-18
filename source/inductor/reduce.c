@@ -10,6 +10,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+static inline Attitude type_next(const Inductor *inductor, Attitude origin) {
+  if (origin.type->tag != MUON_VARIABLE_TYPE)
+    return type_at(origin, type_cursor(origin)->i++);
+
+  size_t i;
+  while ((i = type_cursor(origin)->i++) < inductor->rule_length) {
+    const Rule *edge = &inductor->edge[i];
+
+    Attitude vertex = attitude_decode(edge->vertex[!origin.charge]);
+    if (attitude_eq(vertex, origin))
+      return attitude_decode(edge->vertex[origin.charge]);
+  }
+
+  return (Attitude) {};
+}
+
 static inline MuonType *assign_solution(
     Inductor *inductor, MuonType *type, MuonType *solution) {
   assert(type->id < inductor->type_length);
@@ -17,55 +33,6 @@ static inline MuonType *assign_solution(
 }
 
 MuonType *reduce_type(Inductor *inductor, Attitude attitude);
-
-/**
- * @brief Redirect @a origin through @a center
- *
- * This should be called when we find a triangular type relationship within the
- * source side of a type variable v. If ∃⟨α ⇒ v⟩, ∃⟨α ⇒ β⟩, and ∃⟨β ⇒ v⟩, then
- * we should make ⟨α ⇒ v⟩ an indirect edge through β, i.e. ⟨a ⇒ β⟩ ∘ ⟨β ⇒ v⟩
- *
- * Because we maintain the transitive closure of each type variable, we also
- * know that ∃⟨α ⇒ τ⟩ and ∃⟨β ⇒ τ⟩ if ∃⟨v ⇒ τ⟩. Thus, within the source side of
- * each type variable τ that v has an edge to, we should also make ⟨α ⇒ τ⟩ an
- * indirect edge (through α ⇝ β ⇝ τ).
- *
- * In this example, origin should be ⟨α ⇒ v⟩, center should be β, and coercion
- * should be α ⇝ β.
- */
-void *redirect_source(Inductor *inductor, Rule *origin, MuonType *center) {
-  MuonType *source = attitude_decode(origin->source).type;
-  MuonType *target = attitude_decode(origin->target).type;
-  RuleIterator it = rule_iterator(inductor, (Attitude) {target, 1});
-
-  // Jump into the loop with τ = v
-  Rule *next = origin;
-  goto entrance;
-
-  // ∀⟨v ⇒ τ⟩ | τ is a variable type
-  for (Rule *direct; (next = rule_next(&it)) != NULL;) {
-    MuonType *next_target = attitude_decode(next->target).type;
-    if (next_target->tag != MUON_VARIABLE_TYPE)
-      continue;
-
-    // Locate ⟨α ⇒ τ⟩
-    origin = rule_search(inductor, source, next_target);
-    assert(origin != NULL);
-
-  entrance:
-    if (origin->tag != NORMAL_RULE)
-      continue;
-
-    // Locate ⟨β ⇒ τ⟩
-    direct = rule_search(inductor, center, next_target);
-    assert(direct != NULL);
-
-    origin->tag = INDIRECT_RULE;
-    origin->center = center;
-  }
-
-  return inductor;
-}
 
 MuonType *reduce_type_to_join(Inductor *inductor, MuonVariableType *target) {
   MuonType *solution;
@@ -132,8 +99,6 @@ MuonType *reduce_type_to_join(Inductor *inductor, MuonVariableType *target) {
       if (b_to_a->tag != IMPOSSIBLE_RULE) {
         b_edge->tag = INDIRECT_RULE;
         b_edge->center = a;
-        // if (redirect_source(inductor, b_edge, a) == NULL)
-        //   return NULL;
         continue;
       }
 
@@ -144,8 +109,6 @@ MuonType *reduce_type_to_join(Inductor *inductor, MuonVariableType *target) {
       if (a_to_b->tag != IMPOSSIBLE_RULE) {
         a_edge->tag = INDIRECT_RULE;
         a_edge->center = b;
-        // if (redirect_source(inductor, a_edge, b) == NULL)
-        //   return NULL;
         goto continue_a;
       }
     }
@@ -276,93 +239,6 @@ MuonType *reduce_type(Inductor *inductor, Attitude attitude) {
   }
 
   return assign_solution(inductor, attitude.type, solution);
-}
-
-Aspect *varaspect0(Inductor *inductor, MuonVariableType *variable_type) {
-  RuleIterator it;
-
-  size_t argc = 0;
-
-  // For each type pair α and β, where α ≠ β, both are sources to the variable
-  // type, and neither is itself a variable type, attempt the coercion α ⇝ β. If
-  // no such coercion exists, then attempt the coercion β ⇝ α. If we have either
-  // coercion, then make one type indirect.
-  //
-  // Determine the length of the join to allocate as the number of remaining
-  // types that aren't variable types and are sources to the variable type.
-  it = rule_iterator(inductor, (Attitude) {&variable_type->as_type, 0});
-  for (Rule *a_edge; (a_edge = rule_next(&it)) != NULL;) {
-    if (a_edge->tag == INDIRECT_RULE)
-      continue;
-    if (a_edge->instance != NULL)
-      continue;
-    MuonType *a = type_solution(inductor, attitude_decode(a_edge->source).type);
-    assert(a != NULL);
-
-    RuleIterator jt = it;
-    for (Rule *b_edge; (b_edge = rule_next(&jt)) != NULL;) {
-      if (b_edge->tag == INDIRECT_RULE)
-        continue;
-      if (b_edge->instance != NULL)
-        continue;
-      MuonType *b = type_solution(
-          inductor, attitude_decode(b_edge->source).type);
-      assert(b != NULL);
-
-      // If we have b ⇝ a, then assign b ⇝ a ⇝ v to ⟨b ⇒ v⟩ and skip this b
-      const Rule *b_to_a;
-      if ((b_to_a = type_assess(inductor, b, a)) == NULL)
-        return NULL;
-      if (b_to_a->tag != IMPOSSIBLE_RULE) {
-        b_edge->tag = INDIRECT_RULE;
-        b_edge->center = a;
-        // if (redirect_source(inductor, b_edge, a) == NULL)
-        //   return NULL;
-        continue;
-      }
-
-      // If we have a ⇝ b, then assign a ⇝ b ⇝ v to ⟨a ⇒ v⟩ and skip this a
-      const Rule *a_to_b;
-      if ((a_to_b = type_assess(inductor, a, b)) == NULL)
-        return NULL;
-      if (a_to_b->tag != IMPOSSIBLE_RULE) {
-        a_edge->tag = INDIRECT_RULE;
-        a_edge->center = b;
-        // if (redirect_source(inductor, a_edge, b) == NULL)
-        //   return NULL;
-        goto continue_a;
-      }
-    }
-
-    argc++;
-  continue_a:;
-  }
-
-  size_t size = argc;
-  if (struct_size_overflow(Aspect, argv, &size))
-    return errno = ENOMEM, NULL;
-
-  Aspect *allocation;
-  if ((allocation = malloc(size)) == NULL)
-    return NULL;
-  *allocation = (Aspect) {.argc = argc};
-
-  argc = 0;
-
-  it = rule_iterator(inductor, (Attitude) {&variable_type->as_type, 0});
-  for (Rule *edge; (edge = rule_next(&it)) != NULL;) {
-    if (edge->tag == INDIRECT_RULE)
-      continue;
-    if (edge->tag == IMPOSSIBLE_RULE)
-      continue;
-    allocation->argv[argc++] = attitude_decode(edge->target).type;
-  }
-  assert(argc <= allocation->argc);
-
-  return allocation;
-
-  // return assign_solution(inductor, &variable_type->as_type,
-  // &join_type->as_type);
 }
 
 MuonType *reduce_node(Inductor *inductor, MuonNode *root) {

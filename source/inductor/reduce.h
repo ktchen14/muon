@@ -5,11 +5,6 @@
 
 #include <stddef.h>
 
-typedef struct {
-  size_t argc;
-  MuonType *argv[];
-} Aspect;
-
 MuonType *reduce_node(Inductor *inductor, MuonNode *root)
   MUON_HINT_SUFFIX(nonnull);
 
