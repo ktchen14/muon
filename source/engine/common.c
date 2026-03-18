@@ -5,13 +5,13 @@
 MuonEngine *muon_engine_initialize(MuonEngine *opaque) {
   Engine *engine = as_engine(opaque);
 
-  size_t area_size = 16;
+  size_t volume = 16;
+  size_t area_size = struct_size(HashArea, item, volume);
   HashArea *hash_area;
-  struct_size_overflow(HashArea, item, &area_size);
   if ((hash_area = malloc(area_size)) == NULL)
     return NULL;
-  *hash_area = (HashArea) {.volume = 16};
-  for (size_t i = 0; i < 16; i++)
+  *hash_area = (HashArea) {.volume = volume};
+  for (size_t i = 0; i < volume; i++)
     hash_area->item[i] = (struct HashItem) {};
 
   *engine = (Engine) {.stator = hash_area};

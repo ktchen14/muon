@@ -21,6 +21,7 @@ static inline MuonEngine *unlock_engine(struct MuonNode *node) {
 /// @internal Allocate a node of size @a size in the @a engine
 [[gnu::malloc, gnu::nonnull]]
 static inline void *node_allocate(MuonEngine *engine, size_t size) {
+  // TODO: fix this
   if (rare((size = struct_size(NodeHeader, node, size)) == 0))
     return errno = ENOMEM, NULL;
 

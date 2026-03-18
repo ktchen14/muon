@@ -27,11 +27,38 @@
   typeof((a)) _a = (a); typeof((b)) _b = (b); _a > _b ? _a : _b; \
 })
 
+/**
+ * @brief Return the size of a struct with a flexible array member
+ *
+ * @param nought size of the struct sans the flexible array member
+ * @param offset offset of the flexible array member into the struct
+ * @param member size of a single element of the flexible array
+ * @param length length of the flexible array
+ * @return the size of the struct with the flexible array member
+ */
+MUON_HINT(const) static inline size_t struct_size2(
+    size_t nought, size_t offset, size_t member, size_t length) {
+  return maximum(offset + member * length, nought);
+}
+
+#define struct_size2(T, member, length) struct_size2( \
+  sizeof(T), offsetof(T, member), sizeof((T) {}.member[0]), (length) \
+)
+
+/**
+ * @brief Assess the size of a struct with a flexible array member
+ *
+ * @param nought size of the struct sans the flexible array member
+ * @param offset offset of the flexible array member into the struct
+ * @param member size of a single element of the flexible array
+ * @param size length of the flexible array as well as the result
+ * @return 1 if the result will overflow a @c size_t; otherwise 0
+ */
 MUON_HINT(const) static inline _Bool struct_size_overflow(
     size_t nought, size_t offset, size_t member, size_t *size) {
   if (rare(*size > (SIZE_MAX - offset) / member))
     return 1;
-  *size = maximum(offset + member * *size, nought);
+  *size = (struct_size2)(nought, offset, member, *size);
   return 0;
 }
 
