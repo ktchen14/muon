@@ -92,7 +92,7 @@ int main(int argc, char *argv[/* argc */]) {
     muon_debug_stream = output;
     muon_debug_colorize = 0;
 
-    inductor_debug(&inductor, .hide = 1 << IMPOSSIBLE_RULE);
+    inductor_debug(&inductor);
 
     fclose(output);
     muon_debug_stream = stderr;
