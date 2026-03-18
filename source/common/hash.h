@@ -53,14 +53,14 @@ typedef struct {
 [[gnu::malloc]] HashVector *hash_vector(size_t volume);
 
 [[gnu::nonnull]] static inline const void *hash_search(
-    const HashVector *area, Hash hash, size_t *offset) {
+    const HashVector *vector, Hash hash, size_t *offset) {
   for (struct HashItem next;; (*offset)++) {
-    size_t i = hash + *offset & area->volume - 1;
+    size_t i = hash + *offset & vector->volume - 1;
 
-    if ((next = area->item[i]).object == NULL)
+    if ((next = vector->item[i]).object == NULL)
       return NULL;
 
-    if ((i - next.hash & area->volume - 1) < *offset)
+    if ((i - next.hash & vector->volume - 1) < *offset)
       return NULL;
 
     if (next.hash == hash)
@@ -69,35 +69,35 @@ typedef struct {
 }
 
 [[gnu::nonnull, gnu::pure]] static inline size_t hash_slot(
-    const HashVector *area, Hash hash, size_t i) {
-  size_t offset = i - hash & area->volume - 1;
+    const HashVector *vector, Hash hash, size_t i) {
+  size_t offset = i - hash & vector->volume - 1;
   for (struct HashItem next;; offset++) {
-    size_t i = hash + offset & area->volume - 1;
+    size_t i = hash + offset & vector->volume - 1;
 
-    if ((next = area->item[i]).object == NULL)
+    if ((next = vector->item[i]).object == NULL)
       return i;
 
-    if ((i - next.hash & area->volume - 1) < offset)
+    if ((i - next.hash & vector->volume - 1) < offset)
       return i;
   }
 }
 
 /// Insert the @a stator into the @a engine at the @a offset
 [[gnu::nonnull]] static inline HashVector *hash_insert(
-    HashVector *area, Hash hash, const void *object, size_t offset) {
-  HashVector *hash_rehash(HashVector *area, Hash hash, size_t *i) //-
+    HashVector *vector, Hash hash, const void *object, size_t offset) {
+  HashVector *hash_rehash(HashVector *vector, Hash hash, size_t *i) //-
     MUON_HINT_SUFFIX(nonnull);
 
   size_t i;
-  if (area->length < area->volume / 8 * 7)
-    i = hash + offset & area->volume - 1;
-  else if ((area = hash_rehash(area, hash, &i)) == NULL)
+  if (vector->length < vector->volume / 8 * 7)
+    i = hash + offset & vector->volume - 1;
+  else if ((vector = hash_rehash(vector, hash, &i)) == NULL)
     return NULL;
 
   struct HashItem next = {hash, object};
-  while ((next = MOVE(area->item[i], next)).object != NULL)
-    i = hash_slot(area, next.hash, i + 1);
-  return area->length++, area;
+  while ((next = MOVE(vector->item[i], next)).object != NULL)
+    i = hash_slot(vector, next.hash, i + 1);
+  return vector->length++, vector;
 }
 
 #endif /* MUON_COMMON_HASH_I */

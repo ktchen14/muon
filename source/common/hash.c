@@ -24,31 +24,31 @@ HashVector *hash_vector(size_t volume) {
   return result;
 }
 
-HashVector *hash_rehash(HashVector *area, Hash hash, size_t *i) {
+HashVector *hash_rehash(HashVector *vector, Hash hash, size_t *i) {
   size_t offset = offsetof(HashVector, item);
   size_t item = sizeof(struct HashItem[2]);
 
-  size_t size = area->volume;
+  size_t size = vector->volume;
   if ((struct_size_overflow) (sizeof(HashVector), offset, item, &size))
     return errno = ENOMEM, NULL;
 
   HashVector *result;
   if ((result = malloc(size)) == NULL)
     return NULL;
-  *result = (HashVector) {area->volume * 2, area->length};
+  *result = (HashVector) {vector->volume * 2, vector->length};
   for (size_t i = 0; i < result->volume; i++)
     result->item[i] = (struct HashItem) {};
 
-  for (size_t j = 0, i; j < area->volume; j++) {
+  for (size_t j = 0, i; j < vector->volume; j++) {
     struct HashItem next;
-    if ((next = area->item[j]).object == NULL)
+    if ((next = vector->item[j]).object == NULL)
       continue;
 
     i = hash_slot(result, next.hash, next.hash);
     while ((next = MOVE(result->item[i], next)).object != NULL)
       i = hash_slot(result, next.hash, i + 1);
   }
-  free(area);
+  free(vector);
 
   return *i = hash_slot(result, hash, hash), result;
 }
