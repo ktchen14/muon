@@ -4,7 +4,6 @@
 #include <muon/engine.h> // IWYU pragma: export
 
 #include "../common.h" // IWYU pragma: export
-#include "../hash.h"   // IWYU pragma: export
 
 #include <stdlib.h>
 

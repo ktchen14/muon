@@ -1,6 +1,9 @@
 # add_subdirectory(author)
 # target_link_libraries(muon PUBLIC muon-author)
 
+add_subdirectory(common)
+target_link_libraries(muon PUBLIC muon-common)
+
 add_subdirectory(engine)
 target_link_libraries(muon PUBLIC muon-engine)
 
@@ -8,9 +11,6 @@ add_subdirectory(scan)
 target_link_libraries(muon PUBLIC muon-scan)
 
 target_sources(muon PRIVATE
-  common.c
-  hash.c hash.h
-
   inductor/common.c
   inductor/induce.c
   inductor/node.c

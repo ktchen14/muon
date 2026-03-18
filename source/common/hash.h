@@ -1,7 +1,5 @@
-#ifndef MUON_HASH_I
-#define MUON_HASH_I
-
-#include <muon/engine/stator.h>
+#ifndef MUON_COMMON_HASH_I
+#define MUON_COMMON_HASH_I
 
 #include "common.h"
 
@@ -93,4 +91,4 @@ typedef struct {
   return area->length++, area;
 }
 
-#endif /* MUON_HASH_I */
+#endif /* MUON_COMMON_HASH_I */
