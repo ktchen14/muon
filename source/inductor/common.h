@@ -89,8 +89,7 @@ typedef struct {
     const Inductor *inductor, MuonType *source, MuonType *target) {
   for (size_t i = 0; i < inductor->rule_length; i++) {
     Rule *edge = &inductor->edge[i];
-    if (attitude_decode(edge->source).type == source
-        && attitude_decode(edge->target).type == target)
+    if (edge->source == source && edge->target == target)
       return edge;
   }
   return NULL;
@@ -102,11 +101,14 @@ typedef struct {
 }
 
 [[gnu::nonnull]] static inline Rule *rule_next(RuleIterator *it) {
+  _Bool charge = it->attitude.charge;
   for (size_t i; (i = it->i++) < it->inductor->rule_length;) {
     Rule *edge = &it->inductor->edge[i];
-    Attitude vertex = attitude_decode(edge->vertex[!it->attitude.charge]);
-    if (attitude_eq(vertex, it->attitude))
-      return edge;
+    if (edge->hidden[charge])
+      continue;
+    if (edge->vertex[!charge] != it->attitude.type)
+      continue;
+    return edge;
   }
 
   return NULL;
@@ -116,22 +118,18 @@ typedef struct {
 ///
 /// rule_scan(v, !c) finds every edge v → t that rule_next(t, c) would find.
 ///
-/// Concretely, rule_scan({v, c}) finds rules where:
-///   - vertex[!c].type == v  (v is on the !c side)
-///   - vertex[c].charge == !c  (the opposing side has the expected charge)
+/// rule_scan({v, c}) finds rules where:
+///   - vertex[!c] == v  (v is on the !c side)
+///   - hidden[!c] is false  (not hidden from rule_next(t, !c) on the other
+///   side)
 [[gnu::nonnull]] static inline Rule *rule_scan(RuleIterator *it) {
   _Bool charge = it->attitude.charge;
   for (size_t i; (i = it->i++) < it->inductor->rule_length;) {
     Rule *edge = &it->inductor->edge[i];
-
-    Attitude self = attitude_decode(edge->vertex[!charge]);
-    if (self.type != it->attitude.type)
+    if (edge->hidden[!charge])
       continue;
-
-    Attitude other = attitude_decode(edge->vertex[charge]);
-    if (other.charge != !charge)
+    if (edge->vertex[!charge] != it->attitude.type)
       continue;
-
     return edge;
   }
 
@@ -159,8 +157,8 @@ static Rule *rule_insert(
 
   Rule *result = &inductor->edge[inductor->rule_length++];
   *result = (Rule) {
-    .source = attitude_encode((Attitude) {source, 1}),
-    .target = attitude_encode((Attitude) {target, 0}),
+    .source = source,
+    .target = target,
   };
   return result;
 }
@@ -184,12 +182,13 @@ static inline Attitude type_next(const Inductor *inductor, Attitude origin) {
     if (rule->tag == FORWARDED_RULE)
       continue;
 
-    Attitude vertex = attitude_decode(rule->vertex[!origin.charge]);
-    if (!attitude_eq(vertex, origin))
+    if (rule->hidden[origin.charge])
       continue;
 
-    MuonType *next = attitude_decode(rule->vertex[origin.charge]).type;
-    return (Attitude) {next, origin.charge};
+    if (rule->vertex[!origin.charge] != origin.type)
+      continue;
+
+    return (Attitude) {rule->vertex[origin.charge], origin.charge};
   }
 
   return (Attitude) {};
