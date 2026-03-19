@@ -21,7 +21,6 @@ typedef enum {
   ID_RULE,
   JOIN_RULE,
   IMPOSSIBLE_RULE,
-  FORWARDED_RULE,
 } RuleTag;
 
 typedef struct {
@@ -171,12 +170,6 @@ static inline Attitude type_next(const Inductor *inductor, Attitude origin) {
   size_t i;
   while ((i = type_cursor(origin)->i++) < inductor->rule_length) {
     const Rule *rule = &inductor->edge[i];
-
-    if (rule->tag == FORWARDED_RULE)
-      continue;
-
-    if (rule->locked[origin.charge])
-      continue;
 
     if (rule->vertex[!origin.charge] != origin.type)
       continue;

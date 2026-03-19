@@ -136,10 +136,6 @@ void (inductor_debug)( //-
         case IMPOSSIBLE_RULE:
           debug("color=red,constraint=false,");
           break;
-
-        case FORWARDED_RULE:
-          debug("color=purple,");
-          break;
       }
     }
 

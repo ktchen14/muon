@@ -124,14 +124,19 @@ static MuonType *reduce_variable_type_0(
   for (Rule *rule; (rule = rule_scan(&it)) != NULL;) {
     if (rule->tag == INDIRECT_RULE)
       continue;
+    if (!is_variable_type(rule->vertex[!charge]))
+      continue;
 
+    if (rule->target->id == 14)
+      assert(rule->source->tag != MUON_JOIN_TYPE);
     rule->tag = INDIRECT_RULE;
     rule->center = &join_type->as_type;
 
     MuonType *next = rule->vertex[!charge];
-    Rule *rule;
-    if ((rule = edge_define(inductor, &join_type->as_type, next)) == NULL)
+    Rule *newrule;
+    if ((newrule = edge_define(inductor, &join_type->as_type, next)) == NULL)
       return NULL;
+    newrule->instance = rule->instance;
   }
 
   attitude_mark_done(inductor, attitude);
@@ -213,14 +218,17 @@ static MuonType *reduce_variable_type_1(
   for (Rule *rule; (rule = rule_scan(&it)) != NULL;) {
     if (rule->tag == INDIRECT_RULE)
       continue;
+    if (!is_variable_type(rule->vertex[!charge]))
+      continue;
 
     rule->tag = INDIRECT_RULE;
     rule->center = &meet_type->as_type;
 
     MuonType *next = rule->vertex[0];
-    Rule *rule;
-    if ((rule = edge_define(inductor, next, &meet_type->as_type)) == NULL)
+    Rule *newrule;
+    if ((newrule = edge_define(inductor, next, &meet_type->as_type)) == NULL)
       return NULL;
+    newrule->instance = rule->instance;
   }
 
   attitude_mark_done(inductor, attitude);
@@ -330,6 +338,7 @@ MuonType *reduce_type(Inductor *inductor, Attitude attitude) {
       }
 
       case IS_CONCRETE_TYPE(MuonVariableType *variable_type) {
+        debug("Reducing v%zu charge = %d\n", cursor.type->id, cursor.charge);
         if (cursor.charge == 0) {
           if (reduce_variable_type_0(inductor, variable_type, cursor.charge)
               == NULL)
@@ -339,6 +348,9 @@ MuonType *reduce_type(Inductor *inductor, Attitude attitude) {
               == NULL)
             return NULL;
         }
+
+        if (!attitude_is_done(inductor, cursor) || !attitude_is_done(inductor, attitude_invert(cursor)))
+          break;
 
         RuleIterator it = rule_iterator(inductor, (Attitude) {cursor.type, 0});
         for (Rule *edge; (edge = rule_next(&it)) != NULL;) {
