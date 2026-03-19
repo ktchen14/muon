@@ -205,7 +205,7 @@ MuonJoinType *join_type_activate(struct MuonJoinType *type) {
       continue;
 
     for (size_t j = 0; j < type->argc; j++) {
-      if (next->argv[i] != type->argv[i])
+      if (next->argv[j] != type->argv[j])
         goto next;
     }
 
