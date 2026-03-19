@@ -57,18 +57,6 @@ static MuonType *reduce_variable_type_0(
       continue;
     argc++;
   }
-  if (argc == 0 && type->id == 12) {
-    FILE *output = fopen("12.dot", "w");
-    muon_debug_stream = output;
-    muon_debug_colorize = 0;
-
-    inductor_debug(inductor);
-
-    fclose(output);
-    muon_debug_stream = stderr;
-
-    system("dot -Tpng -O 12.dot"); // NOLINT(bugprone-command-processor)
-  }
 
   struct MuonJoinType *allocation;
   if ((allocation = join_type_allocate(inductor->engine, argc)) == NULL)
@@ -122,14 +110,10 @@ static MuonType *reduce_variable_type_0(
   // code paths (which skip FORWARDED_RULE).
   it = rule_iterator(inductor, (Attitude) {type, !charge});
   for (Rule *rule; (rule = rule_scan(&it)) != NULL;) {
-    if (rule->tag == INDIRECT_RULE)
-      continue;
     if (!is_variable_type(rule->vertex[!charge]))
       continue;
 
-    if (rule->target->id == 14)
-      assert(rule->source->tag != MUON_JOIN_TYPE);
-    rule->tag = INDIRECT_RULE;
+    rule->locked[charge] = 1;
     rule->center = &join_type->as_type;
 
     MuonType *next = rule->vertex[!charge];
@@ -221,7 +205,7 @@ static MuonType *reduce_variable_type_1(
     if (!is_variable_type(rule->vertex[!charge]))
       continue;
 
-    rule->tag = INDIRECT_RULE;
+    rule->locked[charge] = 1;
     rule->center = &meet_type->as_type;
 
     MuonType *next = rule->vertex[0];
@@ -352,13 +336,14 @@ MuonType *reduce_type(Inductor *inductor, Attitude attitude) {
         if (!attitude_is_done(inductor, cursor) || !attitude_is_done(inductor, attitude_invert(cursor)))
           break;
 
-        RuleIterator it = rule_iterator(inductor, (Attitude) {cursor.type, 0});
+        _Bool solution_charge = 1;
+        RuleIterator it = rule_iterator(inductor, (Attitude) {cursor.type, solution_charge});
         for (Rule *edge; (edge = rule_next(&it)) != NULL;) {
           if (edge->tag == INDIRECT_RULE)
             continue;
           if (edge->instance != NULL)
             continue;
-          assign_solution(inductor, cursor.type, edge->source);
+          assign_solution(inductor, cursor.type, edge->vertex[solution_charge]);
           goto done;
         }
 

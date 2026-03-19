@@ -355,7 +355,7 @@ void (muon_type_debug)(MuonType *type, struct MuonTypeDebugArgs args) { //-
         break;
       }
 
-      // if (args.strength > 3)
+      if (args.strength > 3)
         debug("(");
 
       next_args.strength = 3;
@@ -365,7 +365,7 @@ void (muon_type_debug)(MuonType *type, struct MuonTypeDebugArgs args) { //-
         (muon_type_debug)(join_type->argv[i], next_args);
       }
 
-      // if (args.strength > 3)
+      if (args.strength > 3)
         debug(")");
       break;
 
