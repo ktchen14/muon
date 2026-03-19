@@ -24,6 +24,8 @@ static MuonType *node_type(MuonNode *node, const void *data) {
   if ((type = node_source_type(inductor, node)) == NULL)
     return type;
 
+  // return type;
+
   MuonType *solution;
   if ((solution = type_solution(inductor, type)) == NULL)
     return type;

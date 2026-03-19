@@ -69,7 +69,10 @@ static MuonType *reduce_variable_type_0(
       continue;
     if (edge->instance != NULL)
       continue;
-    allocation->argv[i++] = edge->vertex[charge];
+
+    MuonType *solution = type_solution(inductor, edge->vertex[charge]);
+    assert(solution != NULL);
+    allocation->argv[i++] = solution;
   }
   assert(i == argc);
 
@@ -88,7 +91,7 @@ static MuonType *reduce_variable_type_0(
       continue;
 
     MuonType *argument = join_type->argv[i++];
-    assert(argument == edge->vertex[charge]);
+    assert(argument == type_solution(inductor, edge->vertex[charge]));
 
     edge->tag = INDIRECT_RULE;
     edge->center = &join_type->as_type;
@@ -159,7 +162,9 @@ static MuonType *reduce_variable_type_1(
       continue;
     if (edge->instance != NULL)
       continue;
-    allocation->argv[i++] = edge->target;
+    MuonType *solution = type_solution(inductor, edge->vertex[charge]);
+    assert(solution != NULL);
+    allocation->argv[i++] = solution;
   }
   assert(i == argc);
 
@@ -178,7 +183,7 @@ static MuonType *reduce_variable_type_1(
       continue;
 
     MuonType *argument = meet_type->argv[i++];
-    assert(argument == edge->vertex[1]);
+    assert(argument == type_solution(inductor, edge->vertex[1]));
 
     edge->tag = INDIRECT_RULE;
     edge->center = &meet_type->as_type;
@@ -336,7 +341,7 @@ MuonType *reduce_type(Inductor *inductor, Attitude attitude) {
         if (!attitude_is_done(inductor, cursor) || !attitude_is_done(inductor, attitude_invert(cursor)))
           break;
 
-        _Bool solution_charge = 1;
+        _Bool solution_charge = 0;
         RuleIterator it = rule_iterator(inductor, (Attitude) {cursor.type, solution_charge});
         for (Rule *edge; (edge = rule_next(&it)) != NULL;) {
           if (edge->tag == INDIRECT_RULE)
