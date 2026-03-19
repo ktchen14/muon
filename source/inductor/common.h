@@ -50,15 +50,6 @@ typedef struct {
   };
 } Rule;
 
-typedef struct {
-  MuonType *base; // solution for instance == NULL
-  size_t argc;
-  struct AttitudeSolutionItem {
-    MuonInstance *instance;
-    MuonType *type;
-  } argv[];
-} AttitudeSolution;
-
 struct Inductor {
   MuonEngine *engine;
   const detect_result_t *detect;
@@ -72,7 +63,7 @@ struct Inductor {
 
   size_t type_length;
   MuonType **solution;
-  AttitudeSolution **attitude_solution; // indexed by type_id * 2 + charge
+  _Bool *attitude_done; // indexed by type_id * 2 + charge
 
   size_t rule_length;
   size_t rule_volume;
