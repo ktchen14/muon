@@ -406,4 +406,6 @@ void (muon_type_debug)(MuonType *type, struct MuonTypeDebugArgs args) { //-
         debug(":%zu", scheme_type->as_type.id);
     }
   }
+
+  // debug(" {%zu}", type->id);
 }

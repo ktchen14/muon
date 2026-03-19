@@ -382,7 +382,11 @@ MuonType *reduce_type(Inductor *inductor, Attitude attitude) {
             continue;
           if (edge->instance != NULL)
             continue;
-          assign_solution(inductor, cursor.type, edge->vertex[solution_charge]);
+
+          MuonType *solution = edge->vertex[solution_charge];
+          solution = type_solution(inductor, solution);
+          assert(solution != NULL);
+          assign_solution(inductor, cursor.type, solution);
           goto done;
         }
 

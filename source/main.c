@@ -22,7 +22,7 @@ static MuonType *node_type(MuonNode *node, const void *data) {
 
   MuonType *type;
   if ((type = node_source_type(inductor, node)) == NULL)
-    return type;
+    return NULL;
 
   // return type;
 

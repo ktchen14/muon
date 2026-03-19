@@ -83,12 +83,12 @@ void (inductor_debug)( //-
       debug("  Type%zu [label=\"", source_type->id);
 
       (muon_type_debug)(source_type, args.type);
-      MuonType *solution;
-      if ((solution = type_solution(inductor, source_type)) != NULL) {
-        debug(" [");
-        (muon_type_debug)(solution, args.type);
-        debug("]");
-      }
+      // MuonType *solution;
+      // if ((solution = type_solution(inductor, source_type)) != NULL) {
+      //   debug(" [");
+      //   (muon_type_debug)(solution, args.type);
+      //   debug("]");
+      // }
 
       debug("\"];\n");
       roster[source_type->id] = source_type;
@@ -98,12 +98,12 @@ void (inductor_debug)( //-
       debug("  Type%zu [label=\"", target_type->id);
 
       (muon_type_debug)(target_type, args.type);
-      MuonType *solution;
-      if ((solution = type_solution(inductor, target_type)) != NULL) {
-        debug(" [");
-        (muon_type_debug)(solution, args.type);
-        debug("]");
-      }
+      // MuonType *solution;
+      // if ((solution = type_solution(inductor, target_type)) != NULL) {
+      //   debug(" [");
+      //   (muon_type_debug)(solution, args.type);
+      //   debug("]");
+      // }
 
       debug("\"];\n");
       roster[target_type->id] = target_type;
