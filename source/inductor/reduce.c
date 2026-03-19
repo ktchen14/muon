@@ -12,6 +12,11 @@
 static inline MuonType *assign_solution(
     Inductor *inductor, MuonType *type, MuonType *solution) {
   assert(type->id < inductor->type_length);
+  debug("Assigning type %zu, i.e. ", type->id);
+  muon_type_debug(type);
+  debug(" solution: ");
+  muon_type_debug(solution);
+  debug("\n");
   return inductor->solution[type->id] = solution;
 }
 
@@ -113,6 +118,8 @@ static MuonType *reduce_variable_type_0(
   // code paths (which skip FORWARDED_RULE).
   it = rule_iterator(inductor, (Attitude) {type, !charge});
   for (Rule *rule; (rule = rule_scan(&it)) != NULL;) {
+    if (rule->tag == INDIRECT_RULE)
+      continue;
     if (!is_variable_type(rule->vertex[!charge]))
       continue;
 
