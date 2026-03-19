@@ -121,58 +121,29 @@ void (inductor_debug)( //-
     if (target.charge == 1)
       debug("arrowhead=odotnormal,");
 
-    switch (edge.tag) {
-      case NORMAL_RULE:
-      case JOIN_RULE:
-        break;
+    if (edge.instance != NULL) {
+      debug("color=green,fontcolor=green,label=\"%zu\",", edge.instance->id);
+    } else {
+      switch (edge.tag) {
+        case NORMAL_RULE:
+        case JOIN_RULE:
+          break;
 
-      case INDIRECT_RULE:
-        debug("color=gray,");
-        break;
+        case INDIRECT_RULE:
+          debug("color=gray,");
+          break;
 
-      case ID_RULE:
-        debug("color=blue,");
-        break;
+        case ID_RULE:
+          debug("color=blue,");
+          break;
 
-      case IMPOSSIBLE_RULE:
-        debug("color=red,constraint=false,");
-        break;
-
-      case INSTANCE_RULE:
-        assert(edge.instance != NULL);
-        debug("color=green,fontcolor=green,label=\"%zu\",", edge.instance->id);
-        break;
+        case IMPOSSIBLE_RULE:
+          debug("color=red,constraint=false,");
+          break;
+      }
     }
 
     debug("];\n");
-
-    if (edge.instance != NULL) {
-      debug("  {\n");
-      debug("    rank=same;\n");
-      debug("    Type%zu [label=\"", source.type->id);
-      (muon_type_debug)(source.type, args.type);
-      Solution *solution;
-      if ((solution = attitude_solution_get(
-               inductor, (Attitude) {source.type, 0}))
-          != NULL) {
-        debug(" [");
-        (muon_type_debug)(solution->type, args.type);
-        debug("]");
-      }
-      debug("\"];\n");
-
-      debug("    Type%zu [label=\"", target.type->id);
-      (muon_type_debug)(target.type, args.type);
-      if ((solution = attitude_solution_get(
-               inductor, (Attitude) {target.type, 0}))
-          != NULL) {
-        debug(" [");
-        (muon_type_debug)(solution->type, args.type);
-        debug("]");
-      }
-      debug("\"];\n");
-      debug("  }\n");
-    }
   }
 
   debug("}\n");

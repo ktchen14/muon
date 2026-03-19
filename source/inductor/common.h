@@ -21,7 +21,6 @@ typedef enum {
   ID_RULE,
   JOIN_RULE,
   IMPOSSIBLE_RULE,
-  INSTANCE_RULE,
 } RuleTag;
 
 typedef struct {

@@ -201,7 +201,6 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
         Rule *rule;
         if ((rule = rule_insert(inductor, source.type, target.type)) == NULL)
           goto except;
-        rule->tag = INSTANCE_RULE;
         rule->source = attitude_encode(source);
         rule->target = attitude_encode(target);
         rule->instance = instance;

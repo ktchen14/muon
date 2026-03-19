@@ -80,7 +80,7 @@ static MuonType *reduce_variable_attitude(
 
   it = rule_iterator(inductor, target_attitude);
   for (Rule *rule; (rule = rule_next(&it)) != NULL;) {
-    if (rule->tag == INDIRECT_RULE || rule->tag == INSTANCE_RULE)
+    if (rule->tag == INDIRECT_RULE)
       continue;
 
     Attitude source_att = attitude_decode(rule->vertex[charge]);
@@ -103,7 +103,7 @@ static MuonType *reduce_variable_attitude(
   argc = 0;
   it = rule_iterator(inductor, target_attitude);
   for (Rule *a_edge; (a_edge = rule_next(&it)) != NULL;) {
-    if (a_edge->tag == INDIRECT_RULE || a_edge->tag == INSTANCE_RULE)
+    if (a_edge->tag == INDIRECT_RULE)
       continue;
     Attitude a_att = attitude_decode(a_edge->vertex[charge]);
     MuonType *a = neighbor_solution(inductor, a_att.type, charge);
@@ -111,7 +111,7 @@ static MuonType *reduce_variable_attitude(
 
     RuleIterator jt = it;
     for (Rule *b_edge; (b_edge = rule_next(&jt)) != NULL;) {
-      if (b_edge->tag == INDIRECT_RULE || b_edge->tag == INSTANCE_RULE)
+      if (b_edge->tag == INDIRECT_RULE)
         continue;
       Attitude b_att = attitude_decode(b_edge->vertex[charge]);
       MuonType *b = neighbor_solution(inductor, b_att.type, charge);
@@ -157,7 +157,7 @@ static MuonType *reduce_variable_attitude(
 
     it = rule_iterator(inductor, target_attitude);
     for (Rule *edge; (edge = rule_next(&it)) != NULL;) {
-      if (edge->tag == INDIRECT_RULE || edge->tag == INSTANCE_RULE)
+      if (edge->tag == INDIRECT_RULE)
         continue;
 
       Attitude source_att = attitude_decode(edge->vertex[charge]);

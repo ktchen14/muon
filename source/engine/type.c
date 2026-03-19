@@ -209,7 +209,7 @@ MuonJoinType *join_type_activate(struct MuonJoinType *type) {
         goto next;
     }
 
-    return free(type_header(&type->as_type)), next;
+    // return free(type_header(&type->as_type)), next;
   next:
   }
 
