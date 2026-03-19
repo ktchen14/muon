@@ -73,48 +73,48 @@ void (inductor_debug)( //-
   for (size_t i = 0; i < inductor->rule_length; i++) {
     Rule edge = inductor->edge[i];
 
-    Attitude source = attitude_decode(edge.source);
-    Attitude target = attitude_decode(edge.target);
+    MuonType *source_type = edge.source;
+    MuonType *target_type = edge.target;
 
     if (args.hide & 1 << edge.tag)
       continue;
 
-    if (roster[source.type->id] == NULL) {
-      debug("  Type%zu [label=\"", source.type->id);
+    if (roster[source_type->id] == NULL) {
+      debug("  Type%zu [label=\"", source_type->id);
 
-      (muon_type_debug)(source.type, args.type);
+      (muon_type_debug)(source_type, args.type);
       MuonType *solution;
-      if ((solution = type_solution(inductor, source.type)) != NULL) {
+      if ((solution = type_solution(inductor, source_type)) != NULL) {
         debug(" [");
         (muon_type_debug)(solution, args.type);
         debug("]");
       }
 
       debug("\"];\n");
-      roster[source.type->id] = source.type;
+      roster[source_type->id] = source_type;
     }
 
-    if (roster[target.type->id] == NULL) {
-      debug("  Type%zu [label=\"", target.type->id);
+    if (roster[target_type->id] == NULL) {
+      debug("  Type%zu [label=\"", target_type->id);
 
-      (muon_type_debug)(target.type, args.type);
+      (muon_type_debug)(target_type, args.type);
       MuonType *solution;
-      if ((solution = type_solution(inductor, target.type)) != NULL) {
+      if ((solution = type_solution(inductor, target_type)) != NULL) {
         debug(" [");
         (muon_type_debug)(solution, args.type);
         debug("]");
       }
 
       debug("\"];\n");
-      roster[target.type->id] = target.type;
+      roster[target_type->id] = target_type;
     }
 
-    debug("  Type%zu -> Type%zu [", source.type->id, target.type->id);
+    debug("  Type%zu -> Type%zu [", source_type->id, target_type->id);
 
-    if (source.charge == 0)
+    if (edge.locked[1])
       debug("dir=both,arrowtail=odot,");
 
-    if (target.charge == 1)
+    if (edge.locked[0])
       debug("arrowhead=odotnormal,");
 
     if (edge.instance != NULL) {
@@ -135,6 +135,10 @@ void (inductor_debug)( //-
 
         case IMPOSSIBLE_RULE:
           debug("color=red,constraint=false,");
+          break;
+
+        case FORWARDED_RULE:
+          debug("color=purple,");
           break;
       }
     }

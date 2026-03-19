@@ -34,7 +34,9 @@ typedef struct {
     MuonType *vertex[2];
   };
 
-  _Bool hidden[2];
+  // If locked[0], then this rule doesn't appear to rule_next(target, 0). If
+  // locked[1], then this rule doesn't appear to rule_next(source, 1).
+  _Bool locked[2];
 
   RuleTag tag;
 
@@ -104,7 +106,7 @@ typedef struct {
   _Bool charge = it->attitude.charge;
   for (size_t i; (i = it->i++) < it->inductor->rule_length;) {
     Rule *edge = &it->inductor->edge[i];
-    if (edge->hidden[charge])
+    if (edge->locked[charge])
       continue;
     if (edge->vertex[!charge] != it->attitude.type)
       continue;
@@ -126,7 +128,7 @@ typedef struct {
   _Bool charge = it->attitude.charge;
   for (size_t i; (i = it->i++) < it->inductor->rule_length;) {
     Rule *edge = &it->inductor->edge[i];
-    if (edge->hidden[!charge])
+    if (edge->locked[!charge])
       continue;
     if (edge->vertex[!charge] != it->attitude.type)
       continue;
@@ -182,7 +184,7 @@ static inline Attitude type_next(const Inductor *inductor, Attitude origin) {
     if (rule->tag == FORWARDED_RULE)
       continue;
 
-    if (rule->hidden[origin.charge])
+    if (rule->locked[origin.charge])
       continue;
 
     if (rule->vertex[!origin.charge] != origin.type)
