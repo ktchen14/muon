@@ -167,8 +167,8 @@ MuonCoreType *core_type_activate(struct MuonCoreType *type) {
 }
 
 struct MuonJoinType *join_type_allocate(MuonEngine *engine, size_t argc) {
-  size_t size;
-  if (rare((size = struct_size(MuonJoinType, argv, argc)) == 0))
+  size_t size = argc;
+  if (struct_size_overflow(MuonJoinType, argv, &size))
     return errno = ENOMEM, NULL;
 
   MuonSchemeType *scheme = as_engine(engine)->scheme;
@@ -219,20 +219,17 @@ MuonJoinType *join_type_activate(struct MuonJoinType *type) {
 }
 
 struct MuonMeetType *meet_type_allocate(MuonEngine *engine, size_t argc) {
-  size_t size;
-  if (rare((size = struct_size(MuonMeetType, argv, argc)) == 0))
+  size_t size = argc;
+  if (struct_size_overflow(MuonMeetType, argv, &size))
     return errno = ENOMEM, NULL;
+
+  MuonSchemeType *scheme = as_engine(engine)->scheme;
 
   struct MuonMeetType *result;
   if ((result = type_allocate(engine, size)) == NULL)
     return NULL;
   *result = (MuonMeetType) {
-    .as_type =
-        {
-          .tag = MUON_MEET_TYPE,
-          .engine = engine,
-          .scheme = as_engine(engine)->scheme,
-        },
+    .as_type = {.tag = MUON_MEET_TYPE, .engine = engine, .scheme = scheme},
     .argc = argc,
   };
   return result;
@@ -245,7 +242,32 @@ MuonMeetType *meet_type_activate(struct MuonMeetType *type) {
     assert(type->argv[i] != NULL);
     assert(type->argv[i]->engine == engine);
   }
-  return assign_type(engine, &type->as_type), type;
+
+  Hash hash = hash_object(type->as_type.scheme);
+  for (size_t i = 0; i < type->argc; i++)
+    hash = hash_extend(hash, type->argv[i]);
+
+  MuonMeetType *next;
+  size_t i = 0;
+  for (; (next = stator_search(engine, next, hash, &i)) != NULL; i++) {
+    if (next->as_type.scheme != type->as_type.scheme)
+      continue;
+
+    if (next->argc != type->argc)
+      continue;
+
+    for (size_t j = 0; j < type->argc; j++) {
+      if (next->argv[j] != type->argv[j])
+        goto next;
+    }
+
+    return free(type_header(&type->as_type)), next;
+  next:
+  }
+
+  type->as_type.engine = engine;
+  type->as_type.id = as_engine(engine)->type_number++;
+  return stator_insert(engine, type, hash, i);
 }
 
 struct MuonSchemeType *scheme_type_allocate(MuonEngine *engine) {
