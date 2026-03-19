@@ -216,6 +216,7 @@ static MuonType *reduce_variable_attitude(
   for (Rule *rule; (rule = rule_next(&it)) != NULL;) {
     if (rule->tag == INDIRECT_RULE)
       continue;
+
     if (rule->instance != NULL) {
       Attitude nbr = attitude_decode(rule->vertex[charge]);
       MuonType *nbr_sol = type_solution(inductor, nbr.type);
