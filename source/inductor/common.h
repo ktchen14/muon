@@ -22,6 +22,7 @@ typedef enum {
   JOIN_RULE,
   IMPOSSIBLE_RULE,
   INSTANCE_RULE,
+  FORWARDED_RULE,
 } RuleTag;
 
 typedef struct {
@@ -153,6 +154,9 @@ static inline Attitude type_next(const Inductor *inductor, Attitude origin) {
   while ((i = type_cursor(origin)->i++) < inductor->rule_length) {
     const Rule *rule = &inductor->edge[i];
 
+    if (rule->tag == FORWARDED_RULE)
+      continue;
+
     Attitude vertex = attitude_decode(rule->vertex[!origin.charge]);
     if (!attitude_eq(vertex, origin))
       continue;
@@ -162,6 +166,32 @@ static inline Attitude type_next(const Inductor *inductor, Attitude origin) {
   }
 
   return (Attitude) {};
+}
+
+/// Find rules on the opposite side from rule_next.
+///
+/// rule_scan(v, !c) finds every edge v → t that rule_next(t, c) would find.
+///
+/// Concretely, rule_scan({v, c}) finds rules where:
+///   - vertex[!c].type == v  (v is on the !c side)
+///   - vertex[c].charge == !c  (the opposing side has the expected charge)
+[[gnu::nonnull]] static inline Rule *rule_scan(RuleIterator *it) {
+  _Bool c = it->attitude.charge;
+  for (size_t i; (i = it->i++) < it->inductor->rule_length;) {
+    Rule *edge = &it->inductor->edge[i];
+
+    Attitude self = attitude_decode(edge->vertex[!c]);
+    if (self.type != it->attitude.type)
+      continue;
+
+    Attitude other = attitude_decode(edge->vertex[c]);
+    if (other.charge != !c)
+      continue;
+
+    return edge;
+  }
+
+  return NULL;
 }
 
 #endif /* MUON_INDUCTOR_COMMON_I */
