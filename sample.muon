@@ -8,7 +8,7 @@ define id = lambda x = x
 
 define c = is_integer (id 1)
 # define d = ((id2 true).foo)
-define d = is_boolean (id true)
+# define d = is_boolean (id true)
 
 # define apply = (lambda f = (lambda x = f x))
 

@@ -28,14 +28,18 @@ static inline void attitude_mark_done(Inductor *inductor, Attitude attitude) {
   inductor->attitude_done[attitude.type->id * 2 + attitude.charge] = 1;
 }
 
+#include <stdio.h>
+#include "../inductor.h"
+
 /// Compute the attitude-specific solution for a variable type at a given
 /// charge direction.
 ///
 /// All constraint neighbors must already have been reduced by the traversal.
 /// This function only reads pre-computed solutions — it does not trigger any
 /// further reductions.
-static MuonType *reduce_variable_attitude(
+static MuonType *reduce_variable_type_0(
     Inductor *inductor, MuonVariableType *variable_type, _Bool charge) {
+  assert(charge == 0);
   MuonType *type = &variable_type->as_type;
 
   Attitude attitude = {type, charge};
@@ -52,6 +56,18 @@ static MuonType *reduce_variable_attitude(
     if (edge->instance != NULL)
       continue;
     argc++;
+  }
+  if (argc == 0 && type->id == 12) {
+    FILE *output = fopen("12.dot", "w");
+    muon_debug_stream = output;
+    muon_debug_colorize = 0;
+
+    inductor_debug(inductor);
+
+    fclose(output);
+    muon_debug_stream = stderr;
+
+    system("dot -Tpng -O 12.dot"); // NOLINT(bugprone-command-processor)
   }
 
   struct MuonJoinType *allocation;
@@ -73,6 +89,8 @@ static MuonType *reduce_variable_attitude(
   if ((join_type = join_type_activate(allocation)) == NULL)
     return NULL;
 
+  // For each type τ, ... in Join(τ, ...), make ⟨τ ⇒ Join(τ, ...)⟩ and make
+  // ⟨τ ⇒ type⟩ indirect through the join type.
   it = rule_iterator(inductor, (Attitude) {type, charge});
   i = 0;
   for (Rule *edge; (edge = rule_next(&it)) != NULL;) {
@@ -113,6 +131,95 @@ static MuonType *reduce_variable_attitude(
     MuonType *next = rule->vertex[!charge];
     Rule *rule;
     if ((rule = edge_define(inductor, &join_type->as_type, next)) == NULL)
+      return NULL;
+  }
+
+  attitude_mark_done(inductor, attitude);
+  return type;
+}
+
+static MuonType *reduce_variable_type_1(
+    Inductor *inductor, MuonVariableType *variable_type, _Bool charge) {
+  assert(charge == 1);
+  MuonType *type = &variable_type->as_type;
+
+  Attitude attitude = {type, 1};
+  if (attitude_is_done(inductor, attitude))
+    return type;
+
+  RuleIterator it;
+
+  size_t argc = 0;
+  it = rule_iterator(inductor, (Attitude) {type, 1});
+  for (Rule *edge; (edge = rule_next(&it)) != NULL;) {
+    if (edge->tag == INDIRECT_RULE)
+      continue;
+    if (edge->instance != NULL)
+      continue;
+    argc++;
+  }
+
+  struct MuonMeetType *allocation;
+  if ((allocation = meet_type_allocate(inductor->engine, argc)) == NULL)
+    return NULL;
+
+  it = rule_iterator(inductor, (Attitude) {type, 1});
+  size_t i = 0;
+  for (Rule *edge; (edge = rule_next(&it)) != NULL;) {
+    if (edge->tag == INDIRECT_RULE)
+      continue;
+    if (edge->instance != NULL)
+      continue;
+    allocation->argv[i++] = edge->target;
+  }
+  assert(i == argc);
+
+  MuonMeetType *meet_type;
+  if ((meet_type = meet_type_activate(allocation)) == NULL)
+    return NULL;
+
+  // For each type τ, ... in Meet(τ, ...), make ⟨τ ⇒ Meet(τ, ...)⟩ and make
+  // ⟨τ ⇒ type⟩ indirect through the join type.
+  it = rule_iterator(inductor, (Attitude) {type, 1});
+  i = 0;
+  for (Rule *edge; (edge = rule_next(&it)) != NULL;) {
+    if (edge->tag == INDIRECT_RULE)
+      continue;
+    if (edge->instance != NULL)
+      continue;
+
+    MuonType *argument = meet_type->argv[i++];
+    assert(argument == edge->vertex[1]);
+
+    edge->tag = INDIRECT_RULE;
+    edge->center = &meet_type->as_type;
+
+    Rule *rule;
+    if ((rule = edge_define(inductor, &meet_type->as_type, argument)) == NULL)
+      return NULL;
+    rule->tag = JOIN_RULE;
+    rule->i = i;
+  }
+
+  edge_define(inductor, type, &meet_type->as_type);
+
+  // Phase 5 — create FORWARDED_RULE edges from the AttitudeSolution.
+  //
+  // For each downstream type t (found via rule_scan at the opposite charge),
+  // create new rules from the AttitudeSolution's base and per-instance types
+  // to t.  These rules are tagged FORWARDED_RULE and don't affect existing
+  // code paths (which skip FORWARDED_RULE).
+  it = rule_iterator(inductor, (Attitude) {type, 0});
+  for (Rule *rule; (rule = rule_scan(&it)) != NULL;) {
+    if (rule->tag == INDIRECT_RULE)
+      continue;
+
+    rule->tag = INDIRECT_RULE;
+    rule->center = &meet_type->as_type;
+
+    MuonType *next = rule->vertex[0];
+    Rule *rule;
+    if ((rule = edge_define(inductor, next, &meet_type->as_type)) == NULL)
       return NULL;
   }
 
@@ -223,17 +330,23 @@ MuonType *reduce_type(Inductor *inductor, Attitude attitude) {
       }
 
       case IS_CONCRETE_TYPE(MuonVariableType *variable_type) {
-        if (reduce_variable_attitude(inductor, variable_type, cursor.charge)
-            == NULL)
-          return NULL;
+        if (cursor.charge == 0) {
+          if (reduce_variable_type_0(inductor, variable_type, cursor.charge)
+              == NULL)
+            return NULL;
+        } else {
+          if (reduce_variable_type_1(inductor, variable_type, cursor.charge)
+              == NULL)
+            return NULL;
+        }
 
-        RuleIterator it = rule_iterator(inductor, cursor);
+        RuleIterator it = rule_iterator(inductor, (Attitude) {cursor.type, 0});
         for (Rule *edge; (edge = rule_next(&it)) != NULL;) {
           if (edge->tag == INDIRECT_RULE)
             continue;
           if (edge->instance != NULL)
             continue;
-          assign_solution(inductor, cursor.type, edge->vertex[cursor.charge]);
+          assign_solution(inductor, cursor.type, edge->source);
           goto done;
         }
 
