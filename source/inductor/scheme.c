@@ -6,6 +6,7 @@
 #include <errno.h>
 #include <stddef.h>
 #include <stdlib.h>
+#include <string.h>
 
 MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
   MuonEngine *engine = inductor->engine;
@@ -33,8 +34,9 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
       if (next_cursor->i != 0)
         continue;
 
-      if (next.type->scheme != scheme
-          && equation[next.type->scheme->as_type.id].allocation == NULL)
+      if (next.type->scheme != NULL &&
+          next.type->scheme != scheme &&
+          equation[next.type->scheme->as_type.id].allocation == NULL)
         continue;
 
       cursor = type_continue(cursor, next);
@@ -169,40 +171,34 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
           if (rule->instance != NULL && rule->instance->scheme == scheme)
             continue;
 
-          Attitude source = attitude_decode(rule->source);
-          if (equation[source.type->id].result != NULL)
-            source.type = equation[source.type->id].result;
+          MuonType *source = rule->source;
+          if (equation[source->id].result != NULL)
+            source = equation[source->id].result;
 
-          Attitude target = attitude_decode(rule->target);
-          if (equation[target.type->id].result != NULL)
-            target.type = equation[target.type->id].result;
+          MuonType *target = rule->target;
+          if (equation[target->id].result != NULL)
+            target = equation[target->id].result;
 
-          if (rule_search(inductor, source.type, target.type) != NULL)
+          if (rule_search(inductor, source, target) != NULL)
             continue;
 
           Rule *next;
-          if ((next = rule_insert(inductor, source.type, target.type)) == NULL)
+          if ((next = rule_insert(inductor, source, target)) == NULL)
             goto except;
           next->tag = rule->tag;
-          next->source = attitude_encode(source);
-          next->target = attitude_encode(target);
+          memcpy(next->locked, rule->locked, sizeof(next->locked));
           next->instance = rule->instance;
         }
 
         MuonType *result = equation[cursor.type->id].result;
 
-        Attitude source = {
-          (MuonType *[]) {cursor.type, result}[cursor.charge], !cursor.charge
-        };
-        Attitude target = {
-          (MuonType *[]) {result, cursor.type}[cursor.charge], !cursor.charge
-        };
+        MuonType *source = (MuonType *[]) {cursor.type, result}[cursor.charge];
+        MuonType *target = (MuonType *[]) {result, cursor.type}[cursor.charge];
 
         Rule *rule;
-        if ((rule = rule_insert(inductor, source.type, target.type)) == NULL)
+        if ((rule = rule_insert(inductor, source, target)) == NULL)
           goto except;
-        rule->source = attitude_encode(source);
-        rule->target = attitude_encode(target);
+        rule->locked[cursor.charge] = 1;
         rule->instance = instance;
         break;
     }
