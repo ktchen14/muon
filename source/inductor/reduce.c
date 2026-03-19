@@ -69,9 +69,11 @@ static MuonType *reduce_variable_type_0(
 
   if (argc == 0)
     result = &as_engine(inductor->engine)->bottom_type->as_type;
-  else if (argc == 1)
-    result = single;
-  else {
+  else if (argc == 1) {
+    MuonType *solution = type_solution(inductor, single);
+    assert(solution != NULL);
+    result = solution;
+  } else {
     struct MuonJoinType *allocation;
     if ((allocation = join_type_allocate(inductor->engine, argc)) == NULL)
       return NULL;
@@ -176,9 +178,11 @@ static MuonType *reduce_variable_type_1(
 
   if (argc == 0)
     result = &as_engine(inductor->engine)->object_type->as_type;
-  else if (argc == 1)
-    result = single;
-  else {
+  else if (argc == 1) {
+    MuonType *solution = type_solution(inductor, single);
+    assert(solution != NULL);
+    result = solution;
+  } else {
     struct MuonMeetType *allocation;
     if ((allocation = meet_type_allocate(inductor->engine, argc)) == NULL)
       return NULL;
@@ -358,7 +362,6 @@ MuonType *reduce_type(Inductor *inductor, Attitude attitude) {
       }
 
       case IS_CONCRETE_TYPE(MuonVariableType *variable_type) {
-        debug("Reducing v%zu charge = %d\n", cursor.type->id, cursor.charge);
         if (cursor.charge == 0) {
           if (reduce_variable_type_0(inductor, variable_type, cursor.charge)
               == NULL)

@@ -122,7 +122,10 @@ void (inductor_debug)( //-
     } else {
       switch (edge.tag) {
         case NORMAL_RULE:
+          break;
+
         case JOIN_RULE:
+          debug("color=purple");
           break;
 
         case INDIRECT_RULE:
