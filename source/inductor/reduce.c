@@ -111,7 +111,7 @@ static Solution *reduce_variable_attitude(
 
       allocation->argv[i++] = source;
     }
-    assert(argc == allocation->argc);
+    assert(i == argc);
 
     MuonJoinType *join_type;
     if ((join_type = join_type_activate(allocation)) == NULL)
