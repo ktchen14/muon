@@ -63,6 +63,10 @@ static inline MuonType *neighbor_solution(
 /// further reductions.
 static Solution *reduce_variable_attitude(
     Inductor *inductor, MuonVariableType *target, _Bool charge) {
+  debug("Reducing ");
+  muon_type_debug(&target->as_type);
+  debug(" charge = %d\n", charge);
+
   Attitude attitude = {&target->as_type, charge};
 
   Solution *solution;
@@ -292,7 +296,7 @@ MuonType *reduce_type(Inductor *inductor, MuonType *type) {
 
         Attitude invert = attitude_invert(cursor);
         if (attitude_solution_get(inductor, invert) == NULL)
-          continue;
+          break;
 
         resolve_variable(inductor, variable_type);
         break;
