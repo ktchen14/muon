@@ -335,7 +335,8 @@ MuonType *reduce_type(Inductor *inductor, Attitude attitude) {
       }
 
       case IS_CONCRETE_TYPE(MuonVariableType *variable_type) {
-        if (reduce_variable_attitude(inductor, variable_type, cursor.charge) == NULL)
+        if (reduce_variable_attitude(inductor, variable_type, cursor.charge)
+            == NULL)
           return NULL;
         break;
       }

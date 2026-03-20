@@ -34,4 +34,3 @@ void *induce_script(MuonInductor *inductor, MuonScript *script)
   MUON_HINT_SUFFIX(nonnull);
 
 #endif /* MU_INDUCTOR_NODE_I */
-

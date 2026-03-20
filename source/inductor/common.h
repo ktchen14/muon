@@ -52,7 +52,7 @@ typedef struct {
   struct SolutionItem {
     MuonInstance *instance;
     MuonType *type;
-  } argv[];
+  } argv[] MUON_HINT(counted_by(argc));
 } Solution;
 
 struct Inductor {

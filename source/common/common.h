@@ -58,7 +58,7 @@ MUON_HINT(const) static inline _Bool struct_size_overflow(
     size_t nought, size_t offset, size_t member, size_t *size) {
   if (rare(*size > (SIZE_MAX - offset) / member))
     return 1;
-  *size = (struct_size2)(nought, offset, member, *size);
+  *size = (struct_size2)(nought, offset, member, *size); //-
   return 0;
 }
 
