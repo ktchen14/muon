@@ -37,6 +37,7 @@ typedef const struct MuonSchemeType MuonSchemeType;
  */
 typedef const struct MuonType {
   MuonTypeTag tag;
+  _Bool constant;
   const MuonEngine *engine;
   size_t id;
   MuonSchemeType *scheme;
