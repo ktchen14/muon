@@ -115,28 +115,6 @@ typedef struct {
   return NULL;
 }
 
-/// Find rules on the opposite side from rule_next.
-///
-/// rule_scan(v, !c) finds every edge v → t that rule_next(t, c) would find.
-///
-/// rule_scan({v, c}) finds rules where:
-///   - vertex[!c] == v  (v is on the !c side)
-///   - hidden[!c] is false  (not hidden from rule_next(t, !c) on the other
-///   side)
-[[gnu::nonnull]] static inline Rule *rule_scan(RuleIterator *it) {
-  _Bool charge = it->attitude.charge;
-  for (size_t i; (i = it->i++) < it->inductor->rule_length;) {
-    Rule *edge = &it->inductor->edge[i];
-    if (edge->locked[!charge])
-      continue;
-    if (edge->vertex[!charge] != it->attitude.type)
-      continue;
-    return edge;
-  }
-
-  return NULL;
-}
-
 static Rule *rule_insert(
     Inductor *inductor, MuonType *source, MuonType *target) {
   if (inductor->rule_length >= inductor->rule_volume) {
