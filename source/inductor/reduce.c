@@ -9,6 +9,14 @@
 #include <stdckdint.h>
 #include <stdlib.h>
 
+typedef struct {
+  _Bool is_variable;
+  union {
+    MuonType *type;
+    VariableSolution *solution;
+  };
+} Solution;
+
 static inline MuonType *assign_solution(
     Inductor *inductor, MuonType *type, MuonType *solution) {
   assert(type->id < inductor->type_length);
@@ -55,6 +63,19 @@ static inline MuonType *neighbor_solution(
   return solution->type;
 }
 
+[[gnu::nonnull, gnu::pure]] static inline Solution attitude_solution(
+    const Inductor *inductor, Attitude attitude) {
+  MuonType *result;
+  if ((result = type_solution(inductor, attitude.type)) != NULL)
+    return (Solution) {.type = result};
+
+  assert(is_variable_type(attitude.type));
+
+  VariableSolution *solution = attitude_solution_get(inductor, attitude);
+  assert(solution != NULL);
+  return (Solution) {.is_variable = 1, .solution = solution};
+}
+
 /// Compute the attitude-specific solution for a variable type at a given
 /// charge direction.
 ///
@@ -90,6 +111,12 @@ static VariableSolution *reduce_variable_type(
 
   if (argc == 0) {
     join = &as_engine(inductor->engine)->bottom_type->as_type;
+  } else if (argc == 1) {
+    Solution solution = attitude_solution(inductor, (Attitude) {single, charge});
+    if (solution.is_variable) {
+      join = solution.solution->type;
+    } else
+      join = solution.type;
   } else {
     struct MuonJoinType *allocation;
     if ((allocation = join_type_allocate(inductor->engine, argc)) == NULL)
@@ -224,6 +251,12 @@ MuonType *reduce_type(Inductor *inductor, MuonType *type) {
         if ((result = core_type_activate(allocation)) == NULL)
           return NULL;
         assign_solution(inductor, cursor.type, &result->as_type);
+
+        if (cursor.type != &result->as_type) {
+          Rule *rule;
+          if ((rule = edge_define(inductor, cursor.type, &result->as_type)) == NULL)
+            return NULL;
+        }
         break;
       }
 
