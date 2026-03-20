@@ -34,7 +34,9 @@ typedef struct {
   };
 
   // If locked[0], then this rule doesn't appear to rule_next(target, 0). If
-  // locked[1], then this rule doesn't appear to rule_next(source, 1).
+  // locked[1], then this rule doesn't appear to rule_next(source, 1). This is
+  // used, for example, to relate an origin type in a type scheme to its
+  // instance.
   _Bool locked[2];
 
   RuleTag tag;
