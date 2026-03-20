@@ -3,12 +3,12 @@
 # define isnumber = (lambda x = x) :: Integer -> Integer
 
 define id = lambda x = x
-# define id2 = lambda x = (foo: id x)
+define id2 = lambda x = (foo: id x)
 # define id3 = lambda x = id2 x
 
-define c = is_integer_list (id [1, 2])
+define c = is_integer_list (id2 [1, 2]).foo
 # define d = ((id2 true).foo)
-define d = is_boolean (id true)
+define d = is_boolean (id2 true).foo
 
 # define apply = (lambda f = (lambda x = f x))
 

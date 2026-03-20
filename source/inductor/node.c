@@ -65,13 +65,13 @@ void *induce_script(MuonInductor *inductor, MuonScript *script) {
     inductor->node[*offset + node->id].source = type;
   } while ((node = node_return(node)) != NULL);
 
-  // for (size_t i = 0; i < inductor->rule_length; i++) {
-  //   Rule *rule = &inductor->edge[i];
-  //   if (rule->tag != INDIRECT_RULE)
-  //     continue;
-  //   *rule = inductor->edge[--inductor->rule_length];
-  //   i--;
-  // }
+  for (size_t i = 0; i < inductor->rule_length; i++) {
+    Rule *rule = &inductor->edge[i];
+    if (rule->tag != INDIRECT_RULE)
+      continue;
+    *rule = inductor->edge[--inductor->rule_length];
+    i--;
+  }
   return inductor;
 
 except:
