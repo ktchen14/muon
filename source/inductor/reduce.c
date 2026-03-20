@@ -24,13 +24,13 @@ static MuonType *resolve_variable(
   if ((solution = type_solution(inductor, &variable->as_type)) != NULL)
     return solution;
 
-  AttitudeSolution *pos = attitude_solution_get(
+  Solution *pos = attitude_solution_get(
       inductor, (Attitude) {&variable->as_type, 0});
-  AttitudeSolution *neg = attitude_solution_get(
+  Solution *neg = attitude_solution_get(
       inductor, (Attitude) {&variable->as_type, 1});
   assert(pos != NULL && neg != NULL);
 
-  MuonType *overall = pos->base;
+  MuonType *overall = pos->type;
   assert(overall != NULL);
   return assign_solution(inductor, &variable->as_type, overall);
 }
@@ -48,10 +48,10 @@ static inline MuonType *neighbor_solution(
     return sol;
 
   if (neighbor->tag == MUON_VARIABLE_TYPE) {
-    AttitudeSolution *att = attitude_solution_get(
+    Solution *att = attitude_solution_get(
         inductor, (Attitude) {neighbor, charge});
     assert(att != NULL);
-    return att->base;
+    return att->type;
   }
 
   // Nonvariable neighbor must have a full solution by now.
@@ -67,10 +67,10 @@ static inline MuonType *neighbor_solution(
 /// further reductions.
 static MuonType *reduce_variable_attitude(
     Inductor *inductor, MuonVariableType *target, _Bool charge) {
-  AttitudeSolution *existing = attitude_solution_get(
+  Solution *existing = attitude_solution_get(
       inductor, (Attitude) {&target->as_type, charge});
   if (existing != NULL)
-    return existing->base;
+    return existing->type;
 
   Attitude target_attitude = {&target->as_type, charge};
 
@@ -191,10 +191,10 @@ static MuonType *reduce_variable_attitude(
       Attitude nbr = attitude_decode(rule->vertex[charge]);
       MuonType *nbr_sol = type_solution(inductor, nbr.type);
       if (nbr_sol == NULL) {
-        AttitudeSolution *nbr_att = attitude_solution_get(
+        Solution *nbr_att = attitude_solution_get(
             inductor, (Attitude) {nbr.type, charge});
         if (nbr_att != NULL)
-          nbr_sol = nbr_att->base;
+          nbr_sol = nbr_att->type;
       }
       if (nbr_sol != NULL)
         instance_argc++;
@@ -202,13 +202,13 @@ static MuonType *reduce_variable_attitude(
   }
 
   size_t size = instance_argc;
-  if (struct_size_overflow(AttitudeSolution, argv, &size))
+  if (struct_size_overflow(Solution, argv, &size))
     return errno = ENOMEM, NULL;
-  AttitudeSolution *att_sol;
+  Solution *att_sol;
   if ((att_sol = malloc(size)) == NULL)
     return NULL;
 
-  att_sol->base = join_result;
+  att_sol->type = join_result;
   att_sol->argc = instance_argc;
 
   size_t j = 0;
@@ -220,10 +220,10 @@ static MuonType *reduce_variable_attitude(
       Attitude nbr = attitude_decode(rule->vertex[charge]);
       MuonType *nbr_sol = type_solution(inductor, nbr.type);
       if (nbr_sol == NULL) {
-        AttitudeSolution *nbr_att = attitude_solution_get(
+        Solution *nbr_att = attitude_solution_get(
             inductor, (Attitude) {nbr.type, charge});
         if (nbr_att != NULL)
-          nbr_sol = nbr_att->base;
+          nbr_sol = nbr_att->type;
       }
       if (nbr_sol != NULL) {
         att_sol->argv[j].instance = rule->instance;

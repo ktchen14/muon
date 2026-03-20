@@ -21,8 +21,8 @@ MuonInductor *muon_induce_initialize(
   for (size_t i = 0; i < 1000; i++)
     solution[i] = NULL;
 
-  AttitudeSolution **attitude_solution;
-  if ((attitude_solution = malloc(sizeof(AttitudeSolution *[2000]))) == NULL)
+  Solution **attitude_solution;
+  if ((attitude_solution = malloc(sizeof(Solution *[2000]))) == NULL)
     return NULL;
   for (size_t i = 0; i < 2000; i++)
     attitude_solution[i] = NULL;
@@ -83,10 +83,10 @@ void (inductor_debug)( //-
       debug("  Type%zu [label=\"", source.type->id);
 
       (muon_type_debug)(source.type, args.type);
-      AttitudeSolution *solution;
+      Solution *solution;
       if ((solution = attitude_solution_get(inductor, (Attitude) {source.type, 0})) != NULL) {
         debug(" [");
-        (muon_type_debug)(solution->base, args.type);
+        (muon_type_debug)(solution->type, args.type);
         debug("]");
       }
 
@@ -98,10 +98,10 @@ void (inductor_debug)( //-
       debug("  Type%zu [label=\"", target.type->id);
 
       (muon_type_debug)(target.type, args.type);
-      AttitudeSolution *solution;
+      Solution *solution;
       if ((solution = attitude_solution_get(inductor, (Attitude) {target.type, 0})) != NULL) {
         debug(" [");
-        (muon_type_debug)(solution->base, args.type);
+        (muon_type_debug)(solution->type, args.type);
         debug("]");
       }
 
@@ -147,10 +147,10 @@ void (inductor_debug)( //-
       debug("    rank=same;\n");
       debug("    Type%zu [label=\"", source.type->id);
       (muon_type_debug)(source.type, args.type);
-      AttitudeSolution *solution;
+      Solution *solution;
       if ((solution = attitude_solution_get(inductor, (Attitude) {source.type, 0})) != NULL) {
         debug(" [");
-        (muon_type_debug)(solution->base, args.type);
+        (muon_type_debug)(solution->type, args.type);
         debug("]");
       }
       debug("\"];\n");
@@ -159,7 +159,7 @@ void (inductor_debug)( //-
       (muon_type_debug)(target.type, args.type);
       if ((solution = attitude_solution_get(inductor, (Attitude) {target.type, 0})) != NULL) {
         debug(" [");
-        (muon_type_debug)(solution->base, args.type);
+        (muon_type_debug)(solution->type, args.type);
         debug("]");
       }
       debug("\"];\n");
