@@ -66,6 +66,8 @@ static VariableSolution *reduce_variable_type(
   Attitude attitude = {&target->as_type, charge};
 
   VariableSolution *solution;
+  if ((solution = attitude_solution_get(inductor, attitude)) != NULL)
+    return solution;
 
   RuleIterator it;
 
@@ -197,9 +199,6 @@ MuonType *reduce_type(Inductor *inductor, MuonType *type) {
         continue;
 
       if (type_solution(inductor, next.type) != NULL)
-        continue;
-        
-      if (is_variable_type(next.type) && attitude_solution_get(inductor, next) != NULL)
         continue;
 
       cursor = type_continue(cursor, next);
