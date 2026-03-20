@@ -160,10 +160,10 @@ static inline Solution *attitude_solution_get(
 }
 
 [[gnu::nonnull]]
-static inline void attitude_solution_set(
+static inline Solution *attitude_solution_set(
     Inductor *inductor, Attitude attitude, Solution *solution) {
   assert(attitude.type->id < inductor->type_length);
-  inductor->attitude_solution[attitude.type->id * 2 + attitude.charge] =
+  return inductor->attitude_solution[attitude.type->id * 2 + attitude.charge] =
       solution;
 }
 
