@@ -316,16 +316,20 @@ MuonType *reduce_node(Inductor *inductor, MuonNode *root) {
     while ((next = node_at(node, node_cursor(node)->i++)) != NULL)
       node = node_continue(node, next);
 
-    // 1. Reduce the source type
     MuonType *source_type = node_source_type(inductor, node);
-    reduce_type(inductor, source_type);
+    if (reduce_type(inductor, source_type) == NULL)
+      goto except;
 
-    // 2. If the node has a target type, reduce it too
     MuonType *target_type = node_target_type(inductor, node);
-    if (target_type != NULL)
-      reduce_type(inductor, target_type);
-
+    if (target_type == NULL)
+      continue;
+    if (reduce_type(inductor, target_type) == NULL)
+      goto except;
   } while ((node = node_return(node)) != NULL);
 
   return node_source_type(inductor, root);
+
+except:
+  while ((node = node_return(node)) != NULL) {}
+  return NULL;
 }
