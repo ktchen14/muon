@@ -21,8 +21,8 @@ MuonInductor *muon_induce_initialize(
   for (size_t i = 0; i < 1000; i++)
     solution[i] = NULL;
 
-  Solution **attitude_solution;
-  if ((attitude_solution = malloc(sizeof(Solution *[2000]))) == NULL)
+  VariableSolution **attitude_solution;
+  if ((attitude_solution = malloc(sizeof(VariableSolution *[2000]))) == NULL)
     return NULL;
   for (size_t i = 0; i < 2000; i++)
     attitude_solution[i] = NULL;
@@ -83,7 +83,7 @@ void (inductor_debug)( //-
       debug("  Type%zu [label=\"", source_type->id);
 
       (muon_type_debug)(source_type, args.type);
-      Solution *solution;
+      VariableSolution *solution;
       if ((solution = attitude_solution_get(
                inductor, (Attitude) {source_type, 0}))
           != NULL) {
@@ -100,7 +100,7 @@ void (inductor_debug)( //-
       debug("  Type%zu [label=\"", target_type->id);
 
       (muon_type_debug)(target_type, args.type);
-      Solution *solution;
+      VariableSolution *solution;
       if ((solution = attitude_solution_get(
                inductor, (Attitude) {target_type, 0}))
           != NULL) {

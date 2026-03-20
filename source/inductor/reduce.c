@@ -24,9 +24,9 @@ static MuonType *resolve_variable(
   if ((solution = type_solution(inductor, &variable->as_type)) != NULL)
     return solution;
 
-  Solution *pos = attitude_solution_get(
+  VariableSolution *pos = attitude_solution_get(
       inductor, (Attitude) {&variable->as_type, 0});
-  Solution *neg = attitude_solution_get(
+  VariableSolution *neg = attitude_solution_get(
       inductor, (Attitude) {&variable->as_type, 1});
   assert(pos != NULL && neg != NULL);
 
@@ -50,7 +50,7 @@ static inline MuonType *neighbor_solution(
   assert(is_variable_type(type));
 
   Attitude attitude = {type, charge};
-  Solution *solution = attitude_solution_get(inductor, attitude);
+  VariableSolution *solution = attitude_solution_get(inductor, attitude);
   assert(solution != NULL);
   return solution->type;
 }
@@ -61,11 +61,11 @@ static inline MuonType *neighbor_solution(
 /// All constraint neighbors must already have been reduced by the traversal.
 /// This function only reads pre-computed solutions — it does not trigger any
 /// further reductions.
-static Solution *reduce_variable_type(
+static VariableSolution *reduce_variable_type(
     Inductor *inductor, MuonVariableType *target, _Bool charge) {
   Attitude attitude = {&target->as_type, charge};
 
-  Solution *solution;
+  VariableSolution *solution;
   if ((solution = attitude_solution_get(inductor, attitude)) != NULL)
     return solution;
 
@@ -142,11 +142,11 @@ static Solution *reduce_variable_type(
   }
 
   size_t size = instance_argc;
-  if (struct_size_overflow(Solution, argv, &size))
+  if (struct_size_overflow(VariableSolution, argv, &size))
     return errno = ENOMEM, NULL;
   if ((solution = malloc(size)) == NULL)
     return NULL;
-  *solution = (Solution) {.type = join, .argc = instance_argc};
+  *solution = (VariableSolution) {.type = join, .argc = instance_argc};
 
   size_t j = 0;
   it = rule_iterator(inductor, attitude);
