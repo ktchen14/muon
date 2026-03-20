@@ -245,14 +245,14 @@ static MuonType *reduce_variable_attitude(
 /// variable child does not yet have an AttitudeSolution at the inverted
 /// charge, re-enter the variable at the inverted charge.  When it does,
 /// resolve the variable's overall solution immediately.
-MuonType *reduce_type(Inductor *inductor, Attitude attitude) {
+MuonType *reduce_type(Inductor *inductor, MuonType *type) {
   MuonType *solution;
-  if ((solution = type_solution(inductor, attitude.type)) != NULL)
+  if ((solution = type_solution(inductor, type)) != NULL)
     return solution;
 
   MuonEngine *engine = inductor->engine;
 
-  Attitude cursor = attitude;
+  Attitude cursor = {type, 0};
   goto entrance;
   do {
     Attitude next;
@@ -357,7 +357,7 @@ MuonType *reduce_type(Inductor *inductor, Attitude attitude) {
     resolve_variable(inductor, variable_type);
   } while (1);
 
-  return type_solution(inductor, attitude.type);
+  return type_solution(inductor, type);
 }
 
 MuonType *reduce_node(Inductor *inductor, MuonNode *root) {
@@ -369,12 +369,12 @@ MuonType *reduce_node(Inductor *inductor, MuonNode *root) {
 
     // 1. Reduce the source type
     MuonType *source_type = node_source_type(inductor, node);
-    reduce_type(inductor, (Attitude) {source_type, 0});
+    reduce_type(inductor, source_type);
 
     // 2. If the node has a target type, reduce it too
     MuonType *target_type = node_target_type(inductor, node);
     if (target_type != NULL)
-      reduce_type(inductor, (Attitude) {target_type, 0});
+      reduce_type(inductor, target_type);
 
   } while ((node = node_return(node)) != NULL);
 
