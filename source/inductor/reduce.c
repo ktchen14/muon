@@ -330,32 +330,34 @@ MuonType *reduce_type(Inductor *inductor, MuonType *type) {
         if (reduce_variable_attitude(inductor, variable_type, cursor.charge)
             == NULL)
           return NULL;
+
+        Attitude invert = attitude_invert(cursor);
+        if (attitude_solution_get(inductor, invert) == NULL)
+          continue;
+
+        resolve_variable(inductor, variable_type);
         break;
       }
     }
 
-    if (attitude_isnull(cursor = type_return(next = cursor)))
-      break;
+    cursor = type_return(next = cursor);
 
     // If we've returned from a variable type to a nonvariable type, then check
     // whether the variable needs its inverted attitude solution. If so,
     // re-enter at the inverted charge. If both attitude solutions already
     // exist, resolve the variable now.
-    if (is_variable_type(cursor.type))
+    if (cursor.type != NULL && is_variable_type(cursor.type))
       continue;
 
-    MuonVariableType *variable_type;
-    if ((variable_type = muon_type_cast(next.type, variable_type)) == NULL)
+    if (!is_variable_type(next.type))
       continue;
 
     next = attitude_invert(next);
-    if (attitude_solution_get(inductor, next) == NULL) {
-      cursor = type_continue(cursor, next);
+    if (attitude_solution_get(inductor, next) != NULL)
       continue;
-    }
 
-    resolve_variable(inductor, variable_type);
-  } while (1);
+    cursor = type_continue(cursor, next);
+  } while (!attitude_isnull(cursor));
 
   return type_solution(inductor, type);
 }
