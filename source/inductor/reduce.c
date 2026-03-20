@@ -61,12 +61,8 @@ static inline MuonType *neighbor_solution(
 /// All constraint neighbors must already have been reduced by the traversal.
 /// This function only reads pre-computed solutions — it does not trigger any
 /// further reductions.
-static Solution *reduce_variable_attitude(
+static Solution *reduce_variable_type(
     Inductor *inductor, MuonVariableType *target, _Bool charge) {
-  debug("Reducing ");
-  muon_type_debug(&target->as_type);
-  debug(" charge = %d\n", charge);
-
   Attitude attitude = {&target->as_type, charge};
 
   Solution *solution;
@@ -150,9 +146,7 @@ static Solution *reduce_variable_attitude(
     return errno = ENOMEM, NULL;
   if ((solution = malloc(size)) == NULL)
     return NULL;
-
-  solution->type = join;
-  solution->argc = instance_argc;
+  *solution = (Solution) {.type = join, .argc = instance_argc};
 
   size_t j = 0;
   it = rule_iterator(inductor, attitude);
@@ -269,7 +263,7 @@ MuonType *reduce_type(Inductor *inductor, MuonType *type) {
       }
 
       case IS_CONCRETE_TYPE(MuonVariableType *variable_type) {
-        if (reduce_variable_attitude(inductor, variable_type, cursor.charge)
+        if (reduce_variable_type(inductor, variable_type, cursor.charge)
             == NULL)
           return NULL;
 
