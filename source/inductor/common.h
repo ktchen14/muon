@@ -18,7 +18,6 @@ typedef struct Inductor Inductor;
 typedef enum {
   NORMAL_RULE,
   INDIRECT_RULE,
-  ID_RULE,
   JOIN_RULE,
   IMPOSSIBLE_RULE,
 } RuleTag;

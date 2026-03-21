@@ -136,10 +136,6 @@ void (inductor_debug)( //-
           debug("color=gray,");
           break;
 
-        case ID_RULE:
-          debug("color=blue,");
-          break;
-
         case IMPOSSIBLE_RULE:
           debug("color=red,constraint=false,");
           break;
