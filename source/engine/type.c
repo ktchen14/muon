@@ -332,27 +332,6 @@ MuonSchemeType *scheme_type_activate(struct MuonSchemeType *type) {
   return assign_type(engine, &type->as_type), type;
 }
 
-[[maybe_unused]]
-static void debug_implicit_type_name(MuonImplicitType *type) {
-  static const char *alphabet[] = {
-    "α", "β", "γ", "δ", "ε", "ζ", "η", "θ", "ι", "κ", "μ", "ν", "ξ", "ο", "π", //-
-    "ρ", "σ", "τ", "υ", "φ", "χ", "ψ", "ω", //-
-  };
-  static size_t alphabet_length = sizeof(alphabet) / sizeof(alphabet[0]);
-
-  char buffer[256];
-
-  // Generate a name
-  char *name = buffer + sizeof(buffer);
-  *--name = '\0';
-  for (size_t n = type->as_type.id; n-- != 0; n /= alphabet_length) {
-    const char *c = alphabet[n % alphabet_length];
-    memcpy(name -= strlen(c), c, strlen(c));
-  }
-
-  debug("%s", name);
-}
-
 struct MuonVariableType *variable_type_allocate(MuonEngine *engine) {
   MuonSchemeType *scheme = as_engine(engine)->scheme;
   struct MuonVariableType *result;
@@ -370,6 +349,26 @@ MuonVariableType *variable_type_activate(struct MuonVariableType *type) {
   assert(type->meet != NULL && type->meet->engine == engine);
   type->as_type.explicit = type->join->explicit & type->meet->explicit;
   return assign_type(engine, &type->as_type), type;
+}
+
+static void debug_type_id_as_name(size_t id) {
+  static const char *alphabet[] = {
+    "α", "β", "γ", "δ", "ε", "ζ", "η", "θ", "ι", "κ", "μ", "ν", "ξ", "ο", "π", //-
+    "ρ", "σ", "τ", "υ", "φ", "χ", "ψ", "ω", //-
+  };
+  static size_t alphabet_length = sizeof(alphabet) / sizeof(alphabet[0]);
+
+  char buffer[256];
+
+  // Generate a name
+  char *name = buffer + sizeof(buffer);
+  *--name = '\0';
+  for (size_t n = id; n-- != 0; n /= alphabet_length) {
+    const char *c = alphabet[n % alphabet_length];
+    memcpy(name -= strlen(c), c, strlen(c));
+  }
+
+  debug("%s", name);
 }
 
 // NOLINTNEXTLINE(misc-no-recursion)
@@ -490,6 +489,10 @@ void (muon_type_debug)(MuonType *type, struct MuonTypeDebugArgs args) { //-
 
     case IS_CONCRETE_TYPE(MuonVariableType *variable_type)
       (muon_type_debug)(variable_type->join, next_args);
+      debug(" <: ");
+      debug_type_id_as_name(variable_type->as_type.id);
+      debug(" <: ");
       (muon_type_debug)(variable_type->meet, next_args);
+      break;
   }
 }
