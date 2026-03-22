@@ -144,12 +144,12 @@ struct MuonCoreType *core_type_allocate(MuonEngine *engine, MuonCore *core) {
 MuonCoreType *core_type_activate(struct MuonCoreType *type) {
   MuonEngine *engine = unlock_engine(&type->as_type);
 
-  _Bool constant = 1;
+  _Bool explicit = 1;
   for (size_t i = 0; i < core_argc(type->core); i++) {
     MuonCoreMember member = core_at(type->core, i);
     MuonType *argument = type->argv[member.i];
     assert(argument != NULL && argument->engine == engine);
-    constant &= argument->constant;
+    explicit &= argument->explicit;
   }
 
   Hash hash = hash_object(type->core);
@@ -179,7 +179,7 @@ MuonCoreType *core_type_activate(struct MuonCoreType *type) {
   next:
   }
 
-  type->as_type.constant = constant;
+  type->as_type.explicit = explicit;
   type->as_type.id = as_engine(engine)->type_number++;
   return stator_insert(engine, type, hash, i);
 }
@@ -204,11 +204,11 @@ struct MuonJoinType *join_type_allocate(MuonEngine *engine, size_t argc) {
 MuonJoinType *join_type_activate(struct MuonJoinType *type) {
   MuonEngine *engine = unlock_engine(&type->as_type);
 
-  _Bool constant = 1;
+  _Bool explicit = 1;
   for (size_t i = 0; i < type->argc; i++) {
     MuonType *argument = type->argv[i];
     assert(argument != NULL && argument->engine == engine);
-    constant &= argument->constant;
+    explicit &= argument->explicit;
   }
 
   Hash hash = hash_object(type->as_type.scheme);
@@ -234,7 +234,7 @@ MuonJoinType *join_type_activate(struct MuonJoinType *type) {
   next:
   }
 
-  type->as_type.constant = constant;
+  type->as_type.explicit = explicit;
   type->as_type.id = as_engine(engine)->type_number++;
   return stator_insert(engine, type, hash, i);
 }
@@ -259,11 +259,11 @@ struct MuonMeetType *meet_type_allocate(MuonEngine *engine, size_t argc) {
 MuonMeetType *meet_type_activate(struct MuonMeetType *type) {
   MuonEngine *engine = unlock_engine(&type->as_type);
 
-  _Bool constant = 1;
+  _Bool explicit = 1;
   for (size_t i = 0; i < type->argc; i++) {
     MuonType *argument = type->argv[i];
     assert(argument != NULL && argument->engine == engine);
-    constant &= argument->constant;
+    explicit &= argument->explicit;
   }
 
   Hash hash = hash_object(type->as_type.scheme);
@@ -289,7 +289,7 @@ MuonMeetType *meet_type_activate(struct MuonMeetType *type) {
   next:
   }
 
-  type->as_type.constant = constant;
+  type->as_type.explicit = explicit;
   type->as_type.id = as_engine(engine)->type_number++;
   return stator_insert(engine, type, hash, i);
 }
@@ -351,7 +351,7 @@ MuonVariableType *variable_type_activate(struct MuonVariableType *type) {
   MuonEngine *engine = unlock_engine(&type->as_type);
   assert(type->join != NULL && type->join->engine == engine);
   assert(type->meet != NULL && type->meet->engine == engine);
-  type->as_type.constant = type->join->constant & type->meet->constant;
+  type->as_type.explicit = type->join->explicit & type->meet->explicit;
   return assign_type(engine, &type->as_type), type;
 }
 
