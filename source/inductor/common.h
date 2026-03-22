@@ -15,12 +15,43 @@
 typedef struct Inductor MuonInductor;
 typedef struct Inductor Inductor;
 
+// ACCEPTED_RULE
+// REJECTED_RULE
+// UNTESTED_RULE
+
 typedef enum {
   NORMAL_RULE,
-  INDIRECT_RULE,
-  JOIN_RULE,
   IMPOSSIBLE_RULE,
+  INDIRECT_RULE, // remove this (add this to a different layer of the graph)
+  JOIN_RULE, // reductor only rule
 } RuleTag;
+
+typedef struct {
+  union {
+    MUON_HINT(packed) struct {
+      MuonType *source;
+      MuonType *target;
+    };
+
+    MuonType *vertex[2];
+  };
+
+  // If locked[0], then this rule doesn't appear to rule_next(target, 0). If
+  // locked[1], then this rule doesn't appear to rule_next(source, 1). This is
+  // used, for example, to relate an origin type in a type scheme to its
+  // instance.
+  unsigned char locked : 2;
+  RuleTag tag : 6;
+
+  MuonInstance *instance; // optional
+
+  MuonNode *reason; // optional
+
+  union {
+    MuonType *center;
+    size_t i;
+  };
+} InductorRule;
 
 typedef struct {
   union {
