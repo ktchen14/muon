@@ -100,7 +100,6 @@ MuonRecordCore *muon_record_core(
   MUON_HINT_SUFFIX(nonnull);
 
 /// Emit debugging information on the abstract @a core to the debug stream
-void muon_core_debug(MuonCore *core)
-  MUON_HINT_SUFFIX(nonnull);
+MUON_HINT(nonnull) void muon_core_debug(MuonCore *core);
 
 #endif /* MUON_ENGINE_CORE_H */

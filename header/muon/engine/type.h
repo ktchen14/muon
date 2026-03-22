@@ -15,8 +15,7 @@
   emit(SchemeType, scheme_type, SCHEME_TYPE __VA_OPT__(,) __VA_ARGS__) \
   emit(VariableType, variable_type, VARIABLE_TYPE __VA_OPT__(,) __VA_ARGS__)
 
-/// An enumeration over each concrete subtype of MuonType, e.g.
-/// @c MUON_CORE_TYPE
+/// An enumeration over each concrete subtype of MuonType
 typedef enum {
 #define MUON_EMIT(T, l, UPPER) MUON_##UPPER,
   MUON_EACH_TYPE(MUON_EMIT)
