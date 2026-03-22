@@ -10,6 +10,7 @@
 /// MuonType
 #define MUON_EACH_TYPE(emit, ...) \
   emit(CoreType, core_type, CORE_TYPE __VA_OPT__(,) __VA_ARGS__) \
+  emit(ImplicitType, implicit_type, IMPLICIT_TYPE __VA_OPT__(,) __VA_ARGS__) \
   emit(JoinType, join_type, JOIN_TYPE __VA_OPT__(,) __VA_ARGS__) \
   emit(MeetType, meet_type, MEET_TYPE __VA_OPT__(,) __VA_ARGS__) \
   emit(SchemeType, scheme_type, SCHEME_TYPE __VA_OPT__(,) __VA_ARGS__) \
@@ -58,6 +59,10 @@ typedef const struct MuonCoreType {
   MuonCore *core;
   MuonType *argv[/* core->argc */];
 } MuonCoreType;
+
+typedef const struct MuonImplicitType {
+  MUON_TYPE_HEADER;
+} MuonImplicitType;
 
 /// A join type, e.g. α ⊔ β, or ⊥
 typedef const struct MuonJoinType {

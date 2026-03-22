@@ -113,6 +113,9 @@ static inline Attitude type_at(Attitude origin, size_t i) {
       }
       return (Attitude) {};
 
+    case MUON_IMPLICIT_TYPE:
+      return (Attitude) {};
+
     case IS_CONCRETE_TYPE(MuonJoinType *join_type)
       if (origin.charge == 0 && i < join_type->argc)
         return (Attitude) {join_type->argv[i], origin.charge};
