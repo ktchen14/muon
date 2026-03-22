@@ -4,6 +4,7 @@
 #include "common.h"
 #include "core.h"
 
+#include <limits.h>
 #include <stddef.h>
 
 /// Expands to emit(Title, lower, UPPER, ...) for each concrete subtype of
@@ -44,8 +45,8 @@ typedef const struct MuonSchemeType MuonSchemeType;
  * <tt>struct MuonType</tt>.
  */
 typedef const struct MuonType {
-  MuonTypeTag tag;
-  _Bool explicit;
+  MuonTypeTag tag : sizeof(MuonTypeTag) * CHAR_BIT - 1;
+  _Bool explicit : 1;
   const MuonEngine *engine;
   size_t id;
   MuonSchemeType *scheme;
