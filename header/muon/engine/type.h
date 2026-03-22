@@ -85,6 +85,8 @@ typedef const struct MuonSchemeType {
 
 typedef const struct MuonVariableType {
   MUON_TYPE_HEADER;
+  MuonType *join;
+  MuonType *meet;
 } MuonVariableType;
 
 /// @internal Used to emit each branch in MUON_TYPE_TAG()
@@ -143,6 +145,11 @@ MuonMeetType *muon_meet_type(
   MUON_HINT_SUFFIX(malloc, nonnull(1));
 
 MuonSchemeType *muon_scheme_type(MuonEngine *engine, MuonType *matter)
+  MUON_HINT_SUFFIX(malloc, nonnull);
+
+/// Create a variable type in the @a engine
+MuonVariableType *muon_variable_type(
+    MuonEngine *engine, MuonType *join, MuonType *meet)
   MUON_HINT_SUFFIX(malloc, nonnull);
 
 /// Optional arguments to muon_type_debug()

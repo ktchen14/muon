@@ -441,5 +441,9 @@ void (muon_type_debug)(MuonType *type, struct MuonTypeDebugArgs args) { //-
       (muon_type_debug)(scheme_type->matter, next_args);
       debug(")");
       break;
+
+    case IS_CONCRETE_TYPE(MuonVariableType *variable_type)
+      (muon_type_debug)(variable_type->join, next_args);
+      (muon_type_debug)(variable_type->meet, next_args);
   }
 }
