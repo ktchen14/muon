@@ -6,9 +6,11 @@ define id = lambda x = x
 define id2 = lambda x = (foo: id x)
 # define id3 = lambda x = id2 x
 
-define c = is_integer_list (id2 [1, 2]).foo
+# define c = is_integer_list (id2 [1, 2]).foo
 # define d = ((id2 true).foo)
-define d = is_boolean (id2 true).foo
+# define d = is_boolean (id2 true).foo
+
+define e = is_integer (id2 (list_head [1])).foo
 
 # define apply = (lambda f = (lambda x = f x))
 
