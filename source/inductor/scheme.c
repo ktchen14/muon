@@ -55,6 +55,15 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
           break;
         }
 
+        case MUON_IMPLICIT_TYPE:
+        case MUON_VARIABLE_TYPE: {
+          MuonImplicitType *result;
+          if ((result = muon_implicit_type(engine)) == NULL)
+            goto except;
+          equation[cursor.type->id].result = &result->as_type;
+          break;
+        }
+
         case IS_CONCRETE_TYPE(MuonJoinType *join_type) {
           struct MuonJoinType *allocation;
           size_t argc = join_type->argc;
@@ -80,17 +89,11 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
           equation[cursor.type->id].allocation = &allocation->as_type;
           break;
         }
-
-        case MUON_IMPLICIT_TYPE:
-        case MUON_VARIABLE_TYPE: {
-          MuonImplicitType *result;
-          if ((result = muon_implicit_type(engine)) == NULL)
-            goto except;
-          equation[cursor.type->id].result = &result->as_type;
-          break;
-        }
       }
     }
+
+    // TODO: fix nested scheme handling. We probably need separate
+    // implicit_type_allocate/implicit_type_activate functions.
 
     switch ON_ABSTRACT_TYPE(cursor.type) {
       case IS_CONCRETE_TYPE(MuonCoreType *core_type) {
