@@ -6,6 +6,7 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -15,6 +16,11 @@ static inline MuonEngine *unlock_engine(struct MuonType *type) {
 #pragma GCC diagnostic ignored "-Wcast-qual"
   return (MuonEngine *) type->engine;
 #pragma GCC diagnostic pop
+}
+
+static inline Hash type_hash(MuonTypeTag tag, Hash hash) {
+  tag |= TYPE_PREFIX << 5;
+  return hash >> 8 | (Hash) tag << sizeof(Hash) * CHAR_BIT - 8;
 }
 
 /// @internal Allocate a type of size @a size in the @a engine
@@ -140,12 +146,15 @@ MuonCoreType *core_type_activate(struct MuonCoreType *type) {
 
   Hash hash = hash_object(type->core);
   hash = hash_extend(hash, type->as_type.scheme);
-  for (size_t i = 0; i < core_argc(type->core); i++)
-    hash = hash_extend(hash, type->argv[core_at(type->core, i).i]);
+  for (size_t i = 0; i < core_argc(type->core); i++) {
+    MuonCoreMember member = core_at(type->core, i);
+    hash = hash_extend(hash, type->argv[member.i]);
+  }
+  hash = type_hash(MUON_CORE_TYPE, hash);
 
   MuonCoreType *next;
-  size_t i = 0;
-  for (; (next = stator_search(engine, next, hash, &i)) != NULL; i++) {
+  size_t i;
+  for (i = 0; (next = stator_search(engine, hash, &i)) != NULL; i++) {
     if (next->core != type->core)
       continue;
 
@@ -197,10 +206,11 @@ MuonJoinType *join_type_activate(struct MuonJoinType *type) {
   Hash hash = hash_object(type->as_type.scheme);
   for (size_t i = 0; i < type->argc; i++)
     hash = hash_extend(hash, type->argv[i]);
+  hash = type_hash(MUON_JOIN_TYPE, hash);
 
   MuonJoinType *next;
-  size_t i = 0;
-  for (; (next = stator_search(engine, next, hash, &i)) != NULL; i++) {
+  size_t i;
+  for (i = 0; (next = stator_search(engine, hash, &i)) != NULL; i++) {
     if (next->as_type.scheme != type->as_type.scheme)
       continue;
 
@@ -251,10 +261,11 @@ MuonMeetType *meet_type_activate(struct MuonMeetType *type) {
   Hash hash = hash_object(type->as_type.scheme);
   for (size_t i = 0; i < type->argc; i++)
     hash = hash_extend(hash, type->argv[i]);
+  hash = type_hash(MUON_MEET_TYPE, hash);
 
   MuonMeetType *next;
-  size_t i = 0;
-  for (; (next = stator_search(engine, next, hash, &i)) != NULL; i++) {
+  size_t i;
+  for (i = 0; (next = stator_search(engine, hash, &i)) != NULL; i++) {
     if (next->as_type.scheme != type->as_type.scheme)
       continue;
 
