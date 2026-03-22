@@ -82,9 +82,9 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
           break;
         }
 
-        case MUON_VARIABLE_TYPE: {
-          MuonVariableType *result;
-          if ((result = muon_variable_type(engine)) == NULL)
+        case MUON_IMPLICIT_TYPE: {
+          MuonImplicitType *result;
+          if ((result = muon_implicit_type(engine)) == NULL)
             goto except;
           equation[cursor.type->id].result = &result->as_type;
           break;
@@ -165,7 +165,7 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
         break;
       }
 
-      case MUON_VARIABLE_TYPE:
+      case MUON_IMPLICIT_TYPE:
         RuleIterator it = rule_iterator(inductor, cursor);
         for (const Rule *rule; (rule = rule_next(&it)) != NULL;) {
           if (rule->instance != NULL && rule->instance->scheme == scheme)

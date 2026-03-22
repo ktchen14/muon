@@ -128,6 +128,10 @@ MuonCoreType *muon_lambda_type(
 MuonCoreType *muon_vector_type(MuonEngine *engine, MuonType *matter)
   MUON_HINT_SUFFIX(malloc, nonnull);
 
+/// Create an implicit type in the @a engine
+MuonImplicitType *muon_implicit_type(MuonEngine *engine)
+  MUON_HINT_SUFFIX(malloc, nonnull);
+
 /// Create a join type in the @a engine
 MuonJoinType *muon_join_type(
     MuonEngine *engine, size_t argc, MuonType *const argv[/* argc */])
@@ -139,9 +143,6 @@ MuonMeetType *muon_meet_type(
   MUON_HINT_SUFFIX(malloc, nonnull(1));
 
 MuonSchemeType *muon_scheme_type(MuonEngine *engine, MuonType *matter)
-  MUON_HINT_SUFFIX(malloc, nonnull);
-
-MuonVariableType *muon_variable_type(MuonEngine *engine)
   MUON_HINT_SUFFIX(malloc, nonnull);
 
 /// Optional arguments to muon_type_debug()

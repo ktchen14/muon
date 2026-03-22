@@ -73,6 +73,18 @@ MuonCoreType *muon_vector_type(MuonEngine *opaque, MuonType *matter) {
   return muon_core_type(opaque, as_engine(opaque)->vector_core, argv);
 }
 
+MuonImplicitType *muon_implicit_type(MuonEngine *engine) {
+  MuonSchemeType *scheme = as_engine(engine)->scheme;
+
+  struct MuonImplicitType *result;
+  if ((result = type_allocate(engine, sizeof(MuonImplicitType))) == NULL)
+    return NULL;
+  *result = (MuonImplicitType) {
+    .as_type = {.tag = MUON_IMPLICIT_TYPE, .engine = engine, .scheme = scheme}
+  };
+  return assign_type(engine, &result->as_type), result;
+}
+
 MuonJoinType *muon_join_type(
     MuonEngine *engine, size_t argc, MuonType *const argv[/* argc */]) {
   struct MuonJoinType *result;
@@ -91,20 +103,6 @@ MuonMeetType *muon_meet_type(
   for (size_t i = 0; i < argc; i++)
     result->argv[i] = argv[i];
   return meet_type_activate(result);
-}
-
-MuonVariableType *muon_variable_type(MuonEngine *opaque) {
-  Engine *engine = as_engine(opaque);
-
-  struct MuonVariableType *result;
-  if ((result = type_allocate(opaque, sizeof(MuonVariableType))) == NULL)
-    return NULL;
-  *result = (MuonVariableType) {
-    .as_type = {
-      .tag = MUON_VARIABLE_TYPE, .engine = opaque, .scheme = engine->scheme
-    }
-  };
-  return assign_type(opaque, &result->as_type), result;
 }
 
 MuonSchemeType *muon_scheme_type(MuonEngine *engine, MuonType *matter) {
@@ -308,7 +306,7 @@ MuonSchemeType *scheme_type_activate(
   return assign_type(engine, &type->as_type), type;
 }
 
-static void debug_variable_type_name(MuonVariableType *type) {
+static void debug_implicit_type_name(MuonImplicitType *type) {
   static const char *alphabet[] = {
     "α", "β", "γ", "δ", "ε", "ζ", "η", "θ", "ι", "κ", "μ", "ν", "ξ", "ο", "π", //-
     "ρ", "σ", "τ", "υ", "φ", "χ", "ψ", "ω", //-
@@ -387,6 +385,15 @@ void (muon_type_debug)(MuonType *type, struct MuonTypeDebugArgs args) { //-
       }
       break;
 
+    case IS_CONCRETE_TYPE(MuonImplicitType *implicit_type) {
+      debug("#%zu", implicit_type->as_type.id);
+
+      MuonSchemeType *scheme_type;
+      if ((scheme_type = implicit_type->as_type.scheme) != NULL)
+        debug(":%zu", scheme_type->as_type.id);
+      break;
+    }
+
     case IS_CONCRETE_TYPE(MuonJoinType *join_type)
       if (join_type->argc == 0) {
         debug("⊥");
@@ -434,14 +441,5 @@ void (muon_type_debug)(MuonType *type, struct MuonTypeDebugArgs args) { //-
       (muon_type_debug)(scheme_type->matter, next_args);
       debug(")");
       break;
-
-    case IS_CONCRETE_TYPE(MuonVariableType *variable_type) {
-      debug("v%zu", variable_type->as_type.id);
-      // debug_variable_type_name(variable_type);
-
-      MuonSchemeType *scheme_type;
-      if ((scheme_type = variable_type->as_type.scheme) != NULL)
-        debug(":%zu", scheme_type->as_type.id);
-    }
   }
 }

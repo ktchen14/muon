@@ -23,11 +23,11 @@ static inline MuonType *assign_solution(
   return inductor->solution[type->id] = solution;
 }
 
-/// Compute the overall solution for a variable type from its two
+/// Compute the overall solution for an implicit type from its two
 /// attitude-specific solutions.  Kept as a separate function so that the
 /// resolution strategy can be enhanced later.
 static MuonType *resolve_variable(
-    Inductor *inductor, MuonVariableType *variable) {
+    Inductor *inductor, MuonImplicitType *variable) {
   MuonType *solution;
   if ((solution = type_solution(inductor, &variable->as_type)) != NULL)
     return solution;
@@ -55,7 +55,7 @@ static inline MuonType *neighbor_solution(
   if ((result = type_solution(inductor, type)) != NULL)
     return result;
 
-  assert(is_variable_type(type));
+  assert(is_implicit_type(type));
 
   Attitude attitude = {type, charge};
   VariableSolution *solution = attitude_solution_get(inductor, attitude);
@@ -69,21 +69,21 @@ static inline MuonType *neighbor_solution(
   if ((result = type_solution(inductor, attitude.type)) != NULL)
     return (Solution) {.type = result};
 
-  assert(is_variable_type(attitude.type));
+  assert(is_implicit_type(attitude.type));
 
   VariableSolution *solution = attitude_solution_get(inductor, attitude);
   assert(solution != NULL);
   return (Solution) {.is_variable = 1, .solution = solution};
 }
 
-/// Compute the attitude-specific solution for a variable type at a given
+/// Compute the attitude-specific solution for an implicit type at a given
 /// charge direction.
 ///
 /// All constraint neighbors must already have been reduced by the traversal.
 /// This function only reads pre-computed solutions — it does not trigger any
 /// further reductions.
-static VariableSolution *reduce_variable_type(
-    Inductor *inductor, MuonVariableType *target, _Bool charge) {
+static VariableSolution *reduce_implicit_type(
+    Inductor *inductor, MuonImplicitType *target, _Bool charge) {
   Attitude attitude = {&target->as_type, charge};
 
   VariableSolution *solution;
@@ -198,10 +198,10 @@ static VariableSolution *reduce_variable_type(
 /// Performs an iterative depth-first traversal of the type tree using
 /// type_next / type_continue / type_return.  On return from each type:
 ///
-///   - Variable types: compute the attitude-specific solution for the
-///     current charge direction via reduce_variable_attitude.
+///   - Implicit types: compute the attitude-specific solution for the
+///     current charge direction via reduce_implicit_attitude.
 ///
-///   - Nonvariable types: resolve structural variable children that now
+///   - Nonimplicit types: resolve structural implicit children that now
 ///     have both attitude solutions, then reconstruct the type.
 ///
 /// When returning from a variable child to a nonvariable parent, if the
@@ -231,8 +231,8 @@ MuonType *reduce_type(Inductor *inductor, MuonType *type) {
       cursor = type_continue(cursor, next);
     }
 
-    // On return, create the solution of the returned type. If the type is a
-    // variable type, then this is a single charge solution. Otherwise, this is
+    // On return, create the solution of the returned type. If the type is an
+    // implicit type, then this is a single charge solution. Otherwise, this is
     // a universal solution.
     switch ON_ABSTRACT_TYPE(cursor.type) {
       case IS_CONCRETE_TYPE(MuonCoreType *core_type) {
@@ -303,8 +303,8 @@ MuonType *reduce_type(Inductor *inductor, MuonType *type) {
         break;
       }
 
-      case IS_CONCRETE_TYPE(MuonVariableType *variable_type) {
-        if (reduce_variable_type(inductor, variable_type, cursor.charge)
+      case IS_CONCRETE_TYPE(MuonImplicitType *implicit_type) {
+        if (reduce_implicit_type(inductor, implicit_type, cursor.charge)
             == NULL)
           return NULL;
 
@@ -312,21 +312,21 @@ MuonType *reduce_type(Inductor *inductor, MuonType *type) {
         if (attitude_solution_get(inductor, invert) == NULL)
           break;
 
-        resolve_variable(inductor, variable_type);
+        resolve_variable(inductor, implicit_type);
         break;
       }
     }
 
     cursor = type_return(next = cursor);
 
-    // If we've returned from a variable type to a nonvariable type, then check
-    // whether the variable needs its inverted attitude solution. If so,
+    // If we've returned from an implicit type to a nonimplicit type, then check
+    // whether the implicit needs its inverted attitude solution. If so,
     // re-enter at the inverted charge. If both attitude solutions already
-    // exist, resolve the variable now.
-    if (cursor.type != NULL && is_variable_type(cursor.type))
+    // exist, resolve the implicit now.
+    if (cursor.type != NULL && is_implicit_type(cursor.type))
       continue;
 
-    if (!is_variable_type(next.type))
+    if (!is_implicit_type(next.type))
       continue;
 
     next = attitude_invert(next);

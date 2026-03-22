@@ -33,22 +33,22 @@ Rule *type_restrain(
     return NULL;
   result->reason = reason;
 
-  if (is_variable_type(source) && !is_variable_type(target)) {
-    // ∀(τ) | ∃⟨τ ⇒ source⟩ and τ isn't a variable type, restrain τ ⇒ target
+  if (is_implicit_type(source) && !is_implicit_type(target)) {
+    // ∀(τ) | ∃⟨τ ⇒ source⟩ and τ isn't a implicit type, restrain τ ⇒ target
     RuleIterator it = rule_iterator(inductor, (Attitude) {source, 0});
     for (const Rule *rule; (rule = rule_next(&it)) != NULL;) {
-      if (is_variable_type(rule->source))
+      if (is_implicit_type(rule->source))
         continue;
 
       if (type_restrain(inductor, rule->source, target, reason) == NULL)
         return NULL;
     }
 
-    // ∀(τ) | ∃⟨τ ⇒ source⟩ and τ is a variable type, create ⟨τ ⇒ target⟩ to
+    // ∀(τ) | ∃⟨τ ⇒ source⟩ and τ is a implicit type, create ⟨τ ⇒ target⟩ to
     // maintain the target-side transitive closure of τ
     it = rule_iterator(inductor, (Attitude) {source, 0});
     for (const Rule *rule; (rule = rule_next(&it)) != NULL;) {
-      if (!is_variable_type(rule->source))
+      if (!is_implicit_type(rule->source))
         continue;
 
       Rule *next;
@@ -65,22 +65,22 @@ Rule *type_restrain(
     return result;
   }
 
-  if (!is_variable_type(source) && is_variable_type(target)) {
-    // ∀(τ) | ∃⟨target ⇒ τ⟩ and τ isn't a variable type, restrain source ⇒ τ
+  if (!is_implicit_type(source) && is_implicit_type(target)) {
+    // ∀(τ) | ∃⟨target ⇒ τ⟩ and τ isn't a implicit type, restrain source ⇒ τ
     RuleIterator it = rule_iterator(inductor, (Attitude) {target, 1});
     for (const Rule *rule; (rule = rule_next(&it)) != NULL;) {
-      if (is_variable_type(rule->target))
+      if (is_implicit_type(rule->target))
         continue;
 
       if (type_restrain(inductor, source, rule->target, reason) == NULL)
         return NULL;
     }
 
-    // ∀(τ) | ∃⟨target ⇒ τ⟩ and τ is a variable type, create ⟨source ⇒ τ⟩ to
+    // ∀(τ) | ∃⟨target ⇒ τ⟩ and τ is a implicit type, create ⟨source ⇒ τ⟩ to
     // maintain the source-side transitive closure of τ
     it = rule_iterator(inductor, (Attitude) {target, 1});
     for (const Rule *rule; (rule = rule_next(&it)) != NULL;) {
-      if (!is_variable_type(rule->target))
+      if (!is_implicit_type(rule->target))
         continue;
 
       Rule *next;
@@ -97,19 +97,19 @@ Rule *type_restrain(
     return result;
   }
 
-  if (is_variable_type(source) && is_variable_type(target)) {
+  if (is_implicit_type(source) && is_implicit_type(target)) {
     RuleIterator it, jt;
 
     // ∀(α, β) | ∃⟨α ⇒ source⟩ ∧ ∃⟨target ⇒ β⟩ and α and β aren't variable
     // types, restrain α ⇒ β
     it = rule_iterator(inductor, (Attitude) {source, 0});
     for (const Rule *a_rule; (a_rule = rule_next(&it)) != NULL;) {
-      if (is_variable_type(a_rule->source))
+      if (is_implicit_type(a_rule->source))
         continue;
 
       RuleIterator jt = rule_iterator(inductor, (Attitude) {target, 1});
       for (const Rule *b_rule; (b_rule = rule_next(&jt)) != NULL;) {
-        if (is_variable_type(b_rule->target))
+        if (is_implicit_type(b_rule->target))
           continue;
 
         if (type_restrain(inductor, a_rule->source, b_rule->target, reason)

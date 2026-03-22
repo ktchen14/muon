@@ -85,10 +85,10 @@ static inline Attitude type_return(Attitude origin) {
   return *cursor = (struct TypeCursor) {}, origin;
 }
 
-/// Return whether the @a type is a variable type
+/// Return whether the @a type is an implicit type
 [[gnu::nonnull, gnu::pure]]
-static inline _Bool is_variable_type(MuonType *type) {
-  return type->tag == MUON_VARIABLE_TYPE;
+static inline _Bool is_implicit_type(MuonType *type) {
+  return type->tag == MUON_IMPLICIT_TYPE;
 }
 
 /// @internal Used in ON_ABSTRACT_TYPE()

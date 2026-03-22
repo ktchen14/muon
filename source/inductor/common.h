@@ -198,7 +198,7 @@ static inline VariableSolution *attitude_solution_set(
 }
 
 static inline Attitude type_next(const Inductor *inductor, Attitude origin) {
-  if (origin.type->tag != MUON_VARIABLE_TYPE)
+  if (origin.type->tag != MUON_IMPLICIT_TYPE)
     return type_at(origin, type_cursor(origin)->i++);
 
   size_t i;

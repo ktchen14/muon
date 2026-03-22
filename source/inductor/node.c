@@ -87,16 +87,16 @@ MUON_HINT(nonnull) static MuonType *access_expr_return(
   if ((core = muon_record_core(engine, 1, &expr->name)) == NULL)
     return NULL;
 
-  MuonVariableType *variable_type;
-  if ((variable_type = muon_variable_type(engine)) == NULL)
+  MuonImplicitType *implicit_type;
+  if ((implicit_type = muon_implicit_type(engine)) == NULL)
     return NULL;
 
-  MuonType *type_argv[] = {&variable_type->as_type};
+  MuonType *type_argv[] = {&implicit_type->as_type};
   MuonCoreType *record_type;
   if ((record_type = muon_core_type(engine, &core->as_core, type_argv)) == NULL)
     return NULL;
 
-  MuonType *argv[] = {&record_type->as_type, &variable_type->as_type};
+  MuonType *argv[] = {&record_type->as_type, &implicit_type->as_type};
   MuonCoreType *result;
   if ((result = muon_lambda_type(engine, argv[0], argv[1])) == NULL)
     return NULL;
@@ -133,8 +133,8 @@ MUON_HINT(nonnull) static MuonType *invoke_expr_return(
 
   MuonType *argument_type = node_type(inductor, &expr->argument->as_node);
 
-  MuonVariableType *result;
-  if ((result = muon_variable_type(engine)) == NULL)
+  MuonImplicitType *result;
+  if ((result = muon_implicit_type(engine)) == NULL)
     return NULL;
 
   MuonType *argv[] = {argument_type, &result->as_type};
@@ -230,8 +230,8 @@ MUON_HINT(nonnull) static MuonType *switch_case_return(
 
 MUON_HINT(nonnull) static MuonType *switch_expr_return(
     Inductor *inductor, MuonSwitchExpr *expr) {
-  MuonVariableType *result;
-  if ((result = muon_variable_type(inductor->engine)) == NULL)
+  MuonImplicitType *result;
+  if ((result = muon_implicit_type(inductor->engine)) == NULL)
     return NULL;
 
   for (size_t i = 0; i < expr->argc; i++) {
@@ -245,8 +245,8 @@ MUON_HINT(nonnull) static MuonType *switch_expr_return(
 
 MUON_HINT(nonnull) static MuonType *sequence_expr_return(
     Inductor *inductor, MuonSequenceExpr *expr) {
-  MuonVariableType *result;
-  if ((result = muon_variable_type(inductor->engine)) == NULL)
+  MuonImplicitType *result;
+  if ((result = muon_implicit_type(inductor->engine)) == NULL)
     return NULL;
   return &result->as_type;
 }
@@ -255,8 +255,8 @@ MUON_HINT(nonnull) static MuonType *vector_expr_return(
     Inductor *inductor, MuonVectorExpr *expr) {
   MuonEngine *engine = inductor->engine;
 
-  MuonVariableType *matter_type;
-  if ((matter_type = muon_variable_type(engine)) == NULL)
+  MuonImplicitType *matter_type;
+  if ((matter_type = muon_implicit_type(engine)) == NULL)
     return NULL;
 
   for (size_t i = 0; i < expr->argc; i++) {
@@ -273,8 +273,8 @@ MUON_HINT(nonnull) static MuonType *vector_expr_return(
 
 MUON_HINT(nonnull) static MuonType *expr_import_return(
     Inductor *inductor, MuonExprImport *import) {
-  MuonVariableType *result;
-  if ((result = muon_variable_type(inductor->engine)) == NULL)
+  MuonImplicitType *result;
+  if ((result = muon_implicit_type(inductor->engine)) == NULL)
     return NULL;
   return &result->as_type;
 }
@@ -331,8 +331,8 @@ MUON_HINT(nonnull) static MuonType *vector_sign_return(
 
 MUON_HINT(nonnull) static MuonType *variable_sign_return(
     Inductor *inductor, MuonVariableSign *sign) {
-  MuonVariableType *result;
-  if ((result = muon_variable_type(inductor->engine)) == NULL)
+  MuonImplicitType *result;
+  if ((result = muon_implicit_type(inductor->engine)) == NULL)
     return NULL;
   return &result->as_type;
 }
@@ -458,8 +458,8 @@ MUON_HINT(nonnull) static MuonType *record_view_return(
 
 MUON_HINT(nonnull) static MuonType *variable_view_return(
     Inductor *inductor, MuonVariableView *view) {
-  MuonVariableType *result;
-  if ((result = muon_variable_type(inductor->engine)) == NULL)
+  MuonImplicitType *result;
+  if ((result = muon_implicit_type(inductor->engine)) == NULL)
     return NULL;
   return &result->as_type;
 }

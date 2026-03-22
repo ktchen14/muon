@@ -164,9 +164,9 @@ MUON_HINT(nonnull) static LLVMTypeRef type_emit(
     case MUON_SCHEME_TYPE:
       abort();
 
-    case IS_CONCRETE_TYPE(MuonVariableType *variable_type)
-      assert(variable_type->solution != NULL);
-      return type_emit(author, variable_type->solution);
+    case IS_CONCRETE_TYPE(MuonImplicitType *implicit_type)
+      assert(implicit_type->solution != NULL);
+      return type_emit(author, implicit_type->solution);
 
     case IS_CONCRETE_TYPE(MuonJoinType *join_type)
       return join_type_emit(author, join_type);
