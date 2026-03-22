@@ -88,7 +88,7 @@ typedef struct {
     MuonInstance *instance;
     MuonType *type;
   } argv[] MUON_HINT(counted_by(argc));
-} VariableSolution;
+} AttitudeSolution;
 
 struct Inductor {
   MuonEngine *engine;
@@ -103,7 +103,7 @@ struct Inductor {
 
   size_t type_length;
   MuonType **solution;
-  VariableSolution **attitude_solution; // indexed by type_id * 2 + charge
+  AttitudeSolution **attitude_solution; // indexed by type_id * 2 + charge
 
   size_t rule_length;
   size_t rule_volume;
@@ -183,15 +183,15 @@ static Rule *rule_insert(
 }
 
 [[gnu::nonnull, gnu::pure]]
-static inline VariableSolution *attitude_solution_get(
+static inline AttitudeSolution *attitude_solution_get(
     const Inductor *inductor, Attitude attitude) {
   assert(attitude.type->id < inductor->type_length);
   return inductor->attitude_solution[attitude.type->id * 2 + attitude.charge];
 }
 
 [[gnu::nonnull]]
-static inline VariableSolution *attitude_solution_set(
-    Inductor *inductor, Attitude attitude, VariableSolution *solution) {
+static inline AttitudeSolution *attitude_solution_set(
+    Inductor *inductor, Attitude attitude, AttitudeSolution *solution) {
   assert(attitude.type->id < inductor->type_length);
   return inductor->attitude_solution[attitude.type->id * 2 + attitude.charge] =
              solution;
