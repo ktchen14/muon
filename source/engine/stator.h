@@ -3,18 +3,13 @@
 
 #include "common.h"
 
-#include <limits.h>
 #include <stddef.h>
 
+/// Return the next stator in the @a engine with the @a hash code
 [[gnu::nonnull]] static inline const void *stator_search(
     const MuonEngine *engine, Hash hash, size_t *offset) {
   return hash_search(as_engine(engine)->stator, hash, offset);
 }
-
-// /// Return the next stator assignable to @a stator in the iterator @a it
-// #define stator_search(engine, stator, hash, offset) ((typeof(stator)) { \
-//   stator_search((engine), MUON_STATOR_TAG(typeof(stator)), (hash), (offset)) \
-// })
 
 /// Insert the @a stator into the @a engine at the @a offset
 [[gnu::nonnull]] static inline const void *stator_insert(
@@ -25,11 +20,5 @@
     return NULL;
   return engine->stator = area, stator;
 }
-
-// #define stator_insert(engine, stator, hash, offset) __extension__ ({ \
-//   const typeof_unqual(*(stator)) *_stator = (stator); \
-//   MuonStatorTag _tag = MUON_STATOR_TAG(typeof(_stator)); \
-//   (typeof(_stator)) {stator_insert((engine), (stator), _tag, (hash), (offset))}; \
-// })
 
 #endif /* MUON_ENGINE_STATOR_I */
