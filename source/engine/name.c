@@ -4,6 +4,7 @@
 #include "stator.h"
 
 #include <errno.h>
+#include <limits.h>
 #include <stddef.h>
 #include <string.h>
 
@@ -12,10 +13,11 @@ MuonName *muon_name(
     size_t length,
     const char text[restrict static length]) {
   Hash hash = hash_string(text, length);
+  hash = hash >> 3 | (Hash) NAME_PREFIX << sizeof(Hash) * CHAR_BIT - 3;
 
   MuonName *next;
   size_t i = 0;
-  for (; (next = stator_search(engine, next, hash, &i)) != NULL; i++) {
+  for (; (next = stator_search(engine, hash, &i)) != NULL; i++) {
     if (next->length == length && memcmp(next->text, text, length) == 0)
       return next;
   }

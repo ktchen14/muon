@@ -7,6 +7,12 @@
 
 #include <stdlib.h>
 
+typedef enum {
+  CORE_PREFIX,
+  NAME_PREFIX,
+  TYPE_PREFIX,
+} StatorPrefix;
+
 typedef struct {
   size_t node_number[MUON_NODE_NUMBER];
   size_t type_number;
