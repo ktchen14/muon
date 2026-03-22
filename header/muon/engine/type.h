@@ -3,18 +3,26 @@
 
 #include "common.h"
 #include "core.h"
-#include "stator.h"
 
 #include <stddef.h>
+
+/// Expands to emit(Title, lower, UPPER, ...) for each concrete subtype of
+/// MuonType
+#define MUON_EACH_TYPE(emit, ...) \
+  emit(CoreType, core_type, CORE_TYPE __VA_OPT__(,) __VA_ARGS__) \
+  emit(JoinType, join_type, JOIN_TYPE __VA_OPT__(,) __VA_ARGS__) \
+  emit(MeetType, meet_type, MEET_TYPE __VA_OPT__(,) __VA_ARGS__) \
+  emit(SchemeType, scheme_type, SCHEME_TYPE __VA_OPT__(,) __VA_ARGS__) \
+  emit(VariableType, variable_type, VARIABLE_TYPE __VA_OPT__(,) __VA_ARGS__)
 
 /// An enumeration over each concrete subtype of MuonType, e.g.
 /// @c MUON_CORE_TYPE
 typedef enum {
-#define MUON_EMIT(T, l, UPPER) MUON_##UPPER = MUON_##UPPER##_STATOR,
+#define MUON_EMIT(T, l, UPPER) MUON_##UPPER,
   MUON_EACH_TYPE(MUON_EMIT)
 #undef MUON_EMIT
 
-#define MUON_EMIT(T, l, UPPER) MUON_##UPPER##_STATOR,
+#define MUON_EMIT(T, l, UPPER) MUON_##UPPER,
   /// Equivalent to the minimum enumerator in MuonTypeTag
   MUON_MINORANT_TYPE = MUON_INDIRECT(MUON_TAKE, MUON_EACH_TYPE(MUON_EMIT)),
 #undef MUON_EMIT

@@ -3,13 +3,22 @@
 
 #include "common.h"
 #include "name.h"
-#include "stator.h"
 
 #include <stddef.h>
 
+/// Expands to emit(Title, lower, UPPER, ...) for each concrete subtype of
+/// MuonCore
+#define MUON_EACH_CORE(emit, ...) \
+  emit(BooleanCore, boolean_core, BOOLEAN_CORE __VA_OPT__(,) __VA_ARGS__) \
+  emit(CustomCore, custom_core, CUSTOM_CORE __VA_OPT__(,) __VA_ARGS__) \
+  emit(IntegerCore, integer_core, INTEGER_CORE __VA_OPT__(,) __VA_ARGS__) \
+  emit(LambdaCore, lambda_core, LAMBDA_CORE __VA_OPT__(,) __VA_ARGS__) \
+  emit(RecordCore, record_core, RECORD_CORE __VA_OPT__(,) __VA_ARGS__) \
+  emit(VectorCore, vector_core, VECTOR_CORE __VA_OPT__(,) __VA_ARGS__)
+
 /// An enumeration over each concrete subtype of MuonCore
 typedef enum {
-#define MUON_EMIT(T, l, UPPER) MUON_##UPPER = MUON_##UPPER##_STATOR,
+#define MUON_EMIT(T, l, UPPER) MUON_##UPPER,
   MUON_EACH_CORE(MUON_EMIT)
 #undef MUON_EMIT
 } MuonCoreTag;
