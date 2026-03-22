@@ -335,6 +335,7 @@ MuonSchemeType *scheme_type_activate(struct MuonSchemeType *type) {
   return assign_type(engine, &type->as_type), type;
 }
 
+[[maybe_unused]]
 static void debug_implicit_type_name(MuonImplicitType *type) {
   static const char *alphabet[] = {
     "α", "β", "γ", "δ", "ε", "ζ", "η", "θ", "ι", "κ", "μ", "ν", "ξ", "ο", "π", //-
