@@ -145,8 +145,14 @@ MuonMeetType *muon_meet_type(
     MuonEngine *engine, size_t argc, MuonType *const argv[/* argc */])
   MUON_HINT_SUFFIX(malloc, nonnull(1));
 
+/// Allocate a new scheme in the @a engine that all subsequent types will be
+/// created within
+const void *muon_scheme(MuonEngine *engine)
+  MUON_HINT_SUFFIX(nonnull);
+
+/// Activate the scheme previously allocated (with muon_scheme()) and return it
 MuonSchemeType *muon_scheme_type(MuonEngine *engine, MuonType *matter)
-  MUON_HINT_SUFFIX(malloc, nonnull);
+  MUON_HINT_SUFFIX(nonnull);
 
 /// Create a variable type in the @a engine
 MuonVariableType *muon_variable_type(

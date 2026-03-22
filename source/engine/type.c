@@ -105,12 +105,33 @@ MuonMeetType *muon_meet_type(
   return meet_type_activate(result);
 }
 
-MuonSchemeType *muon_scheme_type(MuonEngine *engine, MuonType *matter) {
+const void *muon_scheme(MuonEngine *engine) {
+  MuonSchemeType *scheme = as_engine(engine)->scheme;
   struct MuonSchemeType *result;
-  if ((result = scheme_type_allocate(engine)) == NULL)
+  if ((result = type_allocate(engine, sizeof(MuonSchemeType))) == NULL)
     return NULL;
-  result->matter = matter;
-  return scheme_type_activate(result);
+  *result = (MuonSchemeType) {
+    .as_type = {.tag = MUON_SCHEME_TYPE, .engine = engine, .scheme = scheme}
+  };
+  return as_engine(engine)->scheme = result;
+}
+
+MuonSchemeType *muon_scheme_type(MuonEngine *opaque, MuonType *matter) {
+  assert(matter->engine == opaque);
+
+  Engine *engine = as_engine(opaque);
+
+  struct MuonSchemeType *allocation = engine->scheme;
+  assert(allocation != NULL);
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-qual"
+  engine->scheme = (struct MuonSchemeType *) allocation->as_type.scheme;
+#pragma GCC diagnostic pop
+
+  allocation->as_type.explicit = matter->explicit;
+  allocation->matter = matter;
+  return scheme_type_activate(allocation);
 }
 
 MuonVariableType *muon_variable_type(

@@ -400,11 +400,8 @@ MUON_HINT(nonnull) static MuonType *datatype_stmt_return(
 
 MUON_HINT(nonnull) static MuonNode *define_stmt_continue(
     Inductor *inductor, MuonNode *node, MuonDefineStmt *next) {
-  struct MuonSchemeType *allocation;
-  if ((allocation = scheme_type_allocate(inductor->engine)) == NULL)
+  if (muon_scheme(inductor->engine) == NULL)
     return NULL;
-  as_engine(inductor->engine)->scheme = allocation;
-
   return node_continue(node, &next->as_node);
 }
 
@@ -412,14 +409,8 @@ MUON_HINT(nonnull) static MuonType *define_stmt_return(
     Inductor *inductor, MuonDefineStmt *stmt) {
   MuonType *matter = node_type(inductor, &stmt->expr->as_node);
 
-  Engine *engine = as_engine(inductor->engine);
-  struct MuonSchemeType *allocation = engine->scheme;
-  engine->scheme = (struct MuonSchemeType *) allocation->as_type.scheme;
-
-  allocation->matter = matter;
-
   MuonSchemeType *result;
-  if ((result = scheme_type_activate(allocation)) == NULL)
+  if ((result = muon_scheme_type(inductor->engine, matter)) == NULL)
     return NULL;
   return &result->as_type;
 }
