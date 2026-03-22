@@ -5,6 +5,7 @@
 #include "stator.h"
 
 #include <assert.h>
+#include <limits.h>
 #include <stdlib.h>
 
 /// @internal Return the mutable engine of the @a core
@@ -13,6 +14,11 @@ static inline MuonEngine *unlock_engine(struct MuonCore *core) {
 #pragma GCC diagnostic ignored "-Wcast-qual"
   return (MuonEngine *) core->engine;
 #pragma GCC diagnostic pop
+}
+
+static inline Hash core_hash(MuonCoreTag tag, Hash hash) {
+  tag |= CORE_PREFIX << 5;
+  return hash >> 8 | (Hash) tag << sizeof(Hash) * CHAR_BIT - 8;
 }
 
 MuonCustomCore *mu_simple_core(MuonEngine *engine, MuonName *name) {
@@ -63,10 +69,11 @@ MuonRecordCore *record_core_activate(struct MuonRecordCore *core) {
   Hash hash = HASH_ZERO;
   for (size_t i = 0; i < core->argc; i++)
     hash = hash_extend(hash, core->argv[i]);
+  hash = core_hash(MUON_RECORD_CORE, hash);
 
   MuonRecordCore *next;
   size_t i = 0;
-  for (; (next = stator_search(engine, next, hash, &i)) != NULL; i++) {
+  for (; (next = stator_search(engine, hash, &i)) != NULL; i++) {
     if (next->argc != core->argc)
       continue;
 

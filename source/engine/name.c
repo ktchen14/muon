@@ -8,12 +8,15 @@
 #include <stddef.h>
 #include <string.h>
 
+static inline Hash name_hash(Hash hash) {
+  return hash >> 3 | (Hash) NAME_PREFIX << sizeof(Hash) * CHAR_BIT - 3;
+}
+
 MuonName *muon_name(
     MuonEngine *restrict engine,
     size_t length,
     const char text[restrict static length]) {
-  Hash hash = hash_string(text, length);
-  hash = hash >> 3 | (Hash) NAME_PREFIX << sizeof(Hash) * CHAR_BIT - 3;
+  Hash hash = name_hash(hash_string(text, length));
 
   MuonName *next;
   size_t i = 0;
