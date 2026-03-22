@@ -195,9 +195,10 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
         MuonType *matter = scheme_type->matter;
         if (equation[matter->id].result != NULL)
           matter = equation[matter->id].result;
+        allocation->matter = matter;
 
         MuonSchemeType *result;
-        if ((result = scheme_type_activate(allocation, matter)) == NULL)
+        if ((result = scheme_type_activate(allocation)) == NULL)
           goto except;
         equation[cursor.type->id].result = &result->as_type;
         break;

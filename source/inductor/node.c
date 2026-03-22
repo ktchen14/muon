@@ -416,8 +416,10 @@ MUON_HINT(nonnull) static MuonType *define_stmt_return(
   struct MuonSchemeType *allocation = engine->scheme;
   engine->scheme = (struct MuonSchemeType *) allocation->as_type.scheme;
 
+  allocation->matter = matter;
+
   MuonSchemeType *result;
-  if ((result = scheme_type_activate(allocation, matter)) == NULL)
+  if ((result = scheme_type_activate(allocation)) == NULL)
     return NULL;
   return &result->as_type;
 }

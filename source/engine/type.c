@@ -109,7 +109,8 @@ MuonSchemeType *muon_scheme_type(MuonEngine *engine, MuonType *matter) {
   struct MuonSchemeType *result;
   if ((result = scheme_type_allocate(engine)) == NULL)
     return NULL;
-  return scheme_type_activate(result, matter);
+  result->matter = matter;
+  return scheme_type_activate(result);
 }
 
 MuonVariableType *muon_variable_type(
@@ -306,12 +307,10 @@ struct MuonSchemeType *scheme_type_allocate(MuonEngine *engine) {
   return result;
 }
 
-MuonSchemeType *scheme_type_activate(
-    struct MuonSchemeType *type, MuonType *matter) {
+MuonSchemeType *scheme_type_activate(struct MuonSchemeType *type) {
   MuonEngine *engine = unlock_engine(&type->as_type);
-  assert(matter->engine == engine);
-  type->as_type.explicit = matter->explicit;
-  type->matter = matter;
+  assert(type->matter != NULL && type->matter->engine == engine);
+  type->as_type.explicit = type->matter->explicit;
   return assign_type(engine, &type->as_type), type;
 }
 
