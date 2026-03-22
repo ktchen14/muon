@@ -91,6 +91,24 @@ static inline _Bool is_implicit_type(MuonType *type) {
   return type->tag == MUON_IMPLICIT_TYPE;
 }
 
+/// Return whether the @a type is ⊥
+[[gnu::nonnull, gnu::pure]]
+static inline _Bool is_bottom_type(MuonType *type) {
+  MuonJoinType *join_type;
+  if ((join_type = muon_type_cast(type, join_type)) == NULL)
+    return 0;
+  return join_type->argc == 0;
+}
+
+/// Return whether the @a type is ⊤
+[[gnu::nonnull, gnu::pure]]
+static inline _Bool is_object_type(MuonType *type) {
+  MuonMeetType *meet_type;
+  if ((meet_type = muon_type_cast(type, meet_type)) == NULL)
+    return 0;
+  return meet_type->argc == 0;
+}
+
 /// @internal Used in ON_ABSTRACT_TYPE()
 static _Thread_local const void *abstract_type;
 

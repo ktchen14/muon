@@ -208,9 +208,11 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
         MuonType *result = equation[cursor.type->id].result;
 
         if (cursor.charge == 0) {
-          rule_insert(inductor, variable_type->join, result);
+          if (!is_bottom_type(variable_type->join))
+            rule_insert(inductor, variable_type->join, result);
         } else {
-          rule_insert(inductor, result, variable_type->meet);
+          if (!is_object_type(variable_type->meet))
+            rule_insert(inductor, result, variable_type->meet);
         }
 
         MuonType *source = (MuonType *[]) {cursor.type, result}[cursor.charge];
