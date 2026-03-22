@@ -112,6 +112,16 @@ MuonSchemeType *muon_scheme_type(MuonEngine *engine, MuonType *matter) {
   return scheme_type_activate(result, matter);
 }
 
+MuonVariableType *muon_variable_type(
+    MuonEngine *engine, MuonType *join, MuonType *meet) {
+  struct MuonVariableType *result;
+  if ((result = variable_type_allocate(engine)) == NULL)
+    return NULL;
+  result->join = join;
+  result->meet = meet;
+  return variable_type_activate(result);
+}
+
 struct MuonCoreType *core_type_allocate(MuonEngine *engine, MuonCore *core) {
   assert(core->engine == engine);
 
@@ -324,6 +334,25 @@ static void debug_implicit_type_name(MuonImplicitType *type) {
   }
 
   debug("%s", name);
+}
+
+struct MuonVariableType *variable_type_allocate(MuonEngine *engine) {
+  MuonSchemeType *scheme = as_engine(engine)->scheme;
+  struct MuonVariableType *result;
+  if ((result = type_allocate(engine, sizeof(MuonVariableType))) == NULL)
+    return NULL;
+  *result = (MuonVariableType) {
+    .as_type = {.tag = MUON_VARIABLE_TYPE, .engine = engine, .scheme = scheme}
+  };
+  return result;
+}
+
+MuonVariableType *variable_type_activate(struct MuonVariableType *type) {
+  MuonEngine *engine = unlock_engine(&type->as_type);
+  assert(type->join != NULL && type->join->engine == engine);
+  assert(type->meet != NULL && type->meet->engine == engine);
+  type->as_type.constant = type->join->constant & type->meet->constant;
+  return assign_type(engine, &type->as_type), type;
 }
 
 // NOLINTNEXTLINE(misc-no-recursion)
