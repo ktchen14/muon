@@ -131,8 +131,11 @@ static inline Attitude type_at(Attitude origin, size_t i) {
         (MuonType *[]) {scheme_type->matter, NULL}[i], origin.charge
       };
 
-    case MUON_VARIABLE_TYPE:
-      return (Attitude) {};
+    case IS_CONCRETE_TYPE(MuonVariableType *variable_type)
+      MuonType *next = (MuonType *[]) {
+        variable_type->join, variable_type->meet
+      }[origin.charge];
+      return (Attitude) {(MuonType *[]) {next, NULL}[i], origin.charge};
   }
 }
 
