@@ -23,7 +23,7 @@ typedef enum {
   NORMAL_RULE,
   IMPOSSIBLE_RULE,
   INDIRECT_RULE, // remove this (add this to a different layer of the graph)
-  JOIN_RULE, // reductor only rule
+  JOIN_RULE,     // reductor only rule
 } RuleTag;
 
 typedef struct {
@@ -194,7 +194,7 @@ static inline VariableSolution *attitude_solution_set(
     Inductor *inductor, Attitude attitude, VariableSolution *solution) {
   assert(attitude.type->id < inductor->type_length);
   return inductor->attitude_solution[attitude.type->id * 2 + attitude.charge] =
-      solution;
+             solution;
 }
 
 static inline Attitude type_next(const Inductor *inductor, Attitude origin) {

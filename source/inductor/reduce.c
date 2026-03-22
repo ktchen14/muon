@@ -112,7 +112,8 @@ static VariableSolution *reduce_implicit_type(
   if (argc == 0) {
     join = &as_engine(inductor->engine)->bottom_type->as_type;
   } else if (argc == 1) {
-    Solution solution = attitude_solution(inductor, (Attitude) {single, charge});
+    Solution solution = attitude_solution(
+        inductor, (Attitude) {single, charge});
     if (solution.is_variable) {
       join = solution.solution->type;
     } else
@@ -153,7 +154,9 @@ static VariableSolution *reduce_implicit_type(
         continue;
 
       MuonType *argument = join_type->argv[i++];
-      assert(argument == neighbor_solution(inductor, edge->vertex[charge], charge));
+      assert(
+          argument
+          == neighbor_solution(inductor, edge->vertex[charge], charge));
 
       // edge->tag = INDIRECT_RULE;
       edge->center = &join_type->as_type;
@@ -183,7 +186,8 @@ static VariableSolution *reduce_implicit_type(
     if (rule->instance == NULL)
       continue;
 
-    MuonType *nbr_sol = neighbor_solution(inductor, rule->vertex[charge], charge);
+    MuonType *nbr_sol = neighbor_solution(
+        inductor, rule->vertex[charge], charge);
     solution->argv[j].instance = rule->instance;
     solution->argv[j].type = nbr_sol;
     j++;
@@ -254,7 +258,8 @@ MuonType *reduce_type(Inductor *inductor, MuonType *type) {
 
         if (cursor.type != &result->as_type) {
           Rule *rule;
-          if ((rule = edge_define(inductor, cursor.type, &result->as_type)) == NULL)
+          if ((rule = edge_define(inductor, cursor.type, &result->as_type))
+              == NULL)
             return NULL;
         }
         break;
