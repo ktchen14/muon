@@ -117,8 +117,6 @@ const void *muon_scheme(MuonEngine *engine) {
 }
 
 MuonSchemeType *muon_scheme_type(MuonEngine *opaque, MuonType *matter) {
-  assert(matter->engine == opaque);
-
   Engine *engine = as_engine(opaque);
 
   struct MuonSchemeType *allocation = engine->scheme;
@@ -129,7 +127,6 @@ MuonSchemeType *muon_scheme_type(MuonEngine *opaque, MuonType *matter) {
   engine->scheme = (struct MuonSchemeType *) allocation->as_type.scheme;
 #pragma GCC diagnostic pop
 
-  allocation->as_type.explicit = matter->explicit;
   allocation->matter = matter;
   return scheme_type_activate(allocation);
 }
