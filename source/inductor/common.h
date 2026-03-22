@@ -84,7 +84,7 @@ typedef struct {
 typedef struct {
   MuonType *type; // variant for instance == NULL
   size_t argc;
-  struct SolutionItem {
+  struct InstanceSolution {
     MuonInstance *instance;
     MuonType *type;
   } argv[] MUON_HINT(counted_by(argc));
