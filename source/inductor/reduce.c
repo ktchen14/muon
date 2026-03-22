@@ -320,6 +320,10 @@ MuonType *reduce_type(Inductor *inductor, MuonType *type) {
         resolve_variable(inductor, implicit_type);
         break;
       }
+
+      case MUON_VARIABLE_TYPE:
+        assert(cursor.type->explicit);
+        assign_solution(inductor, cursor.type, cursor.type);
     }
 
     cursor = type_return(next = cursor);

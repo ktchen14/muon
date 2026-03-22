@@ -10,6 +10,8 @@ MuonType *reduce_node(Inductor *inductor, MuonNode *root)
 
 [[gnu::nonnull, gnu::pure]] static inline MuonType *type_solution(
     const Inductor *inductor, MuonType *type) {
+  if (type->explicit)
+    return type;
   if (type->id >= inductor->type_length)
     return NULL;
   return inductor->solution[type->id];
