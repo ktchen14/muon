@@ -20,6 +20,7 @@ typedef struct {
 static inline MuonType *assign_solution(
     Inductor *inductor, MuonType *type, MuonType *solution) {
   assert(type->id < inductor->type_length);
+  assert(solution->explicit);
   return inductor->solution[type->id] = solution;
 }
 
