@@ -22,11 +22,11 @@ typedef const struct MuonModule {
 } MuonModule;
 
 MuonExport *muon_export(MuonEngine *engine, MuonName *name, MuonType *type)
-  MUON_HINT_SUFFIX(malloc, nonnull);
+  MUON_HINT_SUFFIX(nonnull);
 
 MuonModule *muon_module(
     MuonEngine *engine, size_t argc, MuonExport *argv[/* argc */])
-  MUON_HINT_SUFFIX(malloc, nonnull);
+  MUON_HINT_SUFFIX(nonnull);
 
 void muon_export_debug(MuonExport *export);
 void muon_module_debug(MuonModule *module);

@@ -67,7 +67,7 @@ static inline MuonCoreMember core_at(MuonCore *core, size_t i) {
 }
 
 struct MuonRecordCore *record_core_allocate(MuonEngine *engine, size_t argc)
-  MUON_HINT_SUFFIX(malloc, nonnull);
+  MUON_HINT_SUFFIX(nonnull);
 
 MuonRecordCore *record_core_activate(struct MuonRecordCore *core)
   MUON_HINT_SUFFIX(nonnull);

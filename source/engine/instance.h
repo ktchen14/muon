@@ -6,7 +6,7 @@
 #include "common.h"
 
 struct MuonInstance *instance_allocate(MuonEngine *engine)
-  MUON_HINT_SUFFIX(malloc, nonnull);
+  MUON_HINT_SUFFIX(nonnull);
 
 MuonInstance *instance_activate(
     struct MuonInstance *instance, MuonSchemeType *scheme)

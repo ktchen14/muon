@@ -93,7 +93,7 @@ static inline MuonCore *muon_core_cast(MuonCore *core, MuonCoreTag tag) {
 )
 
 MuonCustomCore *mu_simple_core(MuonEngine *engine, MuonName *name)
-  MUON_HINT_SUFFIX(malloc, nonnull);
+  MUON_HINT_SUFFIX(nonnull);
 
 MuonRecordCore *muon_record_core(
     MuonEngine *engine, size_t argc, MuonName *const argv[/* argv */])

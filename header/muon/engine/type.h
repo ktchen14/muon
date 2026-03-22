@@ -112,38 +112,38 @@ static inline MuonType *muon_type_cast(MuonType *type, MuonTypeTag tag) {
 
 MuonCoreType *muon_core_type(
     MuonEngine *engine, MuonCore *core, MuonType *const argv[])
-  MUON_HINT_SUFFIX(malloc, nonnull(1, 2));
+  MUON_HINT_SUFFIX(nonnull(1, 2));
 
 /// Create a boolean type in the @a engine
 MuonCoreType *muon_boolean_type(MuonEngine *engine)
-  MUON_HINT_SUFFIX(malloc, nonnull);
+  MUON_HINT_SUFFIX(nonnull);
 
 /// Create an integer type in the @a engine
 MuonCoreType *muon_integer_type(MuonEngine *engine)
-  MUON_HINT_SUFFIX(malloc, nonnull);
+  MUON_HINT_SUFFIX(nonnull);
 
 /// Create a lambda type in the @a engine
 MuonCoreType *muon_lambda_type(
     MuonEngine *engine, MuonType *argument, MuonType *output)
-  MUON_HINT_SUFFIX(malloc, nonnull);
+  MUON_HINT_SUFFIX(nonnull);
 
 /// Create a vector type in the @a engine
 MuonCoreType *muon_vector_type(MuonEngine *engine, MuonType *matter)
-  MUON_HINT_SUFFIX(malloc, nonnull);
+  MUON_HINT_SUFFIX(nonnull);
 
 /// Create an implicit type in the @a engine
 MuonImplicitType *muon_implicit_type(MuonEngine *engine)
-  MUON_HINT_SUFFIX(malloc, nonnull);
+  MUON_HINT_SUFFIX(nonnull);
 
 /// Create a join type in the @a engine
 MuonJoinType *muon_join_type(
     MuonEngine *engine, size_t argc, MuonType *const argv[/* argc */])
-  MUON_HINT_SUFFIX(malloc, nonnull(1));
+  MUON_HINT_SUFFIX(nonnull(1));
 
 /// Create a meet type in the @a engine
 MuonMeetType *muon_meet_type(
     MuonEngine *engine, size_t argc, MuonType *const argv[/* argc */])
-  MUON_HINT_SUFFIX(malloc, nonnull(1));
+  MUON_HINT_SUFFIX(nonnull(1));
 
 /// Allocate a new scheme in the @a engine that all subsequent types will be
 /// created within
@@ -157,7 +157,7 @@ MuonSchemeType *muon_scheme_type(MuonEngine *engine, MuonType *matter)
 /// Create a variable type in the @a engine
 MuonVariableType *muon_variable_type(
     MuonEngine *engine, MuonType *join, MuonType *meet)
-  MUON_HINT_SUFFIX(malloc, nonnull);
+  MUON_HINT_SUFFIX(nonnull);
 
 /// Optional arguments to muon_type_debug()
 struct MuonTypeDebugArgs {

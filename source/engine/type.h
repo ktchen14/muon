@@ -140,31 +140,31 @@ static inline Attitude type_at(Attitude origin, size_t i) {
 }
 
 struct MuonCoreType *core_type_allocate(MuonEngine *engine, MuonCore *core)
-  MUON_HINT_SUFFIX(malloc, nonnull);
+  MUON_HINT_SUFFIX(nonnull);
 
 MuonCoreType *core_type_activate(struct MuonCoreType *type)
   MUON_HINT_SUFFIX(nonnull);
 
 struct MuonJoinType *join_type_allocate(MuonEngine *engine, size_t argc)
-  MUON_HINT_SUFFIX(malloc, nonnull);
+  MUON_HINT_SUFFIX(nonnull);
 
 MuonJoinType *join_type_activate(struct MuonJoinType *join)
   MUON_HINT_SUFFIX(nonnull);
 
 struct MuonMeetType *meet_type_allocate(MuonEngine *engine, size_t argc)
-  MUON_HINT_SUFFIX(malloc, nonnull);
+  MUON_HINT_SUFFIX(nonnull);
 
 MuonMeetType *meet_type_activate(struct MuonMeetType *meet)
   MUON_HINT_SUFFIX(nonnull);
 
 struct MuonSchemeType *scheme_type_allocate(MuonEngine *engine)
-  MUON_HINT_SUFFIX(malloc, nonnull);
+  MUON_HINT_SUFFIX(nonnull);
 
 MuonSchemeType *scheme_type_activate(struct MuonSchemeType *type)
   MUON_HINT_SUFFIX(nonnull);
 
 struct MuonVariableType *variable_type_allocate(MuonEngine *engine)
-  MUON_HINT_SUFFIX(malloc, nonnull);
+  MUON_HINT_SUFFIX(nonnull);
 
 MuonVariableType *variable_type_activate(struct MuonVariableType *type)
   MUON_HINT_SUFFIX(nonnull);

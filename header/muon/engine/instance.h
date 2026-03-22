@@ -13,6 +13,6 @@ typedef const struct MuonInstance {
 } MuonInstance;
 
 MuonInstance *muon_instance(MuonEngine *engine, MuonSchemeType *scheme)
-  MUON_HINT_SUFFIX(malloc, nonnull);
+  MUON_HINT_SUFFIX(nonnull);
 
 #endif /* MUON_ENGINE_INSTANCE_H */

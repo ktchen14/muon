@@ -220,44 +220,44 @@ static inline size_t node_announce_length(MuonNode *node) {
 }
 
 struct MuonVectorExpr *vector_expr_allocate(MuonEngine *engine, size_t argc)
-  MUON_HINT_SUFFIX(malloc, nonnull);
+  MUON_HINT_SUFFIX(nonnull);
 
 MuonVectorExpr *vector_expr_activate(struct MuonVectorExpr *expr)
   MUON_HINT_SUFFIX(nonnull);
 
 struct MuonRecordExpr *record_expr_allocate(MuonEngine *engine, size_t argc)
-  MUON_HINT_SUFFIX(malloc, nonnull);
+  MUON_HINT_SUFFIX(nonnull);
 
 MuonRecordExpr *record_expr_activate(struct MuonRecordExpr *expr)
   MUON_HINT_SUFFIX(nonnull);
 
 struct MuonSwitchExpr *switch_expr_allocate(MuonEngine *engine, size_t argc)
-  MUON_HINT_SUFFIX(malloc, nonnull);
+  MUON_HINT_SUFFIX(nonnull);
 
 MuonSwitchExpr *switch_expr_activate(struct MuonSwitchExpr *expr)
   MUON_HINT_SUFFIX(nonnull);
 
 struct MuonSequenceExpr *sequence_expr_allocate(MuonEngine *engine, size_t argc)
-  MUON_HINT_SUFFIX(malloc, nonnull);
+  MUON_HINT_SUFFIX(nonnull);
 
 MuonSequenceExpr *sequence_expr_activate(struct MuonSequenceExpr *expr)
   MUON_HINT_SUFFIX(nonnull);
 
 struct MuonDatatypeStmt *datatype_stmt_allocate(MuonEngine *engine, size_t argc)
-  MUON_HINT_SUFFIX(malloc, nonnull);
+  MUON_HINT_SUFFIX(nonnull);
 
 MuonDatatypeStmt *datatype_stmt_activate(
     struct MuonDatatypeStmt *stmt, MuonName *name)
   MUON_HINT_SUFFIX(nonnull);
 
 struct MuonRecordView *record_view_allocate(MuonEngine *engine, size_t argc)
-  MUON_HINT_SUFFIX(malloc, nonnull);
+  MUON_HINT_SUFFIX(nonnull);
 
 MuonRecordView *record_view_activate(struct MuonRecordView *view)
   MUON_HINT_SUFFIX(nonnull);
 
 struct MuonScript *script_allocate(MuonEngine *engine, size_t argc)
-  MUON_HINT_SUFFIX(malloc, nonnull);
+  MUON_HINT_SUFFIX(nonnull);
 
 MuonScript *script_activate(MuonEngine *engine, struct MuonScript *script)
   MUON_HINT_SUFFIX(nonnull);
