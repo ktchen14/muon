@@ -295,15 +295,13 @@ MuonMeetType *meet_type_activate(struct MuonMeetType *type) {
 }
 
 struct MuonSchemeType *scheme_type_allocate(MuonEngine *engine) {
+  MuonSchemeType *scheme = as_engine(engine)->scheme;
+
   struct MuonSchemeType *result;
   if ((result = type_allocate(engine, sizeof(MuonSchemeType))) == NULL)
     return NULL;
   *result = (MuonSchemeType) {
-    .as_type = {
-      .tag = MUON_SCHEME_TYPE,
-      .engine = engine,
-      .scheme = as_engine(engine)->scheme,
-    },
+    .as_type = {.tag = MUON_SCHEME_TYPE, .engine = engine, .scheme = scheme},
   };
   return result;
 }
@@ -312,6 +310,7 @@ MuonSchemeType *scheme_type_activate(
     struct MuonSchemeType *type, MuonType *matter) {
   MuonEngine *engine = unlock_engine(&type->as_type);
   assert(matter->engine == engine);
+  type->as_type.explicit = matter->explicit;
   type->matter = matter;
   return assign_type(engine, &type->as_type), type;
 }
