@@ -127,15 +127,18 @@ static inline Attitude type_at(Attitude origin, size_t i) {
       return (Attitude) {};
 
     case IS_CONCRETE_TYPE(MuonSchemeType *scheme_type)
-      return (Attitude) {
-        (MuonType *[]) {scheme_type->matter, NULL}[i], origin.charge
-      };
+      if (i == 0)
+        return (Attitude) {scheme_type->matter, origin.charge};
+      return (Attitude) {};
 
     case IS_CONCRETE_TYPE(MuonVariableType *variable_type)
-      MuonType *next = (MuonType *[]) {
-        variable_type->join, variable_type->meet
-      }[origin.charge];
-      return (Attitude) {(MuonType *[]) {next, NULL}[i], origin.charge};
+      if (i == 0) {
+        MuonType *next = (MuonType *[]) {
+          variable_type->join, variable_type->meet
+        }[origin.charge];
+        return (Attitude) {next, origin.charge};
+      }
+      return (Attitude) {};
   }
 }
 
