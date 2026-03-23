@@ -4,5 +4,6 @@
 #include "common/common.h" // IWYU pragma: export
 #include "common/debug.h"  // IWYU pragma: export
 #include "common/hash.h"   // IWYU pragma: export
+#include "common/vector.h" // IWYU pragma: export
 
 #endif /* MUON_COMMON_I */
