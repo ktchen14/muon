@@ -88,13 +88,14 @@ void (inductor_debug)( //-
       debug("  Type%zu [label=\"", source_type->id);
 
       (muon_type_debug)(source_type, args.type);
-      AttitudeSolution *solution;
-      if ((solution = attitude_solution_get(
-               inductor, (Attitude) {source_type, 0}))
-          != NULL) {
-        debug(" [");
-        (muon_type_debug)(solution->type, args.type);
-        debug("]");
+
+      if (is_implicit_type(source_type)) {
+        MuonType *solution;
+        if ((solution = type_solution(inductor, source_type)) != NULL) {
+          debug(" [");
+          (muon_type_debug)(solution, args.type);
+          debug("]");
+        }
       }
 
       debug("\"];\n");
@@ -105,13 +106,14 @@ void (inductor_debug)( //-
       debug("  Type%zu [label=\"", target_type->id);
 
       (muon_type_debug)(target_type, args.type);
-      AttitudeSolution *solution;
-      if ((solution = attitude_solution_get(
-               inductor, (Attitude) {target_type, 0}))
-          != NULL) {
-        debug(" [");
-        (muon_type_debug)(solution->type, args.type);
-        debug("]");
+
+      if (is_implicit_type(target_type)) {
+        MuonType *solution;
+        if ((solution = type_solution(inductor, target_type)) != NULL) {
+          debug(" [");
+          (muon_type_debug)(solution, args.type);
+          debug("]");
+        }
       }
 
       debug("\"];\n");

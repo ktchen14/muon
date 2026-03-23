@@ -16,6 +16,19 @@ static inline MuonType *assign_solution(
   return inductor->solution[type->id] = solution;
 }
 
+static inline AttitudeSolution *attitude_solution_get(
+    const Inductor *inductor, Attitude attitude) {
+  assert(attitude.type->id < inductor->type_length);
+  return inductor->attitude_solution[attitude.type->id * 2 + attitude.charge];
+}
+
+static inline AttitudeSolution *attitude_solution_set(
+    Inductor *inductor, Attitude attitude, AttitudeSolution *solution) {
+  assert(attitude.type->id < inductor->type_length);
+  return inductor->attitude_solution[attitude.type->id * 2 + attitude.charge] =
+             solution;
+}
+
 /// Compute the overall solution for an implicit type from its two
 /// attitude-specific solutions.  Kept as a separate function so that the
 /// resolution strategy can be enhanced later.
@@ -146,7 +159,6 @@ static AttitudeSolution *reduce_implicit_type(
 
     join = &join_type->as_type;
   }
-  assert(join != (MuonType *) ((uintptr_t) 0x0000000180000000ULL));
 
   size_t size = instance_argc;
   if (struct_size_overflow(AttitudeSolution, argv, &size))
