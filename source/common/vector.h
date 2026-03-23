@@ -118,4 +118,9 @@ static inline void *vector_append(
   (vector), sizeof(*(vector)), (const typeof(*(vector)) *) {(data)} \
 )})
 
+static inline void vector_truncate(void *vector, size_t length) {
+  length = minimum(vector_header(vector)->length, length);
+  vector_header(vector)->length = length;
+}
+
 #endif /* MUON_COMMON_VECTOR_I */

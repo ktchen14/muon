@@ -60,7 +60,7 @@ static Semisolution *reduce_implicit_type(
   if ((solution = type_semisolution(inductor, attitude)) != NULL)
     return solution;
 
-  vector_header(inductor->vector)->length = 0;
+  vector_truncate(inductor->vector, 0);
 
   RuleIterator it;
 
@@ -111,15 +111,50 @@ static Semisolution *reduce_implicit_type(
       next_argument:
       }
     } else {
+      MuonType *solution = semisolution->type;
       for (size_t i = 0; i < vector_length(inductor->vector); i++) {
         MuonType *extant = inductor->vector[i];
 
         Rule *rule;
-        if ((rule = type_assess(inductor, semisolution->type, extant)) == NULL)
+        if ((rule = type_assess(inductor, solution, extant)) == NULL)
           return NULL;
 
-        if (rule->tag != REJECTED_RULE)
-          goto next_rule;
+        if (rule->tag == REJECTED_RULE)
+          continue;
+
+        goto next_rule;
+      }
+
+      for (size_t i = 0; i < vector_length(inductor->vector); i++) {
+        MuonType *extant = inductor->vector[i];
+
+        Rule *rule;
+        if ((rule = type_assess(inductor, extant, solution)) == NULL)
+          return NULL;
+
+        if (rule->tag == REJECTED_RULE)
+          continue;
+
+        inductor->vector[i] = solution;
+
+        size_t length = vector_length(inductor->vector);
+
+        for (size_t j = i + 1; j < length;) {
+          MuonType *extant = inductor->vector[j];
+
+          Rule *rule;
+          if ((rule = type_assess(inductor, extant, solution)) == NULL)
+            return NULL;
+
+          if (rule->tag == REJECTED_RULE) {
+            j++;
+            continue;
+          }
+
+          inductor->vector[j] = inductor->vector[--length];
+        }
+
+        goto next_rule;
       }
 
       Vector(MuonType *) vector;
