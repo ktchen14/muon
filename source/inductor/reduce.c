@@ -16,26 +16,27 @@ static inline MuonType *assign_solution(
   return inductor->solution[type->id] = solution;
 }
 
-static inline AttitudeSolution *solution_get(
-    const Inductor *inductor, Attitude attitude) {
+static Semisolution *assign_semisolution(
+    Inductor *inductor, Attitude attitude, Semisolution *solution) {
   assert(attitude.type->id < inductor->type_length);
-  return inductor->attitude_solution[attitude.type->id * 2 + attitude.charge];
+  size_t i = attitude.type->id * 2 + attitude.charge;
+  return inductor->semisolution[i] = solution;
 }
 
-static inline AttitudeSolution *attitude_solution_set(
-    Inductor *inductor, Attitude attitude, AttitudeSolution *solution) {
+static Semisolution *semisolution_get(
+    const Inductor *inductor, Attitude attitude) {
   assert(attitude.type->id < inductor->type_length);
-  return inductor->attitude_solution[attitude.type->id * 2 + attitude.charge] =
-             solution;
+  size_t i = attitude.type->id * 2 + attitude.charge;
+  return inductor->semisolution[i];
 }
 
 /// Compute the overall solution for an implicit type from its two
 /// attitude-specific solutions.  Kept as a separate function so that the
 /// resolution strategy can be enhanced later.
 static MuonType *implicit_solution(
-    Inductor *inductor, AttitudeSolution *solution[static 2]) {
-  AttitudeSolution *pos = solution[0];
-  AttitudeSolution *neg = solution[1];
+    Inductor *inductor, Semisolution *semisolution[static 2]) {
+  Semisolution *pos = semisolution[0];
+  Semisolution *neg = semisolution[1];
   assert(pos != NULL && neg != NULL);
 
   MuonType *overall = pos->type;
@@ -49,12 +50,12 @@ static MuonType *implicit_solution(
 /// All constraint neighbors must already have been reduced by the traversal.
 /// This function only reads pre-computed solutions — it does not trigger any
 /// further reductions.
-static AttitudeSolution *reduce_implicit_type(
+static Semisolution *reduce_implicit_type(
     Inductor *inductor, Attitude attitude) {
   assert(is_implicit_type(attitude.type));
 
-  AttitudeSolution *solution;
-  if ((solution = solution_get(inductor, attitude)) != NULL)
+  Semisolution *solution;
+  if ((solution = semisolution_get(inductor, attitude)) != NULL)
     return solution;
 
   vector_header(inductor->vector)->length = 0;
@@ -72,14 +73,14 @@ static AttitudeSolution *reduce_implicit_type(
       continue;
     }
 
-    AttitudeSolution a = {}, *solution = &a;
+    Semisolution a = {}, *solution = &a;
     Attitude next = {edge->vertex[attitude.charge], attitude.charge};
 
     MuonType *x;
     if ((x = type_solution(inductor, next.type)) != NULL) {
       a.type = x;
     } else {
-      solution = solution_get(inductor, next);
+      solution = semisolution_get(inductor, next);
       assert(solution != NULL);
       assert(solution->type != NULL);
     }
@@ -155,11 +156,11 @@ static AttitudeSolution *reduce_implicit_type(
   }
 
   size_t size = instance_argc;
-  if (struct_size_overflow(AttitudeSolution, argv, &size))
+  if (struct_size_overflow(Semisolution, argv, &size))
     return errno = ENOMEM, NULL;
   if ((solution = malloc(size)) == NULL)
     abort();
-  *solution = (AttitudeSolution) {.type = join, .argc = instance_argc};
+  *solution = (Semisolution) {.type = join, .argc = instance_argc};
   assert(solution->type != NULL);
 
   // size_t j = 0;
@@ -178,7 +179,7 @@ static AttitudeSolution *reduce_implicit_type(
   // }
   // assert(j == instance_argc);
 
-  return attitude_solution_set(inductor, attitude, solution);
+  return assign_semisolution(inductor, attitude, solution);
 }
 
 /// Reduce a type to its solution.
@@ -293,13 +294,13 @@ MuonType *reduce_type(Inductor *inductor, MuonType *type) {
       }
 
       case MUON_IMPLICIT_TYPE:
-        AttitudeSolution *solution[2] = {};
+        Semisolution *solution[2] = {};
 
         if ((solution[cursor.charge] = reduce_implicit_type(inductor, cursor)) == NULL)
           return NULL;
 
         Attitude invert = attitude_invert(cursor);
-        if ((solution[invert.charge] = solution_get(inductor, invert)) == NULL)
+        if ((solution[invert.charge] = semisolution_get(inductor, invert)) == NULL)
           break;
 
         MuonType *result;
@@ -327,7 +328,7 @@ MuonType *reduce_type(Inductor *inductor, MuonType *type) {
       continue;
 
     next = attitude_invert(next);
-    if (solution_get(inductor, next) != NULL)
+    if (semisolution_get(inductor, next) != NULL)
       continue;
 
     cursor = type_continue(cursor, next);

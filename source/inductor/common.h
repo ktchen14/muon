@@ -88,7 +88,7 @@ typedef struct {
     MuonInstance *instance;
     MuonType *type;
   } argv[] MUON_HINT(counted_by(argc));
-} AttitudeSolution;
+} Semisolution;
 
 struct Inductor {
   MuonEngine *engine;
@@ -103,7 +103,7 @@ struct Inductor {
 
   size_t type_length;
   MuonType **solution;
-  AttitudeSolution **attitude_solution; // indexed by type_id * 2 + charge
+  Semisolution **semisolution; // indexed by type_id * 2 + charge
 
   size_t rule_length;
   size_t rule_volume;

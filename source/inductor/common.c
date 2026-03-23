@@ -21,8 +21,8 @@ MuonInductor *muon_induce_initialize(
   for (size_t i = 0; i < 1000; i++)
     solution[i] = NULL;
 
-  AttitudeSolution **attitude_solution;
-  if ((attitude_solution = malloc(sizeof(AttitudeSolution *[2000]))) == NULL)
+  Semisolution **attitude_solution;
+  if ((attitude_solution = malloc(sizeof(Semisolution *[2000]))) == NULL)
     return NULL;
   for (size_t i = 0; i < 2000; i++)
     attitude_solution[i] = NULL;
@@ -42,7 +42,7 @@ MuonInductor *muon_induce_initialize(
     .module = module,
     .type_length = 1000,
     .solution = solution,
-    .attitude_solution = attitude_solution,
+    .semisolution = attitude_solution,
     .rule_volume = universe_volume,
     .edge = universe_data,
     .vector = vector,
