@@ -105,7 +105,7 @@ MuonMeetType *muon_meet_type(
   return meet_type_activate(result);
 }
 
-const void *muon_scheme(MuonEngine *engine) {
+const void *muon_scheme_initiate(MuonEngine *engine) {
   MuonSchemeType *scheme = as_engine(engine)->scheme;
   struct MuonSchemeType *result;
   if ((result = type_allocate(engine, sizeof(MuonSchemeType))) == NULL)

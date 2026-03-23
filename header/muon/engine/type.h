@@ -147,7 +147,7 @@ MuonMeetType *muon_meet_type(
 
 /// Allocate a new scheme in the @a engine that all subsequent types will be
 /// created within
-const void *muon_scheme(MuonEngine *engine)
+const void *muon_scheme_initiate(MuonEngine *engine)
   MUON_HINT_SUFFIX(nonnull);
 
 /// Activate the scheme previously allocated (with muon_scheme()) and return it

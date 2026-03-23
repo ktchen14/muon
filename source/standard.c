@@ -38,7 +38,7 @@ MuonModule *muon_standard_module(MuonEngine *engine) {
           ->as_type);
 
   Engine *e = as_engine(engine);
-  muon_scheme(engine);
+  muon_scheme_initiate(engine);
   MuonVariableType *variable_type = muon_variable_type(
       engine, &e->bottom_type->as_type, &e->object_type->as_type);
   MuonExport *list_head = muon_export(
