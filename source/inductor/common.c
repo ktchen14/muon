@@ -143,7 +143,7 @@ void (inductor_debug)( //-
           debug("color=gray,");
           break;
 
-        case IMPOSSIBLE_RULE:
+        case REJECTED_RULE:
           debug("color=red,constraint=false,");
           break;
       }

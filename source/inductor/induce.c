@@ -232,7 +232,7 @@ Rule *type_assess(
     // Make ⟨source ⇒ target⟩ here in case of recursion
     if ((result = rule_insert(inductor, source, target)) == NULL)
       return NULL;
-    result->tag = IMPOSSIBLE_RULE;
+    result->tag = REJECTED_RULE;
     return result;
   }
   assert(source->tag != MUON_SCHEME_TYPE && target->tag != MUON_SCHEME_TYPE);
@@ -252,7 +252,7 @@ Rule *type_assess(
     return result;
   }
 
-  result->tag = IMPOSSIBLE_RULE;
+  result->tag = REJECTED_RULE;
   return result;
 }
 
@@ -270,7 +270,7 @@ static Rule *retrieve_core_coercion(
   /*   return induce->id_coercion; */
 
   if (source->core != target->core)
-    return rule->tag = IMPOSSIBLE_RULE, rule;
+    return rule->tag = REJECTED_RULE, rule;
 
   MuonCore *core = source->core;
 

@@ -118,7 +118,7 @@ static Semisolution *reduce_implicit_type(
         if ((rule = type_assess(inductor, semisolution->type, extant)) == NULL)
           return NULL;
 
-        if (rule->tag != IMPOSSIBLE_RULE)
+        if (rule->tag != REJECTED_RULE)
           goto next_rule;
       }
 

@@ -21,7 +21,7 @@ typedef struct Inductor Inductor;
 
 typedef enum {
   NORMAL_RULE,
-  IMPOSSIBLE_RULE,
+  REJECTED_RULE,
   INDIRECT_RULE, // remove this (add this to a different layer of the graph)
   JOIN_RULE,     // reductor only rule
 } RuleTag;
