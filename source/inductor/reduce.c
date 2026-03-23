@@ -18,13 +18,15 @@ static inline MuonType *assign_solution(
 
 static Semisolution *assign_semisolution(
     Inductor *inductor, Attitude attitude, Semisolution *solution) {
+  assert(attitude.type != NULL && is_implicit_type(attitude.type));
   assert(attitude.type->id < inductor->type_length);
   size_t i = attitude.type->id * 2 + attitude.charge;
   return inductor->semisolution[i] = solution;
 }
 
-static Semisolution *semisolution_get(
+static Semisolution *type_semisolution(
     const Inductor *inductor, Attitude attitude) {
+  assert(attitude.type != NULL && is_implicit_type(attitude.type));
   assert(attitude.type->id < inductor->type_length);
   size_t i = attitude.type->id * 2 + attitude.charge;
   return inductor->semisolution[i];
@@ -55,7 +57,7 @@ static Semisolution *reduce_implicit_type(
   assert(is_implicit_type(attitude.type));
 
   Semisolution *solution;
-  if ((solution = semisolution_get(inductor, attitude)) != NULL)
+  if ((solution = type_semisolution(inductor, attitude)) != NULL)
     return solution;
 
   vector_header(inductor->vector)->length = 0;
@@ -73,32 +75,31 @@ static Semisolution *reduce_implicit_type(
       continue;
     }
 
-    Semisolution a = {}, *solution = &a;
     Attitude next = {edge->vertex[attitude.charge], attitude.charge};
 
-    MuonType *x;
-    if ((x = type_solution(inductor, next.type)) != NULL) {
-      a.type = x;
+    Semisolution *semisolution = &(Semisolution) {};
+    MuonType *solution;
+    if ((solution = type_solution(inductor, next.type)) != NULL) {
+      *semisolution = (Semisolution) {.type = solution};
     } else {
-      solution = semisolution_get(inductor, next);
-      assert(solution != NULL);
-      assert(solution->type != NULL);
+      semisolution = type_semisolution(inductor, next);
+      assert(semisolution != NULL && semisolution->type != NULL);
     }
 
     MuonJoinType *join_type;
-    if ((join_type = muon_type_cast(solution->type, join_type)) != NULL) {
+    if ((join_type = muon_type_cast(semisolution->type, join_type)) != NULL) {
       for (size_t j = 0; j < join_type->argc; j++) {
         MuonType *argument = join_type->argv[j];
 
         for (size_t i = 0; i < vector_length(inductor->vector); i++) {
           MuonType *extant = inductor->vector[i];
 
-          Rule *rule;
-          if ((rule = type_assess(inductor, argument, extant)) == NULL)
-            abort();
+          // Rule *rule;
+          // if ((rule = type_assess(inductor, argument, extant)) == NULL)
+          //   abort();
 
-          if (rule->tag != IMPOSSIBLE_RULE)
-            goto next_argument;
+          // if (rule->tag != IMPOSSIBLE_RULE)
+          //   goto next_argument;
         }
 
         Vector(MuonType *) vector;
@@ -112,15 +113,22 @@ static Semisolution *reduce_implicit_type(
     } else {
       for (size_t i = 0; i < vector_length(inductor->vector); i++) {
         MuonType *extant = inductor->vector[i];
-        if (type_assess(inductor, solution->type, extant))
-          continue;
+
+        Rule *rule;
+        if ((rule = type_assess(inductor, semisolution->type, extant)) == NULL)
+          return NULL;
+
+        if (rule->tag != IMPOSSIBLE_RULE)
+          goto next_rule;
       }
 
       Vector(MuonType *) vector;
-      if ((vector = vector_append(inductor->vector, &solution->type)) == NULL)
+      if ((vector = vector_append(inductor->vector, &semisolution->type)) == NULL)
         abort();
       inductor->vector = vector;
     }
+
+  next_rule:
   }
 
   // Phase 3 — produce the join result (the attitude-specific solution).
@@ -143,8 +151,9 @@ static Semisolution *reduce_implicit_type(
       MuonType *argument = join_type->argv[i];
 
       Rule *rule = rule_search(inductor, argument, attitude.type);
-      assert(rule != NULL);
-      rule->center = &join_type->as_type;
+      // assert(rule != NULL);
+      if (rule != NULL)
+        rule->center = &join_type->as_type;
 
       if ((rule = edge_define(inductor, argument, &join_type->as_type)) == NULL)
         abort();
@@ -300,7 +309,7 @@ MuonType *reduce_type(Inductor *inductor, MuonType *type) {
           return NULL;
 
         Attitude invert = attitude_invert(cursor);
-        if ((solution[invert.charge] = semisolution_get(inductor, invert)) == NULL)
+        if ((solution[invert.charge] = type_semisolution(inductor, invert)) == NULL)
           break;
 
         MuonType *result;
@@ -328,7 +337,7 @@ MuonType *reduce_type(Inductor *inductor, MuonType *type) {
       continue;
 
     next = attitude_invert(next);
-    if (semisolution_get(inductor, next) != NULL)
+    if (type_semisolution(inductor, next) != NULL)
       continue;
 
     cursor = type_continue(cursor, next);
