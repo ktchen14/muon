@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-/// Type of a vector with element type @a T
+/// Type of a vector of <em>T</em>s
 #define Vector(T) typeof(&(T) {})
 
 typedef struct {
@@ -21,6 +21,7 @@ typedef struct {
 } VectorHeader;
 
 /// Return the header of the @a vector
+[[gnu::const, gnu::nonnull, gnu::returns_nonnull]]
 static inline VectorHeader *vector_header(const void *vector) {
   const size_t offset = offsetof(VectorHeader, data);
 #pragma GCC diagnostic push
@@ -31,14 +32,14 @@ static inline VectorHeader *vector_header(const void *vector) {
 }
 
 /// Return the volume of the @a vector
-[[gnu::nonnull, gnu::pure]] static inline size_t vector_volume(
-    const void *vector) {
+[[gnu::nonnull, gnu::pure]]
+static inline size_t vector_volume(const void *vector) {
   return vector_header(vector)->volume;
 }
 
 /// Return the length of the @a vector
-[[gnu::nonnull, gnu::pure]] static inline size_t vector_length(
-    const void *vector) {
+[[gnu::nonnull, gnu::pure]]
+static inline size_t vector_length(const void *vector) {
   return vector_header(vector)->length;
 }
 
@@ -48,7 +49,8 @@ void *vector_allocate(size_t member, size_t volume);
   (Vector(T)) {vector_allocate(sizeof((T) {}), (volume))} \
 )
 
-void vector_delete(void *vector);
+/// Delete the @a vector
+[[gnu::nonnull]] void vector_delete(void *vector);
 
 void *vector_resize(void *vector, size_t member, size_t volume);
 

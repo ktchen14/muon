@@ -9,14 +9,14 @@
 #include <stdckdint.h>
 #include <stdlib.h>
 
-static inline MuonType *assign_solution(
+[[gnu::nonnull]] static inline MuonType *assign_solution(
     Inductor *inductor, MuonType *type, MuonType *solution) {
   assert(type->id < inductor->type_length);
   assert(solution->explicit);
   return inductor->solution[type->id] = solution;
 }
 
-static Semisolution *assign_semisolution(
+[[gnu::nonnull]] static Semisolution *assign_semisolution(
     Inductor *inductor, Attitude attitude, Semisolution *solution) {
   assert(attitude.type != NULL && is_implicit_type(attitude.type));
   assert(attitude.type->id < inductor->type_length);
