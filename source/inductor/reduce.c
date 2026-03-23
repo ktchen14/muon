@@ -16,7 +16,7 @@ static inline MuonType *assign_solution(
   return inductor->solution[type->id] = solution;
 }
 
-static inline AttitudeSolution *attitude_solution_get(
+static inline AttitudeSolution *solution_get(
     const Inductor *inductor, Attitude attitude) {
   assert(attitude.type->id < inductor->type_length);
   return inductor->attitude_solution[attitude.type->id * 2 + attitude.charge];
@@ -32,21 +32,15 @@ static inline AttitudeSolution *attitude_solution_set(
 /// Compute the overall solution for an implicit type from its two
 /// attitude-specific solutions.  Kept as a separate function so that the
 /// resolution strategy can be enhanced later.
-static MuonType *resolve_variable(
-    Inductor *inductor, MuonImplicitType *variable) {
-  MuonType *solution;
-  if ((solution = type_solution(inductor, &variable->as_type)) != NULL)
-    return solution;
-
-  AttitudeSolution *pos = attitude_solution_get(
-      inductor, (Attitude) {&variable->as_type, 0});
-  AttitudeSolution *neg = attitude_solution_get(
-      inductor, (Attitude) {&variable->as_type, 1});
+static MuonType *implicit_solution(
+    Inductor *inductor, AttitudeSolution *solution[static 2]) {
+  AttitudeSolution *pos = solution[0];
+  AttitudeSolution *neg = solution[1];
   assert(pos != NULL && neg != NULL);
 
   MuonType *overall = pos->type;
   assert(overall != NULL);
-  return assign_solution(inductor, &variable->as_type, overall);
+  return overall;
 }
 
 /// Compute the attitude-specific solution for an implicit type at a given
@@ -56,11 +50,11 @@ static MuonType *resolve_variable(
 /// This function only reads pre-computed solutions — it does not trigger any
 /// further reductions.
 static AttitudeSolution *reduce_implicit_type(
-    Inductor *inductor, MuonImplicitType *target, _Bool charge) {
-  Attitude attitude = {&target->as_type, charge};
+    Inductor *inductor, Attitude attitude) {
+  assert(is_implicit_type(attitude.type));
 
   AttitudeSolution *solution;
-  if ((solution = attitude_solution_get(inductor, attitude)) != NULL)
+  if ((solution = solution_get(inductor, attitude)) != NULL)
     return solution;
 
   vector_header(inductor->vector)->length = 0;
@@ -79,13 +73,13 @@ static AttitudeSolution *reduce_implicit_type(
     }
 
     AttitudeSolution a = {}, *solution = &a;
-    Attitude next = {edge->vertex[charge], charge};
+    Attitude next = {edge->vertex[attitude.charge], attitude.charge};
 
     MuonType *x;
     if ((x = type_solution(inductor, next.type)) != NULL) {
       a.type = x;
     } else {
-      solution = attitude_solution_get(inductor, next);
+      solution = solution_get(inductor, next);
       assert(solution != NULL);
       assert(solution->type != NULL);
     }
@@ -147,7 +141,7 @@ static AttitudeSolution *reduce_implicit_type(
     for (size_t i = 0; i < join_type->argc; i++) {
       MuonType *argument = join_type->argv[i];
 
-      Rule *rule = rule_search(inductor, argument, &target->as_type);
+      Rule *rule = rule_search(inductor, argument, attitude.type);
       assert(rule != NULL);
       rule->center = &join_type->as_type;
 
@@ -298,18 +292,22 @@ MuonType *reduce_type(Inductor *inductor, MuonType *type) {
         break;
       }
 
-      case IS_CONCRETE_TYPE(MuonImplicitType *implicit_type) {
-        if (reduce_implicit_type(inductor, implicit_type, cursor.charge)
-            == NULL)
+      case MUON_IMPLICIT_TYPE:
+        AttitudeSolution *solution[2] = {};
+
+        if ((solution[cursor.charge] = reduce_implicit_type(inductor, cursor)) == NULL)
           return NULL;
 
         Attitude invert = attitude_invert(cursor);
-        if (attitude_solution_get(inductor, invert) == NULL)
+        if ((solution[invert.charge] = solution_get(inductor, invert)) == NULL)
           break;
 
-        resolve_variable(inductor, implicit_type);
+        MuonType *result;
+        if ((result = implicit_solution(inductor, solution)) == NULL)
+          return NULL;
+
+        assign_solution(inductor, cursor.type, result);
         break;
-      }
 
       case MUON_VARIABLE_TYPE:
         assert(cursor.type->explicit);
@@ -329,7 +327,7 @@ MuonType *reduce_type(Inductor *inductor, MuonType *type) {
       continue;
 
     next = attitude_invert(next);
-    if (attitude_solution_get(inductor, next) != NULL)
+    if (solution_get(inductor, next) != NULL)
       continue;
 
     cursor = type_continue(cursor, next);
