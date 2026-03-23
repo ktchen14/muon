@@ -86,7 +86,7 @@ static inline void *vector_insert(
   if (rare(ckd_add(&length, vector_length(vector), 1)))
     return errno = ENOMEM, NULL;
 
-  if ((vector = (vector_ensure)(vector, member, length)) == NULL)
+  if ((vector = (vector_ensure) (vector, member, length)) == NULL)
     return NULL;
 
   // move the existing elements n elements toward the tail
@@ -106,7 +106,7 @@ static inline void *vector_insert(
 
 static inline void *vector_append(
     void *vector, size_t member, const void *data) {
-  return (vector_insert)(vector, member, data, vector_length(vector));
+  return (vector_insert) (vector, member, data, vector_length(vector));
 }
 
 #define vector_append(vector, data) ( \

@@ -109,6 +109,8 @@ struct Inductor {
   size_t rule_volume;
   Rule *edge;
 
+  Vector(MuonType *) vector;
+
   MuonCore *datatype_core;
 };
 

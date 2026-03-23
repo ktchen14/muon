@@ -32,6 +32,10 @@ MuonInductor *muon_induce_initialize(
   if ((universe_data = malloc(sizeof(Rule[universe_volume]))) == NULL)
     return NULL;
 
+  Vector(MuonType *) vector;
+  if ((vector = vector_allocate(MuonType *, 16)) == NULL)
+    return NULL;
+
   *inductor = (MuonInductor) {
     .engine = opaque,
     .detect = detect_result(detect),
@@ -41,6 +45,7 @@ MuonInductor *muon_induce_initialize(
     .attitude_solution = attitude_solution,
     .rule_volume = universe_volume,
     .edge = universe_data,
+    .vector = vector,
   };
 
   Engine *engine = as_engine(opaque);
