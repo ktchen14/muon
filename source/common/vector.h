@@ -53,7 +53,7 @@ void vector_delete(void *vector);
 void *vector_resize(void *vector, size_t member, size_t volume);
 
 #define vector_resize(vector, volume) ( \
-  (typeof(vector)) {vector_resize((vector), sizeof((vector)[0]), (volume))} \
+  (typeof(vector)) {vector_resize((vector), sizeof(*(vector)), (volume))} \
 )
 
 MUON_HINT(nonnull) static inline void *vector_ensure(
@@ -79,7 +79,7 @@ MUON_HINT(nonnull) static inline void *vector_ensure(
 }
 
 #define vector_ensure(vector, length) ( \
-  (typeof(vector)) {vector_ensure((vector), sizeof((vector)[0]), (length))} \
+  (typeof(vector)) {vector_ensure((vector), sizeof(*(vector)), (length))} \
 )
 
 static inline void *vector_insert(
@@ -104,14 +104,9 @@ static inline void *vector_insert(
   return vector_header(vector)->length = length, vector;
 }
 
-#define vector_insert(vector, data, i) ( \
-  (typeof(vector)) {vector_insert( \
-    (vector), \
-    sizeof((vector)[0]), \
-    (const typeof((vector)[0]) *) {(data)} \
-    (i) \
-  )} \
-)
+#define vector_insert(vector, data, i) ((typeof(vector)) {vector_insert( \
+  (vector), sizeof(*(vector)), (const typeof(*(vector)) *) {(data)}, (i) \
+)})
 
 static inline void *vector_append(
     void *vector, size_t member, const void *data) {
@@ -119,12 +114,8 @@ static inline void *vector_append(
   return insert(vector, member, data, vector_length(vector));
 }
 
-#define vector_append(vector, data) ( \
-  (typeof(vector)) {vector_append( \
-    (vector), \
-    sizeof((vector)[0]), \
-    (const typeof((vector)[0]) *) {(data)} \
-  )} \
-)
+#define vector_append(vector, data) ((typeof(vector)) {vector_append( \
+  (vector), sizeof(*(vector)), (const typeof(*(vector)) *) {(data)} \
+)})
 
 #endif /* MUON_COMMON_VECTOR_I */
