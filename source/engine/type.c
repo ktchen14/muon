@@ -54,23 +54,23 @@ MuonCoreType *muon_core_type(
   return core_type_activate(result);
 }
 
-MuonCoreType *muon_boolean_type(MuonEngine *opaque) {
-  return muon_core_type(opaque, as_engine(opaque)->boolean_core, NULL);
+MuonCoreType *muon_boolean_type(MuonEngine *engine) {
+  return muon_core_type(engine, as_engine(engine)->boolean_core, NULL);
 }
 
-MuonCoreType *muon_integer_type(MuonEngine *opaque) {
-  return muon_core_type(opaque, as_engine(opaque)->integer_core, NULL);
+MuonCoreType *muon_integer_type(MuonEngine *engine) {
+  return muon_core_type(engine, as_engine(engine)->integer_core, NULL);
 }
 
 MuonCoreType *muon_lambda_type(
-    MuonEngine *opaque, MuonType *argument, MuonType *output) {
+    MuonEngine *engine, MuonType *argument, MuonType *output) {
   MuonType *argv[] = {argument, output};
-  return muon_core_type(opaque, as_engine(opaque)->lambda_core, argv);
+  return muon_core_type(engine, as_engine(engine)->lambda_core, argv);
 }
 
-MuonCoreType *muon_vector_type(MuonEngine *opaque, MuonType *matter) {
+MuonCoreType *muon_vector_type(MuonEngine *engine, MuonType *matter) {
   MuonType *argv[] = {matter};
-  return muon_core_type(opaque, as_engine(opaque)->vector_core, argv);
+  return muon_core_type(engine, as_engine(engine)->vector_core, argv);
 }
 
 MuonImplicitType *muon_implicit_type(MuonEngine *engine) {

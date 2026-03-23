@@ -1,13 +1,28 @@
 Checks:
-- "-*"
 - "bugprone-*"
 - "-bugprone-assignment-in-if-condition"
 - "-bugprone-easily-swappable-parameters"
 - "-bugprone-macro-parentheses"
 - "-bugprone-multi-level-implicit-pointer-conversion"
 - "-bugprone-sizeof-expression"
-- "misc-no-recursion"
-# - "readability-*"
-# - "-readability-braces-around-statements"
-# - "-readability-function-cognitive-complexity"
-# - "-readability-identifier-length"
+# - "misc-no-recursion"
+- "readability-*"
+- "-readability-braces-around-statements"
+- "-readability-enum-initial-value"
+- "-readability-implicit-bool-conversion"
+- "-readability-isolate-declaration"
+- "-readability-math-missing-parentheses"
+- "-readability-named-parameter"
+# Actually wanted but need to configure/ignore
+- "-readability-magic-numbers"
+- "-readability-function-cognitive-complexity"
+- "-*"
+
+CheckOptions:
+  readability-identifier-length.IgnoredLoopCounterNames: "^(i|it|j|jt)$"
+  readability-identifier-length.IgnoredParameterNames: "^(a|b|i|id|it)$"
+  readability-identifier-length.IgnoredVariableNames: "^(_a|_b|a|b|i|id|it|j|jt|ra|rb)$"
+  readability-redundant-parentheses.AllowedDecls: |-
+    muon_node_debug;muon_type_debug;struct_size2;struct_size_overflow"
+
+ExcludeHeaderFilterRegex: llvm-c

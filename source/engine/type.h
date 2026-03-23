@@ -169,13 +169,13 @@ MuonCoreType *core_type_activate(struct MuonCoreType *type)
 struct MuonJoinType *join_type_allocate(MuonEngine *engine, size_t argc)
   MUON_HINT_SUFFIX(nonnull);
 
-MuonJoinType *join_type_activate(struct MuonJoinType *join)
+MuonJoinType *join_type_activate(struct MuonJoinType *type)
   MUON_HINT_SUFFIX(nonnull);
 
 struct MuonMeetType *meet_type_allocate(MuonEngine *engine, size_t argc)
   MUON_HINT_SUFFIX(nonnull);
 
-MuonMeetType *meet_type_activate(struct MuonMeetType *meet)
+MuonMeetType *meet_type_activate(struct MuonMeetType *type)
   MUON_HINT_SUFFIX(nonnull);
 
 struct MuonSchemeType *scheme_type_allocate(MuonEngine *engine)

@@ -55,6 +55,6 @@ detect_t *detect_initialize(
     const MuonModule *module)
   MUON_HINT_SUFFIX(nonnull);
 
-detect_t *detect_node(detect_t *detect, MuonNode *node);
+detect_t *detect_node(detect_t *detect, MuonNode *root);
 
 #endif /* MU_DETECTOR_DETECT_I */

@@ -117,8 +117,9 @@ static AttitudeSolution *reduce_implicit_type(
         inductor, (Attitude) {single, charge});
     if (solution.is_variable) {
       join = solution.solution->type;
-    } else
+    } else {
       join = solution.type;
+    }
   } else {
     struct MuonJoinType *allocation;
     if ((allocation = join_type_allocate(inductor->engine, argc)) == NULL)
