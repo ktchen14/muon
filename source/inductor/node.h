@@ -11,10 +11,8 @@
     const Inductor *inductor, MuonNode *node) {
   assert(node->engine == inductor->engine);
 
-  size_t i = node->tag - MUON_MINORANT_NODE;
-  const size_t *offset = &inductor->node_offset[i];
+  const size_t *offset = &inductor->node_offset[node->tag];
   assert(*offset + node->id < offset[1]);
-
   return inductor->node[*offset + node->id].source;
 }
 
@@ -23,10 +21,8 @@
     const Inductor *inductor, MuonNode *node) {
   assert(node->engine == inductor->engine);
 
-  size_t i = node->tag - MUON_MINORANT_NODE;
-  const size_t *offset = &inductor->node_offset[i];
+  const size_t *offset = &inductor->node_offset[node->tag];
   assert(*offset + node->id < offset[1]);
-
   return inductor->node[*offset + node->id].target;
 }
 

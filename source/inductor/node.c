@@ -58,10 +58,8 @@ void *induce_script(MuonInductor *inductor, MuonScript *script) {
     if ((type = on_return(inductor, node)) == NULL)
       goto except;
 
-    size_t i = node->tag - MUON_MINORANT_NODE;
-    const size_t *offset = &inductor->node_offset[i];
+    const size_t *offset = &inductor->node_offset[node->tag];
     assert(*offset + node->id < offset[1]);
-
     inductor->node[*offset + node->id].source = type;
   } while ((node = node_return(node)) != NULL);
 
