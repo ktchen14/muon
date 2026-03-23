@@ -7,9 +7,10 @@
 #include <stdlib.h>
 
 static inline _Bool vector_size_overflow(size_t member, size_t *size) {
+  auto overflow = struct_size_overflow;
   size_t nought = sizeof(VectorHeader);
   size_t offset = offsetof(VectorHeader, data);
-  return (struct_size_overflow) (nought, offset, member, size);
+  return overflow(nought, offset, member, size);
 }
 
 void *(vector_allocate)(size_t member, size_t volume) { //-
@@ -31,7 +32,7 @@ void vector_delete(void *vector) {
 
 void *(vector_resize)(void *vector, size_t member, size_t volume) { //-
   size_t size = volume;
-  if (vector_size_overflow(member, &volume))
+  if (vector_size_overflow(member, &size))
     return errno = ENOMEM, NULL;
 
   VectorHeader *header = vector_header(vector);

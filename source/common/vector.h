@@ -53,11 +53,13 @@ void vector_delete(void *vector);
 void *vector_resize(void *vector, size_t member, size_t volume);
 
 #define vector_resize(vector, volume) ( \
-  (typeof(vector)) {vector_resize(sizeof((vector)[0]), (volume))} \
+  (typeof(vector)) {vector_resize((vector), sizeof((vector)[0]), (volume))} \
 )
 
 MUON_HINT(nonnull) static inline void *vector_ensure(
     void *vector, size_t member, size_t length) {
+  auto resize = vector_resize;
+
   if (length <= vector_volume(vector))
     return vector;
 
@@ -66,27 +68,29 @@ MUON_HINT(nonnull) static inline void *vector_ensure(
 
   // if the volume doesn't overflow then attempt to allocate it
   if (volume > length) {
-    void *resize;
-    if ((resize = (vector_resize) (vector, member, volume)) != NULL)
-      return resize;
+    void *result;
+    if ((result = resize(vector, member, volume)) != NULL)
+      return result;
   }
 
   // if either the volume overflows or the allocation failed then attempt to
   // resize to just the length
-  return (vector_resize) (vector, member, length);
+  return resize(vector, member, length);
 }
 
 #define vector_ensure(vector, length) ( \
-  (typeof(vector)) {vector_ensure(sizeof((vector)[0]), (length))} \
+  (typeof(vector)) {vector_ensure((vector), sizeof((vector)[0]), (length))} \
 )
 
 static inline void *vector_insert(
     void *vector, size_t member, const void *data, size_t i) {
+  auto ensure = vector_ensure;
+
   size_t length;
   if (rare(ckd_add(&length, vector_length(vector), 1)))
     return errno = ENOMEM, NULL;
 
-  if ((vector = (vector_ensure) (vector, member, length)) == NULL)
+  if ((vector = ensure(vector, member, length)) == NULL)
     return NULL;
 
   // move the existing elements n elements toward the tail
@@ -101,16 +105,17 @@ static inline void *vector_insert(
 }
 
 #define vector_insert(vector, data, i) ( \
-  (typeof(vector)) {vector_insert(sizeof((vector)[0]), (data), (i))} \
+  (typeof(vector)) {vector_insert((vector), sizeof((vector)[0]), (data), (i))} \
 )
 
 static inline void *vector_append(
     void *vector, size_t member, const void *data) {
-  return (vector_insert) (vector, member, data, vector_length(vector));
+  auto insert = vector_insert;
+  return insert(vector, member, data, vector_length(vector));
 }
 
 #define vector_append(vector, data) ( \
-  (typeof(vector)) {vector_append(sizeof((vector)[0]), (data)))} \
+  (typeof(vector)) {vector_append((vector), sizeof((vector)[0]), (data))} \
 )
 
 #endif /* MUON_COMMON_VECTOR_I */
