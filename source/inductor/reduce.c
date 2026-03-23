@@ -13,7 +13,7 @@ typedef struct {
   _Bool is_variable;
   union {
     MuonType *type;
-    VariableSolution *solution;
+    AttitudeSolution *solution;
   };
 } Solution;
 
@@ -33,9 +33,9 @@ static MuonType *resolve_variable(
   if ((solution = type_solution(inductor, &variable->as_type)) != NULL)
     return solution;
 
-  VariableSolution *pos = attitude_solution_get(
+  AttitudeSolution *pos = attitude_solution_get(
       inductor, (Attitude) {&variable->as_type, 0});
-  VariableSolution *neg = attitude_solution_get(
+  AttitudeSolution *neg = attitude_solution_get(
       inductor, (Attitude) {&variable->as_type, 1});
   assert(pos != NULL && neg != NULL);
 
@@ -59,7 +59,7 @@ static inline MuonType *neighbor_solution(
   assert(is_implicit_type(type));
 
   Attitude attitude = {type, charge};
-  VariableSolution *solution = attitude_solution_get(inductor, attitude);
+  AttitudeSolution *solution = attitude_solution_get(inductor, attitude);
   assert(solution != NULL);
   return solution->type;
 }
@@ -72,7 +72,7 @@ static inline MuonType *neighbor_solution(
 
   assert(is_implicit_type(attitude.type));
 
-  VariableSolution *solution = attitude_solution_get(inductor, attitude);
+  AttitudeSolution *solution = attitude_solution_get(inductor, attitude);
   assert(solution != NULL);
   return (Solution) {.is_variable = 1, .solution = solution};
 }
@@ -83,11 +83,11 @@ static inline MuonType *neighbor_solution(
 /// All constraint neighbors must already have been reduced by the traversal.
 /// This function only reads pre-computed solutions — it does not trigger any
 /// further reductions.
-static VariableSolution *reduce_implicit_type(
+static AttitudeSolution *reduce_implicit_type(
     Inductor *inductor, MuonImplicitType *target, _Bool charge) {
   Attitude attitude = {&target->as_type, charge};
 
-  VariableSolution *solution;
+  AttitudeSolution *solution;
   if ((solution = attitude_solution_get(inductor, attitude)) != NULL)
     return solution;
 
@@ -173,11 +173,11 @@ static VariableSolution *reduce_implicit_type(
   }
 
   size_t size = instance_argc;
-  if (struct_size_overflow(VariableSolution, argv, &size))
+  if (struct_size_overflow(AttitudeSolution, argv, &size))
     return errno = ENOMEM, NULL;
   if ((solution = malloc(size)) == NULL)
     return NULL;
-  *solution = (VariableSolution) {.type = join, .argc = instance_argc};
+  *solution = (AttitudeSolution) {.type = join, .argc = instance_argc};
 
   size_t j = 0;
   it = rule_iterator(inductor, attitude);
