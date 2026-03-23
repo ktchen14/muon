@@ -22,11 +22,6 @@ typedef enum {
 #define MUON_EMIT(T, l, UPPER) MUON_##UPPER,
   MUON_EACH_TYPE(MUON_EMIT)
 #undef MUON_EMIT
-
-#define MUON_EMIT(T, l, UPPER) MUON_##UPPER,
-  /// Equivalent to the minimum enumerator in MuonTypeTag
-  MUON_MINORANT_TYPE = MUON_INDIRECT(MUON_TAKE, MUON_EACH_TYPE(MUON_EMIT)),
-#undef MUON_EMIT
 } MuonTypeTag;
 
 enum {
