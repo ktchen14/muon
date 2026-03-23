@@ -105,7 +105,12 @@ static inline void *vector_insert(
 }
 
 #define vector_insert(vector, data, i) ( \
-  (typeof(vector)) {vector_insert((vector), sizeof((vector)[0]), (data), (i))} \
+  (typeof(vector)) {vector_insert( \
+    (vector), \
+    sizeof((vector)[0]), \
+    (const typeof((vector)[0]) *) {(data)} \
+    (i) \
+  )} \
 )
 
 static inline void *vector_append(
@@ -115,7 +120,11 @@ static inline void *vector_append(
 }
 
 #define vector_append(vector, data) ( \
-  (typeof(vector)) {vector_append((vector), sizeof((vector)[0]), (data))} \
+  (typeof(vector)) {vector_append( \
+    (vector), \
+    sizeof((vector)[0]), \
+    (const typeof((vector)[0]) *) {(data)} \
+  )} \
 )
 
 #endif /* MUON_COMMON_VECTOR_I */
