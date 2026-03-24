@@ -7,6 +7,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <stdckdint.h>
+#include <stdint.h>
 #include <stdlib.h>
 
 [[gnu::nonnull]] static inline MuonType *assign_solution(
@@ -46,6 +47,42 @@ static MuonType *implicit_solution(
     return semisolution[1]->type;
 
   return semisolution[0]->type;
+}
+
+int type_cmp(const void *a, const void *b) {
+  MuonType *ra = *(MuonType *const *) a;
+  MuonType *rb = *(MuonType *const *) b;
+
+  if ((uintptr_t) ra < (uintptr_t) rb)
+    return -1;
+  if ((uintptr_t) ra > (uintptr_t) rb)
+    return +1;
+  return 0;
+}
+
+void simplify(Vector(MuonType *) vector) {
+  size_t length = vector_length(vector);
+  if (length < 2)
+    return;
+
+  // Deduplicate the types in the vector
+  qsort(vector, length, sizeof(MuonType *), type_cmp);
+  size_t j = 0;
+  for (size_t i = 1; i < length; i++) {
+    if (vector[i] != vector[j])
+      vector[++j] = vector[i];
+  }
+
+  vector_truncate(vector, length = j + 1);
+
+  // Now, some of the types in the vector may be MuonJoinTypes. We know that
+  // each pair of types a and b within a MuonJoinType can't be coercible to each
+  // other, that is, type_assess(a, b) -> REJECTED_RULE and type_assess(b, a) ->
+  // REJECTED_RULE so there's no need to check.
+  //
+  // We want to recursively expand each MuonJoinType to its constituent types
+  // and we want the result to be a set of types with that property (no type is
+  // coercible to any other type).
 }
 
 /// Reduce an implicit type to a semisolution
