@@ -120,6 +120,23 @@ static inline void *vector_append(
   (vector), sizeof(*(vector)), (const typeof(*(vector)) *) {(data)} \
 )})
 
+static inline void *vector_extend(
+    void *vector, size_t member, const void *data, size_t length) {
+  auto append = vector_append;
+
+  const char *next = data;
+  for (size_t i = 0; i < length; i++) {
+    if ((vector = append(vector, member, next)) == NULL)
+      return NULL;
+    next += length;
+  }
+  return vector;
+}
+
+#define vector_extend(vector, data, length) ((typeof(vector)) {vector_extend( \
+  (vector), sizeof(*(vector)), (const typeof(*(vector)) *) {(data)}, (length) \
+)})
+
 static inline void vector_truncate(void *vector, size_t length) {
   length = minimum(vector_header(vector)->length, length);
   vector_header(vector)->length = length;
