@@ -37,13 +37,15 @@ static Semisolution *type_semisolution(
 /// resolution strategy can be enhanced later.
 static MuonType *implicit_solution(
     Inductor *inductor, Semisolution *semisolution[static 2]) {
-  Semisolution *pos = semisolution[0];
-  Semisolution *neg = semisolution[1];
-  assert(pos != NULL && neg != NULL);
+  assert(semisolution[0] != NULL && semisolution[1] != NULL);
 
-  MuonType *overall = pos->type;
-  assert(overall != NULL);
-  return overall;
+  if (semisolution[0]->type->tag != MUON_JOIN_TYPE)
+    return semisolution[0]->type;
+
+  if (semisolution[1]->type->tag != MUON_MEET_TYPE)
+    return semisolution[1]->type;
+
+  return semisolution[0]->type;
 }
 
 /// Reduce an implicit type to a semisolution
