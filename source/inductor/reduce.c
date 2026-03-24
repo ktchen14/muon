@@ -9,6 +9,7 @@
 #include <stdckdint.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 
 [[gnu::nonnull]] static inline MuonType *assign_solution(
     Inductor *inductor, MuonType *type, MuonType *solution) {
@@ -60,20 +61,21 @@ int type_cmp(const void *a, const void *b) {
   return 0;
 }
 
-void simplify(Vector(MuonType *) vector) {
-  size_t length = vector_length(vector);
-  if (length < 2)
-    return;
+Vector(MuonType *) simplify(
+    Inductor *inductor, Vector(MuonType *) vector) {
+  size_t origin = vector_length(vector);
+  if (origin < 2)
+    return vector;
 
   // Deduplicate the types in the vector
-  qsort(vector, length, sizeof(MuonType *), type_cmp);
+  qsort(vector, origin, sizeof(MuonType *), type_cmp);
   size_t j = 0;
-  for (size_t i = 1; i < length; i++) {
+  for (size_t i = 1; i < origin; i++) {
     if (vector[i] != vector[j])
       vector[++j] = vector[i];
   }
 
-  vector_truncate(vector, length = j + 1);
+  vector_truncate(vector, origin = j + 1);
 
   // Now, some of the types in the vector may be MuonJoinTypes. We know that
   // each pair of types a and b within a MuonJoinType can't be coercible to each
@@ -83,6 +85,116 @@ void simplify(Vector(MuonType *) vector) {
   // We want to recursively expand each MuonJoinType to its constituent types
   // and we want the result to be a set of types with that property (no type is
   // coercible to any other type).
+  //
+  // Three regions: [0, origin) is the original deduped input, [origin,
+  // current_end) is the validated current list, and [current_end, ...) is the
+  // new proposed batch from one original element.
+
+  for (size_t i = 0; i < origin; i++) {
+    size_t new_start = vector_length(vector);
+
+    MuonType *type = vector[i];
+
+    // Expand: recursively flatten JoinTypes, appending leaf types to the end.
+    // Seed with the original element, then process until all are leaves.
+    if ((vector = vector_append(vector, &type)) == NULL)
+      return NULL;
+
+    for (size_t j = new_start; j < vector_length(vector);) {
+      MuonJoinType *join_type;
+      if ((join_type = muon_type_cast(vector[j], join_type)) == NULL)
+        goto next_type;
+
+      // Replace this JoinType with its first constituent, append the rest.
+      vector[j] = join_type->argv[0];
+      for (size_t k = 1; k < join_type->argc; k++) {
+        MuonType *argument = join_type->argv[k];
+        if ((vector = vector_append(vector, &argument)) == NULL)
+          return NULL;
+      }
+
+      continue;
+
+      // Re-examine this index since the replacement may be a JoinType.
+    next_type:
+      j++;
+    }
+
+    // Filter: check each new proposed type against the current list.
+    for (size_t j = new_start; j < vector_length(vector);) {
+      MuonType *proposed = vector[j];
+
+      // Is the proposed type coercible to any current type? If so, discard it.
+      _Bool subsumed = 0;
+      for (size_t c = origin; c < new_start; c++) {
+        Rule *rule;
+        if ((rule = type_assess(inductor, proposed, vector[c])) == NULL)
+          return NULL;
+        if (rule->tag != REJECTED_RULE) {
+          subsumed = 1;
+          break;
+        }
+      }
+
+      if (subsumed) {
+        size_t last = vector_length(vector) - 1;
+        vector[j] = vector[last];
+        vector_truncate(vector, last);
+        continue;
+      }
+
+      // Is any current type coercible to the proposed type? If so, replace it
+      // and remove any other current types also coercible to it.
+      _Bool replaced = 0;
+      for (size_t c = origin; c < new_start;) {
+        Rule *rule;
+        if ((rule = type_assess(inductor, vector[c], proposed)) == NULL)
+          return NULL;
+
+        if (rule->tag == REJECTED_RULE) {
+          c++;
+          continue;
+        }
+
+        // Replace this current type with the proposed type.
+        vector[c] = proposed;
+        replaced = 1;
+
+        // Remove any further current types also coercible to proposed.
+        for (size_t d = c + 1; d < new_start;) {
+          Rule *rule;
+          if ((rule = type_assess(inductor, vector[d], proposed)) == NULL)
+            return NULL;
+
+          if (rule->tag == REJECTED_RULE) {
+            d++;
+            continue;
+          }
+
+          vector[d] = vector[--new_start];
+        }
+        break;
+      }
+
+      if (replaced) {
+        // Discard this proposed entry; it's already placed in current.
+        size_t last = vector_length(vector) - 1;
+        vector[j] = vector[last];
+        vector_truncate(vector, last);
+        continue;
+      }
+
+      // Neither subsumed nor subsumes; keep it.
+      j++;
+    }
+  }
+
+  // Move the current list to the front and truncate.
+  size_t result_length = vector_length(vector) - origin;
+  memmove(vector, vector + origin, sizeof(MuonType *[result_length]));
+  vector_truncate(vector, result_length);
+
+  return vector;
 }
 
 /// Reduce an implicit type to a semisolution
