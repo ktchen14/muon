@@ -41,11 +41,17 @@ static MuonType *implicit_solution(
     Inductor *inductor, Semisolution *semisolution[static 2]) {
   assert(semisolution[0] != NULL && semisolution[1] != NULL);
 
+  if (is_bottom_type(semisolution[0]->type))
+    return semisolution[0]->type;
+
+  // if (is_object_type(semisolution[1]->type))
+  //   return semisolution[1]->type;
+
   if (semisolution[0]->type->tag != MUON_JOIN_TYPE)
     return semisolution[0]->type;
 
-  if (semisolution[1]->type->tag != MUON_MEET_TYPE)
-    return semisolution[1]->type;
+  // if (semisolution[1]->type->tag != MUON_MEET_TYPE)
+  //   return semisolution[1]->type;
 
   return semisolution[0]->type;
 }
@@ -61,40 +67,30 @@ int type_cmp(const void *a, const void *b) {
   return 0;
 }
 
-Vector(MuonType *) simplify(
+static Vector(MuonType *) simplify(
     Inductor *inductor, Vector(MuonType *) vector) {
-  size_t origin_length = vector_length(vector);
-  if (origin_length < 2)
+  if (vector_length(vector) < 2)
     return vector;
 
-  // Deduplicate the types in the vector
-  qsort(vector, origin_length, sizeof(MuonType *), type_cmp);
-  size_t j = 0;
-  for (size_t i = 1; i < origin_length; i++) {
-    if (vector[i] != vector[j])
-      vector[++j] = vector[i];
+  // Deduplicate if we have more than a single origin type
+  if (vector_length(vector) > 1) {
+    qsort(vector, vector_length(vector), sizeof(MuonType *), type_cmp);
+
+    size_t j = 0;
+    for (size_t i = 1; i < vector_length(vector); i++) {
+      if (vector[i] != vector[j])
+        vector[++j] = vector[i];
+    }
+
+    vector_length(vector) = ++j;
   }
 
-  vector_truncate(vector, origin_length = j + 1);
-
-  // Now, some of the types in the vector may be MuonJoinTypes. We know that
-  // each pair of types a and b within a MuonJoinType can't be coercible to each
-  // other, that is, type_assess(a, b) -> REJECTED_RULE and type_assess(b, a) ->
-  // REJECTED_RULE so there's no need to check.
-  //
-  // We want to recursively expand each MuonJoinType to its constituent types
-  // and we want the result to be a set of types with that property (no type is
-  // coercible to any other type).
-  //
-  // Three regions: [0, origin) is the original deduped input, [origin,
-  // current_end) is the validated current list, and [current_end, ...) is the
-  // new proposed batch from one original element.
-
+  size_t origin_length = vector_length(vector);
   for (size_t i = 0; i < origin_length; i++) {
     size_t new_start = vector_length(vector);
 
-    // Append the next type to the vector, recursively expanding any join types
-    // that are encountered.
+    // Append the next origin type to the vector. If it's a join or meet type,
+    // expand it (recursively).
     MuonType *origin_type = vector[i];
     if ((vector = vector_append(vector, &origin_type)) == NULL)
       return NULL;
@@ -107,9 +103,7 @@ Vector(MuonType *) simplify(
       }
 
       if (join_type->argc == 0) {
-        size_t length = vector_length(vector) - 1;
-        vector[j] = vector[length];
-        vector_truncate(vector, length);
+        vector[j] = vector[--vector_length(vector)];
         continue;
       }
 
@@ -133,17 +127,17 @@ Vector(MuonType *) simplify(
         Rule *rule;
         if ((rule = type_assess(inductor, type, extant)) == NULL)
           return NULL;
-        if (rule->tag != REJECTED_RULE) {
-          size_t length = vector_length(vector) - 1;
-          vector[j] = vector[length];
-          vector_truncate(vector, length);
+        if (rule->tag == REJECTED_RULE) {
+          j++;
           continue;
         }
 
-        j++;
+        vector[j] = vector[--vector_length(vector)];
       }
     }
 
+    // Is any current type coercible to the proposed type? If so, replace it
+    // and remove any other current types also coercible to it.
     for (size_t j = new_start; j < vector_length(vector); j++) {
       MuonType *type = vector[j];
 
@@ -151,29 +145,26 @@ Vector(MuonType *) simplify(
         MuonType *extant = vector[k];
 
         Rule *rule;
-        // Is any current type coercible to the proposed type? If so, replace it
-        // and remove any other current types also coercible to it.
         if ((rule = type_assess(inductor, extant, type)) == NULL)
           return NULL;
-        if (rule->tag != REJECTED_RULE) {
-          vector[k] = vector[--extant_end];
+        if (rule->tag == REJECTED_RULE) {
+          k++;
           continue;
         }
 
-        k++;
+        vector[k] = vector[--extant_end];
       }
     }
 
-    size_t diff = new_start - extant_end;
-    memmove(&vector[extant_end], &vector[new_start],
-        sizeof(MuonType *[vector_length(vector) - new_start]));
-    vector_truncate(vector, vector_length(vector) - diff);
+    size_t size = sizeof(MuonType *) * (vector_length(vector) - new_start);
+    memmove(&vector[extant_end], &vector[new_start], size);
+    vector_length(vector) -= new_start - extant_end;
   }
 
   // Move the current list to the front and truncate.
-  size_t result_length = vector_length(vector) - origin_length;
-  memmove(vector, vector + origin_length, sizeof(MuonType *[result_length]));
-  vector_truncate(vector, result_length);
+  size_t length = vector_length(vector) - origin_length;
+  memmove(vector, vector + origin_length, sizeof(MuonType *[length]));
+  vector_truncate(vector, length);
 
   return vector;
 }
@@ -187,7 +178,7 @@ static Semisolution *reduce_implicit_type(
   if ((solution = type_semisolution(inductor, attitude)) != NULL)
     return solution;
 
-  vector_truncate(inductor->vector, 0);
+  vector_length(inductor->vector) = 0;
 
   RuleIterator it;
 
@@ -213,85 +204,17 @@ static Semisolution *reduce_implicit_type(
       assert(semisolution != NULL && semisolution->type != NULL);
     }
 
-    MuonJoinType *join_type;
-    if ((join_type = muon_type_cast(semisolution->type, join_type)) != NULL) {
-      for (size_t j = 0; j < join_type->argc; j++) {
-        MuonType *argument = join_type->argv[j];
-
-        for (size_t i = 0; i < vector_length(inductor->vector); i++) {
-          MuonType *extant = inductor->vector[i];
-
-          // Rule *rule;
-          // if ((rule = type_assess(inductor, argument, extant)) == NULL)
-          //   abort();
-
-          // if (rule->tag != IMPOSSIBLE_RULE)
-          //   goto next_argument;
-        }
-
-        Vector(MuonType *) vector;
-        if ((vector = vector_append(inductor->vector, &argument)) == NULL)
-          abort();
-        inductor->vector = vector;
-        continue;
-
-      next_argument:
-      }
-    } else {
-      MuonType *solution = semisolution->type;
-      for (size_t i = 0; i < vector_length(inductor->vector); i++) {
-        MuonType *extant = inductor->vector[i];
-
-        Rule *rule;
-        if ((rule = type_assess(inductor, solution, extant)) == NULL)
-          return NULL;
-
-        if (rule->tag == REJECTED_RULE)
-          continue;
-
-        goto next_rule;
-      }
-
-      for (size_t i = 0; i < vector_length(inductor->vector); i++) {
-        MuonType *extant = inductor->vector[i];
-
-        Rule *rule;
-        if ((rule = type_assess(inductor, extant, solution)) == NULL)
-          return NULL;
-
-        if (rule->tag == REJECTED_RULE)
-          continue;
-
-        inductor->vector[i] = solution;
-
-        size_t length = vector_length(inductor->vector);
-
-        for (size_t j = i + 1; j < length;) {
-          MuonType *extant = inductor->vector[j];
-
-          Rule *rule;
-          if ((rule = type_assess(inductor, extant, solution)) == NULL)
-            return NULL;
-
-          if (rule->tag == REJECTED_RULE) {
-            j++;
-            continue;
-          }
-
-          inductor->vector[j] = inductor->vector[--length];
-        }
-
-        goto next_rule;
-      }
-
-      Vector(MuonType *) vector;
-      if ((vector = vector_append(inductor->vector, &semisolution->type)) == NULL)
-        abort();
-      inductor->vector = vector;
-    }
-
-  next_rule:
+    MuonType *type = semisolution->type;
+    Vector(MuonType *) vector;
+    if ((vector = vector_append(inductor->vector, &type)) == NULL)
+      return NULL;
+    inductor->vector = vector;
   }
+
+  Vector(MuonType *) vector;
+  if ((vector = simplify(inductor, inductor->vector)) == NULL)
+    return NULL;
+  inductor->vector = vector;
 
   // Phase 3 — produce the join result (the attitude-specific solution).
   MuonType *join;
@@ -314,10 +237,12 @@ static Semisolution *reduce_implicit_type(
       MuonType *argument = join_type->argv[i];
 
       Rule *rule;
-      if ((rule = rule_insert(inductor, argument, join)) == NULL)
-        return NULL;
-      rule->tag = JOIN_RULE;
-      rule->i = i;
+      if ((rule = rule_search(inductor, argument, join)) == NULL) {
+        if ((rule = edge_define(inductor, argument, join)) == NULL)
+          return NULL;
+        rule->tag = JOIN_RULE;
+        rule->i = i;
+      }
 
       rule = rule_search(inductor, argument, attitude.type);
       // assert(rule != NULL);
