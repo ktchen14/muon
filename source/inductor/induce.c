@@ -121,31 +121,63 @@ Rule *type_restrain(
     // ∀(α) | ∃⟨α ⇒ source⟩, create ⟨α ⇒ target⟩ to maintain the target-side
     // transitive closure of α
     it = rule_iterator(inductor, (Attitude) {source, 0});
-    for (const Rule *rule; (rule = rule_next(&it)) != NULL;) {
+    for (const Rule *a_rule; (a_rule = rule_next(&it)) != NULL;) {
       Rule *next;
-      if ((next = rule_search(inductor, rule->source, target)) != NULL)
+      if ((next = rule_search(inductor, a_rule->source, target)) != NULL)
         continue;
 
-      if ((next = rule_insert(inductor, rule->source, target)) == NULL)
+      if ((next = rule_insert(inductor, a_rule->source, target)) == NULL)
         return NULL;
       next->tag = INDIRECT_RULE;
       next->center = source;
       next->reason = reason;
+
+      RuleIterator jt = rule_iterator(inductor, (Attitude) {target, 1});
+      for (const Rule *b_rule; (b_rule = rule_next(&jt)) != NULL;) {
+        if (!is_implicit_type(b_rule->target))
+          continue;
+
+        Rule *next;
+        if ((next = rule_search(inductor, a_rule->source, b_rule->target)) != NULL)
+          continue;
+
+        if ((next = rule_insert(inductor, a_rule->source, b_rule->target)) == NULL)
+          return NULL;
+        next->tag = INDIRECT_RULE;
+        next->center = source;
+        next->reason = reason;
+      }
     }
 
     // ∀(β) | ∃⟨target ⇒ β⟩, create ⟨source ⇒ β⟩ to maintain the source-side
     // transitive closure of β
     jt = rule_iterator(inductor, (Attitude) {target, 1});
-    for (const Rule *rule; (rule = rule_next(&jt)) != NULL;) {
+    for (const Rule *b_rule; (b_rule = rule_next(&jt)) != NULL;) {
       Rule *next;
-      if ((next = rule_search(inductor, source, rule->target)) != NULL)
+      if ((next = rule_search(inductor, source, b_rule->target)) != NULL)
         continue;
 
-      if ((next = rule_insert(inductor, source, rule->target)) == NULL)
+      if ((next = rule_insert(inductor, source, b_rule->target)) == NULL)
         return NULL;
       next->tag = INDIRECT_RULE;
       next->center = target;
       next->reason = reason;
+
+      RuleIterator jt = rule_iterator(inductor, (Attitude) {source, 0});
+      for (const Rule *a_rule; (a_rule = rule_next(&jt)) != NULL;) {
+        if (!is_implicit_type(a_rule->source))
+          continue;
+
+        Rule *next;
+        if ((next = rule_search(inductor, a_rule->source, b_rule->target)) != NULL)
+          continue;
+
+        if ((next = rule_insert(inductor, a_rule->source, b_rule->target)) == NULL)
+          return NULL;
+        next->tag = INDIRECT_RULE;
+        next->center = source;
+        next->reason = reason;
+      }
     }
 
     return result;
