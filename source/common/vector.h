@@ -43,6 +43,11 @@ static inline size_t vector_length(const void *vector) {
   return vector_header(vector)->length;
 }
 
+/// Return the length of the @a vector
+#define vector_length(vector) _Generic((vector), \
+  typeof_unqual(*(vector)) *: *(&vector_header((vector))->length), \
+  const typeof_unqual(*(vector)) *: vector_length((vector)))
+
 void *vector_allocate(size_t member, size_t volume);
 
 #define vector_allocate(T, volume) ( \
