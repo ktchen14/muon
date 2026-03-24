@@ -319,8 +319,13 @@ static Rule *retrieve_core_coercion(
       next_target = t;
     }
 
-    if (type_assess(inductor, next_source, next_target) == NULL)
+    Rule *next;
+    if ((next = type_assess(inductor, next_source, next_target)) == NULL)
       return NULL;
+    if (next->tag == REJECTED_RULE) {
+      rule->tag = REJECTED_RULE;
+      break;
+    }
   }
 
   return rule;
