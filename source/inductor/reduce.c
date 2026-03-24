@@ -46,12 +46,7 @@ static MuonType *implicit_solution(
   return overall;
 }
 
-/// Compute the attitude-specific solution for an implicit type at a given
-/// charge direction.
-///
-/// All constraint neighbors must already have been reduced by the traversal.
-/// This function only reads pre-computed solutions — it does not trigger any
-/// further reductions.
+/// Reduce an implicit type to a semisolution
 static Semisolution *reduce_implicit_type(
     Inductor *inductor, Attitude attitude) {
   assert(is_implicit_type(attitude.type));
@@ -339,6 +334,7 @@ MuonType *reduce_type(Inductor *inductor, MuonType *type) {
 
       case MUON_IMPLICIT_TYPE:
         Semisolution *solution[2] = {};
+        _Bool charge = cursor.charge;
 
         if ((solution[cursor.charge] = reduce_implicit_type(inductor, cursor)) == NULL)
           return NULL;
