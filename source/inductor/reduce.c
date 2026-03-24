@@ -56,6 +56,34 @@ static MuonType *implicit_solution(
   return semisolution[0]->type;
 }
 
+static MuonCore *type_core(MuonType *type) {
+  MuonCoreType *core_type;
+  if ((core_type = muon_type_cast(type, core_type)) != NULL)
+    return core_type->core;
+  return NULL;
+}
+
+static int core_cmp(const void *a, const void *b) {
+  MuonType *ra = *(MuonType *const *) a;
+  MuonType *rb = *(MuonType *const *) b;
+
+  MuonCore *ca = type_core(ra);
+  MuonCore *cb = type_core(rb);
+
+  // Core types sort before non-core types
+  if (ca != NULL && cb == NULL) return -1;
+  if (ca == NULL && cb != NULL) return +1;
+
+  // Among core types, group by core pointer
+  if ((uintptr_t) ca < (uintptr_t) cb) return -1;
+  if ((uintptr_t) ca > (uintptr_t) cb) return +1;
+
+  // Tiebreak by type pointer
+  if ((uintptr_t) ra < (uintptr_t) rb) return -1;
+  if ((uintptr_t) ra > (uintptr_t) rb) return +1;
+  return 0;
+}
+
 int type_cmp(const void *a, const void *b) {
   MuonType *ra = *(MuonType *const *) a;
   MuonType *rb = *(MuonType *const *) b;
@@ -167,10 +195,78 @@ static Vector(MuonType *)
     vector_length(vector) -= interval;
   }
 
-  // Remove (1)
+  // Remove (1) and return if the result is ⊥ or ⊤
   size_t length = vector_length(vector) - origin;
   memmove(vector, vector + origin, sizeof(MuonType *) * length);
-  return vector_length(vector) = length, vector;
+  if ((vector_length(vector) = length) < 1)
+    return vector;
+
+  // Sort so that core types with the same core are adjacent
+  qsort(vector, length, sizeof(MuonType *), core_cmp);
+
+  // Consolidate core types that share the same core: for each argument
+  // position, join (or meet, depending on variance) the corresponding
+  // arguments from all core types with that core.
+  MuonCoreType *core_type;
+  if ((core_type = muon_type_cast(vector[0], core_type)) == NULL)
+    return vector;
+  MuonCore *core = core_type->core;
+
+  MuonEngine *engine = inductor->engine;
+
+  size_t out = 0, run_start = 0;
+  for (size_t i = 1;; i++) {
+    MuonCoreType *core_type = NULL;
+    if (i < length)
+      core_type = muon_type_cast(vector[i], core_type);
+
+    if (core_type != NULL && core_type->core == core)
+      continue;
+
+    size_t n = i - run_start;
+    size_t argc = core_argc(core);
+
+    if (n == 1) {
+      vector[out++] = vector[run_start];
+    } else {
+      // Consolidate: for each argument, join or meet across the run
+      MuonType *argv[argc];
+      for (size_t a = 0; a < argc; a++) {
+        MuonCoreMember member = core_at(core, a);
+
+        MuonType *args[n];
+        for (size_t r = 0; r < n; r++)
+          args[r] = ((MuonCoreType *) vector[run_start + r])->argv[member.i];
+
+        if (member.variance) {
+          MuonMeetType *meet;
+          if ((meet = muon_meet_type(engine, n, args)) == NULL)
+            return NULL;
+          argv[a] = &meet->as_type;
+        } else {
+          MuonJoinType *join;
+          if ((join = muon_join_type(engine, n, args)) == NULL)
+            return NULL;
+          argv[a] = &join->as_type;
+        }
+      }
+
+      MuonCoreType *result;
+      if ((result = muon_core_type(engine, core, argv)) == NULL)
+        return NULL;
+      vector[out++] = &result->as_type;
+    }
+
+    if (core_type == NULL) {
+      // Copy remaining non-core types
+      memmove(&vector[out], &vector[i], sizeof(MuonType *) * (length - i));
+      vector_length(vector) = out + (length - i);
+      return vector;
+    }
+
+    run_start = i;
+    core = core_type->core;
+  }
 }
 
 /// Reduce an implicit type to a semisolution
