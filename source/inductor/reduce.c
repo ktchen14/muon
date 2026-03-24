@@ -215,7 +215,8 @@ static Vector(MuonType *)
   MuonEngine *engine = inductor->engine;
 
   size_t out = 0, run_start = 0;
-  for (size_t i = 1;; i++) {
+  size_t i = 1;
+  for (;; i++) {
     MuonCoreType *core_type = NULL;
     if (i < length)
       core_type = muon_type_cast(vector[i], core_type);
@@ -224,11 +225,10 @@ static Vector(MuonType *)
       continue;
 
     size_t n = i - run_start;
-    size_t argc = core_argc(core);
-
     if (n == 1) {
       vector[out++] = vector[run_start];
     } else {
+      size_t argc = core_argc(core);
       // Consolidate: for each argument, join or meet across the run
       MuonType *argv[argc];
       for (size_t a = 0; a < argc; a++) {
@@ -257,16 +257,16 @@ static Vector(MuonType *)
       vector[out++] = &result->as_type;
     }
 
-    if (core_type == NULL) {
-      // Copy remaining non-core types
-      memmove(&vector[out], &vector[i], sizeof(MuonType *) * (length - i));
-      vector_length(vector) = out + (length - i);
-      return vector;
-    }
+    if (core_type == NULL)
+      break;
 
     run_start = i;
     core = core_type->core;
   }
+
+  memmove(&vector[out], &vector[i], sizeof(MuonType *) * (length - i));
+  vector_length(vector) = out + (length - i);
+  return vector;
 }
 
 /// Reduce an implicit type to a semisolution
