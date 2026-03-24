@@ -173,25 +173,25 @@ static Semisolution *reduce_implicit_type(
     MuonType *const *argv = inductor->vector;
     MuonJoinType *join_type;
     if ((join_type = muon_join_type(inductor->engine, length, argv)) == NULL)
-      abort();
+      return NULL;
+    join = &join_type->as_type;
 
-    // For each type τ, ... in Join(τ, ...), make ⟨τ ⇒ Join(τ, ...)⟩ and make
-    // ⟨τ ⇒ type⟩ indirect through the join type.
+    // ∀(τ, ...) in J = Join(τ, ...), create ⟨τ ⇒ J⟩; then make ⟨τ ⇒ type⟩
+    // indirect through J.
     for (size_t i = 0; i < join_type->argc; i++) {
       MuonType *argument = join_type->argv[i];
 
-      Rule *rule = rule_search(inductor, argument, attitude.type);
+      Rule *rule;
+      if ((rule = rule_insert(inductor, argument, join)) == NULL)
+        return NULL;
+      rule->tag = JOIN_RULE;
+      rule->i = i;
+
+      rule = rule_search(inductor, argument, attitude.type);
       // assert(rule != NULL);
       if (rule != NULL)
         rule->center = &join_type->as_type;
-
-      if ((rule = edge_define(inductor, argument, &join_type->as_type)) == NULL)
-        abort();
-      rule->tag = JOIN_RULE;
-      rule->i = i;
     }
-
-    join = &join_type->as_type;
   }
 
   size_t size = instance_argc;
@@ -199,24 +199,8 @@ static Semisolution *reduce_implicit_type(
     return errno = ENOMEM, NULL;
   if ((solution = malloc(size)) == NULL)
     abort();
-  *solution = (Semisolution) {.type = join, .argc = instance_argc};
+  *solution = (Semisolution) {.type = join, .argc = 0};
   assert(solution->type != NULL);
-
-  // size_t j = 0;
-  // it = rule_iterator(inductor, attitude);
-  // for (const Rule *rule; (rule = rule_next(&it)) != NULL;) {
-  //   if (rule->tag == INDIRECT_RULE)
-  //     continue;
-  //   if (rule->instance == NULL)
-  //     continue;
-  //
-  //   MuonType *nbr_sol = neighbor_solution(
-  //       inductor, rule->vertex[charge], charge);
-  //   solution->argv[j].instance = rule->instance;
-  //   solution->argv[j].type = nbr_sol;
-  //   j++;
-  // }
-  // assert(j == instance_argc);
 
   return assign_semisolution(inductor, attitude, solution);
 }
