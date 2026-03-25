@@ -19,11 +19,12 @@
 }
 
 [[gnu::nonnull]] static Semisolution *assign_semisolution(
-    Inductor *inductor, Attitude attitude, Semisolution *solution) {
+    Inductor *inductor, Attitude attitude, Semisolution *semisolution) {
   assert(attitude.type != NULL && is_implicit_type(attitude.type));
   assert(attitude.type->id < inductor->type_length);
+  assert(semisolution->type != NULL);
   size_t i = attitude.type->id * 2 + attitude.charge;
-  return inductor->semisolution[i] = solution;
+  return inductor->semisolution[i] = semisolution;
 }
 
 static Semisolution *type_semisolution(
@@ -185,10 +186,10 @@ static Semisolution *reduce_implicit_type(
 
   vector_length(inductor->vector) = 0;
 
-  RuleIterator it;
 
   size_t instance_argc = 0;
-  it = rule_iterator(inductor, attitude);
+
+  RuleIterator it = rule_iterator(inductor, attitude);
   for (const Rule *edge; (edge = rule_next(&it)) != NULL;) {
     if (edge->tag == INDIRECT_RULE)
       continue;
@@ -206,7 +207,7 @@ static Semisolution *reduce_implicit_type(
       *semisolution = (Semisolution) {.type = solution};
     } else {
       semisolution = type_semisolution(inductor, next);
-      assert(semisolution != NULL && semisolution->type != NULL);
+      assert(semisolution != NULL);
     }
 
     MuonType *type = semisolution->type;
@@ -236,23 +237,18 @@ static Semisolution *reduce_implicit_type(
       return NULL;
     join = &join_type->as_type;
 
-    // ∀(τ, ...) in J = Join(τ, ...), create ⟨τ ⇒ J⟩; then make ⟨τ ⇒ type⟩
-    // indirect through J.
+    // ∀(τ, ...) in J = Join(τ, ...), create ⟨τ ⇒ J⟩
     for (size_t i = 0; i < join_type->argc; i++) {
       MuonType *argument = join_type->argv[i];
 
       Rule *rule;
-      if ((rule = rule_search(inductor, argument, join)) == NULL) {
-        if ((rule = edge_define(inductor, argument, join)) == NULL)
-          return NULL;
-        rule->tag = JOIN_RULE;
-        rule->i = i;
-      }
+      if ((rule = rule_search(inductor, argument, join)) != NULL)
+        continue;
 
-      rule = rule_search(inductor, argument, attitude.type);
-      // assert(rule != NULL);
-      if (rule != NULL)
-        rule->center = &join_type->as_type;
+      if ((rule = edge_define(inductor, argument, join)) == NULL)
+        return NULL;
+      rule->tag = JOIN_RULE;
+      rule->i = i;
     }
   }
 
@@ -262,7 +258,6 @@ static Semisolution *reduce_implicit_type(
   if ((solution = malloc(size)) == NULL)
     abort();
   *solution = (Semisolution) {.type = join, .argc = 0};
-  assert(solution->type != NULL);
 
   return assign_semisolution(inductor, attitude, solution);
 }
