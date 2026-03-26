@@ -219,7 +219,7 @@ record_expr_argv: expr_member {
     YYNOMEM;
 }
 
-expr_member: name ':' expr {
+expr_member: name '=' expr {
   $$ = muon_expr_member(scan->engine, $name, $expr);
 }
 
