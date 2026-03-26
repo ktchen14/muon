@@ -30,11 +30,14 @@ sentinel = [\x00];
 
 <normal> "(" @z NL?             { return '('; }
 <normal> ")"                    { return ')'; }
+<normal> "[" @z NL?             { return '['; }
+<normal> "]"                    { return ']'; }
+<normal> "{" @z NL?             { return '{'; }
+<normal> "}"                    { return '}'; }
+
 <normal> "," @z _               { return ','; }
 <normal> "."                    { return '.'; }
 <normal> ":" @z _               { return ':'; }
-<normal> "[" @z NL?             { return '['; }
-<normal> "]"                    { return ']'; }
 
 <normal> _ @a ("<:") @z _       { return IS_SUBTYPE_OF; }
 <normal> _ @a ("=") @z _        { return '='; }
