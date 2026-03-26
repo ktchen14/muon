@@ -337,38 +337,34 @@ define_stmt: name '=' expr '\n' {
 }
 
 view: '(' view[matter] ')' { $$ = $matter; } // {{{1
-  // | record_view   { $$ = &$record_view->as_view; }
+  | record_view   { $$ = &$record_view->as_view; }
   | variable_view { $$ = &$variable_view->as_view; }
 
-// view_member: name ':' view {
-//   $$ = muon_view_member(scan->engine, $name, $view);
-//
-// } | name ':' {
-//   MuonVariableView *view = muon_variable_view(scan->engine, $name, NULL);
-//   $$ = muon_view_member(scan->engine, $name, &view->as_view);
-// }
-//
-// record_view: '(' record_view_argv[argv] ')' {
-//   size_t argc = node_series(&$argv->as_node)->n;
-//   struct MuonRecordView *result;
-//   if ((result = record_view_allocate(scan->engine, argc)) == NULL)
-//     YYNOMEM;
-//   for (size_t i = 0; i < argc; i++)
-//     result->argv[i] = node_detach($argv);
-//   $$ = record_view_activate(result);
-//
-// } | '(' ')' {
-//   $$ = muon_record_view(scan->engine, 0, NULL);
-// }
-//
-// record_view_argv: view_member {
-//   $$ = node_attach(NULL, $view_member), node_series(&$$->as_node)->n = 1;
-//
-// } | record_view_argv[argv] ',' view_member {
-//   $$ = node_attach($argv, $view_member);
-//   if (rare(++node_series(&$$->as_node)->n == 0))
-//     YYNOMEM;
-// }
+view_member: name '=' view {
+  $$ = muon_view_member(scan->engine, $name, $view);
+}
+
+record_view: '(' record_view_argv[argv] ')' {
+  size_t argc = node_series(&$argv->as_node)->n;
+  struct MuonRecordView *result;
+  if ((result = record_view_allocate(scan->engine, argc)) == NULL)
+    YYNOMEM;
+  for (size_t i = 0; i < argc; i++)
+    result->argv[i] = node_detach($argv);
+  $$ = record_view_activate(result);
+
+} | '(' ')' {
+  $$ = muon_record_view(scan->engine, 0, NULL);
+}
+
+record_view_argv: view_member {
+  $$ = node_attach(NULL, $view_member), node_series(&$$->as_node)->n = 1;
+
+} | record_view_argv[argv] ',' view_member {
+  $$ = node_attach($argv, $view_member);
+  if (rare(++node_series(&$$->as_node)->n == 0))
+    YYNOMEM;
+}
 
 variable_view: name {
   $$ = muon_variable_view(scan->engine, $name, NULL);
