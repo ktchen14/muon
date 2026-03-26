@@ -20,7 +20,6 @@ sentinel = [\x00];
 
 <normal> "case"                 { return CASE; }
 <normal> "datatype"             { return DATATYPE; }
-<normal> "define"               { return DEFINE; }
 <normal> "instance"             { return INSTANCE; }
 <normal> "lambda" | "λ"         { return LAMBDA; }
 <normal> "switch"               { return SWITCH; }

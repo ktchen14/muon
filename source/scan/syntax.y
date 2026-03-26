@@ -49,7 +49,6 @@ typedef struct {
 
 %token CASE "case"
 %token DATATYPE "datatype"
-%token DEFINE "define"
 %token INSTANCE "instance"
 %token LAMBDA "lambda"
 %token SWITCH "switch"
@@ -333,7 +332,7 @@ coercion_stmt: "instance" _ sign[source] "<:" sign[target] '=' expr '\n' {
   $$ = muon_coercion_stmt(scan->engine, $source, $target, $expr);
 }
 
-define_stmt: "define" _ name '=' expr '\n' {
+define_stmt: name '=' expr '\n' {
   $$ = muon_define_stmt(scan->engine, $name, $expr);
 }
 
