@@ -138,10 +138,12 @@ Rule *type_restrain(
           continue;
 
         Rule *next;
-        if ((next = rule_search(inductor, a_rule->source, b_rule->target)) != NULL)
+        if ((next = rule_search(inductor, a_rule->source, b_rule->target))
+            != NULL)
           continue;
 
-        if ((next = rule_insert(inductor, a_rule->source, b_rule->target)) == NULL)
+        if ((next = rule_insert(inductor, a_rule->source, b_rule->target))
+            == NULL)
           return NULL;
         next->tag = INDIRECT_RULE;
         next->center = source;
@@ -169,10 +171,12 @@ Rule *type_restrain(
           continue;
 
         Rule *next;
-        if ((next = rule_search(inductor, a_rule->source, b_rule->target)) != NULL)
+        if ((next = rule_search(inductor, a_rule->source, b_rule->target))
+            != NULL)
           continue;
 
-        if ((next = rule_insert(inductor, a_rule->source, b_rule->target)) == NULL)
+        if ((next = rule_insert(inductor, a_rule->source, b_rule->target))
+            == NULL)
           return NULL;
         next->tag = INDIRECT_RULE;
         next->center = source;
