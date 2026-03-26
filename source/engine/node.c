@@ -519,12 +519,16 @@ MuonRecordView *muon_record_view(
   return record_view_activate(result);
 }
 
-MuonVariableView *muon_variable_view(MuonEngine *engine, MuonName *name) {
+MuonVariableView *muon_variable_view(
+    MuonEngine *engine, MuonName *name, MuonSign *sign) {
+  assert(name->engine == engine);
+  assert(sign == NULL || sign->as_node.engine == engine);
+
   struct MuonVariableView *result;
   if ((result = node_allocate(engine, sizeof(MuonVariableView))) == NULL)
     return NULL;
   *result = (MuonVariableView) {
-    .as_view.tag = MUON_VARIABLE_VIEW, .name = name
+    .as_view.tag = MUON_VARIABLE_VIEW, .name = name, .sign = sign
   };
   return assign_node(engine, &result->as_node), result;
 }

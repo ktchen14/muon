@@ -420,6 +420,7 @@ typedef const struct MuonRecordView {
 typedef const struct MuonVariableView {
   MUON_VIEW_HEADER;
   MuonName *name;
+  MuonSign *sign; // optional
 } MuonVariableView;
 
 typedef const struct MuonScript {
@@ -573,8 +574,9 @@ MuonRecordView *muon_record_view(
     MuonEngine *engine, size_t argc, MuonViewMember *argv[/* argc */])
   MUON_HINT_SUFFIX(nonnull(1));
 
-MuonVariableView *muon_variable_view(MuonEngine *engine, MuonName *name)
-  MUON_HINT_SUFFIX(nonnull);
+MuonVariableView *muon_variable_view(
+    MuonEngine *engine, MuonName *name, MuonSign *sign)
+  MUON_HINT_SUFFIX(nonnull(1, 2));
 
 MuonScript *muon_script(
     MuonEngine *engine, size_t argc, MuonStmt *argv[/* argc */])
