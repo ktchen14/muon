@@ -499,7 +499,7 @@ MuonViewMember *muon_view_member(
   if ((result = node_allocate(engine, sizeof(MuonViewMember))) == NULL)
     return NULL;
   *result = (MuonViewMember) {
-    .as_node.tag = MUON_EXPR_MEMBER_NODE,
+    .as_node.tag = MUON_VIEW_MEMBER_NODE,
     .name = name,
     .view = view,
     .announce_length = node_announce_length(&view->as_node),
