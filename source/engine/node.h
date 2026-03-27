@@ -144,6 +144,9 @@ static inline MuonNode *node_at(MuonNode *node, size_t i) {
     case IS_CONCRETE_NODE(MuonExprMember *expr_member)
       return (MuonNode *[]) {&expr_member->expr->as_node, NULL}[i];
 
+    case IS_CONCRETE_NODE(MuonSignMember *sign_member)
+      return (MuonNode *[]) {&sign_member->sign->as_node, NULL}[i];
+
     case IS_CONCRETE_NODE(MuonRecordExpr *record_expr)
       return i < record_expr->argc ? &record_expr->argv[i]->as_node : NULL;
 
@@ -175,7 +178,7 @@ static inline MuonNode *node_at(MuonNode *node, size_t i) {
       return i < vector_expr->argc ? &vector_expr->argv[i]->as_node : NULL;
 
     case IS_CONCRETE_NODE(MuonRecordSign *record_sign)
-      return i < record_sign->argc ? &record_sign->argv[i].sign->as_node : NULL;
+      return i < record_sign->argc ? &record_sign->argv[i]->as_node : NULL;
 
     case IS_CONCRETE_NODE(MuonVectorSign *vector_sign)
       return (MuonNode *[]) {&vector_sign->matter->as_node, NULL}[i];

@@ -488,6 +488,11 @@ MUON_HINT(nonnull) static MuonType *expr_member_return(
   return node_type(inductor, &member->expr->as_node);
 }
 
+MUON_HINT(nonnull) static MuonType *sign_member_return(
+    Inductor *inductor, MuonSignMember *member) {
+  return node_type(inductor, &member->sign->as_node);
+}
+
 MUON_HINT(nonnull) static MuonType *view_member_return(
     Inductor *inductor, MuonViewMember *member) {
   return node_type(inductor, &member->view->as_node);

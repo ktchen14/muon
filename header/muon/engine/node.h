@@ -66,6 +66,7 @@
   emit(DatatypeOption, datatype_option, DATATYPE_OPTION \
     __VA_OPT__(,) __VA_ARGS__) \
   emit(SchemeMember, scheme_member, SCHEME_MEMBER __VA_OPT__(,) __VA_ARGS__) \
+  emit(SignMember, sign_member, SIGN_MEMBER __VA_OPT__(,) __VA_ARGS__) \
   emit(ViewMember, view_member, VIEW_MEMBER __VA_OPT__(,) __VA_ARGS__) \
   emit(Script, script, SCRIPT __VA_OPT__(,) __VA_ARGS__)
 
@@ -366,7 +367,8 @@ typedef const struct MuonNameSign {
   MuonName *name;
 } MuonNameSign;
 
-typedef struct {
+typedef const struct MuonSignMember {
+  MUON_NODE_HEADER;
   MuonName *name; // optional
   MuonSign *sign;
 } MuonSignMember;
@@ -374,7 +376,7 @@ typedef struct {
 typedef const struct MuonRecordSign {
   MUON_SIGN_HEADER;
   size_t argc;
-  MuonSignMember argv[] MUON_HINT(counted_by(argc));
+  MuonSignMember *argv[] MUON_HINT(counted_by(argc));
 } MuonRecordSign;
 
 typedef const struct MuonVectorSign {
@@ -563,8 +565,12 @@ MuonLambdaSign *muon_lambda_sign(
 MuonNameSign *muon_name_sign(MuonEngine *engine, MuonName *name)
   MUON_HINT_SUFFIX(nonnull);
 
+MuonSignMember *muon_sign_member(
+    MuonEngine *engine, MuonName *name, MuonSign *sign)
+  MUON_HINT_SUFFIX(nonnull(1, 3));
+
 MuonRecordSign *muon_record_sign(
-    MuonEngine *engine, size_t argc, const MuonSignMember argv[/* argc */])
+    MuonEngine *engine, size_t argc, MuonSignMember *argv[/* argc */])
   MUON_HINT_SUFFIX(nonnull(1));
 
 MuonVectorSign *muon_vector_sign(MuonEngine *engine, MuonSign *matter)

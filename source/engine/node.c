@@ -156,6 +156,20 @@ MuonSchemeMember *muon_scheme_member(MuonEngine *engine, MuonName *name) {
   return assign_node(engine, &result->as_node), result;
 }
 
+MuonSignMember *muon_sign_member(
+    MuonEngine *engine, MuonName *name, MuonSign *sign) {
+  assert(name == NULL || name->engine == engine);
+  assert(sign->as_node.engine == engine);
+
+  struct MuonSignMember *result;
+  if ((result = node_allocate(engine, sizeof(MuonSignMember))) == NULL)
+    return NULL;
+  *result = (MuonSignMember) {
+    .as_node.tag = MUON_SIGN_MEMBER_NODE, .name = name, .sign = sign
+  };
+  return assign_node(engine, &result->as_node), result;
+}
+
 MuonSchemeExpr *muon_scheme_expr(
     MuonEngine *engine,
     MuonSign *sign,
@@ -389,16 +403,11 @@ MuonNameSign *muon_name_sign(MuonEngine *engine, MuonName *name) {
 }
 
 MuonRecordSign *muon_record_sign(
-    MuonEngine *engine, size_t argc, const MuonSignMember argv[]) {
+    MuonEngine *engine, size_t argc, MuonSignMember *argv[]) {
   assert(argc == 0 || argv != NULL);
 
-  for (size_t i = 0; i < argc; i++) {
-    MuonName *member_name = argv[i].name;
-    MuonSign *member_sign = argv[i].sign;
-    assert(member_name == NULL || member_name->engine == engine);
-    assert(member_sign != NULL);
-    assert(member_sign->as_node.engine == engine);
-  }
+  for (size_t i = 0; i < argc; i++)
+    assert(argv[i] != NULL && argv[i]->as_node.engine == engine);
 
   size_t size;
   if (rare((size = struct_size(MuonRecordSign, argv, argc)) == 0))
@@ -674,6 +683,11 @@ void (muon_node_debug)(MuonNode *node, struct MuonNodeDebugArgs args) { //-
     case IS_CONCRETE_NODE(MuonExprMember *expr_member)
       if (expr_member->name != NULL)
         debug("(name = " PRIsNAME ")", DEBUG_NAME(expr_member->name));
+      break;
+
+    case IS_CONCRETE_NODE(MuonSignMember *sign_member)
+      if (sign_member->name != NULL)
+        debug("(name = " PRIsNAME ")", DEBUG_NAME(sign_member->name));
       break;
 
     case IS_CONCRETE_NODE(MuonSchemeMember *scheme_variable)

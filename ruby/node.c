@@ -279,7 +279,7 @@ static VALUE record_sign_new(int va_argc, VALUE *va_argv, VALUE klass) {
   MuonEngine *engine = as_muon_engine(rb_engine);
   size_t argc = (size_t) RARRAY_LEN(rb_rest);
   VALUE allocv;
-  MuonSignMember *argv = RB_ALLOCV_N(MuonSignMember, allocv, argc);
+  MuonSignMember **argv = RB_ALLOCV_N(MuonSignMember *, allocv, argc);
   for (size_t i = 0; i < argc; i++) {
     VALUE pair = rb_check_array_type(RARRAY_AREF(rb_rest, i));
     if (NIL_P(pair) || RARRAY_LEN(pair) != 2)
@@ -288,7 +288,8 @@ static VALUE record_sign_new(int va_argc, VALUE *va_argv, VALUE klass) {
     VALUE rb_sign = rb_ary_entry(pair, 1);
     MuonName *name = NIL_P(rb_name) ? NULL : as_muon_name(engine, rb_name);
     MuonSign *sign = as_muon_sign(rb_sign);
-    argv[i] = (MuonSignMember) {.name = name, .sign = sign};
+    if ((argv[i] = muon_sign_member(engine, name, sign)) == NULL)
+      rb_raise(rb_eNoMemError, "Failed to allocate MuonSignMember");
   }
 
   MuonRecordSign *node;
