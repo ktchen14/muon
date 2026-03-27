@@ -65,8 +65,7 @@
   emit(SwitchCase, switch_case, SWITCH_CASE __VA_OPT__(,) __VA_ARGS__) \
   emit(DatatypeOption, datatype_option, DATATYPE_OPTION \
     __VA_OPT__(,) __VA_ARGS__) \
-  emit(SchemeMember, scheme_member, SCHEME_MEMBER \
-      __VA_OPT__(,) __VA_ARGS__) \
+  emit(SchemeMember, scheme_member, SCHEME_MEMBER __VA_OPT__(,) __VA_ARGS__) \
   emit(ViewMember, view_member, VIEW_MEMBER __VA_OPT__(,) __VA_ARGS__) \
   emit(Script, script, SCRIPT __VA_OPT__(,) __VA_ARGS__)
 
