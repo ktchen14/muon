@@ -221,6 +221,18 @@ detect_t *detect_node(detect_t *detect, MuonNode *root) {
           break;
         }
 
+        case IS_CONCRETE_NODE(MuonSchemeExpr *scheme_expr) {
+          size_t length = 1;
+
+          roster_t *next_roster;
+          if ((next_roster = roster_create(roster, length, &scheme_expr->as_node))
+              == NULL)
+            return NULL;
+          roster = next_roster;
+          announce(roster, scheme_expr->member->name, &scheme_expr->member->as_node);
+          break;
+        }
+
         case IS_CONCRETE_NODE(MuonSequenceExpr *sequence_expr) {
           roster_t *next_roster;
           if ((next_roster = handle_sequence_expr(roster, sequence_expr))
