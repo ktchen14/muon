@@ -488,11 +488,17 @@ void (muon_type_debug)(MuonType *type, struct MuonTypeDebugArgs args) { //-
       break;
 
     case IS_CONCRETE_TYPE(MuonVariableType *variable_type)
-      (muon_type_debug)(variable_type->join, next_args);
-      debug(" <: ");
+      if (!is_bottom_type(variable_type->join)) {
+        (muon_type_debug)(variable_type->join, next_args);
+        debug(" <: ");
+      }
+
       debug_type_id_as_name(variable_type->as_type.id);
-      debug(" <: ");
-      (muon_type_debug)(variable_type->meet, next_args);
+
+      if (!is_object_type(variable_type->meet)) {
+        debug(" <: ");
+        (muon_type_debug)(variable_type->meet, next_args);
+      }
       break;
   }
 }
