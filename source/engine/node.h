@@ -152,9 +152,11 @@ static inline MuonNode *node_at(MuonNode *node, size_t i) {
 
     case IS_CONCRETE_NODE(MuonSchemeExpr *scheme_expr)
       return (MuonNode *[]) {
+        // TODO: We have to to put the member first because of the detector. We
+        // probably shouldn't tie iteration order here to the detector.
+        &scheme_expr->member->as_node,
         &scheme_expr->sign->as_node,
         &scheme_expr->expr->as_node,
-        &scheme_expr->member->as_node,
         NULL,
       }[i];
 
