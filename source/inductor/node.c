@@ -215,7 +215,7 @@ MUON_HINT(nonnull) static MuonType *scheme_member_return(
   MuonType *meet = &as_engine(inductor->engine)->object_type->as_type;
 
   MuonVariableType *result;
-  if ((result = muon_variable_type(inductor->engine, join, meet)) == NULL)
+  if ((result = muon_variable_type(inductor->engine, node->name, join, meet)) == NULL)
     return NULL;
   return &result->as_type;
 }

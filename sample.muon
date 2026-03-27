@@ -2,17 +2,17 @@
 
 # define isnumber = (lambda x = x) :: Integer -> Integer
 
-id = ∀(t: t -> *) lambda x = x
+id = ∀(t: t -> t) lambda x = x
 
-id = lambda x = x
-id2 = lambda x = (foo = id x)
+# id = lambda x = x
+# id2 = lambda x = (foo = id x)
 # define id3 = lambda x = id2 x
 
 # define c = is_integer_list (id2 [1, 2]).foo
 # define d = ((id2 true).foo)
 # define d = is_boolean (id2 true).foo
 
-e = is_integer (id2 (list_head [1])).foo
+e = is_integer (id (list_head [1]))
 
 # define apply = (lambda f = (lambda x = f x))
 

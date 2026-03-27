@@ -3,6 +3,7 @@
 
 #include "common.h"
 #include "core.h"
+#include "name.h"
 
 #include <limits.h>
 #include <stddef.h>
@@ -81,6 +82,7 @@ typedef const struct MuonSchemeType {
 
 typedef const struct MuonVariableType {
   MUON_TYPE_HEADER;
+  MuonName *name;
   MuonType *join;
   MuonType *meet;
 } MuonVariableType;
@@ -151,7 +153,7 @@ MuonSchemeType *muon_scheme_type(MuonEngine *engine, MuonType *matter)
 
 /// Create a variable type in the @a engine
 MuonVariableType *muon_variable_type(
-    MuonEngine *engine, MuonType *join, MuonType *meet)
+    MuonEngine *engine, MuonName *name, MuonType *join, MuonType *meet)
   MUON_HINT_SUFFIX(nonnull);
 
 /// Optional arguments to muon_type_debug()

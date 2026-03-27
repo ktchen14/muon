@@ -2,6 +2,7 @@
 
 #include "common.h"
 #include "core.h"
+#include "name.h"
 #include "stator.h"
 
 #include <assert.h>
@@ -132,10 +133,11 @@ MuonSchemeType *muon_scheme_type(MuonEngine *opaque, MuonType *matter) {
 }
 
 MuonVariableType *muon_variable_type(
-    MuonEngine *engine, MuonType *join, MuonType *meet) {
+    MuonEngine *engine, MuonName *name, MuonType *join, MuonType *meet) {
   struct MuonVariableType *result;
   if ((result = variable_type_allocate(engine)) == NULL)
     return NULL;
+  result->name = name;
   result->join = join;
   result->meet = meet;
   return variable_type_activate(result);
@@ -345,30 +347,11 @@ struct MuonVariableType *variable_type_allocate(MuonEngine *engine) {
 
 MuonVariableType *variable_type_activate(struct MuonVariableType *type) {
   MuonEngine *engine = unlock_engine(&type->as_type);
+  assert(type->name != NULL && type->name->engine == engine);
   assert(type->join != NULL && type->join->engine == engine);
   assert(type->meet != NULL && type->meet->engine == engine);
   type->as_type.explicit = type->join->explicit & type->meet->explicit;
   return assign_type(engine, &type->as_type), type;
-}
-
-static void debug_type_id_as_name(size_t id) {
-  static const char *alphabet[] = {
-    "α", "β", "γ", "δ", "ε", "ζ", "η", "θ", "ι", "κ", "μ", "ν", "ξ", "ο", "π", //-
-    "ρ", "σ", "τ", "υ", "φ", "χ", "ψ", "ω", //-
-  };
-  static size_t alphabet_length = sizeof(alphabet) / sizeof(alphabet[0]);
-
-  char buffer[256];
-
-  // Generate a name
-  char *name = buffer + sizeof(buffer);
-  *--name = '\0';
-  for (size_t n = id; n-- != 0; n /= alphabet_length) {
-    const char *c = alphabet[n % alphabet_length];
-    memcpy(name -= strlen(c), c, strlen(c));
-  }
-
-  debug("%s", name);
 }
 
 // NOLINTNEXTLINE(misc-no-recursion)
@@ -493,7 +476,7 @@ void (muon_type_debug)(MuonType *type, struct MuonTypeDebugArgs args) { //-
         debug(" <: ");
       }
 
-      debug_type_id_as_name(variable_type->as_type.id);
+      debug(PRIsNAME, DEBUG_NAME(variable_type->name));
 
       if (!is_object_type(variable_type->meet)) {
         debug(" <: ");
