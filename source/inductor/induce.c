@@ -40,6 +40,9 @@ Rule *type_restrain(
       if (is_implicit_type(rule->source))
         continue;
 
+      if (rule->source == target)
+        continue;
+
       if (type_restrain(inductor, rule->source, target, reason) == NULL)
         return NULL;
     }
@@ -70,6 +73,9 @@ Rule *type_restrain(
     RuleIterator it = rule_iterator(inductor, (Attitude) {target, 1});
     for (const Rule *rule; (rule = rule_next(&it)) != NULL;) {
       if (is_implicit_type(rule->target))
+        continue;
+
+      if (rule->target == source)
         continue;
 
       if (type_restrain(inductor, source, rule->target, reason) == NULL)
@@ -110,6 +116,9 @@ Rule *type_restrain(
       RuleIterator jt = rule_iterator(inductor, (Attitude) {target, 1});
       for (const Rule *b_rule; (b_rule = rule_next(&jt)) != NULL;) {
         if (is_implicit_type(b_rule->target))
+          continue;
+
+        if (a_rule->source == b_rule->target)
           continue;
 
         if (type_restrain(inductor, a_rule->source, b_rule->target, reason)
@@ -244,6 +253,9 @@ Rule *type_restrain(
       next_source = next_target;
       next_target = t;
     }
+
+    if (next_source == next_target)
+      continue;
 
     if (type_restrain(inductor, next_source, next_target, reason) == NULL)
       return NULL;

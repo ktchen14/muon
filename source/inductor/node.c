@@ -426,14 +426,16 @@ MUON_HINT(nonnull) static MuonType *datatype_stmt_return(
 
 MUON_HINT(nonnull) static MuonNode *define_stmt_continue(
     Inductor *inductor, MuonNode *node, MuonDefineStmt *next) {
-  if (muon_scheme_initiate(inductor->engine) == NULL)
-    return NULL;
+  // if (muon_scheme_initiate(inductor->engine) == NULL)
+  //   return NULL;
   return node_continue(node, &next->as_node);
 }
 
 MUON_HINT(nonnull) static MuonType *define_stmt_return(
     Inductor *inductor, MuonDefineStmt *stmt) {
   MuonType *matter = node_type(inductor, &stmt->expr->as_node);
+
+  return matter;
 
   MuonSchemeType *result;
   if ((result = muon_scheme_type(inductor->engine, matter)) == NULL)
