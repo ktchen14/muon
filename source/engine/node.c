@@ -144,6 +144,39 @@ MuonRecordExpr *muon_record_expr(
   return record_expr_activate(result);
 }
 
+MuonSchemeVariable *muon_scheme_variable(MuonEngine *engine, MuonName *name) {
+  assert(name == NULL || name->engine == engine);
+
+  struct MuonSchemeVariable *result;
+  if ((result = node_allocate(engine, sizeof(MuonSchemeVariable))) == NULL)
+    return NULL;
+  *result = (MuonSchemeVariable) {
+    .as_node.tag = MUON_SCHEME_VARIABLE_NODE, .name = name
+  };
+  return assign_node(engine, &result->as_node), result;
+}
+
+MuonSchemeExpr *muon_scheme_expr(
+    MuonEngine *engine,
+    MuonSign *sign,
+    MuonExpr *expr,
+    MuonSchemeVariable *variable) {
+  assert(sign == NULL || sign->as_node.engine == engine);
+  assert(expr == NULL || expr->as_node.engine == engine);
+  assert(variable == NULL || variable->as_node.engine == engine);
+
+  struct MuonSchemeExpr *result;
+  if ((result = node_allocate(engine, sizeof(MuonSchemeExpr))) == NULL)
+    return NULL;
+  *result = (MuonSchemeExpr) {
+    .as_node.tag = MUON_SCHEME_EXPR_NODE,
+    .sign = sign,
+    .expr = expr,
+    .variable = variable,
+  };
+  return assign_node(engine, &result->as_node), result;
+}
+
 MuonSwitchCase *muon_switch_case(
     MuonEngine *engine, MuonName *name, MuonExpr *expr) {
   assert(name->engine == engine);

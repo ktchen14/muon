@@ -186,7 +186,6 @@ static Semisolution *reduce_implicit_type(
 
   vector_length(inductor->vector) = 0;
 
-
   size_t instance_argc = 0;
 
   RuleIterator it = rule_iterator(inductor, attitude);

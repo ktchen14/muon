@@ -209,6 +209,34 @@ MUON_HINT(nonnull) static MuonType *record_expr_return(
   return &result->as_type;
 }
 
+MUON_HINT(nonnull) static MuonType *scheme_variable_return(
+    Inductor *inductor, MuonSchemeVariable *node) {
+  MuonType *join = &as_engine(inductor->engine)->bottom_type->as_type;
+  MuonType *meet = &as_engine(inductor->engine)->object_type->as_type;
+
+  MuonVariableType *result;
+  if ((result = muon_variable_type(inductor->engine, join, meet)) == NULL)
+    return NULL;
+  return &result->as_type;
+}
+
+MUON_HINT(nonnull) static MuonNode *scheme_expr_continue(
+    Inductor *inductor, MuonNode *node, MuonSchemeExpr *next) {
+  if (muon_scheme_initiate(inductor->engine) == NULL)
+    return NULL;
+  return node_continue(node, &next->as_node);
+}
+
+MUON_HINT(nonnull) static MuonType *scheme_expr_return(
+    Inductor *inductor, MuonSchemeExpr *node) {
+  MuonType *matter = node_type(inductor, &node->sign->as_node);
+
+  MuonSchemeType *result;
+  if ((result = muon_scheme_type(inductor->engine, matter)) == NULL)
+    return NULL;
+  return &result->as_type;
+}
+
 MUON_HINT(nonnull) static MuonType *switch_case_return(
     Inductor *inductor, MuonSwitchCase *node) {
   MuonNode *target;
@@ -477,6 +505,9 @@ MUON_HINT(nonnull) static MuonType *script_return(
 static MuonNode *on_continue(
     Inductor *inductor, MuonNode *node, MuonNode *next) {
   switch ON_ABSTRACT_NODE(next) {
+    case IS_CONCRETE_NODE(MuonSchemeExpr *scheme_expr)
+      return scheme_expr_continue(inductor, node, scheme_expr);
+
     case IS_CONCRETE_NODE(MuonDatatypeStmt *datatype_stmt)
       return datatype_stmt_continue(inductor, node, datatype_stmt);
 
