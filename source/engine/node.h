@@ -149,6 +149,9 @@ static inline MuonNode *node_at(MuonNode *node, size_t i) {
     case IS_CONCRETE_NODE(MuonSequenceExpr *sequence_expr)
       return i < sequence_expr->argc ? &sequence_expr->argv[i]->as_node : NULL;
 
+    case IS_CONCRETE_NODE(MuonSchemeExpr *scheme_expr)
+      return (MuonNode *[]) {&scheme_expr->expr->as_node, NULL}[i];
+
     case IS_CONCRETE_NODE(MuonSwitchCase *switch_case)
       return (MuonNode *[]) {&switch_case->expr->as_node, NULL}[i];
 

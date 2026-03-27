@@ -81,6 +81,7 @@ typedef struct {
 %type <name_expr> name_expr
 %type <expr_member> expr_member
 %type <record_expr> record_expr
+%type <lambda_expr> scheme_expr
 %type <switch_expr> switch_expr
 %type <vector_expr> vector_expr
 
@@ -103,6 +104,7 @@ typedef struct {
 %type <switch_case> switch_case switch_expr_argv
 %type <view_member> view_member record_view_argv
 
+%nonassoc '@'
 %left "∷"
 %right "→"
 %nonassoc "lambda"
@@ -163,6 +165,7 @@ expr: '(' expr[matter] ')' { $$ = $matter; } // {{{1
   | lambda_expr  { $$ = &$lambda_expr->as_expr; }
   | name_expr    { $$ = &$name_expr->as_expr; }
   | record_expr  { $$ = &$record_expr->as_expr; }
+  | scheme_expr  { $$ = &$scheme_expr->as_expr; }
   | switch_expr  { $$ = &$switch_expr->as_expr; }
   | vector_expr  { $$ = &$vector_expr->as_expr; }
 
@@ -189,7 +192,7 @@ invoke_expr: expr[operator] _ expr[argument] %prec ' ' {
   $$ = muon_invoke_expr(scan->engine, &$operator->as_expr, $argument);
 }
 
-lambda_expr: "lambda" _ view[argument] '=' expr[matter] %prec LAMBDA {
+lambda_expr: "lambda" _ view[argument] '=' expr[matter] %prec "lambda" {
   $$ = muon_lambda_expr(scan->engine, $argument, $matter);
 }
 
@@ -221,6 +224,10 @@ record_expr_argv: expr_member {
 
 expr_member: name '=' expr {
   $$ = muon_expr_member(scan->engine, $name, $expr);
+}
+
+scheme_expr: '@' '(' name ':' sign ')' _ expr %prec '@' {
+  $$ = muon_scheme_expr(scan->engine, $name, $sign, $expr);
 }
 
 switch_expr: "switch" _ '(' switch_expr_argv[argv] ')' { // {{{2

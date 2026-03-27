@@ -19,6 +19,7 @@
   emit(LambdaExpr, lambda_expr, LAMBDA_EXPR __VA_OPT__(,) __VA_ARGS__) \
   emit(NameExpr, name_expr, NAME_EXPR __VA_OPT__(,) __VA_ARGS__) \
   emit(RecordExpr, record_expr, RECORD_EXPR __VA_OPT__(,) __VA_ARGS__) \
+  emit(SchemeExpr, scheme_expr, SCHEME_EXPR __VA_OPT__(,) __VA_ARGS__) \
   emit(SequenceExpr, sequence_expr, SEQUENCE_EXPR __VA_OPT__(,) __VA_ARGS__) \
   emit(SwitchExpr, switch_expr, SWITCH_EXPR __VA_OPT__(,) __VA_ARGS__) \
   emit(VectorExpr, vector_expr, VECTOR_EXPR __VA_OPT__(,) __VA_ARGS__)
@@ -314,6 +315,13 @@ typedef const struct MuonSequenceExpr {
   MuonStmt *argv[] MUON_HINT(counted_by(argc));
 } MuonSequenceExpr;
 
+typedef const struct MuonSchemeExpr {
+  MUON_EXPR_HEADER;
+  MuonName *name;
+  MuonSign *sign;
+  MuonExpr *expr;
+} MuonSchemeExpr;
+
 typedef const struct MuonSwitchCase {
   MUON_NODE_HEADER;
   MuonName *name;
@@ -508,6 +516,10 @@ MuonExprMember *muon_expr_member(
 MuonRecordExpr *muon_record_expr(
     MuonEngine *engine, size_t argc, MuonExprMember *argv[/* argc */])
   MUON_HINT_SUFFIX(nonnull(1));
+
+MuonSchemeExpr *muon_scheme_expr(
+    MuonEngine *engine, MuonName *name, MuonSign *sign, MuonExpr *expr)
+  MUON_HINT_SUFFIX(nonnull);
 
 MuonSwitchCase *muon_switch_case(
     MuonEngine *engine, MuonName *name, MuonExpr *expr)

@@ -643,6 +643,10 @@ void (muon_node_debug)(MuonNode *node, struct MuonNodeDebugArgs args) { //-
         debug("(name = " PRIsNAME ")", DEBUG_NAME(expr_member->name));
       break;
 
+    case IS_CONCRETE_NODE(MuonSchemeExpr *scheme_expr)
+      debug("(name = " PRIsNAME ")", DEBUG_NAME(scheme_expr->name));
+      break;
+
     case IS_CONCRETE_NODE(MuonExprImport *expr_import)
       debug("(name = " PRIsNAME ")", DEBUG_NAME(expr_import->name));
       break;
