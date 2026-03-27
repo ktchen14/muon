@@ -340,10 +340,6 @@ view: '(' view[matter] ')' { $$ = $matter; } // {{{1
   | record_view   { $$ = &$record_view->as_view; }
   | variable_view { $$ = &$variable_view->as_view; }
 
-view_member: name '=' view {
-  $$ = muon_view_member(scan->engine, $name, $view);
-}
-
 record_view: '(' record_view_argv[argv] ')' {
   size_t argc = node_series(&$argv->as_node)->n;
   struct MuonRecordView *result;
@@ -364,6 +360,10 @@ record_view_argv: view_member {
   $$ = node_attach($argv, $view_member);
   if (rare(++node_series(&$$->as_node)->n == 0))
     YYNOMEM;
+}
+
+view_member: name '=' view {
+  $$ = muon_view_member(scan->engine, $name, $view);
 }
 
 variable_view: name {
