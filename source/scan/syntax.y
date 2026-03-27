@@ -59,7 +59,6 @@ typedef struct {
 %token CAST "∷"
 %token TO "→"
 %token IS_SUBTYPE_OF "<:"
-%token '$' "$"
 
 %token <integer> INTEGER_LITERAL
 %token <boolean> BOOLEAN_LITERAL
@@ -308,7 +307,7 @@ vector_sign: '[' sign ']' {
   $$ = muon_vector_sign(scan->engine, $sign);
 }
 
-variable_sign: '$' {
+variable_sign: '*' {
   $$ = muon_variable_sign(scan->engine);
 }
 

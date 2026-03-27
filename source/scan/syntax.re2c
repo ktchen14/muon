@@ -44,8 +44,8 @@ sentinel = [\x00];
 <normal> _ @a ("→" | "->") @z _ { return TO; }
 <normal> _ @a ("∷" | "::") @z _ { return CAST; }
 
+<normal> "*"                    { return '*'; }
 <normal> "∀" | "@"              { return '@'; }
-<normal> "$"                     { return '$'; }
 
 // ================================ Boolean ====================================
 
