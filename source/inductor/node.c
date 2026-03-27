@@ -209,8 +209,8 @@ MUON_HINT(nonnull) static MuonType *record_expr_return(
   return &result->as_type;
 }
 
-MUON_HINT(nonnull) static MuonType *scheme_variable_return(
-    Inductor *inductor, MuonSchemeVariable *node) {
+MUON_HINT(nonnull) static MuonType *scheme_member_return(
+    Inductor *inductor, MuonSchemeMember *node) {
   MuonType *join = &as_engine(inductor->engine)->bottom_type->as_type;
   MuonType *meet = &as_engine(inductor->engine)->object_type->as_type;
 

@@ -144,14 +144,14 @@ MuonRecordExpr *muon_record_expr(
   return record_expr_activate(result);
 }
 
-MuonSchemeVariable *muon_scheme_variable(MuonEngine *engine, MuonName *name) {
+MuonSchemeMember *muon_scheme_member(MuonEngine *engine, MuonName *name) {
   assert(name == NULL || name->engine == engine);
 
-  struct MuonSchemeVariable *result;
-  if ((result = node_allocate(engine, sizeof(MuonSchemeVariable))) == NULL)
+  struct MuonSchemeMember *result;
+  if ((result = node_allocate(engine, sizeof(MuonSchemeMember))) == NULL)
     return NULL;
-  *result = (MuonSchemeVariable) {
-    .as_node.tag = MUON_SCHEME_VARIABLE_NODE, .name = name
+  *result = (MuonSchemeMember) {
+    .as_node.tag = MUON_SCHEME_MEMBER_NODE, .name = name
   };
   return assign_node(engine, &result->as_node), result;
 }
@@ -160,10 +160,10 @@ MuonSchemeExpr *muon_scheme_expr(
     MuonEngine *engine,
     MuonSign *sign,
     MuonExpr *expr,
-    MuonSchemeVariable *variable) {
+    MuonSchemeMember *member) {
   assert(sign == NULL || sign->as_node.engine == engine);
   assert(expr == NULL || expr->as_node.engine == engine);
-  assert(variable == NULL || variable->as_node.engine == engine);
+  assert(member == NULL || member->as_node.engine == engine);
 
   struct MuonSchemeExpr *result;
   if ((result = node_allocate(engine, sizeof(MuonSchemeExpr))) == NULL)
@@ -172,7 +172,7 @@ MuonSchemeExpr *muon_scheme_expr(
     .as_node.tag = MUON_SCHEME_EXPR_NODE,
     .sign = sign,
     .expr = expr,
-    .variable = variable,
+    .member = member,
   };
   return assign_node(engine, &result->as_node), result;
 }
@@ -676,7 +676,7 @@ void (muon_node_debug)(MuonNode *node, struct MuonNodeDebugArgs args) { //-
         debug("(name = " PRIsNAME ")", DEBUG_NAME(expr_member->name));
       break;
 
-    case IS_CONCRETE_NODE(MuonSchemeVariable *scheme_variable)
+    case IS_CONCRETE_NODE(MuonSchemeMember *scheme_variable)
       debug("(name = " PRIsNAME ")", DEBUG_NAME(scheme_variable->name));
       break;
 

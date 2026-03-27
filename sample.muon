@@ -2,6 +2,8 @@
 
 # define isnumber = (lambda x = x) :: Integer -> Integer
 
+id = ∀(t: t -> t) lambda x = x
+
 id = lambda x = x
 id2 = lambda x = (foo = id x)
 # define id3 = lambda x = id2 x

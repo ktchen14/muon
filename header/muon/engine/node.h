@@ -65,7 +65,7 @@
   emit(SwitchCase, switch_case, SWITCH_CASE __VA_OPT__(,) __VA_ARGS__) \
   emit(DatatypeOption, datatype_option, DATATYPE_OPTION \
     __VA_OPT__(,) __VA_ARGS__) \
-  emit(SchemeVariable, scheme_variable, SCHEME_VARIABLE \
+  emit(SchemeMember, scheme_member, SCHEME_MEMBER \
       __VA_OPT__(,) __VA_ARGS__) \
   emit(ViewMember, view_member, VIEW_MEMBER __VA_OPT__(,) __VA_ARGS__) \
   emit(Script, script, SCRIPT __VA_OPT__(,) __VA_ARGS__)
@@ -83,7 +83,7 @@ typedef enum {
   MUON_EXPR_MEMBER = MUON_EXPR_MEMBER_NODE, //-
   MUON_SWITCH_CASE = MUON_SWITCH_CASE_NODE,
   MUON_DATATYPE_OPTION = MUON_DATATYPE_OPTION_NODE,
-  MUON_SCHEME_VARIABLE = MUON_SCHEME_VARIABLE_NODE,
+  MUON_SCHEME_MEMBER = MUON_SCHEME_MEMBER_NODE,
   MUON_VIEW_MEMBER = MUON_VIEW_MEMBER_NODE,
   MUON_SCRIPT = MUON_SCRIPT_NODE,
 } MuonNodeTag;
@@ -318,16 +318,16 @@ typedef const struct MuonSequenceExpr {
   MuonStmt *argv[] MUON_HINT(counted_by(argc));
 } MuonSequenceExpr;
 
-typedef const struct MuonSchemeVariable {
+typedef const struct MuonSchemeMember {
   MUON_NODE_HEADER;
   MuonName *name;
-} MuonSchemeVariable;
+} MuonSchemeMember;
 
 typedef const struct MuonSchemeExpr {
   MUON_EXPR_HEADER;
   MuonSign *sign;
   MuonExpr *expr;
-  MuonSchemeVariable *variable;
+  MuonSchemeMember *member;
 } MuonSchemeExpr;
 
 typedef const struct MuonSwitchCase {
@@ -525,14 +525,14 @@ MuonRecordExpr *muon_record_expr(
     MuonEngine *engine, size_t argc, MuonExprMember *argv[/* argc */])
   MUON_HINT_SUFFIX(nonnull(1));
 
-MuonSchemeVariable *muon_scheme_variable(MuonEngine *engine, MuonName *name)
+MuonSchemeMember *muon_scheme_member(MuonEngine *engine, MuonName *name)
   MUON_HINT_SUFFIX(nonnull);
 
 MuonSchemeExpr *muon_scheme_expr(
     MuonEngine *engine,
     MuonSign *sign,
     MuonExpr *expr,
-    MuonSchemeVariable *variable)
+    MuonSchemeMember *member)
   MUON_HINT_SUFFIX(nonnull);
 
 MuonSwitchCase *muon_switch_case(

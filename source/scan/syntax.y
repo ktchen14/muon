@@ -103,7 +103,7 @@ typedef struct {
 %type <expr_member> record_expr_argv
 %type <switch_case> switch_case switch_expr_argv
 %type <view_member> view_member record_view_argv
-%type <scheme_variable> scheme_variable
+%type <scheme_member> scheme_member
 
 %nonassoc '@'
 %left "∷"
@@ -227,12 +227,12 @@ expr_member: name '=' expr {
   $$ = muon_expr_member(scan->engine, $name, $expr);
 }
 
-scheme_expr: '@' '(' scheme_variable ':' sign ')' _ expr %prec '@' {
-  $$ = muon_scheme_expr(scan->engine, $sign, $expr, $scheme_variable);
+scheme_expr: '@' '(' scheme_member ':' sign ')' _ expr %prec '@' {
+  $$ = muon_scheme_expr(scan->engine, $sign, $expr, $scheme_member);
 }
 
-scheme_variable: name {
-  $$ = muon_scheme_variable(scan->engine, $name);
+scheme_member: name {
+  $$ = muon_scheme_member(scan->engine, $name);
 }
 
 switch_expr: "switch" _ '(' switch_expr_argv[argv] ')' { // {{{2
