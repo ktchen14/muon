@@ -123,6 +123,7 @@ static inline MuonNode *node_at(MuonNode *node, size_t i) {
     case MUON_VARIABLE_SIGN:
     case MUON_DATATYPE_OPTION:
     case MUON_VARIABLE_VIEW:
+    case MUON_SCHEME_VARIABLE:
       return NULL;
 
     case IS_CONCRETE_NODE(MuonCastExpr *cast_expr)
