@@ -33,6 +33,7 @@ enum {
 };
 
 typedef const struct MuonSchemeType MuonSchemeType;
+typedef const struct MuonVariableType MuonVariableType;
 
 /**
  * @brief An abstract type
@@ -78,6 +79,8 @@ typedef const struct MuonMeetType {
 typedef const struct MuonSchemeType {
   MUON_TYPE_HEADER;
   MuonType *matter;
+  size_t argc;
+  MuonVariableType *argv[];
 } MuonSchemeType;
 
 typedef const struct MuonVariableType {

@@ -295,13 +295,18 @@ MuonMeetType *meet_type_activate(struct MuonMeetType *type) {
 }
 
 struct MuonSchemeType *scheme_type_allocate(MuonEngine *engine, size_t argc) {
+  size_t size = argc;
+  if (struct_size_overflow(MuonSchemeType, argv, &size))
+    return errno = ENOMEM, NULL;
+
   MuonSchemeType *scheme = as_engine(engine)->scheme;
 
   struct MuonSchemeType *result;
-  if ((result = type_allocate(engine, sizeof(MuonSchemeType))) == NULL)
+  if ((result = type_allocate(engine, size)) == NULL)
     return NULL;
   *result = (MuonSchemeType) {
     .as_type = {.tag = MUON_SCHEME_TYPE, .engine = engine, .scheme = scheme},
+    .argc = argc,
   };
   return result;
 }
