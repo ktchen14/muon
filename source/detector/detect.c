@@ -225,11 +225,13 @@ detect_t *detect_node(detect_t *detect, MuonNode *root) {
           size_t length = 1;
 
           roster_t *next_roster;
-          if ((next_roster = roster_create(roster, length, &scheme_expr->as_node))
+          if ((next_roster = roster_create(
+                   roster, length, &scheme_expr->as_node))
               == NULL)
             return NULL;
           roster = next_roster;
-          announce(roster, scheme_expr->member->name, &scheme_expr->member->as_node);
+          announce(
+              roster, scheme_expr->member->name, &scheme_expr->member->as_node);
           break;
         }
 

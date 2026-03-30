@@ -8,6 +8,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+static inline Attitude type_next2(const Inductor *inductor, Attitude origin) {
+  return type_at(origin, type_cursor(origin)->i++);
+}
+
 MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
   MuonEngine *engine = inductor->engine;
 
@@ -27,7 +31,7 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
   goto entrance;
   do {
     Attitude next;
-    while (!attitude_isnull(next = type_next(inductor, cursor))) {
+    while (!attitude_isnull(next = type_next2(inductor, cursor))) {
       struct TypeCursor *next_cursor = type_cursor(next);
       if (!attitude_isnull(attitude_decode(next_cursor->anterior)))
         continue;
@@ -83,10 +87,10 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
         }
 
         case MUON_SCHEME_TYPE: {
-          struct MuonSchemeType *allocation;
-          if ((allocation = scheme_type_allocate(engine)) == NULL)
-            goto except;
-          equation[cursor.type->id].allocation = &allocation->as_type;
+          // struct MuonSchemeType *allocation;
+          // if ((allocation = scheme_type_allocate(engine)) == NULL)
+          //   goto except;
+          // equation[cursor.type->id].allocation = &allocation->as_type;
           break;
         }
       }

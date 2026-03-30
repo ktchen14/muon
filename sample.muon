@@ -12,9 +12,8 @@ id = ∀(t: t -> *) lambda x = x
 # define d = ((id2 true).foo)
 # define d = is_boolean (id2 true).foo
 
-apply = lambda f = (lambda x = f x)
-
-e = apply (is_integer) (id (list_head [1]))
+e = is_integer (id (list_head [1]))
+f = is_boolean (id (list_head [true]))
 
 # define main = lambda () = [[(foo: (bar: 5)).foo.bar, 7], [9]]
 

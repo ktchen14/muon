@@ -112,6 +112,7 @@ struct Inductor {
   Vector(MuonType *) vector;
 
   MuonCore *datatype_core;
+  struct MuonSchemeType *scheme;
 };
 
 typedef struct {

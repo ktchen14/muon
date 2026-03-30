@@ -106,37 +106,16 @@ MuonMeetType *muon_meet_type(
   return meet_type_activate(result);
 }
 
-const void *muon_scheme_initiate(MuonEngine *engine) {
-  MuonSchemeType *scheme = as_engine(engine)->scheme;
-  struct MuonSchemeType *result;
-  if ((result = type_allocate(engine, sizeof(MuonSchemeType))) == NULL)
-    return NULL;
-  *result = (MuonSchemeType) {
-    .as_type = {.tag = MUON_SCHEME_TYPE, .engine = engine, .scheme = scheme}
-  };
-  return as_engine(engine)->scheme = result;
-}
-
-MuonSchemeType *muon_scheme_type(MuonEngine *opaque, MuonType *matter) {
-  Engine *engine = as_engine(opaque);
-
-  struct MuonSchemeType *allocation = engine->scheme;
-  assert(allocation != NULL);
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wcast-qual"
-  engine->scheme = (struct MuonSchemeType *) allocation->as_type.scheme;
-#pragma GCC diagnostic pop
-
-  allocation->matter = matter;
-  return scheme_type_activate(allocation);
-}
-
 MuonVariableType *muon_variable_type(
-    MuonEngine *engine, MuonName *name, MuonType *join, MuonType *meet) {
+    MuonEngine *engine,
+    MuonSchemeType *scheme,
+    MuonName *name,
+    MuonType *join,
+    MuonType *meet) {
   struct MuonVariableType *result;
   if ((result = variable_type_allocate(engine)) == NULL)
     return NULL;
+  result->as_type.scheme = scheme;
   result->name = name;
   result->join = join;
   result->meet = meet;
@@ -315,7 +294,7 @@ MuonMeetType *meet_type_activate(struct MuonMeetType *type) {
   return stator_insert(engine, type, hash, i);
 }
 
-struct MuonSchemeType *scheme_type_allocate(MuonEngine *engine) {
+struct MuonSchemeType *scheme_type_allocate(MuonEngine *engine, size_t argc) {
   MuonSchemeType *scheme = as_engine(engine)->scheme;
 
   struct MuonSchemeType *result;
@@ -327,11 +306,24 @@ struct MuonSchemeType *scheme_type_allocate(MuonEngine *engine) {
   return result;
 }
 
-MuonSchemeType *scheme_type_activate(struct MuonSchemeType *type) {
-  MuonEngine *engine = unlock_engine(&type->as_type);
-  assert(type->matter != NULL && type->matter->engine == engine);
-  type->as_type.explicit = type->matter->explicit;
-  return assign_type(engine, &type->as_type), type;
+struct MuonSchemeType *scheme_type_initiate(struct MuonSchemeType *type) {
+  return as_engine(unlock_engine(&type->as_type))->scheme = type;
+}
+
+MuonSchemeType *scheme_type_activate(MuonEngine *opaque) {
+  Engine *engine = as_engine(opaque);
+
+  struct MuonSchemeType *result = engine->scheme;
+  assert(result != NULL);
+  assert(result->matter != NULL && result->matter->engine == opaque);
+  result->as_type.explicit = result->matter->explicit;
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-qual"
+  engine->scheme = (struct MuonSchemeType *) result->as_type.scheme;
+#pragma GCC diagnostic pop
+
+  return assign_type(opaque, &result->as_type), result;
 }
 
 struct MuonVariableType *variable_type_allocate(MuonEngine *engine) {

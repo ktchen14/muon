@@ -37,21 +37,28 @@ MuonModule *muon_standard_module(MuonEngine *engine) {
           &muon_boolean_type(engine)->as_type)
           ->as_type);
 
-  Engine *e = as_engine(engine);
-  muon_scheme_initiate(engine);
+  MuonType *bottom_type = &as_engine(engine)->bottom_type->as_type;
+  MuonType *object_type = &as_engine(engine)->object_type->as_type;
+
+  struct MuonSchemeType *scheme_type = scheme_type_allocate(engine, 1);
+
   MuonVariableType *variable_type = muon_variable_type(
-      engine, muon_nominate(engine, "t"), &e->bottom_type->as_type, &e->object_type->as_type);
-  MuonExport *list_head = muon_export(
       engine,
-      muon_nominate(engine, "list_head"),
-      &muon_scheme_type(
-          engine,
-          &muon_lambda_type(
-              engine,
-              &muon_vector_type(engine, &variable_type->as_type)->as_type,
-              &variable_type->as_type)
-              ->as_type)
-          ->as_type);
+      scheme_type,
+      muon_nominate(engine, "t"),
+      bottom_type,
+      object_type);
+
+  scheme_type = scheme_type_initiate(scheme_type);
+
+  scheme_type->matter = &muon_lambda_type(
+      engine,
+      &muon_vector_type(engine, &variable_type->as_type)->as_type,
+      &variable_type->as_type)
+                             ->as_type;
+
+  MuonExport *list_head = muon_export(
+      engine, muon_nominate(engine, "list_head"), &scheme_type->as_type);
 
   MuonModule *result;
   if ((result = muon_module(
