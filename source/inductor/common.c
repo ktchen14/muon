@@ -152,5 +152,19 @@ void (inductor_debug)( //-
     debug("];\n");
   }
 
+  // for (size_t i = 0; i < inductor->instance_length; i++) {
+  //   MuonInstance *instance = inductor->instance[i];
+  //   MuonSchemeType *scheme = instance->scheme;
+  //
+  //   for (size_t j = 0; j < scheme->argc; j++) {
+  //     MuonType *source_type = &scheme->argv[j]->as_type;
+  //     MuonType *target_type = &instance->argv[j]->as_type;
+  //
+  //     debug("  Type%zu -> Type%zu [", source_type->id, target_type->id);
+  //     debug("color=green,fontcolor=green,label=\"%zu\",", instance->id);
+  //     debug("];\n");
+  //   }
+  // }
+
   debug("}\n");
 }

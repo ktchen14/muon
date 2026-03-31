@@ -30,8 +30,9 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
   if ((instance = instance_activate(instance_allocation)) == NULL)
     return NULL;
 
-  MuonType *equation[inductor->type_length] = {};
+  inductor->instance[inductor->instance_length++] = instance;
 
+  MuonType *equation[inductor->type_length] = {};
   for (size_t i = 0; i < scheme->argc; i++)
     equation[scheme->argv[i]->as_type.id] = &instance->argv[i]->as_type;
 
