@@ -60,13 +60,7 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
         }
 
         case MUON_IMPLICIT_TYPE:
-        case MUON_VARIABLE_TYPE: {
-          MuonImplicitType *result;
-          if ((result = muon_implicit_type(engine)) == NULL)
-            goto except;
-          equation[cursor.type->id].result = &result->as_type;
           break;
-        }
 
         case IS_CONCRETE_TYPE(MuonJoinType *join_type) {
           struct MuonJoinType *allocation;
@@ -91,6 +85,14 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
           // if ((allocation = scheme_type_allocate(engine)) == NULL)
           //   goto except;
           // equation[cursor.type->id].allocation = &allocation->as_type;
+          break;
+        }
+
+        case MUON_VARIABLE_TYPE: {
+          MuonImplicitType *result;
+          if ((result = muon_implicit_type(engine)) == NULL)
+            goto except;
+          equation[cursor.type->id].result = &result->as_type;
           break;
         }
       }
@@ -121,43 +123,8 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
         break;
       }
 
-      case MUON_IMPLICIT_TYPE: {
-        RuleIterator it = rule_iterator(inductor, cursor);
-        for (const Rule *rule; (rule = rule_next(&it)) != NULL;) {
-          if (rule->instance != NULL && rule->instance->scheme == scheme)
-            continue;
-
-          MuonType *source = rule->source;
-          if (equation[source->id].result != NULL)
-            source = equation[source->id].result;
-
-          MuonType *target = rule->target;
-          if (equation[target->id].result != NULL)
-            target = equation[target->id].result;
-
-          if (rule_search(inductor, source, target) != NULL)
-            continue;
-
-          Rule *next;
-          if ((next = rule_insert(inductor, source, target)) == NULL)
-            goto except;
-          next->tag = rule->tag;
-          memcpy(next->locked, rule->locked, sizeof(next->locked));
-          next->instance = rule->instance;
-        }
-
-        MuonType *result = equation[cursor.type->id].result;
-
-        MuonType *source = (MuonType *[]) {cursor.type, result}[cursor.charge];
-        MuonType *target = (MuonType *[]) {result, cursor.type}[cursor.charge];
-
-        Rule *rule;
-        if ((rule = rule_insert(inductor, source, target)) == NULL)
-          goto except;
-        rule->locked[cursor.charge] = 1;
-        rule->instance = instance;
+      case MUON_IMPLICIT_TYPE:
         break;
-      }
 
       case IS_CONCRETE_TYPE(MuonJoinType *join_type) {
         struct MuonJoinType *allocation =
@@ -196,18 +163,18 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
       }
 
       case IS_CONCRETE_TYPE(MuonSchemeType *scheme_type) {
-        struct MuonSchemeType *allocation =
-            (struct MuonSchemeType *) equation[cursor.type->id].allocation;
-
-        MuonType *matter = scheme_type->matter;
-        if (equation[matter->id].result != NULL)
-          matter = equation[matter->id].result;
-        allocation->matter = matter;
-
-        MuonSchemeType *result;
-        if ((result = scheme_type_activate(allocation)) == NULL)
-          goto except;
-        equation[cursor.type->id].result = &result->as_type;
+        // struct MuonSchemeType *allocation =
+        //     (struct MuonSchemeType *) equation[cursor.type->id].allocation;
+        //
+        // MuonType *matter = scheme_type->matter;
+        // if (equation[matter->id].result != NULL)
+        //   matter = equation[matter->id].result;
+        // allocation->matter = matter;
+        //
+        // MuonSchemeType *result;
+        // if ((result = scheme_type_activate(allocation)) == NULL)
+        //   goto except;
+        // equation[cursor.type->id].result = &result->as_type;
         break;
       }
 
