@@ -10,6 +10,7 @@ typedef const struct MuonInstance {
   const MuonEngine *engine;
   size_t id;
   MuonSchemeType *scheme;
+  MuonImplicitType *argv[];
 } MuonInstance;
 
 MuonInstance *muon_instance(MuonEngine *engine, MuonSchemeType *scheme)

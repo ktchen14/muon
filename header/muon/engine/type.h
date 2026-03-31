@@ -81,7 +81,7 @@ typedef const struct MuonSchemeType {
   size_t rank;
   MuonType *matter;
   size_t argc;
-  MuonVariableType *argv[];
+  MuonVariableType *argv[] MUON_HINT(counted_by(argc));
 } MuonSchemeType;
 
 typedef const struct MuonVariableType {

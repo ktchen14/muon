@@ -5,11 +5,13 @@
 
 #include "common.h"
 
-struct MuonInstance *instance_allocate(MuonEngine *engine)
+#include <stddef.h>
+
+struct MuonInstance *instance_allocate(
+    MuonEngine *engine, MuonSchemeType *scheme)
   MUON_HINT_SUFFIX(nonnull);
 
-MuonInstance *instance_activate(
-    struct MuonInstance *instance, MuonSchemeType *scheme)
+MuonInstance *instance_activate(struct MuonInstance *instance)
   MUON_HINT_SUFFIX(nonnull);
 
 #endif /* MUON_ENGINE_INSTANCE_I */
