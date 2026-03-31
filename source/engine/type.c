@@ -476,25 +476,37 @@ void (muon_type_debug)(MuonType *type, struct MuonTypeDebugArgs args) { //-
       break;
 
     case IS_CONCRETE_TYPE(MuonSchemeType *scheme_type)
-      debug("§%zu ", scheme_type->as_type.id);
-      debug("(");
+      debug("∀(");
+
       next_args.strength = 0;
+      for (size_t i = 0; i < scheme_type->argc; i++) {
+        MuonVariableType *argument = scheme_type->argv[i];
+
+        if (i > 0)
+          debug(", ");
+
+        if (!is_bottom_type(argument->join)) {
+          (muon_type_debug)(argument->join, next_args);
+          debug(" <: ");
+        }
+
+        debug(PRIsNAME, DEBUG_NAME(argument->name));
+
+        if (!is_object_type(argument->meet)) {
+          debug(" <: ");
+          (muon_type_debug)(argument->meet, next_args);
+        }
+      }
+
+      if (scheme_type->argc > 0)
+        debug(" | ");
+
       (muon_type_debug)(scheme_type->matter, next_args);
       debug(")");
       break;
 
     case IS_CONCRETE_TYPE(MuonVariableType *variable_type)
-      if (!is_bottom_type(variable_type->join)) {
-        (muon_type_debug)(variable_type->join, next_args);
-        debug(" <: ");
-      }
-
       debug(PRIsNAME, DEBUG_NAME(variable_type->name));
-
-      if (!is_object_type(variable_type->meet)) {
-        debug(" <: ");
-        (muon_type_debug)(variable_type->meet, next_args);
-      }
       break;
   }
 }
