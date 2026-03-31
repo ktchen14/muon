@@ -78,6 +78,7 @@ typedef const struct MuonMeetType {
 
 typedef const struct MuonSchemeType {
   MUON_TYPE_HEADER;
+  size_t rank;
   MuonType *matter;
   size_t argc;
   MuonVariableType *argv[];
