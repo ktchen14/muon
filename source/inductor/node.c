@@ -254,8 +254,13 @@ MUON_HINT(nonnull) static MuonNode *scheme_expr_continue(
 
 MUON_HINT(nonnull) static MuonType *scheme_expr_return(
     Inductor *inductor, MuonSchemeExpr *node) {
+  MuonType *member = node_type(inductor, &node->member->as_node);
+  MuonVariableType *variable_type = muon_type_cast(member, variable_type);
+  assert(variable_type != NULL);
+
   MuonType *matter = node_type(inductor, &node->sign->as_node);
 
+  inductor->scheme->argv[0] = variable_type;
   inductor->scheme->matter = matter;
 
   MuonSchemeType *result;

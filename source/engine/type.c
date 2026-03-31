@@ -320,14 +320,24 @@ MuonSchemeType *scheme_type_activate(MuonEngine *opaque) {
 
   struct MuonSchemeType *result = engine->scheme;
   assert(result != NULL);
+
+  _Bool explicit = 1;
   assert(result->matter != NULL && result->matter->engine == opaque);
-  result->as_type.explicit = result->matter->explicit;
+  explicit &= result->matter->explicit;
+
+  for (size_t i = 0; i < result->argc; i++) {
+    MuonVariableType *argument = result->argv[i];
+    assert(argument != NULL);
+    assert(argument->as_type.engine == opaque);
+    explicit &= argument->as_type.explicit;
+  }
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-qual"
   engine->scheme = (struct MuonSchemeType *) result->as_type.scheme;
 #pragma GCC diagnostic pop
 
+  result->as_type.explicit = explicit;
   return assign_type(opaque, &result->as_type), result;
 }
 

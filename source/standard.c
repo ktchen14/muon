@@ -57,6 +57,7 @@ MuonModule *muon_standard_module(MuonEngine *engine) {
       &variable_type->as_type)
                              ->as_type;
 
+  scheme_allocation->argv[0] = variable_type;
   MuonSchemeType *scheme_type = scheme_type_activate(engine);
 
   MuonExport *list_head = muon_export(
