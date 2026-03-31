@@ -13,7 +13,8 @@ typedef const struct MuonInstance {
   MuonImplicitType *argv[];
 } MuonInstance;
 
-MuonInstance *muon_instance(MuonEngine *engine, MuonSchemeType *scheme)
-  MUON_HINT_SUFFIX(nonnull);
+MuonInstance *muon_instance(
+    MuonEngine *engine, MuonSchemeType *scheme, MuonImplicitType *const argv[])
+  MUON_HINT_SUFFIX(nonnull(1, 2));
 
 #endif /* MUON_ENGINE_INSTANCE_H */

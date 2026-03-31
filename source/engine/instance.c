@@ -14,10 +14,13 @@ static inline MuonEngine *unlock_engine(struct MuonInstance *instance) {
 #pragma GCC diagnostic pop
 }
 
-MuonInstance *muon_instance(MuonEngine *engine, MuonSchemeType *scheme) {
+MuonInstance *muon_instance(
+    MuonEngine *engine, MuonSchemeType *scheme, MuonImplicitType *const argv[]) {
   struct MuonInstance *result;
   if ((result = instance_allocate(engine, scheme)) == NULL)
     return NULL;
+  for (size_t i = 0; i < scheme->argc; i++)
+    result->argv[i] = argv[i];
   return instance_activate(result);
 }
 
