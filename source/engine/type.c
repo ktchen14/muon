@@ -47,9 +47,6 @@ static inline MuonType *assign_type(MuonEngine *engine, struct MuonType *type) {
 }
 
 [[gnu::pure]]
-static MuonSchemeType *scheme_minimum(MuonSchemeType *a, MuonSchemeType *b);
-
-[[gnu::pure]]
 static MuonSchemeType *scheme_maximum(MuonSchemeType *a, MuonSchemeType *b);
 
 MuonCoreType *muon_core_type(
@@ -483,27 +480,6 @@ void (muon_type_debug)(MuonType *type, struct MuonTypeDebugArgs args) { //-
       debug(PRIsNAME, DEBUG_NAME(variable_type->name));
       break;
   }
-}
-
-static MuonSchemeType *scheme_minimum(MuonSchemeType *a, MuonSchemeType *b) {
-  if (a == NULL)
-    return b;
-  if (b == NULL)
-    return a;
-
-  MuonSchemeType *next;
-  if (a->rank > b->rank) {
-    next = a;
-    for (size_t i = a->rank - b->rank; i-- > 0;)
-      next = next->as_type.scheme;
-    assert(next == b);
-  } else {
-    next = b;
-    for (size_t i = b->rank - a->rank; i-- > 0;)
-      next = next->as_type.scheme;
-    assert(next == a);
-  }
-  return next;
 }
 
 static MuonSchemeType *scheme_maximum(MuonSchemeType *a, MuonSchemeType *b) {
