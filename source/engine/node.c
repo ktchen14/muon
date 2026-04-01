@@ -352,6 +352,32 @@ MuonSequenceExpr *sequence_expr_activate(struct MuonSequenceExpr *expr) {
   return assign_node(engine, &expr->as_node), expr;
 }
 
+struct MuonRecordSign *record_sign_allocate(MuonEngine *engine, size_t argc) {
+  size_t size;
+  if (rare((size = struct_size(MuonRecordSign, argv, argc)) == 0))
+    return errno = ENOMEM, NULL;
+
+  struct MuonRecordSign *result;
+  if ((result = node_allocate(engine, size)) == NULL)
+    return NULL;
+  *result = (MuonRecordSign) {.as_node.engine = engine, .argc = argc};
+  return result;
+}
+
+MuonRecordSign *record_sign_activate(struct MuonRecordSign *sign) {
+  MuonEngine *engine = unlock_engine(&sign->as_node);
+
+  for (size_t i = 0; i < sign->argc; i++)
+    assert(sign->argv[i] != NULL && sign->argv[i]->as_node.engine == engine);
+
+  MuonRecordSign source = {
+    .as_sign.tag = MUON_RECORD_SIGN,
+    .argc = sign->argc,
+  };
+  memcpy(sign, &source, offsetof(MuonRecordSign, argv));
+  return assign_node(engine, &sign->as_node), sign;
+}
+
 MuonExprImport *muon_expr_import(MuonEngine *engine, MuonName *name) {
   assert(name->engine == engine);
 

@@ -361,7 +361,30 @@ MUON_HINT(nonnull) static MuonType *name_sign_return(
 
 MUON_HINT(nonnull) static MuonType *record_sign_return(
     Inductor *inductor, MuonRecordSign *sign) {
-  assert(0);
+  MuonEngine *engine = inductor->engine;
+
+  struct MuonRecordCore *core_allocation;
+  if ((core_allocation = record_core_allocate(engine, sign->argc)) == NULL)
+    return NULL;
+
+  for (size_t i = 0; i < sign->argc; i++)
+    core_allocation->argv[i] = sign->argv[i]->name;
+
+  MuonRecordCore *core;
+  if ((core = record_core_activate(core_allocation)) == NULL)
+    return NULL;
+
+  struct MuonCoreType *type_allocation;
+  if ((type_allocation = core_type_allocate(engine, &core->as_core)) == NULL)
+    return NULL;
+
+  for (size_t i = 0; i < sign->argc; i++)
+    type_allocation->argv[i] = node_type(inductor, &sign->argv[i]->as_node);
+
+  MuonCoreType *result;
+  if (rare((result = core_type_activate(type_allocation)) == NULL))
+    return NULL;
+  return &result->as_type;
 }
 
 MUON_HINT(nonnull) static MuonType *vector_sign_return(

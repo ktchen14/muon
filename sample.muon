@@ -5,7 +5,7 @@
 id = ∀(t: t -> *) lambda x = x
 
 # id = lambda x = x
-# id2 = lambda x = (foo = id x)
+id2 = ∀(t: t -> (foo: t)) lambda x = (foo = id x)
 # define id3 = lambda x = id2 x
 
 # define c = is_integer_list (id2 [1, 2]).foo
@@ -13,7 +13,7 @@ id = ∀(t: t -> *) lambda x = x
 # define d = is_boolean (id2 true).foo
 
 e = is_integer (id (list_head [1]))
-e = is_boolean (id (list_head [true]))
+f = is_boolean (id (list_head [true]))
 
 # e = is_integer (id 1)
 # f = is_boolean (id true)

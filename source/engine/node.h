@@ -257,6 +257,12 @@ struct MuonSequenceExpr *sequence_expr_allocate(MuonEngine *engine, size_t argc)
 MuonSequenceExpr *sequence_expr_activate(struct MuonSequenceExpr *expr)
   MUON_HINT_SUFFIX(nonnull);
 
+struct MuonRecordSign *record_sign_allocate(MuonEngine *engine, size_t argc)
+  MUON_HINT_SUFFIX(nonnull);
+
+MuonRecordSign *record_sign_activate(struct MuonRecordSign *sign)
+  MUON_HINT_SUFFIX(nonnull);
+
 struct MuonDatatypeStmt *datatype_stmt_allocate(MuonEngine *engine, size_t argc)
   MUON_HINT_SUFFIX(nonnull);
 

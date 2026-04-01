@@ -78,7 +78,6 @@ typedef struct {
 %type <invoke_expr> invoke_expr
 %type <lambda_expr> lambda_expr
 %type <name_expr> name_expr
-%type <expr_member> expr_member
 %type <record_expr> record_expr
 %type <scheme_expr> scheme_expr
 %type <switch_expr> switch_expr
@@ -88,8 +87,9 @@ typedef struct {
 %type <integer_sign> integer_sign
 %type <lambda_sign> lambda_sign
 %type <name_sign> name_sign
-%type <vector_sign> vector_sign
+%type <record_sign> record_sign
 %type <variable_sign> variable_sign
+%type <vector_sign> vector_sign
 
 %type <coercion_stmt> coercion_stmt
 %type <datatype_stmt> datatype_stmt
@@ -99,10 +99,11 @@ typedef struct {
 %type <variable_view> variable_view
 
 %type <datatype_option> datatype_option datatype_stmt_argv
-%type <expr_member> record_expr_argv
+%type <expr_member> expr_member record_expr_argv
+%type <scheme_member> scheme_member
+%type <sign_member> sign_member record_sign_argv
 %type <switch_case> switch_case switch_expr_argv
 %type <view_member> view_member record_view_argv
-%type <scheme_member> scheme_member
 
 %nonassoc '@'
 %left "∷"
@@ -226,7 +227,7 @@ expr_member: name '=' expr {
   $$ = muon_expr_member(scan->engine, $name, $expr);
 }
 
-scheme_expr: '@' '(' scheme_member ':' sign ')' _ expr %prec '@' {
+scheme_expr: '@' '(' scheme_member ':' sign ')' _ expr %prec '@' { // {{{2
   $$ = muon_scheme_expr(scan->engine, $sign, $expr, $scheme_member);
 }
 
@@ -280,11 +281,12 @@ vector_expr_argv: expr {
 }
 
 sign: '(' sign[matter] ')' { $$ = $matter; } // {{{1
-  | boolean_sign { $$ = &$boolean_sign->as_sign; }
-  | integer_sign { $$ = &$integer_sign->as_sign; }
-  | lambda_sign  { $$ = &$lambda_sign->as_sign; }
-  | name_sign    { $$ = &$name_sign->as_sign; }
-  | vector_sign  { $$ = &$vector_sign->as_sign; }
+  | boolean_sign  { $$ = &$boolean_sign->as_sign; }
+  | integer_sign  { $$ = &$integer_sign->as_sign; }
+  | lambda_sign   { $$ = &$lambda_sign->as_sign; }
+  | name_sign     { $$ = &$name_sign->as_sign; }
+  | record_sign   { $$ = &$record_sign->as_sign; }
+  | vector_sign   { $$ = &$vector_sign->as_sign; }
   | variable_sign { $$ = &$variable_sign->as_sign; }
 
 boolean_sign: "Boolean" {
@@ -301,6 +303,32 @@ lambda_sign: sign[argument] "→" sign[output] {
 
 name_sign: name {
   $$ = muon_name_sign(scan->engine, $name);
+}
+
+record_sign: '(' record_sign_argv[argv] ')' { // {{{2
+  size_t argc = node_series(&$argv->as_node)->n;
+  struct MuonRecordSign *result;
+  if ((result = record_sign_allocate(scan->engine, argc)) == NULL)
+    YYNOMEM;
+  for (size_t i = 0; i < argc; i++)
+    result->argv[i] = node_detach($argv);
+  $$ = record_sign_activate(result);
+
+} | '(' ')' {
+  $$ = muon_record_sign(scan->engine, 0, NULL);
+}
+
+record_sign_argv: sign_member {
+  $$ = node_attach(NULL, $sign_member), node_series(&$$->as_node)->n = 1;
+
+} | record_sign_argv[argv] ',' sign_member {
+  $$ = node_attach($argv, $sign_member);
+  if (rare(++node_series(&$$->as_node)->n == 0))
+    YYNOMEM;
+}
+
+sign_member: name ':' sign {
+  $$ = muon_sign_member(scan->engine, $name, $sign);
 }
 
 vector_sign: '[' sign ']' {
