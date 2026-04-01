@@ -19,6 +19,7 @@ static inline MuonEngine *unlock_engine(struct MuonType *type) {
 #pragma GCC diagnostic pop
 }
 
+/// @internal Return the hash of a type with the @a tag and @a hash
 static inline Hash type_hash(MuonTypeTag tag, Hash hash) {
   tag |= TYPE_PREFIX << 5;
   return hash >> 8 | (Hash) tag << sizeof(Hash) * CHAR_BIT - 8;
@@ -80,9 +81,8 @@ MuonCoreType *muon_vector_type(MuonEngine *engine, MuonType *matter) {
   return muon_core_type(engine, as_engine(engine)->vector_core, argv);
 }
 
-MuonImplicitType *muon_implicit_type(MuonEngine *engine) {
-  MuonSchemeType *scheme = as_engine(engine)->scheme;
-
+MuonImplicitType *muon_implicit_type(
+    MuonEngine *engine, MuonSchemeType *scheme) {
   struct MuonImplicitType *result;
   if ((result = type_allocate(engine, sizeof(MuonImplicitType))) == NULL)
     return NULL;
@@ -118,14 +118,23 @@ MuonVariableType *muon_variable_type(
     MuonName *name,
     MuonType *join,
     MuonType *meet) {
+  assert(scheme == NULL || scheme->as_type.engine == engine);
+  assert(name->engine == engine);
+  assert(join->engine == engine);
+  assert(meet->engine == engine);
+
   struct MuonVariableType *result;
-  if ((result = variable_type_allocate(engine)) == NULL)
+  if ((result = type_allocate(engine, sizeof(MuonVariableType))) == NULL)
     return NULL;
-  result->as_type.scheme = scheme;
-  result->name = name;
-  result->join = join;
-  result->meet = meet;
-  return variable_type_activate(result);
+  *result = (MuonVariableType) {
+    .as_type = {.tag = MUON_VARIABLE_TYPE, .engine = engine, .scheme = scheme},
+    .name = name,
+    .join = join,
+    .meet = meet,
+  };
+
+  result->as_type.explicit = join->explicit & meet->explicit;
+  return assign_type(engine, &result->as_type), result;
 }
 
 struct MuonCoreType *core_type_allocate(MuonEngine *engine, MuonCore *core) {
@@ -135,14 +144,11 @@ struct MuonCoreType *core_type_allocate(MuonEngine *engine, MuonCore *core) {
   if (struct_size_overflow(MuonCoreType, argv, &size))
     return errno = ENOMEM, NULL;
 
-  MuonSchemeType *scheme = as_engine(engine)->scheme;
-
   struct MuonCoreType *result;
   if ((result = type_allocate(engine, size)) == NULL)
     return NULL;
   *result = (MuonCoreType) {
-    .as_type = {.tag = MUON_CORE_TYPE, .engine = engine, .scheme = scheme},
-    .core = core
+    .as_type = {.tag = MUON_CORE_TYPE, .engine = engine}, .core = core
   };
   return result;
 }
@@ -150,16 +156,13 @@ struct MuonCoreType *core_type_allocate(MuonEngine *engine, MuonCore *core) {
 MuonCoreType *core_type_activate(struct MuonCoreType *type) {
   MuonEngine *engine = unlock_engine(&type->as_type);
 
-  _Bool explicit = 1;
   for (size_t i = 0; i < core_argc(type->core); i++) {
     MuonCoreMember member = core_at(type->core, i);
     MuonType *argument = type->argv[member.i];
     assert(argument != NULL && argument->engine == engine);
-    explicit &= argument->explicit;
   }
 
   Hash hash = hash_object(type->core);
-  hash = hash_extend(hash, type->as_type.scheme);
   for (size_t i = 0; i < core_argc(type->core); i++) {
     MuonCoreMember member = core_at(type->core, i);
     hash = hash_extend(hash, type->argv[member.i]);
@@ -172,9 +175,6 @@ MuonCoreType *core_type_activate(struct MuonCoreType *type) {
     if (next->core != type->core)
       continue;
 
-    if (next->as_type.scheme != type->as_type.scheme)
-      continue;
-
     for (size_t i = 0; i < core_argc(type->core); i++) {
       MuonCoreMember member = core_at(type->core, i);
       if (next->argv[member.i] != type->argv[member.i])
@@ -185,8 +185,18 @@ MuonCoreType *core_type_activate(struct MuonCoreType *type) {
   next:
   }
 
+  _Bool explicit = 1;
+  MuonSchemeType *scheme = NULL;
+  for (size_t i = 0; i < core_argc(type->core); i++) {
+    MuonCoreMember member = core_at(type->core, i);
+    MuonType *argument = type->argv[member.i];
+    explicit &= argument->explicit;
+    scheme = scheme_maximum(scheme, argument->scheme);
+  }
+
   type->as_type.explicit = explicit;
   type->as_type.id = as_engine(engine)->type_number++;
+  type->as_type.scheme = scheme;
   return stator_insert(engine, type, hash, i);
 }
 
@@ -195,14 +205,11 @@ struct MuonJoinType *join_type_allocate(MuonEngine *engine, size_t argc) {
   if (struct_size_overflow(MuonJoinType, argv, &size))
     return errno = ENOMEM, NULL;
 
-  MuonSchemeType *scheme = as_engine(engine)->scheme;
-
   struct MuonJoinType *result;
   if ((result = type_allocate(engine, size)) == NULL)
     return NULL;
   *result = (MuonJoinType) {
-    .as_type = {.tag = MUON_JOIN_TYPE, .engine = engine, .scheme = scheme},
-    .argc = argc,
+    .as_type = {.tag = MUON_JOIN_TYPE, .engine = engine}, .argc = argc
   };
   return result;
 }
@@ -210,14 +217,10 @@ struct MuonJoinType *join_type_allocate(MuonEngine *engine, size_t argc) {
 MuonJoinType *join_type_activate(struct MuonJoinType *type) {
   MuonEngine *engine = unlock_engine(&type->as_type);
 
-  _Bool explicit = 1;
-  for (size_t i = 0; i < type->argc; i++) {
-    MuonType *argument = type->argv[i];
-    assert(argument != NULL && argument->engine == engine);
-    explicit &= argument->explicit;
-  }
+  for (size_t i = 0; i < type->argc; i++)
+    assert(type->argv[i] != NULL && type->argv[i]->engine == engine);
 
-  Hash hash = hash_object(type->as_type.scheme);
+  Hash hash = HASH_ZERO;
   for (size_t i = 0; i < type->argc; i++)
     hash = hash_extend(hash, type->argv[i]);
   hash = type_hash(MUON_JOIN_TYPE, hash);
@@ -225,9 +228,6 @@ MuonJoinType *join_type_activate(struct MuonJoinType *type) {
   MuonJoinType *next;
   size_t i;
   for (i = 0; (next = stator_search(engine, hash, &i)) != NULL; i++) {
-    if (next->as_type.scheme != type->as_type.scheme)
-      continue;
-
     if (next->argc != type->argc)
       continue;
 
@@ -240,8 +240,17 @@ MuonJoinType *join_type_activate(struct MuonJoinType *type) {
   next:
   }
 
+  _Bool explicit = 1;
+  MuonSchemeType *scheme = NULL;
+  for (size_t i = 0; i < type->argc; i++) {
+    MuonType *argument = type->argv[i];
+    explicit &= argument->explicit;
+    scheme = scheme_maximum(scheme, argument->scheme);
+  }
+
   type->as_type.explicit = explicit;
   type->as_type.id = as_engine(engine)->type_number++;
+  type->as_type.scheme = scheme;
   return stator_insert(engine, type, hash, i);
 }
 
@@ -250,14 +259,11 @@ struct MuonMeetType *meet_type_allocate(MuonEngine *engine, size_t argc) {
   if (struct_size_overflow(MuonMeetType, argv, &size))
     return errno = ENOMEM, NULL;
 
-  MuonSchemeType *scheme = as_engine(engine)->scheme;
-
   struct MuonMeetType *result;
   if ((result = type_allocate(engine, size)) == NULL)
     return NULL;
   *result = (MuonMeetType) {
-    .as_type = {.tag = MUON_MEET_TYPE, .engine = engine, .scheme = scheme},
-    .argc = argc,
+    .as_type = {.tag = MUON_MEET_TYPE, .engine = engine}, .argc = argc
   };
   return result;
 }
@@ -265,14 +271,10 @@ struct MuonMeetType *meet_type_allocate(MuonEngine *engine, size_t argc) {
 MuonMeetType *meet_type_activate(struct MuonMeetType *type) {
   MuonEngine *engine = unlock_engine(&type->as_type);
 
-  _Bool explicit = 1;
-  for (size_t i = 0; i < type->argc; i++) {
-    MuonType *argument = type->argv[i];
-    assert(argument != NULL && argument->engine == engine);
-    explicit &= argument->explicit;
-  }
+  for (size_t i = 0; i < type->argc; i++)
+    assert(type->argv[i] != NULL && type->argv[i]->engine == engine);
 
-  Hash hash = hash_object(type->as_type.scheme);
+  Hash hash = HASH_ZERO;
   for (size_t i = 0; i < type->argc; i++)
     hash = hash_extend(hash, type->argv[i]);
   hash = type_hash(MUON_MEET_TYPE, hash);
@@ -280,9 +282,6 @@ MuonMeetType *meet_type_activate(struct MuonMeetType *type) {
   MuonMeetType *next;
   size_t i;
   for (i = 0; (next = stator_search(engine, hash, &i)) != NULL; i++) {
-    if (next->as_type.scheme != type->as_type.scheme)
-      continue;
-
     if (next->argc != type->argc)
       continue;
 
@@ -295,76 +294,51 @@ MuonMeetType *meet_type_activate(struct MuonMeetType *type) {
   next:
   }
 
+  _Bool explicit = 1;
+  MuonSchemeType *scheme = NULL;
+  for (size_t i = 0; i < type->argc; i++) {
+    MuonType *argument = type->argv[i];
+    explicit &= argument->explicit;
+    scheme = scheme_maximum(scheme, argument->scheme);
+  }
+
   type->as_type.explicit = explicit;
   type->as_type.id = as_engine(engine)->type_number++;
+  type->as_type.scheme = scheme;
   return stator_insert(engine, type, hash, i);
 }
 
-struct MuonSchemeType *scheme_type_allocate(MuonEngine *engine, size_t argc) {
+struct MuonSchemeType *scheme_type_allocate(
+    MuonEngine *engine, MuonSchemeType *scheme, size_t argc) {
   size_t size = argc;
   if (struct_size_overflow(MuonSchemeType, argv, &size))
     return errno = ENOMEM, NULL;
-
-  MuonSchemeType *scheme = as_engine(engine)->scheme;
 
   struct MuonSchemeType *result;
   if ((result = type_allocate(engine, size)) == NULL)
     return NULL;
   *result = (MuonSchemeType) {
     .as_type = {.tag = MUON_SCHEME_TYPE, .engine = engine, .scheme = scheme},
+    .rank = scheme == NULL ? 0 : scheme->rank + 1,
     .argc = argc,
   };
   return result;
 }
 
-struct MuonSchemeType *scheme_type_initiate(struct MuonSchemeType *type) {
-  return as_engine(unlock_engine(&type->as_type))->scheme = type;
-}
-
-MuonSchemeType *scheme_type_activate(MuonEngine *opaque) {
-  Engine *engine = as_engine(opaque);
-
-  struct MuonSchemeType *result = engine->scheme;
-  assert(result != NULL);
-
-  _Bool explicit = 1;
-  assert(result->matter != NULL && result->matter->engine == opaque);
-  explicit &= result->matter->explicit;
-
-  for (size_t i = 0; i < result->argc; i++) {
-    MuonVariableType *argument = result->argv[i];
-    assert(argument != NULL);
-    assert(argument->as_type.engine == opaque);
-    explicit &= argument->as_type.explicit;
-  }
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wcast-qual"
-  engine->scheme = (struct MuonSchemeType *) result->as_type.scheme;
-#pragma GCC diagnostic pop
-
-  result->as_type.explicit = explicit;
-  return assign_type(opaque, &result->as_type), result;
-}
-
-struct MuonVariableType *variable_type_allocate(MuonEngine *engine) {
-  MuonSchemeType *scheme = as_engine(engine)->scheme;
-  struct MuonVariableType *result;
-  if ((result = type_allocate(engine, sizeof(MuonVariableType))) == NULL)
-    return NULL;
-  *result = (MuonVariableType) {
-    .as_type = {.tag = MUON_VARIABLE_TYPE, .engine = engine, .scheme = scheme}
-  };
-  return result;
-}
-
-MuonVariableType *variable_type_activate(struct MuonVariableType *type) {
+MuonSchemeType *scheme_type_activate(struct MuonSchemeType *type) {
   MuonEngine *engine = unlock_engine(&type->as_type);
-  assert(type->name != NULL && type->name->engine == engine);
-  assert(type->join != NULL && type->join->engine == engine);
-  assert(type->meet != NULL && type->meet->engine == engine);
-  type->as_type.explicit = type->join->explicit & type->meet->explicit;
-  return assign_type(engine, &type->as_type), type;
+
+  for (size_t i = 0; i < type->argc; i++)
+    assert(type->argv[i] != NULL && type->argv[i]->as_type.engine == engine);
+  assert(type->matter != NULL && type->matter->engine == engine);
+
+  _Bool explicit = type->matter->explicit;
+  for (size_t i = 0; i < type->argc; i++)
+    explicit &= type->argv[i]->as_type.explicit;
+
+  type->as_type.explicit = explicit;
+  type->as_type.id = as_engine(engine)->type_number++;
+  return type;
 }
 
 // NOLINTNEXTLINE(misc-no-recursion)

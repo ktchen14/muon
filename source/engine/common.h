@@ -26,8 +26,6 @@ typedef struct {
   MuonJoinType *bottom_type;
   MuonMeetType *object_type;
 
-  struct MuonSchemeType *scheme;
-
   HashVector *stator;
 } Engine;
 

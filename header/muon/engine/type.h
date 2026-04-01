@@ -133,8 +133,9 @@ MuonCoreType *muon_vector_type(MuonEngine *engine, MuonType *matter)
   MUON_HINT_SUFFIX(nonnull);
 
 /// Create an implicit type in the @a engine
-MuonImplicitType *muon_implicit_type(MuonEngine *engine)
-  MUON_HINT_SUFFIX(nonnull);
+MuonImplicitType *muon_implicit_type(
+    MuonEngine *engine, MuonSchemeType *scheme)
+  MUON_HINT_SUFFIX(nonnull(1));
 
 /// Create a join type in the @a engine
 MuonJoinType *muon_join_type(
@@ -153,7 +154,7 @@ MuonVariableType *muon_variable_type(
     MuonName *name,
     MuonType *join,
     MuonType *meet)
-  MUON_HINT_SUFFIX(nonnull);
+  MUON_HINT_SUFFIX(nonnull(1, 3, 4, 5));
 
 /// Optional arguments to muon_type_debug()
 struct MuonTypeDebugArgs {

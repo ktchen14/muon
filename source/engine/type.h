@@ -178,19 +178,11 @@ struct MuonMeetType *meet_type_allocate(MuonEngine *engine, size_t argc)
 MuonMeetType *meet_type_activate(struct MuonMeetType *type)
   MUON_HINT_SUFFIX(nonnull);
 
-struct MuonSchemeType *scheme_type_allocate(MuonEngine *engine, size_t argc)
-  MUON_HINT_SUFFIX(nonnull);
+struct MuonSchemeType *scheme_type_allocate(
+    MuonEngine *engine, MuonSchemeType *scheme, size_t argc)
+  MUON_HINT_SUFFIX(nonnull(1));
 
-struct MuonSchemeType *scheme_type_initiate(struct MuonSchemeType *type)
-  MUON_HINT_SUFFIX(nonnull);
-
-MuonSchemeType *scheme_type_activate(MuonEngine *opaque)
-  MUON_HINT_SUFFIX(nonnull);
-
-struct MuonVariableType *variable_type_allocate(MuonEngine *engine)
-  MUON_HINT_SUFFIX(nonnull);
-
-MuonVariableType *variable_type_activate(struct MuonVariableType *type)
+MuonSchemeType *scheme_type_activate(struct MuonSchemeType *type)
   MUON_HINT_SUFFIX(nonnull);
 
 #endif /* MUON_ENGINE_TYPE_I */
