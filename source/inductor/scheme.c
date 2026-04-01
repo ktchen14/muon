@@ -21,7 +21,7 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
 
   for (size_t i = 0; i < scheme->argc; i++) {
     MuonImplicitType *result;
-    if ((result = muon_implicit_type(engine)) == NULL)
+    if ((result = muon_implicit_type(engine, scheme->as_type.scheme)) == NULL)
       return NULL;
     instance_allocation->argv[i] = result;
   }
