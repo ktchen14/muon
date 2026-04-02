@@ -209,7 +209,7 @@ MUON_HINT(nonnull) static MuonType *record_expr_return(
   return &result->as_type;
 }
 
-MUON_HINT(nonnull) static const void *scheme_expr_continue(
+MUON_HINT(nonnull) static const void *scheme_expr_next(
     Inductor *inductor, MuonSchemeExpr *node, MuonNode *next) {
   if (next->tag != MUON_SCHEME_SIGN_NODE) {
     MuonType *sign = node_type(inductor, &node->sign->as_node);
@@ -564,7 +564,8 @@ static MuonNode *on_continue(
     Inductor *inductor, MuonNode *node, MuonNode *next) {
   switch ON_ABSTRACT_NODE(node) {
     case IS_CONCRETE_NODE(MuonSchemeExpr *scheme_expr)
-      scheme_expr_continue(inductor, scheme_expr, next);
+      if (scheme_expr_next(inductor, scheme_expr, next) == NULL)
+        return NULL;
       break;
 
     default:
