@@ -251,20 +251,18 @@ struct MuonRecordExpr *record_expr_allocate(MuonEngine *engine, size_t argc) {
   struct MuonRecordExpr *result;
   if ((result = node_allocate(engine, size)) == NULL)
     return NULL;
-  *result = (MuonRecordExpr) {.as_node.engine = engine, .argc = argc};
+  *result = (MuonRecordExpr) {
+    .as_node = {.engine = engine, .tag = MUON_RECORD_EXPR_NODE}, .argc = argc
+  };
   return result;
 }
 
 MuonRecordExpr *record_expr_activate(struct MuonRecordExpr *expr) {
   MuonEngine *engine = unlock_engine(&expr->as_node);
 
-  for (size_t i = 0; i < expr->argc; i++) {
-    assert(expr->argv[i] != NULL);
-    assert(expr->argv[i]->as_node.engine == engine);
-  }
+  for (size_t i = 0; i < expr->argc; i++)
+    assert(expr->argv[i] != NULL && expr->argv[i]->as_node.engine == engine);
 
-  MuonRecordExpr source = {.as_expr.tag = MUON_RECORD_EXPR, .argc = expr->argc};
-  memcpy(expr, &source, offsetof(MuonRecordExpr, argv));
   return assign_node(engine, &expr->as_node), expr;
 }
 
