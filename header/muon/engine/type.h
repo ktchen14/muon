@@ -154,7 +154,7 @@ MuonVariableType *muon_variable_type(
     MuonName *name,
     MuonType *join,
     MuonType *meet)
-  MUON_HINT_SUFFIX(nonnull(1, 3, 4, 5));
+  MUON_HINT_SUFFIX(nonnull);
 
 /// Optional arguments to muon_type_debug()
 struct MuonTypeDebugArgs {
