@@ -15,6 +15,7 @@ static yytoken_kind_t symbol(Scan *scan, YYSTYPE *yylval, YYLTYPE *yylloc) {
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wgnu-case-range"
+#pragma GCC diagnostic ignored "-Wc2y-extensions"
     /*!re2c
       re2c:api                = custom;
       re2c:api:style          = free-form;

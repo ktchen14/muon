@@ -33,6 +33,7 @@
   emit(LambdaSign, lambda_sign, LAMBDA_SIGN __VA_OPT__(,) __VA_ARGS__) \
   emit(NameSign, name_sign, NAME_SIGN __VA_OPT__(,) __VA_ARGS__) \
   emit(RecordSign, record_sign, RECORD_SIGN __VA_OPT__(,) __VA_ARGS__) \
+  emit(SchemeSign, scheme_sign, SCHEME_SIGN __VA_OPT__(,) __VA_ARGS__) \
   emit(VectorSign, vector_sign, VECTOR_SIGN __VA_OPT__(,) __VA_ARGS__)
 
 /// Expands to emit(Title, lower, UPPER, ...) for each concrete subtype of
@@ -318,16 +319,10 @@ typedef const struct MuonSequenceExpr {
   MuonStmt *argv[] MUON_HINT(counted_by(argc));
 } MuonSequenceExpr;
 
-typedef const struct MuonSchemeMember {
-  MUON_NODE_HEADER;
-  MuonName *name;
-} MuonSchemeMember;
-
 typedef const struct MuonSchemeExpr {
   MUON_EXPR_HEADER;
-  MuonSign *sign;
-  MuonExpr *expr;
-  MuonSchemeMember *member;
+  const struct MuonSchemeSign *sign;
+  MuonExpr *matter;
 } MuonSchemeExpr;
 
 typedef const struct MuonSwitchCase {
@@ -382,6 +377,18 @@ typedef const struct MuonRecordSign {
   size_t argc;
   MuonSignMember *argv[] MUON_HINT(counted_by(argc));
 } MuonRecordSign;
+
+typedef const struct MuonSchemeMember {
+  MUON_NODE_HEADER;
+  MuonName *name;
+} MuonSchemeMember;
+
+typedef const struct MuonSchemeSign {
+  MUON_SIGN_HEADER;
+  MuonSign *matter;
+  size_t argc;
+  MuonSchemeMember *argv[] MUON_HINT(counted_by(argc));
+} MuonSchemeSign;
 
 typedef const struct MuonVectorSign {
   MUON_SIGN_HEADER;
@@ -526,14 +533,8 @@ MuonRecordExpr *muon_record_expr(
     MuonEngine *engine, size_t argc, MuonExprMember *argv[/* argc */])
   MUON_HINT_SUFFIX(nonnull(1));
 
-MuonSchemeMember *muon_scheme_member(MuonEngine *engine, MuonName *name)
-  MUON_HINT_SUFFIX(nonnull);
-
 MuonSchemeExpr *muon_scheme_expr(
-    MuonEngine *engine,
-    MuonSign *sign,
-    MuonExpr *expr,
-    MuonSchemeMember *member)
+    MuonEngine *engine, MuonSchemeSign *sign, MuonExpr *matter)
   MUON_HINT_SUFFIX(nonnull);
 
 MuonSwitchCase *muon_switch_case(
@@ -555,6 +556,9 @@ MuonVectorExpr *muon_vector_expr(
 MuonBooleanSign *muon_boolean_sign(MuonEngine *engine)
   MUON_HINT_SUFFIX(nonnull);
 
+MuonImplicitSign *muon_implicit_sign(MuonEngine *engine)
+  MUON_HINT_SUFFIX(nonnull);
+
 MuonIntegerSign *muon_integer_sign(MuonEngine *engine)
   MUON_HINT_SUFFIX(nonnull);
 
@@ -573,10 +577,17 @@ MuonRecordSign *muon_record_sign(
     MuonEngine *engine, size_t argc, MuonSignMember *argv[/* argc */])
   MUON_HINT_SUFFIX(nonnull(1));
 
-MuonVectorSign *muon_vector_sign(MuonEngine *engine, MuonSign *matter)
+MuonSchemeMember *muon_scheme_member(MuonEngine *engine, MuonName *name)
   MUON_HINT_SUFFIX(nonnull);
 
-MuonImplicitSign *muon_implicit_sign(MuonEngine *engine)
+MuonSchemeSign *muon_scheme_sign(
+    MuonEngine *engine,
+    MuonSign *matter,
+    size_t argc,
+    MuonSchemeMember *const argv[/* argc */])
+  MUON_HINT_SUFFIX(nonnull);
+
+MuonVectorSign *muon_vector_sign(MuonEngine *engine, MuonSign *matter)
   MUON_HINT_SUFFIX(nonnull);
 
 MuonCoercionStmt *muon_coercion_stmt(

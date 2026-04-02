@@ -171,13 +171,9 @@ MuonSignMember *muon_sign_member(
 }
 
 MuonSchemeExpr *muon_scheme_expr(
-    MuonEngine *engine,
-    MuonSign *sign,
-    MuonExpr *expr,
-    MuonSchemeMember *member) {
+    MuonEngine *engine, MuonSchemeSign *sign, MuonExpr *matter) {
   assert(sign == NULL || sign->as_node.engine == engine);
-  assert(expr == NULL || expr->as_node.engine == engine);
-  assert(member == NULL || member->as_node.engine == engine);
+  assert(matter == NULL || matter->as_node.engine == engine);
 
   struct MuonSchemeExpr *result;
   if ((result = node_allocate(engine, sizeof(MuonSchemeExpr))) == NULL)
@@ -185,8 +181,7 @@ MuonSchemeExpr *muon_scheme_expr(
   *result = (MuonSchemeExpr) {
     .as_node.tag = MUON_SCHEME_EXPR_NODE,
     .sign = sign,
-    .expr = expr,
-    .member = member,
+    .matter = matter,
   };
   return assign_node(engine, &result->as_node), result;
 }
