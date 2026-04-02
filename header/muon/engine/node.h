@@ -28,12 +28,12 @@
 /// MuonSign
 #define MUON_EACH_SIGN_STEM(emit, ...) \
   emit(BooleanSign, boolean_sign, BOOLEAN_SIGN __VA_OPT__(,) __VA_ARGS__) \
+  emit(ImplicitSign, implicit_sign, IMPLICIT_SIGN __VA_OPT__(,) __VA_ARGS__) \
   emit(IntegerSign, integer_sign, INTEGER_SIGN __VA_OPT__(,) __VA_ARGS__) \
   emit(LambdaSign, lambda_sign, LAMBDA_SIGN __VA_OPT__(,) __VA_ARGS__) \
   emit(NameSign, name_sign, NAME_SIGN __VA_OPT__(,) __VA_ARGS__) \
   emit(RecordSign, record_sign, RECORD_SIGN __VA_OPT__(,) __VA_ARGS__) \
-  emit(VectorSign, vector_sign, VECTOR_SIGN __VA_OPT__(,) __VA_ARGS__) \
-  emit(VariableSign, variable_sign, VARIABLE_SIGN __VA_OPT__(,) __VA_ARGS__)
+  emit(VectorSign, vector_sign, VECTOR_SIGN __VA_OPT__(,) __VA_ARGS__)
 
 /// Expands to emit(Title, lower, UPPER, ...) for each concrete subtype of
 /// MuonStmt
@@ -352,6 +352,10 @@ typedef const struct MuonBooleanSign {
   MUON_SIGN_HEADER;
 } MuonBooleanSign;
 
+typedef const struct MuonImplicitSign {
+  MUON_SIGN_HEADER;
+} MuonImplicitSign;
+
 typedef const struct MuonIntegerSign {
   MUON_SIGN_HEADER;
 } MuonIntegerSign;
@@ -383,10 +387,6 @@ typedef const struct MuonVectorSign {
   MUON_SIGN_HEADER;
   MuonSign *matter;
 } MuonVectorSign;
-
-typedef const struct MuonVariableSign {
-  MUON_SIGN_HEADER;
-} MuonVariableSign;
 
 typedef const struct MuonCoercionStmt {
   MUON_STMT_HEADER;
@@ -576,7 +576,7 @@ MuonRecordSign *muon_record_sign(
 MuonVectorSign *muon_vector_sign(MuonEngine *engine, MuonSign *matter)
   MUON_HINT_SUFFIX(nonnull);
 
-MuonVariableSign *muon_variable_sign(MuonEngine *engine)
+MuonImplicitSign *muon_implicit_sign(MuonEngine *engine)
   MUON_HINT_SUFFIX(nonnull);
 
 MuonCoercionStmt *muon_coercion_stmt(

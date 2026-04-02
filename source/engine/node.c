@@ -462,11 +462,11 @@ MuonVectorSign *muon_vector_sign(MuonEngine *engine, MuonSign *matter) {
   return assign_node(engine, &result->as_node), result;
 }
 
-MuonVariableSign *muon_variable_sign(MuonEngine *engine) {
-  struct MuonVariableSign *result;
-  if ((result = node_allocate(engine, sizeof(MuonVariableSign))) == NULL)
+MuonImplicitSign *muon_implicit_sign(MuonEngine *engine) {
+  struct MuonImplicitSign *result;
+  if ((result = node_allocate(engine, sizeof(MuonImplicitSign))) == NULL)
     return NULL;
-  *result = (MuonVariableSign) {.as_sign.tag = MUON_VARIABLE_SIGN};
+  *result = (MuonImplicitSign) {.as_sign.tag = MUON_IMPLICIT_SIGN};
   return assign_node(engine, &result->as_node), result;
 }
 

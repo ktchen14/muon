@@ -50,19 +50,29 @@ static MuonNode *node_next(MuonInductor *inductor, MuonNode *node) {
 
   size_t i = node_cursor(node)->i++;
 
-  if (i == 0)
-    return &scheme_expr->member->as_node;
+  if (i == 0) {
+    struct MuonSchemeType *allocation;
+    if ((allocation = scheme_type_allocate(inductor->engine, inductor->scheme, 1)) == NULL)
+      return NULL;
+    inductor->scheme_allocation = allocation;
 
-  if (i == 1)
+    return &scheme_expr->member->as_node;
+  }
+
+  if (i == 1) {
+    MuonType *member = node_type(inductor, &scheme_expr->member->as_node);
+    MuonVariableType *variable_type = muon_type_cast(member, variable_type);
+    assert(variable_type != NULL);
+    inductor->scheme_allocation->argv[0] = variable_type;
+
     return &scheme_expr->sign->as_node;
+  }
 
   if (i == 2) {
-    struct MuonSchemeType *scheme;
-    if ((scheme = scheme_type_allocate(inductor->engine, inductor->scheme, 1)) == NULL)
-      return NULL;
-    scheme->argv[0] = (MuonVariableType *) node_type(inductor, &scheme_expr->member->as_node);
-    scheme->matter = node_type(inductor, &scheme_expr->sign->as_node);
-    inductor->scheme = scheme_type_activate(scheme);
+    MuonType *sign = node_type(inductor, &scheme_expr->member->as_node);
+
+    inductor->scheme_allocation->matter = sign;
+    inductor->scheme = scheme_type_activate(inductor->scheme_allocation);
 
     return &scheme_expr->expr->as_node;
   }
@@ -238,6 +248,8 @@ MUON_HINT(nonnull) static MuonType *record_expr_return(
 
 MUON_HINT(nonnull) static MuonType *scheme_member_return(
     Inductor *inductor, MuonSchemeMember *node) {
+  assert(inductor->scheme != NULL);
+
   MuonType *join = &as_engine(inductor->engine)->bottom_type->as_type;
   MuonType *meet = &as_engine(inductor->engine)->object_type->as_type;
 
@@ -332,6 +344,14 @@ MUON_HINT(nonnull) static MuonType *boolean_sign_return(
   return &result->as_type;
 }
 
+MUON_HINT(nonnull) static MuonType *implicit_sign_return(
+    Inductor *inductor, MuonImplicitSign *sign) {
+  MuonImplicitType *result;
+  if ((result = muon_implicit_type(inductor->engine, inductor->scheme)) == NULL)
+    return NULL;
+  return &result->as_type;
+}
+
 MUON_HINT(nonnull) static MuonType *integer_sign_return(
     Inductor *inductor, MuonIntegerSign *sign) {
   MuonCoreType *result;
@@ -393,14 +413,6 @@ MUON_HINT(nonnull) static MuonType *vector_sign_return(
 
   MuonCoreType *result;
   if ((result = muon_vector_type(inductor->engine, matter)) == NULL)
-    return NULL;
-  return &result->as_type;
-}
-
-MUON_HINT(nonnull) static MuonType *variable_sign_return(
-    Inductor *inductor, MuonVariableSign *sign) {
-  MuonImplicitType *result;
-  if ((result = muon_implicit_type(inductor->engine, inductor->scheme)) == NULL)
     return NULL;
   return &result->as_type;
 }

@@ -84,11 +84,11 @@ typedef struct {
 %type <vector_expr> vector_expr
 
 %type <boolean_sign> boolean_sign
+%type <implicit_sign> implicit_sign
 %type <integer_sign> integer_sign
 %type <lambda_sign> lambda_sign
 %type <name_sign> name_sign
 %type <record_sign> record_sign
-%type <variable_sign> variable_sign
 %type <vector_sign> vector_sign
 
 %type <coercion_stmt> coercion_stmt
@@ -282,15 +282,19 @@ vector_expr_argv: expr {
 
 sign: '(' sign[matter] ')' { $$ = $matter; } // {{{1
   | boolean_sign  { $$ = &$boolean_sign->as_sign; }
+  | implicit_sign { $$ = &$implicit_sign->as_sign; }
   | integer_sign  { $$ = &$integer_sign->as_sign; }
   | lambda_sign   { $$ = &$lambda_sign->as_sign; }
   | name_sign     { $$ = &$name_sign->as_sign; }
   | record_sign   { $$ = &$record_sign->as_sign; }
   | vector_sign   { $$ = &$vector_sign->as_sign; }
-  | variable_sign { $$ = &$variable_sign->as_sign; }
 
 boolean_sign: "Boolean" {
   $$ = muon_boolean_sign(scan->engine);
+}
+
+implicit_sign: '*' {
+  $$ = muon_implicit_sign(scan->engine);
 }
 
 integer_sign: "Integer" {
@@ -333,10 +337,6 @@ sign_member: name ':' sign {
 
 vector_sign: '[' sign ']' {
   $$ = muon_vector_sign(scan->engine, $sign);
-}
-
-variable_sign: '*' {
-  $$ = muon_variable_sign(scan->engine);
 }
 
 stmt: // {{{1

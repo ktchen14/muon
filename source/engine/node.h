@@ -118,9 +118,9 @@ static inline MuonNode *node_at(MuonNode *node, size_t i) {
     case MUON_NAME_EXPR:
     case MUON_EXPR_IMPORT:
     case MUON_BOOLEAN_SIGN:
+    case MUON_IMPLICIT_SIGN:
     case MUON_INTEGER_SIGN:
     case MUON_NAME_SIGN:
-    case MUON_VARIABLE_SIGN:
     case MUON_DATATYPE_OPTION:
     case MUON_VARIABLE_VIEW:
     case MUON_SCHEME_MEMBER:
