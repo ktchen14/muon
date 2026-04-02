@@ -144,32 +144,6 @@ MuonRecordExpr *muon_record_expr(
   return record_expr_activate(result);
 }
 
-MuonSchemeMember *muon_scheme_member(MuonEngine *engine, MuonName *name) {
-  assert(name == NULL || name->engine == engine);
-
-  struct MuonSchemeMember *result;
-  if ((result = node_allocate(engine, sizeof(MuonSchemeMember))) == NULL)
-    return NULL;
-  *result = (MuonSchemeMember) {
-    .as_node.tag = MUON_SCHEME_MEMBER_NODE, .name = name
-  };
-  return assign_node(engine, &result->as_node), result;
-}
-
-MuonSignMember *muon_sign_member(
-    MuonEngine *engine, MuonName *name, MuonSign *sign) {
-  assert(name == NULL || name->engine == engine);
-  assert(sign->as_node.engine == engine);
-
-  struct MuonSignMember *result;
-  if ((result = node_allocate(engine, sizeof(MuonSignMember))) == NULL)
-    return NULL;
-  *result = (MuonSignMember) {
-    .as_node.tag = MUON_SIGN_MEMBER_NODE, .name = name, .sign = sign
-  };
-  return assign_node(engine, &result->as_node), result;
-}
-
 MuonSchemeExpr *muon_scheme_expr(
     MuonEngine *engine, MuonSchemeSign *sign, MuonExpr *matter) {
   assert(sign == NULL || sign->as_node.engine == engine);
@@ -347,32 +321,6 @@ MuonSequenceExpr *sequence_expr_activate(struct MuonSequenceExpr *expr) {
   return assign_node(engine, &expr->as_node), expr;
 }
 
-struct MuonRecordSign *record_sign_allocate(MuonEngine *engine, size_t argc) {
-  size_t size;
-  if (rare((size = struct_size(MuonRecordSign, argv, argc)) == 0))
-    return errno = ENOMEM, NULL;
-
-  struct MuonRecordSign *result;
-  if ((result = node_allocate(engine, size)) == NULL)
-    return NULL;
-  *result = (MuonRecordSign) {.as_node.engine = engine, .argc = argc};
-  return result;
-}
-
-MuonRecordSign *record_sign_activate(struct MuonRecordSign *sign) {
-  MuonEngine *engine = unlock_engine(&sign->as_node);
-
-  for (size_t i = 0; i < sign->argc; i++)
-    assert(sign->argv[i] != NULL && sign->argv[i]->as_node.engine == engine);
-
-  MuonRecordSign source = {
-    .as_sign.tag = MUON_RECORD_SIGN,
-    .argc = sign->argc,
-  };
-  memcpy(sign, &source, offsetof(MuonRecordSign, argv));
-  return assign_node(engine, &sign->as_node), sign;
-}
-
 MuonExprImport *muon_expr_import(MuonEngine *engine, MuonName *name) {
   assert(name->engine == engine);
 
@@ -423,13 +371,33 @@ MuonNameSign *muon_name_sign(MuonEngine *engine, MuonName *name) {
   return assign_node(engine, &result->as_node), result;
 }
 
+MuonSignMember *muon_sign_member(
+    MuonEngine *engine, MuonName *name, MuonSign *sign) {
+  assert(name == NULL || name->engine == engine);
+  assert(sign->as_node.engine == engine);
+
+  struct MuonSignMember *result;
+  if ((result = node_allocate(engine, sizeof(MuonSignMember))) == NULL)
+    return NULL;
+  *result = (MuonSignMember) {
+    .as_node.tag = MUON_SIGN_MEMBER_NODE, .name = name, .sign = sign
+  };
+  return assign_node(engine, &result->as_node), result;
+}
+
 MuonRecordSign *muon_record_sign(
     MuonEngine *engine, size_t argc, MuonSignMember *argv[]) {
   assert(argc == 0 || argv != NULL);
 
+  struct MuonRecordSign *result;
+  if ((result = record_sign_allocate(engine, argc)) == NULL)
+    return NULL;
   for (size_t i = 0; i < argc; i++)
-    assert(argv[i] != NULL && argv[i]->as_node.engine == engine);
+    result->argv[i] = argv[i];
+  return record_sign_activate(result);
+}
 
+struct MuonRecordSign *record_sign_allocate(MuonEngine *engine, size_t argc) {
   size_t size;
   if (rare((size = struct_size(MuonRecordSign, argv, argc)) == 0))
     return errno = ENOMEM, NULL;
@@ -437,12 +405,67 @@ MuonRecordSign *muon_record_sign(
   struct MuonRecordSign *result;
   if ((result = node_allocate(engine, size)) == NULL)
     return NULL;
-  *result = (MuonRecordSign) {.as_sign.tag = MUON_RECORD_SIGN, .argc = argc};
+  *result = (MuonRecordSign) {
+    .as_node = {.engine = engine, .tag = MUON_RECORD_SIGN_NODE}, .argc = argc
+  };
+  return result;
+}
 
+MuonRecordSign *record_sign_activate(struct MuonRecordSign *sign) {
+  MuonEngine *engine = unlock_engine(&sign->as_node);
+  for (size_t i = 0; i < sign->argc; i++)
+    assert(sign->argv[i] != NULL && sign->argv[i]->as_node.engine == engine);
+  return assign_node(engine, &sign->as_node), sign;
+}
+
+MuonSchemeMember *muon_scheme_member(MuonEngine *engine, MuonName *name) {
+  assert(name == NULL || name->engine == engine);
+
+  struct MuonSchemeMember *result;
+  if ((result = node_allocate(engine, sizeof(MuonSchemeMember))) == NULL)
+    return NULL;
+  *result = (MuonSchemeMember) {
+    .as_node.tag = MUON_SCHEME_MEMBER_NODE, .name = name
+  };
+  return assign_node(engine, &result->as_node), result;
+}
+
+MuonSchemeSign *muon_scheme_sign(
+    MuonEngine *engine,
+    MuonSign *matter,
+    size_t argc,
+    MuonSchemeMember *const argv[/* argc */]) {
+  assert(argc == 0 || argv != NULL);
+
+  struct MuonSchemeSign *result;
+  if ((result = scheme_sign_allocate(engine, argc)) == NULL)
+    return NULL;
+  result->matter = matter;
   for (size_t i = 0; i < argc; i++)
     result->argv[i] = argv[i];
+  return scheme_sign_activate(result);
+}
 
-  return assign_node(engine, &result->as_node), result;
+struct MuonSchemeSign *scheme_sign_allocate(MuonEngine *engine, size_t argc) {
+  size_t size;
+  if (rare((size = struct_size(MuonSchemeSign, argv, argc)) == 0))
+    return errno = ENOMEM, NULL;
+
+  struct MuonSchemeSign *result;
+  if ((result = node_allocate(engine, size)) == NULL)
+    return NULL;
+  *result = (MuonSchemeSign) {
+    .as_node = {.engine = engine, .tag = MUON_SCHEME_SIGN_NODE}, .argc = argc
+  };
+  return result;
+}
+
+MuonSchemeSign *scheme_sign_activate(struct MuonSchemeSign *sign) {
+  MuonEngine *engine = unlock_engine(&sign->as_node);
+  assert(sign->matter != NULL && sign->matter->as_node.engine == engine);
+  for (size_t i = 0; i < sign->argc; i++)
+    assert(sign->argv[i] != NULL && sign->argv[i]->as_node.engine == engine);
+  return assign_node(engine, &sign->as_node), sign;
 }
 
 MuonVectorSign *muon_vector_sign(MuonEngine *engine, MuonSign *matter) {

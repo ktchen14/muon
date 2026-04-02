@@ -43,48 +43,11 @@ static MuonNode *on_continue(Inductor *inductor, MuonNode *node, MuonNode *next)
 static MuonType *on_return(Inductor *inductor, MuonNode *node)
   MUON_HINT_SUFFIX(nonnull);
 
-static MuonNode *node_next(MuonInductor *inductor, MuonNode *node) {
-  MuonSchemeExpr *scheme_expr;
-  if ((scheme_expr = muon_node_cast(node, scheme_expr)) == NULL)
-    return node_at(node, node_cursor(node)->i++);
-
-  size_t i = node_cursor(node)->i++;
-
-  if (i == 0) {
-    struct MuonSchemeType *allocation;
-    if ((allocation = scheme_type_allocate(inductor->engine, inductor->scheme, 1)) == NULL)
-      return NULL;
-    inductor->scheme_allocation = allocation;
-
-    return &scheme_expr->member->as_node;
-  }
-
-  if (i == 1) {
-    MuonType *member = node_type(inductor, &scheme_expr->member->as_node);
-    MuonVariableType *variable_type = muon_type_cast(member, variable_type);
-    assert(variable_type != NULL);
-    inductor->scheme_allocation->argv[0] = variable_type;
-
-    return &scheme_expr->sign->as_node;
-  }
-
-  if (i == 2) {
-    MuonType *sign = node_type(inductor, &scheme_expr->member->as_node);
-
-    inductor->scheme_allocation->matter = sign;
-    inductor->scheme = scheme_type_activate(inductor->scheme_allocation);
-
-    return &scheme_expr->expr->as_node;
-  }
-
-  return NULL;
-}
-
 void *induce_script(MuonInductor *inductor, MuonScript *script) {
   MuonNode *node = &script->as_node;
   do {
     MuonNode *next;
-    while ((next = node_next(inductor, node)) != NULL) {
+    while ((next = node_at(node, node_cursor(node)->i++)) != NULL) {
       if ((next = on_continue(inductor, node, next)) == NULL)
         goto except;
       node = next;
@@ -246,19 +209,15 @@ MUON_HINT(nonnull) static MuonType *record_expr_return(
   return &result->as_type;
 }
 
-MUON_HINT(nonnull) static MuonType *scheme_member_return(
-    Inductor *inductor, MuonSchemeMember *node) {
-  assert(inductor->scheme != NULL);
-
-  MuonType *join = &as_engine(inductor->engine)->bottom_type->as_type;
-  MuonType *meet = &as_engine(inductor->engine)->object_type->as_type;
-
-  MuonVariableType *result;
-  if ((result = muon_variable_type(
-           inductor->engine, inductor->scheme, node->name, join, meet))
-      == NULL)
-    return NULL;
-  return &result->as_type;
+MUON_HINT(nonnull) static const void *scheme_expr_continue(
+    Inductor *inductor, MuonSchemeExpr *node, MuonNode *next) {
+  if (next->tag != MUON_SCHEME_SIGN_NODE) {
+    MuonType *sign = node_type(inductor, &node->sign->as_node);
+    MuonSchemeType *scheme_type = muon_type_cast(sign, scheme_type);
+    assert(scheme_type != NULL);
+    inductor->scheme = scheme_type;
+  }
+  return node;
 }
 
 MUON_HINT(nonnull) static MuonType *scheme_expr_return(
@@ -403,6 +362,51 @@ MUON_HINT(nonnull) static MuonType *record_sign_return(
 
   MuonCoreType *result;
   if (rare((result = core_type_activate(type_allocation)) == NULL))
+    return NULL;
+  return &result->as_type;
+}
+
+MUON_HINT(nonnull) static MuonType *scheme_member_return(
+    Inductor *inductor, MuonSchemeMember *node) {
+  MuonEngine *engine = inductor->engine;
+  MuonSchemeType *scheme = inductor->scheme_allocation;
+  MuonName *name = node->name;
+  MuonType *join = &as_engine(engine)->bottom_type->as_type;
+  MuonType *meet = &as_engine(engine)->object_type->as_type;
+
+  MuonVariableType *result;
+  if ((result = muon_variable_type(engine, scheme, name, join, meet)) == NULL)
+    return NULL;
+  return &result->as_type;
+}
+
+MUON_HINT(nonnull) static MuonNode *scheme_sign_continue(
+    Inductor *inductor, MuonNode *node, MuonSchemeSign *next) {
+  MuonEngine *engine = inductor->engine;
+  MuonSchemeType *scheme = inductor->scheme;
+
+  struct MuonSchemeType *allocation;
+  if ((allocation = scheme_type_allocate(engine, scheme, next->argc)) == NULL)
+    return NULL;
+  inductor->scheme_allocation = allocation;
+
+  return node_continue(node, &next->as_node);
+}
+
+MUON_HINT(nonnull) static MuonType *scheme_sign_return(
+    Inductor *inductor, MuonSchemeSign *sign) {
+  struct MuonSchemeType *allocation = inductor->scheme_allocation;
+
+  allocation->matter = node_type(inductor, &sign->matter->as_node);
+  for (size_t i = 0; i < sign->argc; i++) {
+    MuonType *argument = node_type(inductor, &sign->argv[i]->as_node);
+    MuonVariableType *variable_type = muon_type_cast(argument, variable_type);
+    assert(variable_type != NULL);
+    allocation->argv[i] = variable_type;
+  }
+
+  MuonSchemeType *result;
+  if ((result = scheme_type_activate(allocation)) == NULL)
     return NULL;
   return &result->as_type;
 }
@@ -558,7 +562,18 @@ MUON_HINT(nonnull) static MuonType *script_return(
 
 static MuonNode *on_continue(
     Inductor *inductor, MuonNode *node, MuonNode *next) {
+  switch ON_ABSTRACT_NODE(node) {
+    case IS_CONCRETE_NODE(MuonSchemeExpr *scheme_expr)
+      scheme_expr_continue(inductor, scheme_expr, next);
+      break;
+
+    default: break;
+  }
+
   switch ON_ABSTRACT_NODE(next) {
+    case IS_CONCRETE_NODE(MuonSchemeSign *scheme_sign)
+      return scheme_sign_continue(inductor, node, scheme_sign);
+
     case IS_CONCRETE_NODE(MuonDatatypeStmt *datatype_stmt)
       return datatype_stmt_continue(inductor, node, datatype_stmt);
 

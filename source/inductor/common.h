@@ -116,10 +116,8 @@ struct Inductor {
 
   MuonCore *datatype_core;
 
-  union {
-    struct MuonSchemeType *scheme_allocation;
-    MuonSchemeType *scheme;
-  };
+  struct MuonSchemeType *scheme_allocation;
+  MuonSchemeType *scheme;
 };
 
 typedef struct {

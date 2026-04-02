@@ -265,6 +265,12 @@ struct MuonRecordSign *record_sign_allocate(MuonEngine *engine, size_t argc)
 MuonRecordSign *record_sign_activate(struct MuonRecordSign *sign)
   MUON_HINT_SUFFIX(nonnull);
 
+struct MuonSchemeSign *scheme_sign_allocate(MuonEngine *engine, size_t argc)
+  MUON_HINT_SUFFIX(nonnull);
+
+MuonSchemeSign *scheme_sign_activate(struct MuonSchemeSign *sign)
+  MUON_HINT_SUFFIX(nonnull);
+
 struct MuonDatatypeStmt *datatype_stmt_allocate(MuonEngine *engine, size_t argc)
   MUON_HINT_SUFFIX(nonnull);
 
