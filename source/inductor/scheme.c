@@ -125,7 +125,7 @@ MuonType *scheme_instance(MuonInductor *inductor, MuonSchemeType *scheme) {
 
       case IS_CONCRETE_TYPE(MuonSchemeType *scheme_type) {
         // struct MuonSchemeType *allocation;
-            // (struct MuonSchemeType *) equation[cursor.type->id].allocation;
+        // (struct MuonSchemeType *) equation[cursor.type->id].allocation;
         //
         // MuonType *matter = scheme_type->matter;
         // if (equation[matter->id].result != NULL)

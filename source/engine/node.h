@@ -155,7 +155,7 @@ static inline MuonNode *node_at(MuonNode *node, size_t i) {
 
     case IS_CONCRETE_NODE(MuonSchemeExpr *scheme_expr)
       return (MuonNode *[]) {
-        &scheme_expr->sign->as_node, &scheme_expr->matter->as_node, NULL,
+        &scheme_expr->sign->as_node, &scheme_expr->matter->as_node, NULL
       }[i];
 
     case IS_CONCRETE_NODE(MuonSwitchCase *switch_case)

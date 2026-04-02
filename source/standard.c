@@ -40,7 +40,8 @@ MuonModule *muon_standard_module(MuonEngine *engine) {
   MuonType *bottom_type = &as_engine(engine)->bottom_type->as_type;
   MuonType *object_type = &as_engine(engine)->object_type->as_type;
 
-  struct MuonSchemeType *scheme_allocation = scheme_type_allocate(engine, NULL, 1);
+  struct MuonSchemeType *scheme_allocation = scheme_type_allocate(
+      engine, NULL, 1);
 
   MuonVariableType *variable_type = muon_variable_type(
       engine,
@@ -53,7 +54,7 @@ MuonModule *muon_standard_module(MuonEngine *engine) {
       engine,
       &muon_vector_type(engine, &variable_type->as_type)->as_type,
       &variable_type->as_type)
-                             ->as_type;
+                                   ->as_type;
 
   scheme_allocation->argv[0] = variable_type;
   MuonSchemeType *scheme_type = scheme_type_activate(scheme_allocation);

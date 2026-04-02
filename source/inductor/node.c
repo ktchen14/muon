@@ -567,7 +567,8 @@ static MuonNode *on_continue(
       scheme_expr_continue(inductor, scheme_expr, next);
       break;
 
-    default: break;
+    default:
+      break;
   }
 
   switch ON_ABSTRACT_NODE(next) {
@@ -581,9 +582,10 @@ static MuonNode *on_continue(
       return define_stmt_continue(inductor, node, define_stmt);
 
     default:
-      return node_continue(node, next);
+      break;
   }
-  __builtin_unreachable();
+
+  return node_continue(node, next);
 }
 
 static MuonType *on_return(Inductor *inductor, MuonNode *node) {

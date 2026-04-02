@@ -133,8 +133,7 @@ MuonCoreType *muon_vector_type(MuonEngine *engine, MuonType *matter)
   MUON_HINT_SUFFIX(nonnull);
 
 /// Create an implicit type in the @a engine
-MuonImplicitType *muon_implicit_type(
-    MuonEngine *engine, MuonSchemeType *scheme)
+MuonImplicitType *muon_implicit_type(MuonEngine *engine, MuonSchemeType *scheme)
   MUON_HINT_SUFFIX(nonnull(1));
 
 /// Create a join type in the @a engine

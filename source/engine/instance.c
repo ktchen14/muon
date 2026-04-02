@@ -15,7 +15,9 @@ static inline MuonEngine *unlock_engine(struct MuonInstance *instance) {
 }
 
 MuonInstance *muon_instance(
-    MuonEngine *engine, MuonSchemeType *scheme, MuonImplicitType *const argv[]) {
+    MuonEngine *engine,
+    MuonSchemeType *scheme,
+    MuonImplicitType *const argv[]) {
   struct MuonInstance *result;
   if ((result = instance_allocate(engine, scheme)) == NULL)
     return NULL;

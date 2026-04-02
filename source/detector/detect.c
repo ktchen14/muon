@@ -231,7 +231,9 @@ detect_t *detect_node(detect_t *detect, MuonNode *root) {
             return NULL;
           roster = next_roster;
           announce(
-              roster, scheme_expr->sign->argv[0]->name, &scheme_expr->sign->argv[0]->as_node);
+              roster,
+              scheme_expr->sign->argv[0]->name,
+              &scheme_expr->sign->argv[0]->as_node);
           break;
         }
 
