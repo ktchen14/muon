@@ -33,6 +33,8 @@ MuonCustomCore *mu_simple_core(MuonEngine *engine, MuonName *name) {
 
 MuonRecordCore *muon_record_core(
     MuonEngine *engine, size_t argc, MuonName *const argv[/* argv */]) {
+  assert(argc == 0 || argv != NULL);
+
   struct MuonRecordCore *result;
   if ((result = record_core_allocate(engine, argc)) == NULL)
     return NULL;
@@ -58,10 +60,8 @@ struct MuonRecordCore *record_core_allocate(MuonEngine *engine, size_t argc) {
 MuonRecordCore *record_core_activate(struct MuonRecordCore *core) {
   MuonEngine *engine = unlock_engine(&core->as_core);
 
-  for (size_t i = 0; i < core->argc; i++) {
-    assert(core->argv[i] != NULL);
-    assert(core->argv[i]->engine == engine);
-  }
+  for (size_t i = 0; i < core->argc; i++)
+    assert(core->argv[i] != NULL && core->argv[i]->engine == engine);
 
   for (size_t i = 1; i < core->argc; i++)
     assert(name_cmp(core->argv[i], core->argv[i - 1]) > 0);
