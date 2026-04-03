@@ -224,6 +224,9 @@ MUON_HINT(nonnull) static MuonType *scheme_expr_return(
     Inductor *inductor, MuonSchemeExpr *node) {
   MuonSchemeType *result = inductor->scheme;
   inductor->scheme = result->as_type.scheme;
+
+  if (node_restrain(inductor, &node->matter->as_node, result->matter) == NULL)
+    return NULL;
   return &result->as_type;
 }
 
